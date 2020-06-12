@@ -1,0 +1,174 @@
+/**
+ * @file async_task.h
+ * @brief
+ * Defines an eager awaitable type.
+ *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ */
+
+#ifndef _ASYNC_TASK_H_
+#define _ASYNC_TASK_H_
+
+#include <experimental/resumable>
+#include "print.h"
+#include "semaphore.h"
+
+namespace corolib
+{
+	template<typename TYPE>
+	struct async_task
+	{
+		struct promise_type;
+		using handle_type = std::experimental::coroutine_handle<promise_type>;
+
+		async_task(const async_task& s) = delete;
+
+		async_task(async_task&& s)
+			: m_coro(s.m_coro)
+		{
+			print(PRI2, "%p: async_task::async_task(async_task&& s)\n", this);
+			s.m_coro = nullptr;
+		}
+
+		~async_task()
+		{
+			print(PRI2, "%p: async_task::~async_task()\n", this);
+		}
+
+		async_task(handle_type h)
+			: m_coro(h) {
+			print(PRI2, "%p: async_task::async_task(handle_type h)\n", this);
+		}
+
+		async_task& operator = (const async_task&) = delete;
+
+		async_task& operator = (async_task&& s)
+		{
+			print(PRI2, "%p: async_task::async_task = (async_task&& s)\n", this);
+			m_coro = s.m_coro;
+			s.m_coro = nullptr;
+			return *this;
+		}
+
+		TYPE get()
+		{
+			print(PRI2, "%p: async_task::get()\n", this);
+			if (!m_coro.promise().m_ready)
+			{
+				m_coro.promise().m_wait_for_signal = true;
+				m_coro.promise().sema.wait();
+			}
+			return m_coro.promise().value;
+		}
+
+		auto operator co_await() noexcept
+		{
+			class awaiter
+			{
+			public:
+				awaiter(async_task& async_task_) 
+					: m_async_task(async_task_)
+				{}
+
+				bool await_ready()
+				{
+					const bool ready = m_async_task.m_coro.done();
+					print(PRI2, "%p: m_async_task::await_ready(): return %d;\n", this, ready);
+					return ready;
+				}
+
+				void await_suspend(std::experimental::coroutine_handle<> awaiting)
+				{
+					print(PRI2, "%p: m_async_task::await_suspend(std::experimental::coroutine_handle<> awaiting)\n", this);
+					m_async_task.m_coro.promise().m_awaiting = awaiting;
+				}
+
+				TYPE await_resume()
+				{
+					print(PRI2, "%p: m_async_task::await_resume()\n", this);
+					const TYPE r = m_async_task.m_coro.promise().m_value;
+					return r;
+				}
+
+			private:
+				async_task& m_async_task;
+			};
+
+			return awaiter{ *this };
+		}
+
+		struct promise_type
+		{
+			friend struct async_task;
+
+			promise_type()
+				: m_awaiting(nullptr)
+				, m_ready(false)
+				, m_wait_for_signal(false)
+			{
+				print(PRI2, "%p: async_task::promise_type::promise_type()\n", this);
+			}
+
+			~promise_type()
+			{
+				print(PRI2, "%p: async_task::promise_type::~promise_type()\n", this);
+			}
+
+			void return_value(TYPE v)
+			{
+				print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): begin\n", this);
+				m_value = v;
+				m_ready = true;
+				if (m_awaiting)
+				{
+					print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): before m_awaiting.resume();\n", this);
+					m_awaiting.resume();
+					print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): after m_awaiting.resume();\n", this);
+				}
+				if (m_wait_for_signal)
+				{
+					print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): before sema.signal();\n", this);
+					m_sema.signal();
+					print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): after sema.signal();\n", this);
+				}
+				print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): end\n", this);
+			}
+
+			auto get_return_object()
+			{
+				print(PRI2, "%p: async_task::promise_type::get_return_object()\n", this);
+				return async_task<TYPE>{handle_type::from_promise(*this)};
+			}
+
+			auto initial_suspend()
+			{
+				print(PRI2, "%p: async_task::promise_type::initial_suspend()\n", this);
+				return std::experimental::suspend_never{};
+			}
+
+			auto final_suspend() noexcept
+			{
+				print(PRI2, "%p: async_task::promise_type::final_suspend()\n", this);
+				return std::experimental::suspend_always{};
+			}
+
+			void unhandled_exception()
+			{
+				print(PRI2, "%p: async_task::promise::promise_type()\n", this);
+				std::exit(1);
+			}
+
+		private:
+			TYPE m_value;
+			bool m_ready;
+			Semaphore m_sema;
+			bool m_wait_for_signal;
+			std::experimental::coroutine_handle<> m_awaiting;
+		};
+
+	private:
+		handle_type m_coro;
+	};
+}
+
+#endif
