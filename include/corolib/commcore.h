@@ -108,7 +108,11 @@ namespace corolib
 					print(PRI2, "%p: CommCore::handle_write(): entry\n", this);
 					async_operation* om_async_operation = m_async_operations[idx];
 
-					if (m_stopped) return;
+					if (m_stopped)
+					{
+						print(PRI2, "%p: CommCore::handle_write(): stopped\n");
+						return;
+					}
 
 					if (!error)
 					{
@@ -120,7 +124,7 @@ namespace corolib
 					}
 					else
 					{
-						print(PRI2, "%p: Error on write: %s\n", this, error.message().c_str());
+						print(PRI1, "%p: CommCore::handle_write(): Error on write: %s\n", this, error.message().c_str());
 						stop();
 					}
 					print(PRI2, "%p: CommCore::handle_write(): exit\n\n", this);
@@ -131,7 +135,7 @@ namespace corolib
 		{
 			print(PRI2, "%p: CommCore::start_read()\n", this);
 			m_input_buffer = "";
-			m_read_buffer = "";
+			//m_read_buffer = "";
 			m_bytes = 0;
 
 			// Set a deadline for the read operation.
@@ -148,13 +152,21 @@ namespace corolib
 					async_operation_t<std::string>* om_async_operation_t =
 						dynamic_cast<async_operation_t<std::string>*>(om_async_operation);
 
-					if (m_stopped) return;
+					if (m_stopped)
+					{
+						print(PRI2, "%p: CommCore::handle_read(): stopped\n", this);
+						return;
+					}
 
 					if (!error)
 					{
+						print(PRI3, "%p: CommCore::handle_read(): bytes = %d, m_input_buffer = %s\n", this, bytes, m_input_buffer.c_str());
 						m_bytes = bytes;
+
 						// Copy from m_input_buffer to m_read_buffer is not absolutely necessary.
 						m_read_buffer = m_input_buffer;
+
+						print(PRI3, "%p: CommCore::handle_read(): m_bytes = %d, m_read_buffer = %s\n", this, m_bytes, m_read_buffer.c_str());
 
 						assert(om_async_operation_t != nullptr);
 						if (om_async_operation_t)
@@ -165,8 +177,8 @@ namespace corolib
 					}
 					else
 					{
-						print(PRI2, "%p: Error on receive: %s\n", this, error.message().c_str());
-						stop();
+						print(PRI1, "%p: CommCore::handle_read(): Error on receive: %s\n", this, error.message().c_str());
+						//stop();
 					}
 					print(PRI2, "%p: CommCore::handle_read(): exit\n\n", this);
 				});
@@ -180,10 +192,14 @@ namespace corolib
 			tmr.async_wait(
 				[this, idx](const boost::system::error_code& error)
 				{
-					print(PRI1, "%p: CommCore::handle_timer()\n", this);
+					print(PRI2, "%p: CommCore::handle_timer()\n", this);
 					async_operation* om_async_operation = m_async_operations[idx];
 
-					if (m_stopped) return;
+					if (m_stopped)
+					{
+						print(PRI2, "%p: CommCore::handle_timer(): stopped\n");
+						return;
+					}
 
 					if (!error)
 					{

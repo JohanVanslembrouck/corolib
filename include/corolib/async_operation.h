@@ -17,6 +17,7 @@
 #include "print.h"
 #include "commservice.h"
 #include "wait_all_counter.h"
+#include "wait_any.h"
 
 namespace corolib
 {
@@ -29,6 +30,7 @@ namespace corolib
 			, m_ready(false)				// set to true in completed()
 			, m_index(index)
 			, m_ctr(nullptr)
+			, m_waitany(nullptr)
 		{
 			print(PRI2, "%p: async_operation::async_operation(CommService* s = %p, index = %d)\n", this, s, index);
 			if (m_service)
@@ -49,7 +51,10 @@ namespace corolib
 			print(PRI2, "%p: async_operation::~async_operation(): m_index = %d\n", this, m_index);
 			if (m_index != -1)
 			{
-				m_service->m_async_operations[m_index] = nullptr;
+				if (m_service)
+				{
+					m_service->m_async_operations[m_index] = nullptr;
+				}
 			}
 		}
 
@@ -61,6 +66,7 @@ namespace corolib
 			, m_ready(s.m_ready)
 			, m_index(s.m_index)
 			, m_ctr(s.m_ctr)
+			, m_waitany(s.m_waitany)
 		{
 			print(PRI2, "%p: async_operation::async_operation(async_operation&& s)\n", this);
 
@@ -72,6 +78,7 @@ namespace corolib
 			s.m_ready = false;
 			s.m_index = -1;		// indicates move
 			s.m_ctr = nullptr;
+			s.m_waitany = nullptr;
 		}
 
 		async_operation& operator = (const async_operation&) = delete;
@@ -85,6 +92,7 @@ namespace corolib
 			m_ready = s.m_ready;
 			m_index = s.m_index;
 			m_ctr = s.m_ctr;
+			m_waitany = s.m_waitany;
 
 			// Tell the CommService we are at another address after the move.
 			m_service->m_async_operations[m_index] = this;
@@ -94,7 +102,8 @@ namespace corolib
 			s.m_ready = false;
 			s.m_index = -1;		// indicates move
 			s.m_ctr = nullptr;
-
+			s.m_waitany = nullptr;
+			
 			return *this;
 		}
 
@@ -114,6 +123,12 @@ namespace corolib
 				m_ctr->completed();
 				print(PRI2, "%p: async_operation::completed(): after m_ctr->completed();\n", this);
 			}
+			else if (m_waitany)
+			{
+				print(PRI2, "%p: async_operation::completed(): before m_waitany->completed();\n", this);
+				m_waitany->completed();
+				print(PRI2, "%p: async_operation::completed(): after m_waitany->completed();\n", this);
+			}
 			else
 			{
 				print(PRI2, "%p: async_operation::completed(): m_awaiting not yet initialized!!!\n", this);
@@ -127,6 +142,12 @@ namespace corolib
 			m_ctr = ctr;
 		}
 
+		void setWaitAny(wait_any* waitany)
+		{
+			print(PRI2, "%p: void async_operation::setWaitAny(%p)\n", this, waitany);
+			m_waitany = waitany;
+		}
+		
 		auto operator co_await() noexcept
 		{
 			class awaiter
@@ -149,9 +170,10 @@ namespace corolib
 					m_async.m_awaiting = awaiting;
 				}
 
-				void await_resume()
+				CommService* await_resume()
 				{
 					print(PRI2, "%p: async_operation::await_resume(): m_async = %p\n", this, &m_async);
+					return m_async.m_service;
 				}
 
 			private:
@@ -167,6 +189,7 @@ namespace corolib
 		bool m_ready;
 		int m_index;
 		wait_all_counter* m_ctr;
+		wait_any* m_waitany;
 	};
 
 	template<typename TYPE>
@@ -229,6 +252,7 @@ namespace corolib
 	private:
 		TYPE m_result;
 	};
+
 }
 
 #endif
