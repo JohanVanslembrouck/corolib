@@ -8,17 +8,9 @@ include_directories(../../include ${Boost_INCLUDE_DIR})
 
 link_directories(${Boost_LIBRARY_DIR})
 
-add_executable(client1 client1.cpp)
-target_link_libraries(client1)
-
-add_executable(client3 client3.cpp)
-target_link_libraries(client3)
-
-add_executable(client3WA client3WA.cpp)
-target_link_libraries(client3WA)
-
-add_executable(clientserver clientserver.cpp)
-target_link_libraries(clientserver)
-
-add_executable(server server.cpp)
-target_link_libraries(server)
+add_executable(cs1-client1 client1.cpp)
+add_executable(cs1-client3 client3.cpp)
+add_executable(cs1-client3WA client3WA.cpp)
+add_executable(cs1-client3WAny client3WAny.cpp)
+add_executable(cs1-clientserver clientserver.cpp)
+add_executable(cs1-server server.cpp)
