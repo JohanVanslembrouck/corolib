@@ -2,11 +2,11 @@
 
 (For the relationship between executables and source files, the reader is referred to CMakeLists.txt in this directory.)
 
-'cs2-server' is a server application with 'cs2-client1' as its client application.
+'cs2-server' and 'cs2-server2' are server applications with 'cs2-client1' as their client application.
 
 After building, launch the applications in the following order:
 
-* 'cs2-server'
+* 'cs2-server' or 'cs2-server2
 * 'cs2-client1' (one or more instances)
 
 The client1 application initiates an action on the server by writing the string "START".

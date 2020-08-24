@@ -6,3 +6,5 @@ set(Boost_LIBRARY_DIR C:/Boost/lib)
 project (corolib)
 
 add_subdirectory(examples/clientserver1)
+add_subdirectory(examples/clientserver2)
+add_subdirectory(examples/clientserver3)

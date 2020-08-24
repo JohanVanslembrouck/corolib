@@ -12,8 +12,8 @@ and select the CMakeLists.txt in the main folder.
 
 In the CMakeLists.txt in the top level folder, adapt the following variables to your own installation of the Boost library:
 
-set(Boost_INCLUDE_DIR C:/Boost/include/boost-1_70)
-set(Boost_LIBRARY_DIR C:/Boost/lib)
+	set(Boost_INCLUDE_DIR C:/Boost/include/boost-1_70)
+	set(Boost_LIBRARY_DIR C:/Boost/lib)
 
 'corolib' is only a small library (at the moment).
 For a more comprehensive library, see https://github.com/lewissbaker/cppcoro

@@ -1,7 +1,7 @@
 /**
  * @file endpoints.h
  * @brief
- * Defines the endpoints (IP address and port) used by the clientserver and the server application.
+ * Defines the endpoints (IP address and port) used by the the server application.
  * In this setup all applications run locally.
  * The file should probably be replaced by a configuration file that is read at run time
  * to avoid having to recompile the application for every configuration.
