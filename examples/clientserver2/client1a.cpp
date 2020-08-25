@@ -1,5 +1,5 @@
 /** 
- * @file client1.cpp
+ * @file client1a.cpp
  * @brief
  * This example illustrates the use of coroutines
  * in combination with Boost ASIO to implement a client application.
@@ -49,29 +49,6 @@ public:
 		print(PRI1, "acknowledgeAction: co_return 0;\n");
 		co_return 0;
 	}
-
-	async_task<int> cancelAction()
-	{
-		// Prepare the STOP request
-		std::string str1 = "STOP\n";
-
-		// Writing
-		print(PRI1, "cancelAction: async_operation sw = start_writing(...);\n");
-		async_operation sw = start_writing(str1.c_str(), str1.length() + 1);
-		print(PRI1, "cancelAction: co_await sw;\n");
-		co_await sw;
-
-		// Start a timer of 100 ms
-		// Timing
-		steady_timer client_timer(ioContext);
-		print(PRI1, "cancelAction: async_operation st = start_timer(100);\n");
-		async_operation st = start_timer(client_timer, 100);
-		print(PRI1, "cancelAction: co_await st\n");
-		co_await st;
-
-		print(PRI1, "cancelAction: co_return 0;\n");
-		co_return 0;
-	}
 	
 	async_task<int> performAction(int timeout)
 	{
@@ -87,6 +64,7 @@ public:
 		// Reading
 		print(PRI1, "performAction: async_operation sr = start_reading();\n");
 		async_operation_t<std::string> sr = start_reading();
+		print(PRI1, "performAction: std::string strout = co_await sr;\n");
 
 		// Timing
 		steady_timer client_timer(ioContext);
@@ -95,44 +73,70 @@ public:
 
 		print(PRI1, "performAction: wait_all_awaitable<async_operation> war( { &sr, &st } ) ;\n");
 		wait_any_awaitable<async_operation> war( { &sr, &st } );
-		print(PRI1, "performAction: int i = co_await war;\n");
-		int i = co_await war;
-
-		switch (i)
+		
+		bool done = false;
+		for (int j = 0; j < 2 && !done; j++)
 		{
-		case 0:	// Reply has arrived, stop the timer and print the result
-		{
-			print(PRI1, "performAction: i = %d: reply has arrived, stop the timer and print the result\n", i);
-			
-			print(PRI1, "performAction: client_timer.cancel();\n");
-			client_timer.cancel();
+			print(PRI1, "performAction: int i = co_await war;\n");
+			int i = co_await war;
 
-			print(PRI1, "performAction: sr.get_result() = %s\n", sr.get_result().c_str());
+			print(PRI1, "performAction: (%d, %d)\n\n", j, i);
+			switch (i)
+			{
+			case 0:	// Reply has arrived, stop the timer and print the result
+			{
+				print(PRI1, "performAction: i = %d: reply has arrived, stop the timer and print the result\n", i);
 
-			// Send acknowledgement to server
-			print(PRI1, "performAction: async_task<int> ackAction = acknowledgeAction();\n");
-			async_task<int> ackAction = acknowledgeAction();
-			print(PRI1, "performAction: co_await ackAction;\n");
-			co_await ackAction;
-			print(PRI1, "performAction: after co_await ackAction;\n");
-		}
-		break;
-		case 1: // Timer has expired, send a cancel request
-		{
-			print(PRI1, "performAction: i = %d: timer has expired, send a cancel request\n", i);
-			
-			// Canceling
-			print(PRI1, "performAction: async_task<int> cnclAction = cancelAction();\n");
-			async_task<int> cnclAction = cancelAction();
-			print(PRI1, "performAction: co_await cnclAction;\n");
-			co_await cnclAction;
-			print(PRI1, "performAction: after co_await cnclAction;\n");
+				print(PRI1, "performAction: client_timer.cancel();\n");
+				client_timer.cancel();
 
-			// Stop reading the reply from the server (if possible)
-		}
-		break;
-		default:
-			print(PRI1, "performAction: i = %d: should not occur\n", i);
+				print(PRI1, "performAction: sr.get_result() = %s\n", sr.get_result().c_str());
+				
+				if (j == 0)
+				{
+					print(PRI1, "performAction: i = %d: reply has arrived in time\n", i);
+					done = true;
+
+					// Send acknowledgement to server
+					print(PRI1, "performAction: async_task<int> ackAction = acknowledgeAction();\n");
+					async_task<int> ackAction = acknowledgeAction();
+					print(PRI1, "performAction: co_await ackAction;\n");
+					co_await ackAction;
+					print(PRI1, "performAction: after co_await ackAction;\n");
+				}
+				else
+				{
+					print(PRI1, "performAction: i = %d, answer arrived after STOP was sent\n", i);
+				}
+			}
+			break;
+			case 1: 
+			{
+				if (j == 0)		// Timer has expired a first time, send a cancel request
+				{
+					print(PRI1, "performAction: i = %d: timer has expired a first time, send a cancel request\n", i);
+
+					// Prepare the STOP request
+					std::string str1 = "STOP\n";
+
+					// Writing
+					print(PRI1, "performAction: async_operation sw2 = start_writing(...);\n");
+					async_operation sw2 = start_writing(str1.c_str(), str1.length() + 1);
+					print(PRI1, "performAction: co_await sw2;\n");
+					co_await sw2;
+
+					print(PRI1, "performAction: st = start_timer(500);\n");
+					st = start_timer(client_timer, 500);
+				}
+				else
+				{
+					print(PRI1, "performAction: i = %d: timer has expired a second time, do nothing\n", i);
+				}
+			}
+			break;
+			default:
+				print(PRI1, "performAction: i = %d: should not occur\n", i);
+			}
 		}
 
 		print(PRI1, "performAction: co_return 0;\n");
@@ -161,9 +165,9 @@ public:
 			}
 
 			// The server waits 1000 ms before sending the response.
-			// Alternating, wait 2000 ms or only 200 ms.
+			// Alternating, wait 2000 ms or only 1000 ms.
 			print(PRI1, "mainflow: async_task<int> pA = performAction(...);\n");
-			async_task<int> pA = performAction((i % 2) ? 2000 : 200);
+			async_task<int> pA = performAction((i % 2) ? 2000 : 1000);
 			print(PRI1, "mainflow: co_await pA;\n");
 			co_await pA;
 			
