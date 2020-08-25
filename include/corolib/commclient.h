@@ -86,7 +86,7 @@ namespace corolib
 				{
 					(void)result_endpoint;
 
-					print(PRI2, "%p: CommClient::handle_connect(): entry\n", this);
+					print(PRI2, "%p: CommClient::handle_connect(): idx = %d, entry\n", this, idx);
 					async_operation* om_async_operation = m_async_operations[idx];
 
 					if (m_stopped)
@@ -97,7 +97,7 @@ namespace corolib
 					// the timeout handler must have run first.
 					if (!m_socket.is_open())
 					{
-						print(PRI2, "%p: CommClient::handle_connect(): Connect timed out\n", this);
+						print(PRI2, "%p: CommClient::handle_connect(): idx = %d, Connect timed out\n", this, idx);
 
 						// Try the next available endpoint.
 						start_connect(idx);
@@ -105,7 +105,7 @@ namespace corolib
 					// Check if the connect operation failed before the deadline expired.
 					else if (error)
 					{
-						print(PRI2, "%p: CommClient::handle_connect(): Connect error: %d\n", this, error);
+						print(PRI2, "%p: CommClient::handle_connect(): idx = %d, Connect error: %d\n", this, idx, error);
 
 						// We need to close the socket used in the previous connection attempt
 						// before starting a new one.
@@ -117,14 +117,21 @@ namespace corolib
 					// Otherwise we have successfully established a connection.
 					else
 					{
-						print(PRI2, "%p: CommClient::handle_connect(): Connection successfully established\n", this);
-						assert(om_async_operation != nullptr);
+						print(PRI2, "%p: CommClient::handle_connect(): idx = %d, Connection successfully established\n", this, idx);
+						
+						print(PRI2, "%p: CommClient::handle_connect(): idx = %d, om_async_operation = %p\n", this, idx, om_async_operation);
+						//assert(om_async_operation != nullptr);
 						if (om_async_operation)
 						{
 							om_async_operation->completed();
 						}
+						else
+						{
+							// This can occur when the async_operation has gone out of scope.
+							print(PRI1, "%p: CommCore::handle_connect(): idx = %d, Error: om_async_operation = %p\n", this, idx, om_async_operation);
+						}
 					}
-					print(PRI2, "%p: CommClient::handle_connect(): exit\n\n", this);
+					print(PRI2, "%p: CommClient::CommClient(): idx = %d, exit\n\n", this, idx);
 				});
 		}
 

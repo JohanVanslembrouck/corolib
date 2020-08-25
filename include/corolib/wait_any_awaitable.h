@@ -71,17 +71,17 @@ namespace corolib
 
 				bool await_ready()
 				{
-					bool ready = false;
+					print(PRI2, "%p: wait_any_awaitable::await_ready()\n", this);
 					for (int i = 0; i < m_sync.m_size; i++)
 					{
 						if (m_sync.m_wait_any[i].get_completed())
 						{
-							ready = true;
-							break;
+							print(PRI2, "%p: wait_any_awaitable::await_ready(): return true for i = %d;\n", this, i);
+							return true;
 						}
 					}
-					print(PRI2, "%p: wait_any_awaitable::await_ready(): return %d;\n", this, ready);
-					return ready;
+					print(PRI2, "%p: wait_any_awaitable::await_ready(): return false;\n", this);
+					return false;
 				}
 
 				void await_suspend(std::experimental::coroutine_handle<> awaiting)
@@ -99,12 +99,14 @@ namespace corolib
 					print(PRI2, "%p: wait_any_awaitable::await_resume()\n", this);
 					for (int i = 0; i < m_sync.m_size; i++)
 					{
-						if (m_sync.m_wait_any[i].get_completed())
+						if (m_sync.m_wait_any[i].get_and_reset_completed())
 						{
+							print(PRI2, "%p: wait_any_awaitable::await_resume(): return i = %d\n", i);
 							return i;
 						}
 					}
-					// Error, none has completed, yet the coroutine has been resumed.
+					
+					print(PRI1, "%p: wait_any_awaitable::await_resume(): Error, none has completed, yet the coroutine has been resumed\n", this);
 					return -1;
 				}
 			private:

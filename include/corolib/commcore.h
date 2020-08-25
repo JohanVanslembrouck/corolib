@@ -75,7 +75,7 @@ namespace corolib
 
 		async_operation start_timer(steady_timer& timer, int ms)
 		{
-			print(PRI1, "%p: CommCore::start_timer(timer, %d)\n", this, ms);
+			print(PRI2, "%p: CommCore::start_timer(timer, %d)\n", this, ms);
 			index = (index + 1) & (NROPERATIONS - 1);
 			assert(m_async_operations[index] == nullptr);
 			async_operation ret{ this, index };
@@ -105,29 +105,35 @@ namespace corolib
 				{
 					(void)result_n;
 
-					print(PRI2, "%p: CommCore::handle_write(): entry\n", this);
+					print(PRI2, "%p: CommCore::handle_write(): idx = %d, entry\n", this, idx);
 					async_operation* om_async_operation = m_async_operations[idx];
 
 					if (m_stopped)
 					{
-						print(PRI2, "%p: CommCore::handle_write(): stopped\n");
+						print(PRI2, "%p: CommCore::handle_write(): idx = %d, stopped\n", idx);
 						return;
 					}
 
 					if (!error)
 					{
-						assert(om_async_operation != nullptr);
+						print(PRI2, "%p: CommCore::handle_write(): idx = %d, om_async_operation = %p\n", this, idx, om_async_operation);
+						//assert(om_async_operation != nullptr);
 						if (om_async_operation)
 						{
 							om_async_operation->completed();
 						}
+						else
+						{
+							// This can occur when the async_operation has gone out of scope.
+							print(PRI1, "%p: CommCore::handle_write(): idx = %d, Error: om_async_operation = %p\n", this, idx, om_async_operation);
+						}
 					}
 					else
 					{
-						print(PRI1, "%p: CommCore::handle_write(): Error on write: %s\n", this, error.message().c_str());
+						print(PRI1, "%p: CommCore::handle_write(): idx = %d, Error on write: %s\n", this, idx, error.message().c_str());
 						stop();
 					}
-					print(PRI2, "%p: CommCore::handle_write(): exit\n\n", this);
+					print(PRI2, "%p: CommCore::handle_write(): idx = %d, exit\n\n", this, idx);
 				});
 		}
 
@@ -147,40 +153,46 @@ namespace corolib
 				[this, idx](const boost::system::error_code& error,
 					std::size_t bytes)
 				{
-					print(PRI2, "%p: CommCore::handle_read(): entry\n", this);
+					print(PRI2, "%p: CommCore::handle_read(): idx = %d, entry\n", this, idx);
 					async_operation* om_async_operation = m_async_operations[idx];
 					async_operation_t<std::string>* om_async_operation_t =
 						dynamic_cast<async_operation_t<std::string>*>(om_async_operation);
 
 					if (m_stopped)
 					{
-						print(PRI2, "%p: CommCore::handle_read(): stopped\n", this);
+						print(PRI2, "%p: CommCore::handle_read(): idx = %d, stopped\n", this, idx);
 						return;
 					}
 
 					if (!error)
 					{
-						print(PRI3, "%p: CommCore::handle_read(): bytes = %d, m_input_buffer = %s\n", this, bytes, m_input_buffer.c_str());
+						print(PRI3, "%p: CommCore::handle_read(): idx = %d, bytes = %d, m_input_buffer = %s\n", this, idx, bytes, m_input_buffer.c_str());
 						m_bytes = bytes;
 
 						// Copy from m_input_buffer to m_read_buffer is not absolutely necessary.
 						m_read_buffer = m_input_buffer;
 
-						print(PRI3, "%p: CommCore::handle_read(): m_bytes = %d, m_read_buffer = %s\n", this, m_bytes, m_read_buffer.c_str());
+						print(PRI3, "%p: CommCore::handle_read(): idx = %d, m_bytes = %d, m_read_buffer = %s\n", this, idx, m_bytes, m_read_buffer.c_str());
 
-						assert(om_async_operation_t != nullptr);
+						print(PRI2, "%p: CommCore::handle_read(): idx = %d, om_async_operation_t = %p\n", this, idx, om_async_operation_t);
+						//assert(om_async_operation_t != nullptr);
 						if (om_async_operation_t)
 						{
 							om_async_operation_t->set_result(m_read_buffer);
 							om_async_operation_t->completed();
 						}
+						else
+						{
+							// This can occur when the async_operation has gone out of scope.
+							print(PRI1, "%p: CommCore::handle_read(): idx = %d, Error: om_async_operation_t = %p\n", this, idx, om_async_operation_t);
+						}
 					}
 					else
 					{
-						print(PRI1, "%p: CommCore::handle_read(): Error on receive: %s\n", this, error.message().c_str());
+						print(PRI1, "%p: CommCore::handle_read(): idx = %d, Error on read: %s\n", this, idx, error.message().c_str());
 						//stop();
 					}
-					print(PRI2, "%p: CommCore::handle_read(): exit\n\n", this);
+					print(PRI2, "%p: CommCore::handle_read(): idx = %d, exit\n\n", this, idx);
 				});
 		}
 
@@ -189,28 +201,39 @@ namespace corolib
 			print(PRI2, "%p: CommCore::start_tmr()\n", this);
 
 			tmr.expires_after(std::chrono::milliseconds(ms));
+
 			tmr.async_wait(
 				[this, idx](const boost::system::error_code& error)
 				{
-					print(PRI2, "%p: CommCore::handle_timer()\n", this);
+					print(PRI2, "%p: CommCore::handle_timer(): idx = %d, entry\n", this, idx);
 					async_operation* om_async_operation = m_async_operations[idx];
 
 					if (m_stopped)
 					{
-						print(PRI2, "%p: CommCore::handle_timer(): stopped\n");
+						print(PRI2, "%p: CommCore::handle_timer(): idx = %d, stopped\n", idx);
 						return;
 					}
 
 					if (!error)
 					{
-						print(PRI2, "%p: CommCore::handle_timer(): om_async_operation = %p\n", this, om_async_operation);
-						assert(om_async_operation != nullptr);
+						print(PRI2, "%p: CommCore::handle_timer(): idx = %d, om_async_operation = %p\n", this, idx, om_async_operation);
+						//assert(om_async_operation != nullptr);
 						if (om_async_operation)
 						{
 							om_async_operation->completed();
 						}
+						else
+						{
+							// This can occur when the async_operation has gone out of scope.
+							print(PRI1, "%p: CommCore::handle_timer(): idx = %d, Error: om_async_operation = %p\n", this, idx, om_async_operation);
+						}
 					}
-					print(PRI2, "%p: CommCore::handle_timer(): exit\n\n", this);
+					else
+					{
+						//print(PRI1, "%p: CommCore::handle_timer(): idx = %d, Error on timer: %s\n", this, idx, error.message().c_str());
+						//stop();
+					}
+					print(PRI2, "%p: CommCore::handle_timer(): idx = %d, exit\n\n", this, idx);
 				});
 		}
 

@@ -32,7 +32,7 @@ namespace corolib
 			, m_acceptor{ m_IoContext, {boost::asio::ip::tcp::v4(), CommService} }
 			, m_stop{ false }
 		{
-			print(PRI2, "CommServer::CommServer(...)\n");
+			print(PRI2, "%p: CommServer::CommServer(...)\n", this);
 		}
 
 		async_operation start_accepting(spCommCore commRWT)
@@ -48,20 +48,20 @@ namespace corolib
 	public:
 		void stop()
 		{
-			print(PRI2, "CommServer::stop()\n");
+			print(PRI2, "%p: CommServer::stop()\n", this);
 			m_stop = true;
 			m_acceptor.cancel();
 		}
 
 		void start_accept(spCommCore commRWT, int idx)
 		{
-			print(PRI2, "CommServer::start_accept()\n");
+			print(PRI2, "%p: CommServer::start_accept()\n", this);
 
 			m_acceptor.async_accept(
 				commRWT->m_socket,
 				[this, idx](const boost::system::error_code& ec)
 				{
-					print(PRI2, "CommServer::acceptHandler(): entry: idx = %d\n", idx);
+					print(PRI2, "%p; CommServer::acceptHandler(): idx = %d, entry\n", this, idx);
 					async_operation* om_async_operation = m_async_operations[idx];
 
 					if (m_stop)
@@ -70,20 +70,25 @@ namespace corolib
 					}
 					if (ec)
 					{
-						print(PRI2, "CommServer::acceptHandler(...): accept failed: %s\n", ec.message().c_str());
+						print(PRI2, "%p: CommServer::acceptHandler(...): idx = %d, accept failed: %s\n", this, idx, ec.message().c_str());
 					}
 					else
 					{
-						print(PRI2, "CommServer::acceptHandler(...): om_async_operation = %p\n", om_async_operation);
-						assert(om_async_operation != nullptr);
+						print(PRI2, "%p: CommServer::acceptHandler(...): idx = %d, om_async_operation = %p\n", this, idx, om_async_operation);
+						//assert(om_async_operation != nullptr);
 						if (om_async_operation)
 						{
-							print(PRI2, "CommServer::acceptHandler(...): before om_async_operation->completed();\n");
+							print(PRI2, "%p: CommServer::acceptHandler(...): idx = %d, before om_async_operation->completed();\n", this, idx);
 							om_async_operation->completed();
-							print(PRI2, "CommServer::acceptHandler(...): after om_async_operation->completed();\n");
+							print(PRI2, "%p: CommServer::acceptHandler(...): idx = %d, after om_async_operation->completed();\n", this, idx);
+						}
+						else
+						{
+							// This can occur when the async_operation has gone out of scope.
+							print(PRI1, "%p: CommServer::acceptHandler(): idx = %d, Error: om_async_operation = %p\n", this, idx, om_async_operation);
 						}
 					}
-					print(PRI2, "CommServer::acceptHandler(): exit\n\n");
+					print(PRI2, "%p: CommServer::acceptHandler(): idx = %d, exit\n\n", this, idx);
 				}
 			);
 		}

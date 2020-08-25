@@ -41,7 +41,7 @@ namespace corolib
 				}
 				else
 				{
-					print(PRI2, "%p: async_operation::async_operation(): m_service->m_async_operations[%d] WRONGLY INITIALIZED!!!\n", this, m_index);
+					print(PRI1, "%p: async_operation::async_operation(): m_service->m_async_operations[%d] WRONGLY INITIALIZED!!!\n", this, m_index);
 				}
 			}
 		}
@@ -68,7 +68,7 @@ namespace corolib
 			, m_ctr(s.m_ctr)
 			, m_waitany(s.m_waitany)
 		{
-			print(PRI2, "%p: async_operation::async_operation(async_operation&& s)\n", this);
+			print(PRI2, "%p: async_operation::async_operation(async_operation&& s): s.m_index = %d\n", this, s.m_index);
 
 			// Tell the CommService we are at another address after the move.
 			m_service->m_async_operations[m_index] = this;
@@ -85,7 +85,7 @@ namespace corolib
 
 		async_operation& operator = (async_operation&& s)
 		{
-			print(PRI2, "%p: async_operation::async_operation = (async_operation&& s)\n", this);
+			print(PRI2, "%p: async_operation::async_operation = (async_operation&& s): m_index = %d, s.m_index = %d\n", this, m_index, s.m_index);
 
 			m_service = s.m_service;
 			m_awaiting = s.m_awaiting;
