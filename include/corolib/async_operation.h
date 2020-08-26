@@ -87,6 +87,10 @@ namespace corolib
 		{
 			print(PRI2, "%p: async_operation::async_operation = (async_operation&& s): m_index = %d, s.m_index = %d\n", this, m_index, s.m_index);
 
+			// Clean our entry at the original location, because we will more to another one.
+			if (m_service)
+				m_service->m_async_operations[m_index] = nullptr;
+
 			m_service = s.m_service;
 			m_awaiting = s.m_awaiting;
 			m_ready = s.m_ready;
@@ -95,7 +99,8 @@ namespace corolib
 			m_waitany = s.m_waitany;
 
 			// Tell the CommService we are at another address after the move.
-			m_service->m_async_operations[m_index] = this;
+			if (m_service)
+				m_service->m_async_operations[m_index] = this;
 
 			s.m_service = nullptr;
 			s.m_awaiting = nullptr;

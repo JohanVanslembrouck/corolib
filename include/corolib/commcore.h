@@ -55,8 +55,8 @@ namespace corolib
 
 		async_operation start_writing(const char* str, int size)
 		{
-			print(PRI2, "%p: CommCore::start_writing()\n", this);
 			index = (index + 1) & (NROPERATIONS - 1);
+			print(PRI2, "%p: CommCore::start_writing(): index = %d\n", this, index);
 			assert(m_async_operations[index] == nullptr);
 			async_operation ret{ this, index };
 			start_write(index, str, size);
@@ -65,8 +65,8 @@ namespace corolib
 
 		async_operation_t<std::string> start_reading(const char ch = '\n')
 		{
-			print(PRI2, "%p: CommCore::start_reading()\n", this);
 			index = (index + 1) & (NROPERATIONS - 1);
+			print(PRI2, "%p: CommCore::start_reading(): index = %d\n", this, index);
 			assert(m_async_operations[index] == nullptr);
 			async_operation_t<std::string> ret{ this, index };
 			start_read(index, ch);
@@ -75,11 +75,20 @@ namespace corolib
 
 		async_operation start_timer(steady_timer& timer, int ms)
 		{
-			print(PRI2, "%p: CommCore::start_timer(timer, %d)\n", this, ms);
 			index = (index + 1) & (NROPERATIONS - 1);
+			print(PRI2, "%p: CommCore::start_timer(timer, %d): index = %d\n", this, ms, index);
 			assert(m_async_operations[index] == nullptr);
 			async_operation ret{ this, index };
 			start_tmr(index, timer, ms);
+			return ret;
+		}
+
+		async_operation start_dummy()
+		{
+			index = (index + 1) & (NROPERATIONS - 1);
+			print(PRI2, "%p: CommCore::start_dummy(): index = %d\n", this, index);
+			assert(m_async_operations[index] == nullptr);
+			async_operation ret{ this, index };
 			return ret;
 		}
 
@@ -95,7 +104,11 @@ namespace corolib
 		void start_write(const int idx, const char* str, int size)
 		{
 			print(PRI2, "%p: CommCore::start_write()\n", this);
-			if (m_stopped) return;
+			if (m_stopped)
+			{
+				print(PRI2, "%p: CommCore::start_write(): idx = %d, stopped\n", idx);
+				return;
+			}
 
 			boost::asio::async_write(
 				m_socket,
@@ -125,7 +138,7 @@ namespace corolib
 						else
 						{
 							// This can occur when the async_operation has gone out of scope.
-							print(PRI1, "%p: CommCore::handle_write(): idx = %d, Error: om_async_operation = %p\n", this, idx, om_async_operation);
+							print(PRI1, "%p: CommCore::handle_write(): idx = %d, Warning: om_async_operation == nullptr\n", this, idx);
 						}
 					}
 					else
@@ -184,7 +197,7 @@ namespace corolib
 						else
 						{
 							// This can occur when the async_operation has gone out of scope.
-							print(PRI1, "%p: CommCore::handle_read(): idx = %d, Error: om_async_operation_t = %p\n", this, idx, om_async_operation_t);
+							print(PRI1, "%p: CommCore::handle_read(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
 						}
 					}
 					else
@@ -225,7 +238,7 @@ namespace corolib
 						else
 						{
 							// This can occur when the async_operation has gone out of scope.
-							print(PRI1, "%p: CommCore::handle_timer(): idx = %d, Error: om_async_operation = %p\n", this, idx, om_async_operation);
+							print(PRI1, "%p: CommCore::handle_timer(): idx = %d, Warning: om_async_operation == nullptr\n", this, idx);
 						}
 					}
 					else

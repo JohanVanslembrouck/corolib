@@ -8,6 +8,8 @@
 #ifndef _WAIT_ANY_AWAITABLE_
 #define _WAIT_ANY_AWAITABLE_
 
+#include <vector>
+
 #include "print.h"
 #include "wait_any.h"
 #include "async_operation.h"
@@ -18,25 +20,25 @@ namespace corolib
 	struct wait_any_awaitable
 	{
 		wait_any_awaitable(std::initializer_list<TYPE*> aws)
-			: m_size(aws.size())
 		{
 			print(PRI2, "%p: wait_any_awaitable::wait_any_awaitable(std::initializer_list<TYPE*> aws)\n", this);
-			m_wait_any = new wait_any[m_size];
 			int i = 0;
 			for (TYPE* a : aws)
 			{
-				a->setWaitAny(&m_wait_any[i++]);	// defined in async_operation
+				wait_any* q = new wait_any();
+				m_wait_any.push_back(q);
+				a->setWaitAny(q);				// defined in async_operation
 			}
 		}
 
 		wait_any_awaitable(TYPE* aws, int size)
-			: m_size(size)
 		{
 			print(PRI2, "%p: wait_any_awaitable::wait_any_awaitable(TYPE* aws, int size)\n", this);
-			m_wait_any = new wait_any[m_size];
 			for (int i = 0; i < size; i++)
 			{
-				aws[i].setWaitAny(&m_wait_any[i]);	// defined in async_operation
+				wait_any* q = new wait_any();
+				m_wait_any.push_back(q);
+				aws[i].setWaitAny(q);			// defined in async_operation
 			}
 		}
 
@@ -50,7 +52,8 @@ namespace corolib
 		~wait_any_awaitable()
 		{
 			print(PRI2, "%p: wait_any_awaitable::~wait_any_awaitable()\n", this);
-			delete[] m_wait_any;
+			for (int i = 0; i < m_wait_any.size(); i++)
+				delete m_wait_any[i];
 		}
 
 		wait_any_awaitable& operator = (const wait_any_awaitable&) = delete;
@@ -72,9 +75,9 @@ namespace corolib
 				bool await_ready()
 				{
 					print(PRI2, "%p: wait_any_awaitable::await_ready()\n", this);
-					for (int i = 0; i < m_sync.m_size; i++)
+					for (int i = 0; i < m_sync.m_wait_any.size(); i++)
 					{
-						if (m_sync.m_wait_any[i].get_completed())
+						if (m_sync.m_wait_any[i]->get_completed())
 						{
 							print(PRI2, "%p: wait_any_awaitable::await_ready(): return true for i = %d;\n", this, i);
 							return true;
@@ -87,9 +90,9 @@ namespace corolib
 				void await_suspend(std::experimental::coroutine_handle<> awaiting)
 				{
 					print(PRI2, "%p: wait_any_awaitable::await_suspend(...)\n", this);
-					for (int i = 0; i < m_sync.m_size; i++)
+					for (auto el : m_sync.m_wait_any)
 					{
-						m_sync.m_wait_any[i].set_awaiting(awaiting);
+						el->set_awaiting(awaiting);
 					}
 				}
 
@@ -97,9 +100,9 @@ namespace corolib
 				{
 					// Find out which one has completed
 					print(PRI2, "%p: wait_any_awaitable::await_resume()\n", this);
-					for (int i = 0; i < m_sync.m_size; i++)
+					for (int i = 0; i < m_sync.m_wait_any.size(); i++)
 					{
-						if (m_sync.m_wait_any[i].get_and_reset_completed())
+						if (m_sync.m_wait_any[i]->get_and_reset_completed())
 						{
 							print(PRI2, "%p: wait_any_awaitable::await_resume(): return i = %d\n", i);
 							return i;
@@ -117,8 +120,7 @@ namespace corolib
 		}
 
 	private:
-		size_t m_size;
-		wait_any* m_wait_any;
+		std::vector<wait_any*> m_wait_any;
 	};
 }
 
