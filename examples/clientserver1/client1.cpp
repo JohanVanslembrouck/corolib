@@ -16,7 +16,7 @@
 
 using namespace corolib;
 
-extern const int corolib::priority = 0x0F;
+extern const int corolib::priority = 0x01;
 
 boost::asio::io_context ioContext;
 
@@ -38,6 +38,8 @@ public:
 
 		for (int i = 0; i < 40; i++)
 		{
+			print(PRI1, "mainflow: %d ------------------------------------------------------------------\n", i);
+
 			// Connecting
 			print(PRI1, "mainflow: async_operation sc = start_connecting();\n");
 			async_operation sc = start_connecting();
@@ -47,8 +49,9 @@ public:
 			if (i == 0)
 			{
 				// Introduce a delay of 3 seconds to allow multiple client1 applications to be started and run in parallel.
-				print(PRI1, "thread1: std::this_thread::sleep_for(std::chrono::milliseconds(3000));\n");
-				std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+				steady_timer client_timer(ioContext);
+				print(PRI1, "mainflow: co_await start_timer(3000);\n");
+				co_await start_timer(client_timer, 3000);
 			}
 
 			std::string str1 = "This is string ";
@@ -95,8 +98,9 @@ int main()
 	print(PRI1, "main: async_task<int> si = mainflow(c1);\n");
 	async_task<int> si = c1.mainflow();
 
-	print(PRI1, "main: ioContext.run();\n");
+	print(PRI1, "main: before ioContext.run();\n");
 	ioContext.run();
+	print(PRI1, "main: after ioContext.run();\n");
 
 	print(PRI1, "main: std::this_thread::sleep_for(std::chrono::seconds(1))\n");
 	std::this_thread::sleep_for(std::chrono::seconds(1));

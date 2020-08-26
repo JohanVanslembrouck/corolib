@@ -21,7 +21,7 @@
 
 using namespace corolib;
 
-extern const int corolib::priority = 0x0F;
+extern const int corolib::priority = 0x01;
 
 class ServerApp : public CommServer
 {
@@ -75,7 +75,7 @@ public:
 		int counter = 0;
 		while (1)
 		{
-			print(PRI3, "mainflow: %d -------------------------------------------------\n", counter++);
+			print(PRI3, "mainflow: %d ------------------------------------------------------------------\n", counter++);
 			spCommCore commCore = std::make_shared<CommCore>(m_IoContext);
 
 			// Accepting

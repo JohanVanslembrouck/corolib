@@ -90,7 +90,7 @@ public:
 
 		// Timing
 		steady_timer client_timer(ioContext);
-		print(PRI1, "performAction: async_operation st = start_timer(timeout);\n");
+		print(PRI1, "performAction: async_operation st = start_timer(client_timer, timeout);\n");
 		async_operation st = start_timer(client_timer, timeout);
 
 		print(PRI1, "performAction: wait_all_awaitable<async_operation> war( { &sr, &st } ) ;\n");
@@ -144,10 +144,11 @@ public:
 		print(PRI1, "mainflow: begin\n");
 		int counter = 0;
 
-		for (int i = 0; i < 20; i++)
+		for (int i = 0; i < 100; i++)
 		{
+			print(PRI1, "mainflow: %d ------------------------------------------------------------------\n", i);
+
 			// Connecting
-			print(PRI1, "mainflow: ------------------------------------------------------------------\n");
 			print(PRI1, "mainflow: async_operation sc = start_connecting();\n");
 			async_operation sc = start_connecting();
 			print(PRI1, "mainflow: co_await sc;\n");
@@ -156,8 +157,9 @@ public:
 			if (i == 0)
 			{
 				// Introduce a delay of 3 seconds to allow multiple client1 applications to be started and run in parallel.
-				print(PRI1, "thread1: std::this_thread::sleep_for(std::chrono::milliseconds(3000));\n");
-				std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+				steady_timer client_timer(ioContext);
+				print(PRI1, "mainflow: co_await start_timer(3000);\n");
+				co_await start_timer(client_timer, 3000);
 			}
 
 			// The server waits 1000 ms before sending the response.
@@ -166,13 +168,16 @@ public:
 			async_task<int> pA = performAction((i % 2) ? 2000 : 200);
 			print(PRI1, "mainflow: co_await pA;\n");
 			co_await pA;
-			
+
+			// Wait some time between iterations: timer has to be called before calling stop().
+			// Timing
+			steady_timer client_timer(ioContext);
+			print(PRI1, "mainflow: co_await start_timer(100);\n");
+			co_await start_timer(client_timer, 100);
+
 			// Closing
 			print(PRI1, "mainflow: stop();\n");
 			stop();
-
-			print(PRI1, "mainflow: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 		}
 
 		print(PRI1, "mainflow: co_return 0;\n");

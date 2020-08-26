@@ -128,8 +128,10 @@ public:
 		print(PRI1, "mainflow: begin\n");
 		int counter = 0;
 
-		for (int i = 0; i < 20; i++)
+		for (int i = 0; i < 100; i++)
 		{
+			print(PRI1, "mainflow: %d ------------------------------------------------------------------\n", i);
+
 			// Connecting
 			print(PRI1, "mainflow: async_operation sc = start_connecting();\n");
 			async_operation sc = start_connecting();
@@ -139,8 +141,9 @@ public:
 			if (i == 0)
 			{
 				// Introduce a delay of 3 seconds to allow multiple client1 applications to be started and run in parallel.
-				print(PRI1, "thread1: std::this_thread::sleep_for(std::chrono::milliseconds(3000));\n");
-				std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+				steady_timer client_timer(ioContext);
+				print(PRI1, "mainflow: co_await start_timer(3000);\n");
+				co_await start_timer(client_timer, 3000);
 			}
 
 			print(PRI1, "mainflow: async_task<Resp1> res1 = operation1(Req1{})\n");

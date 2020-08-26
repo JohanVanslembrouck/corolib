@@ -121,7 +121,7 @@ public:
 		int counter = 0;
 		while (1)
 		{
-			print(PRI3, "mainflow: %d -------------------------------------------------\n", counter++);
+			print(PRI1, "mainflow: %d ------------------------------------------------------------------\n", counter++);
 			spCommCore commCore = std::make_shared<CommCore>(m_IoContext);
 
 			// Accepting

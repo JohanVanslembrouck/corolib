@@ -18,15 +18,17 @@
 
 using namespace corolib;
 
-const int corolib::priority = 0x0F;
+const int corolib::priority = 0x01;
 
 async_task<int> mainflowWA0(CommClient& c1, CommClient& c2, CommClient& c3)
 {
 	print(PRI1, "mainflowWA0: begin\n");
 
 	int counter = 0;
-	for (int i = 0; i < 30; i++)
+	for (int i = 0; i < 40; i++)
 	{
+		print(PRI1, "mainflowWA0: %d ------------------------------------------------------------------\n", i);
+
 		// Connecting
 		print(PRI1, "mainflowWA0: async_operation sc1 = c1.start_connecting();\n");
 		async_operation sc1 = c1.start_connecting();
@@ -108,8 +110,10 @@ async_task<int> mainflowWA1(std::initializer_list<CommClient*> clients)
 	std::string str[nrClients];
 
 	int counter = 0;
-	for (int i = 0; i < 30; i++)
+	for (int i = 0; i < 40; i++)
 	{
+		print(PRI1, "mainflowWA1: %d ------------------------------------------------------------------\n", i);
+
 		int j;
 
 		// Connecting
@@ -171,8 +175,10 @@ async_task<int> mainflowWA2(std::initializer_list<CommClient*> clients)
 	const int nrClients = 3; // clients.size();
 	
 	int counter = 0;
-	for (int i = 0; i < 30; i++)
+	for (int i = 0; i < 40; i++)
 	{
+		print(PRI1, "mainflowWA2: %d ------------------------------------------------------------------\n", i);
+
 		async_operation asyncsc[nrClients];
 		async_operation asyncsw[nrClients];
 		async_operation_t<std::string> asyncsr[3];
@@ -248,8 +254,10 @@ int main(int argc, char* argv[])
 	int selected = 0;
 	if (argc == 2)
 		selected = atoi(argv[1]);
-	if (selected < 0 || selected > 2)
-		selected = 0;
+	if (selected < 0 || selected > 2) {
+		print(PRI1, "main: selection must be in the range [0..2]\n");
+		return 0;
+	}
 
 	switch (selected) {
 	case 0:
@@ -272,8 +280,9 @@ int main(int argc, char* argv[])
 	break;
 	}
 
-	print(PRI1, "main: ioContext.run();\n");
+	print(PRI1, "main: before ioContext.run();\n");
 	ioContext.run();
+	print(PRI1, "main: after ioContext.run();\n");
 
     print(PRI1, "main: return 0;\n");
 	return 0;
