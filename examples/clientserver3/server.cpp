@@ -177,11 +177,11 @@ public:
 	
 	void dispatch(std::string str)
 	{
-		//print(PRI1, "ServerApp::dispatch(<%s>), m_index = %d\n", str.c_str(), m_index);
+		print(PRI2, "ServerApp::dispatch(<%s>), m_index = %d\n", str.c_str(), m_index);
 		
 		for (int i = 0; i < m_index; i++)
 		{
-			//print(PRI1, "ServerApp::dispatch(): m_dispatch_table[%d].str = <%s>\n", i, m_dispatch_table[i].str.c_str());
+			print(PRI2, "ServerApp::dispatch(): m_dispatch_table[%d].str = <%s>\n", i, m_dispatch_table[i].str.c_str());
 			
 			// Should only check the identification part of the string
 			//if (m_dispatch_table[i].str.compare(str) == 0)
@@ -207,12 +207,18 @@ public:
 			print(PRI1, "mainflow_one_client: std::string str = co_await sr;\n");
 			std::string str = co_await sr;
 			
+			if (str.compare("EOF") == 0)
+				break;
+
 			print(PRI1, "mainflow_one_client: dispatcher.dispatch(sr);\n");
 			// In reality, str will contain the identification and the marshalled arguments
 			dispatch(str);
 		}
 		
-		print(PRI1, "mainflow_one_client: co_return\n");
+		print(PRI1, "mainflow_one_client: commClient->stop();\n");
+		commClient->stop();
+
+		print(PRI1, "mainflow_one_client: co_return;\n");
 		co_return;
 	}
 	

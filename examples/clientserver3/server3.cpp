@@ -30,10 +30,36 @@ class ServerApp : public CommServer
 public:
 	ServerApp(
 		boost::asio::io_context& ioContext,
-		unsigned short CommService) 
-		: CommServer(ioContext, CommService)
+		unsigned short CommService) :
+		CommServer(ioContext, CommService)
 	{
 		print(PRI1, "ServerApp::ServerApp(...)\n");
+	}
+	
+	async_task<int> read_client_request(spCommCore commClient, Dispatcher& dispatcher)
+	{
+		print(PRI1, "read_client_request: entry\n");
+		while (1)
+		{
+			// Reading
+			print(PRI1, "read_client_request: async_operation sr = commClient->start_reading();\n");
+			async_operation_t<std::string> sr = commClient->start_reading();
+			print(PRI1, "read_client_request: std::string str = co_await sr;\n");
+			std::string str = co_await sr;
+			
+			if (str.compare("EOF") == 0)
+				break;
+
+			print(PRI1, "read_client_request: dispatcher.dispatch(sr);\n");
+			// In reality, str will contain the identification and the marshalled arguments
+			dispatcher.dispatch(str);
+		}
+
+		print(PRI1, "read_client_request: commClient->stop();\n");
+		commClient->stop();
+
+		print(PRI1, "read_client_request: co_return;\n");
+		co_return;
 	}
 	
 	oneway_task mainflow_one_client(spCommCore commClient)
@@ -79,24 +105,8 @@ public:
 				(void)serverRequest.operation4(req4);
 			});
 		
-		while (1)
-		{
-			// Reading
-			print(PRI1, "mainflow_one_client: async_operation sr = commClient->start_reading();\n");
-			async_operation_t<std::string> sr = commClient->start_reading();
-			print(PRI1, "mainflow_one_client: std::string str = co_await sr;\n");
-			std::string str = co_await sr;
-
-			if (str.compare("EOF") == 0)
-				break;
-
-			print(PRI1, "mainflow_one_client: dispatcher.dispatch(sr);\n");
-			// In reality, str will contain the identification and the marshalled arguments
-			dispatcher.dispatch(str);
-		}
-
-		print(PRI1, "mainflow_one_client: commClient->stop();\n");
-		commClient->stop();
+		print(PRI1, "mainflow_one_client: co_await read_client_request(commClient, dispatcher);\n");
+		co_await read_client_request(commClient, dispatcher);
 		
 		print(PRI1, "mainflow_one_client: co_return;\n");
 		co_return;

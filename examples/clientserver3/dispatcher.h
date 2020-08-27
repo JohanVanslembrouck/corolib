@@ -33,7 +33,7 @@ public:
 	
 	void registerFunctor(std::string tx, handleRequest op)
 	{
-		print(PRI1, "Dispatcher::registerFunctor(%s, op)\n", tx);
+		print(PRI1, "Dispatcher::registerFunctor(%s, op)\n", tx.c_str());
 		if (m_index < NROPERATIONS)
 		{
 			m_dispatch_table[m_index].str = tx;

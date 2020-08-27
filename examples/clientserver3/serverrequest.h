@@ -34,7 +34,7 @@ public:
 		
 		// Delaying
 		steady_timer client_timer(m_ioContext);
-		print(PRI1, "operation1: async_operation st = start_timer(100);\n");
+		print(PRI1, "operation1: async_operation st = m_commClient->start_timer(100);\n");
 		async_operation st = m_commClient->start_timer(client_timer, 100);
 		print(PRI1, "operation1: co_await st;\n");
 		co_await st;
@@ -55,7 +55,7 @@ public:
 		
 		// Delaying
 		steady_timer client_timer(m_ioContext);
-		print(PRI1, "operation2: async_operation st = start_timer(200);\n");
+		print(PRI1, "operation2: async_operation st = m_commClient->start_timer(200);\n");
 		async_operation st = m_commClient->start_timer(client_timer, 200);
 		print(PRI1, "operation2: co_await st;\n");
 		
@@ -76,7 +76,7 @@ public:
 		
 		// Delaying
 		steady_timer client_timer(m_ioContext);
-		print(PRI1, "operation3: async_operation st = start_timer(300);\n");
+		print(PRI1, "operation3: async_operation st = m_commClient->start_timer(300);\n");
 		async_operation st = m_commClient->start_timer(client_timer, 300);
 		print(PRI1, "operation3: co_await st;\n");
 		
@@ -96,7 +96,7 @@ public:
 
 		// Delaying
 		steady_timer client_timer(m_ioContext);
-		print(PRI1, "operation4: async_operation st = start_timer(400);\n");
+		print(PRI1, "operation4: async_operation st = m_commClient->start_timer(400);\n");
 		async_operation st = m_commClient->start_timer(client_timer, 400);
 		print(PRI1, "operation4: co_await st;\n");
 		
