@@ -130,7 +130,6 @@ namespace corolib
 					if (!error)
 					{
 						print(PRI2, "%p: CommCore::handle_write(): idx = %d, om_async_operation = %p\n", this, idx, om_async_operation);
-						//assert(om_async_operation != nullptr);
 						if (om_async_operation)
 						{
 							om_async_operation->completed();
@@ -188,7 +187,6 @@ namespace corolib
 						print(PRI3, "%p: CommCore::handle_read(): idx = %d, m_bytes = %d, m_read_buffer = %s\n", this, idx, m_bytes, m_read_buffer.c_str());
 
 						print(PRI2, "%p: CommCore::handle_read(): idx = %d, om_async_operation_t = %p\n", this, idx, om_async_operation_t);
-						//assert(om_async_operation_t != nullptr);
 						if (om_async_operation_t)
 						{
 							om_async_operation_t->set_result(m_read_buffer);
@@ -203,7 +201,17 @@ namespace corolib
 					else
 					{
 						print(PRI1, "%p: CommCore::handle_read(): idx = %d, Error on read: %s\n", this, idx, error.message().c_str());
-						//stop();
+						// Inform the application level on the error so it can take action.
+						if (om_async_operation_t)
+						{
+							om_async_operation_t->set_result("EOF");
+							om_async_operation_t->completed();
+						}
+						else
+						{
+							// This can occur when the async_operation has gone out of scope.
+							print(PRI1, "%p: CommCore::handle_read(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
+						}
 					}
 					print(PRI2, "%p: CommCore::handle_read(): idx = %d, exit\n\n", this, idx);
 				});
@@ -230,7 +238,6 @@ namespace corolib
 					if (!error)
 					{
 						print(PRI2, "%p: CommCore::handle_timer(): idx = %d, om_async_operation = %p\n", this, idx, om_async_operation);
-						//assert(om_async_operation != nullptr);
 						if (om_async_operation)
 						{
 							om_async_operation->completed();
