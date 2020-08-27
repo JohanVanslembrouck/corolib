@@ -22,6 +22,8 @@ using namespace corolib;
 
 extern const int corolib::priority = 0x01;
 
+int secondtimeout = 200;
+
 boost::asio::io_context ioContext;
 
 class ClientApp : public CommClient
@@ -49,29 +51,6 @@ public:
 		print(PRI1, "acknowledgeAction: co_return 0;\n");
 		co_return 0;
 	}
-
-	async_task<int> cancelAction()
-	{
-		// Prepare the STOP request
-		std::string str1 = "STOP\n";
-
-		// Writing
-		print(PRI1, "cancelAction: async_operation sw = start_writing(...);\n");
-		async_operation sw = start_writing(str1.c_str(), str1.length() + 1);
-		print(PRI1, "cancelAction: co_await sw;\n");
-		co_await sw;
-
-		// Start a timer of 100 ms
-		// Timing
-		steady_timer client_timer(ioContext);
-		print(PRI1, "cancelAction: async_operation st = start_timer(100);\n");
-		async_operation st = start_timer(client_timer, 100);
-		print(PRI1, "cancelAction: co_await st\n");
-		co_await st;
-
-		print(PRI1, "cancelAction: co_return 0;\n");
-		co_return 0;
-	}
 	
 	async_task<int> performAction(int timeout)
 	{
@@ -95,9 +74,11 @@ public:
 
 		print(PRI1, "performAction: wait_all_awaitable<async_operation> war( { &sr, &st } ) ;\n");
 		wait_any_awaitable<async_operation> war( { &sr, &st } );
+
+		bool done = false;
 		print(PRI1, "performAction: int i = co_await war;\n");
 		int i = co_await war;
-
+		
 		switch (i)
 		{
 		case 0:	// Reply has arrived, stop the timer and print the result
@@ -108,6 +89,8 @@ public:
 			client_timer.cancel();
 
 			print(PRI1, "performAction: sr.get_result() = %s\n", sr.get_result().c_str());
+
+			done = true;
 
 			// Send acknowledgement to server
 			print(PRI1, "performAction: async_task<int> ackAction = acknowledgeAction();\n");
@@ -121,18 +104,47 @@ public:
 		{
 			print(PRI1, "performAction: i = %d: timer has expired, send a cancel request\n", i);
 			
-			// Canceling
-			print(PRI1, "performAction: async_task<int> cnclAction = cancelAction();\n");
-			async_task<int> cnclAction = cancelAction();
-			print(PRI1, "performAction: co_await cnclAction;\n");
-			co_await cnclAction;
-			print(PRI1, "performAction: after co_await cnclAction;\n");
+			// Prepare the STOP request
+			std::string str1 = "STOP\n";
 
-			// Stop reading the reply from the server (if possible)
+			// Writing
+			print(PRI1, "performAction: async_operation sw = start_writing(...);\n");
+			async_operation sw = start_writing(str1.c_str(), str1.length() + 1);
+			print(PRI1, "performAction: co_await sw;\n");
+			co_await sw;
+
+			// Start a timer of 500 ms
+			// Timing
+			steady_timer client_timer(ioContext);
+			print(PRI1, "performAction: async_operation st = start_timer(500);\n");
+		    st = start_timer(client_timer, 500);
 		}
 		break;
 		default:
 			print(PRI1, "performAction: i = %d: should not occur\n", i);
+		}
+
+		if (!done)
+		{
+			print(PRI1, "performAction: i = co_await war;\n");
+			i = co_await war;
+
+			switch (i)
+			{
+			case 0:	// Reply has arrived, stop the timer and print the result
+			{
+				print(PRI1, "performAction: answer arrived after STOP was sent\n");
+				print(PRI1, "performAction: sr.get_result() = %s\n", sr.get_result().c_str());
+			}
+			break;
+			case 1: // Timer has expired, send a cancel request
+			{
+				print(PRI1, "performAction: i = %d: timer has expired a second time, do nothing\n", i);
+			}
+			break;
+			default:
+				print(PRI1, "performAction: i = %d: should not occur\n", i);
+			}
 		}
 
 		print(PRI1, "performAction: co_return 0;\n");
@@ -164,8 +176,8 @@ public:
 
 			// The server waits 1000 ms before sending the response.
 			// Alternating, wait 2000 ms or only 200 ms.
-			print(PRI1, "mainflow: async_task<int> pA = performAction(...);\n");
-			async_task<int> pA = performAction((i % 2) ? 2000 : 200);
+			print(PRI1, "mainflow: async_task<int> pA = performAction(%d);\n", (i % 2) ? 2000 : secondtimeout);
+			async_task<int> pA = performAction((i % 2) ? 2000 : secondtimeout);
 			print(PRI1, "mainflow: co_await pA;\n");
 			co_await pA;
 
@@ -185,8 +197,11 @@ public:
 	}
 };
 
-int main()
+int main(int argc, char* argv[])
 {
+	if (argc == 2)
+		secondtimeout = atoi(argv[1]);
+
 	print(PRI1, "main: ClientApp c1(ioContext, ep);\n");
 	ClientApp c1(ioContext, ep);
 

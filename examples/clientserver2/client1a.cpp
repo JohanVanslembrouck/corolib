@@ -22,6 +22,8 @@ using namespace corolib;
 
 extern const int corolib::priority = 0x01;
 
+int secondtimeout = 200;
+
 boost::asio::io_context ioContext;
 
 class ClientApp : public CommClient
@@ -64,7 +66,6 @@ public:
 		// Reading
 		print(PRI1, "performAction: async_operation sr = start_reading();\n");
 		async_operation_t<std::string> sr = start_reading();
-		print(PRI1, "performAction: std::string strout = co_await sr;\n");
 
 		// Timing
 		steady_timer client_timer(ioContext);
@@ -125,6 +126,8 @@ public:
 					print(PRI1, "performAction: co_await sw2;\n");
 					co_await sw2;
 
+					// Start a timer of 500 ms
+					// Timing
 					print(PRI1, "performAction: st = start_timer(500);\n");
 					st = start_timer(client_timer, 500);
 				}
@@ -167,9 +170,8 @@ public:
 			}
 
 			// The server waits 1000 ms before sending the response.
-			// Alternating, wait 2000 ms or only 1000 ms.
-			print(PRI1, "mainflow: async_task<int> pA = performAction(...);\n");
-			async_task<int> pA = performAction((i % 2) ? 2000 : 1000);
+			print(PRI1, "mainflow: async_task<int> pA = performAction(%d);\n", (i % 2) ? 2000 : secondtimeout);
+			async_task<int> pA = performAction((i % 2) ? 2000 : secondtimeout);
 			print(PRI1, "mainflow: co_await pA;\n");
 			co_await pA;
 
@@ -189,8 +191,11 @@ public:
 	}
 };
 
-int main()
+int main(int argc, char* argv[])
 {
+	if (argc == 2)
+		secondtimeout = atoi(argv[1]);
+
 	print(PRI1, "main: ClientApp c1(ioContext, ep);\n");
 	ClientApp c1(ioContext, ep);
 
