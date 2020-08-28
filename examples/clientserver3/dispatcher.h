@@ -44,11 +44,11 @@ public:
 	
 	void dispatch(std::string str)
 	{
-		//print(PRI1, "Dispatcher::dispatch(<%s>), m_index = %d\n", str.c_str(), m_index);
+		print(PRI2, "Dispatcher::dispatch(<%s>), m_index = %d\n", str.c_str(), m_index);
 
 		for(int i = 0; i < m_index; i++)
 		{
-			//print(PRI1, "Dispatcher::dispatch(): m_dispatch_table[%d].str = <%s>\n", i, m_dispatch_table[i].str.c_str());
+			print(PRI2, "Dispatcher::dispatch(): m_dispatch_table[%d].str = <%s>\n", i, m_dispatch_table[i].str.c_str());
 
 			// Should only check the identification part of the string
 			//if (m_dispatch_table[i].str.compare(str) == 0)
