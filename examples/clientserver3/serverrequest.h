@@ -40,7 +40,7 @@ public:
 		co_await st;
 			
 		// Preparing output
-		std::string strout = "Resp1\n";
+		std::string strout = "Resp1:params-go-here\n";
 		
 		// Writing
 		print(PRI1, "operation1: async_operation sw = m_commClient->start_writing(...);\n");
@@ -61,7 +61,7 @@ public:
 		
 		co_await st;
 		// Preparing output
-		std::string strout = "Resp2\n";
+		std::string strout = "Resp2:params-go-here\n";
 
 		// Writing
 		print(PRI1, "operation2: async_operation sw = m_commClient->start_writing(...);\n");
@@ -81,7 +81,7 @@ public:
 		print(PRI1, "operation3: co_await st;\n");
 		
 		// Preparing output
-		std::string strout = "Resp3\n";
+		std::string strout = "Resp3:params-go-here\n";
 
 		// Writing
 		print(PRI1, "operation3: async_operation sw = m_commClient->start_writing(...);\n");
@@ -101,7 +101,7 @@ public:
 		print(PRI1, "operation4: co_await st;\n");
 		
 		// Preparing output
-		std::string strout = "Resp4\n";
+		std::string strout = "Resp4:params-go-here\n";
 
 		// Writing
 		print(PRI1, "operation4: async_operation sw = m_commClient->start_writing(...);\n");

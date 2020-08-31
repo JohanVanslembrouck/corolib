@@ -37,7 +37,7 @@ public:
 
 	async_task<Resp1> operation1(Req1)
 	{
-		std::string str1 = "Req1\n";
+		std::string str1 = "Req1:params-go-here\n";
 		// TODO: Marshall fields of Req1 into string
 		
 		// Writing
@@ -59,7 +59,7 @@ public:
 	
 	async_task<Resp2> operation2(Req2)
 	{
-		std::string str1 = "Req2\n";
+		std::string str1 = "Req2:params-go-here\n";
 		// TODO: Marshall fields of Req2 into string
 
 		// Writing
@@ -81,7 +81,7 @@ public:
 	
 	async_task<Resp3> operation3(Req3)
 	{
-		std::string str1 = "Req3\n";
+		std::string str1 = "Req3:params-go-here\n";
 		// TODO: Marshall fields of Req3 into string
 		
 		// Writing
@@ -103,7 +103,7 @@ public:
 	
 	async_task<Resp4> operation4(Req4)
 	{
-		std::string str1 = "Req4\n";
+		std::string str1 = "Req4:params-go-here\n";
 		// TODO: Marshall fields of Req4 into string
 		
 		// Writing

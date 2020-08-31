@@ -83,79 +83,64 @@ public:
 	{
 		Dispatcher dispatcher;
 		ServerRequest serverRequest(commClient, m_IoContext);
-		
-		async_operation_t<std::string> req1 = dispatcher.registerFunctor(
-			"Req1\n",
+
+		async_operation_t<std::string> reqs[4];
+
+		reqs[0] = dispatcher.registerFunctor(
+			"Req1",
 			[&serverRequest](std::string str)
-			{ 
+			{
 				// TODO: unmarshal str into Req1
 				Req1 req1;
-				(void)serverRequest.operation1(req1); 
+				(void)serverRequest.operation1(req1);
 			});
 
-		async_operation_t<std::string> req2 = dispatcher.registerFunctor(
-			"Req2\n",
+		reqs[1]  = dispatcher.registerFunctor(
+			"Req2",
 			[&serverRequest](std::string str)
 			{
 				// TODO: unmarshal str into Req2
 				Req2 req2;
-				(void)serverRequest.operation2(req2); 
+				(void)serverRequest.operation2(req2);
 			});
 
-		async_operation_t<std::string> req3 = dispatcher.registerFunctor(
-			"Req3\n",
+		reqs[2] = dispatcher.registerFunctor(
+			"Req3",
 			[&serverRequest](std::string str)
 			{
 				// TODO: unmarshal str into Req3
 				Req3 req3;
-				(void)serverRequest.operation3(req3); 
+				(void)serverRequest.operation3(req3);
 			});
-		
-		async_operation_t<std::string> req4 = dispatcher.registerFunctor(
-			"Req4\n",
+
+		reqs[3] = dispatcher.registerFunctor(
+			"Req4",
 			[&serverRequest](std::string str)
 			{
 				// TODO: unmarshal str into Req4
 				Req4 req4;
-				(void)serverRequest.operation4(req4); 
+				(void)serverRequest.operation4(req4);
 			});
 
-		print(PRI1, "main_one_client: wait_any_awaitable<async_operation_t<std::string>> wat( { &req1, &req2, &req3, &req4 } );\n");
-		wait_any_awaitable<async_operation_t<std::string>> wat( { &req1, &req2, &req3, &req4 } );
-		
+		print(PRI1, "main_one_client: wait_any_awaitable<async_operation_t<std::string>> wat(reqs, 4);\n");
+		wait_any_awaitable<async_operation_t<std::string>> wat(reqs, 4);
+
 		bool done = false;
 		print(PRI1, "main_one_client: async_task<int> rcr = read_client_request(commClient, dispatcher);\n");
 		async_task<int> rcr = read_client_request(commClient, dispatcher, done);
-		
+
 		// Notice the while loops in read_client_request and here.
 		while (!done)
 		{
 			print(PRI1, "main_one_client: int i = co_await wat;\n");
 			int i = co_await wat;
-			print(PRI1, "main_one_client: asynchronous operation %d completed\n", i);
-			switch (i) {
-			case 0:
-				print(PRI1, "main_one_client: req1.get_result() = %s\n", req1.get_result().c_str());
-				break;
-			case 1:
-				print(PRI1, "main_one_client: req2.get_result() = %s\n", req2.get_result().c_str());
-				break;
-			case 2:
-				print(PRI1, "main_one_client: req3.get_result() = %s\n", req3.get_result().c_str());
-				break;
-			case 3:
-				print(PRI1, "main_one_client: req4.get_result() = %s\n", req4.get_result().c_str());
-				break;
-			default:
-				print(PRI1, "main_one_client: unexpected value %d\n", i);
-				break;
-			}
+			print(PRI1, "main_one_client: reqs[%d].get_result().c_str().get_result() = %s\n", i, reqs[i].get_result().c_str());
 		}
 
 		print(PRI1, "main_one_client: int i = co_await rcr;\n");
 		int i = co_await rcr;
 	}
-	
+
 	/**
 	 *
 	 *

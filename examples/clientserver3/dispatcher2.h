@@ -58,15 +58,26 @@ public:
 		return ret;
 	}
 
+	std::string getHeader(std::string str) {
+		while (str.size()) {
+			int index = str.find(':');
+			if (index != std::string::npos) {
+				return (str.substr(0, index));
+			}
+		}
+		return "";
+	}
+
 	void dispatch(std::string str)
 	{
 		print(PRI2, "Dispatcher::dispatch(<%s>), index = %d\n", str.c_str(), index);
 		
+		std::string header = getHeader(str);
+
 		for(int i = 0; i < index+1; i++)
 		{
-			// Should only check the identification part of the string
-			//if (m_dispatch_table[i].str.compare(str) == 0)
-			if (!strcmp(m_dispatch_table[i].str.c_str(), str.c_str()))
+			print(PRI2, "Dispatcher::dispatch(): m_dispatch_table[%d].str = <%s>\n", i, m_dispatch_table[i].str.c_str());
+			if (m_dispatch_table[i].str.compare(header) == 0)
 			{
 				print(PRI1, "Dispatcher::dispatch(): found match at index %d\n", i);
 				m_dispatch_table[index].op2(str, i);

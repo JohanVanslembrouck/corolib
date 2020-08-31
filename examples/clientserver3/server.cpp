@@ -46,7 +46,7 @@ public:
 		m_index = 0;
 
 		registerFunctor(
-			"Req1\n",
+			"Req1",
 			[this](std::string str)
 			{ 
 				// TODO: unmarshal str into Req1
@@ -55,7 +55,7 @@ public:
 			});
 					
 		registerFunctor(
-			"Req2\n",
+			"Req2",
 			[this](std::string str)
 			{
 				// TODO: unmarshal str into Req2
@@ -64,7 +64,7 @@ public:
 			});
 					
 		registerFunctor(
-			"Req3\n",
+			"Req3",
 			[this](std::string str)
 			{
 				// TODO: unmarshal str into Req3
@@ -73,7 +73,7 @@ public:
 			});
 					
 		registerFunctor(
-			"Req4\n",
+			"Req4",
 			[this](std::string str)
 			{
 				// TODO: unmarshal str into Req4
@@ -105,7 +105,7 @@ public:
 		co_await st;
 			
 		// Preparing output
-		std::string strout = "Resp1\n";
+		std::string strout = "Resp1:params-go-here\n";
 		
 		// Writing
 		print(PRI1, "operation1: async_operation sw = m_commClient->start_writing(...);\n");
@@ -126,7 +126,7 @@ public:
 		co_await st;
 		
 		// Preparing output
-		std::string strout = "Resp2\n";
+		std::string strout = "Resp2:params-go-here\n";
 
 		// Writing
 		print(PRI1, "operation2: async_operation sw = m_commClient->start_writing(...);\n");
@@ -146,7 +146,7 @@ public:
 		print(PRI1, "operation3: co_await st;\n");
 		
 		// Preparing output
-		std::string strout = "Resp3\n";
+		std::string strout = "Resp3:params-go-here\n";
 
 		// Writing
 		print(PRI1, "operation3: async_operation sw = m_commClient->start_writing(...);\n");
@@ -166,7 +166,7 @@ public:
 		print(PRI1, "operation4: co_await st;\n");
 		
 		// Preparing output
-		std::string strout = "Resp4\n";
+		std::string strout = "Resp4:params-go-here\n";
 
 		// Writing
 		print(PRI1, "operation4: async_operation sw = m_commClient->start_writing(...);\n");
@@ -175,17 +175,26 @@ public:
 		co_await sw;
 	}
 	
+	std::string getHeader(std::string str) {
+		while (str.size()) {
+			int index = str.find(':');
+			if (index != std::string::npos) {
+				return str.substr(0, index);
+			}
+		}
+		return "";
+	}
+
 	void dispatch(std::string str)
 	{
 		print(PRI2, "ServerApp::dispatch(<%s>), m_index = %d\n", str.c_str(), m_index);
 		
+		std::string header = getHeader(str);
+
 		for (int i = 0; i < m_index; i++)
 		{
 			print(PRI2, "ServerApp::dispatch(): m_dispatch_table[%d].str = <%s>\n", i, m_dispatch_table[i].str.c_str());
-			
-			// Should only check the identification part of the string
-			//if (m_dispatch_table[i].str.compare(str) == 0)
-			if (!strcmp(m_dispatch_table[i].str.c_str(), str.c_str()))
+			if (m_dispatch_table[i].str.compare(header) == 0)
 			{
 				print(PRI1, "ServerApp::dispatch(): found match at index %d\n", i);
 				(void)m_dispatch_table[i].op(str);

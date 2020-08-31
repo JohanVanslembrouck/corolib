@@ -72,7 +72,7 @@ public:
 		ServerRequest serverRequest(commClient, m_IoContext);
 		
 		dispatcher.registerFunctor(
-			"Req1\n",
+			"Req1",
 			[&serverRequest](std::string str)
 			{ 
 				// TODO: unmarshal str into Req1
@@ -81,7 +81,7 @@ public:
 			});
 					
 		dispatcher.registerFunctor(
-			"Req2\n",
+			"Req2",
 			[ &serverRequest](std::string str)
 			{
 				// TODO: unmarshal str into Req2
@@ -90,7 +90,7 @@ public:
 			});
 					
 		dispatcher.registerFunctor(
-			"Req3\n",
+			"Req3",
 			[&serverRequest](std::string str)
 			{
 				// TODO: unmarshal str into Req3
@@ -99,7 +99,7 @@ public:
 			});
 					
 		dispatcher.registerFunctor(
-			"Req4\n",
+			"Req4",
 			[&serverRequest](std::string str)
 			{
 				// TODO: unmarshal str into Req4
