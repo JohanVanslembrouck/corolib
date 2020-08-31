@@ -44,8 +44,8 @@ public:
 		while (1)
 		{
 			// Reading
-			print(PRI1, "read_client_request: async_operation sr = commClient->start_reading();\n");
-			async_operation_t<std::string> sr = commClient->start_reading();
+			print(PRI1, "read_client_request: async_operation<std::string> sr = commClient->start_reading();\n");
+			async_operation<std::string> sr = commClient->start_reading();
 			print(PRI1, "read_client_request: std::string str = co_await sr;\n");
 			std::string str = co_await sr;
 			
@@ -123,8 +123,8 @@ public:
 			spCommCore commCore = std::make_shared<CommCore>(m_IoContext);
 
 			// Accepting
-			print(PRI1, "mainflow: async_operation sa = start_accepting(commCore);\n");
-			async_operation sa = start_accepting(commCore);
+			print(PRI1, "mainflow: async_operation<void> sa = start_accepting(commCore);\n");
+			async_operation<void> sa = start_accepting(commCore);
 			print(PRI1, "mainflow: co_await sa;\n");
 			co_await sa;
 

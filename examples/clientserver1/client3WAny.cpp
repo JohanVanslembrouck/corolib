@@ -31,15 +31,15 @@ async_task<int> mainflowWA0(CommClient& c1, CommClient& c2, CommClient& c3)
 		print(PRI1, "mainflowWA0: %d ------------------------------------------------------------------\n", i);
 
 		// Connecting
-		print(PRI1, "mainflowWA0: async_operation sc1 = c1.start_connecting();\n");
-		async_operation sc1 = c1.start_connecting();
-		print(PRI1, "mainflowWA0: async_operation sc2 = c2.start_connecting();\n");
-		async_operation sc2 = c2.start_connecting();
-		print(PRI1, "mainflowWA0: async_operation sc3 = c3.start_connecting();\n");
-		async_operation sc3 = c3.start_connecting();
+		print(PRI1, "mainflowWA0: async_operation<void> sc1 = c1.start_connecting();\n");
+		async_operation<void> sc1 = c1.start_connecting();
+		print(PRI1, "mainflowWA0: async_operation<void> sc2 = c2.start_connecting();\n");
+		async_operation<void> sc2 = c2.start_connecting();
+		print(PRI1, "mainflowWA0: async_operation<void> sc3 = c3.start_connecting();\n");
+		async_operation<void> sc3 = c3.start_connecting();
 
-		print(PRI1, "mainflowWA0: wait_any_awaitable<int> wac( { &sc1, &sc2, &sc3 } );\n");
-		wait_any_awaitable<async_operation> wac( { &sc1, &sc2, &sc3 } );
+		print(PRI1, "mainflowWA0: wait_any_awaitable<async_operation<void>> wac( { &sc1, &sc2, &sc3 } );\n");
+		wait_any_awaitable<async_operation<void>> wac( { &sc1, &sc2, &sc3 } );
 		for (int i = 0; i < 3; i++) {
 			print(PRI1, "mainflowWA0: co_await wac;\n");
 			co_await wac;
@@ -57,15 +57,15 @@ async_task<int> mainflowWA0(CommClient& c1, CommClient& c2, CommClient& c3)
 		str3 += std::to_string(counter++);
 		str3 += " to echo\n";
 
-		print(PRI1, "mainflowWA0: async_operation sw1 = c1.start_writing(...);\n");
-		async_operation sw1 = c1.start_writing(str1.c_str(), str1.length() + 1);
-		print(PRI1, "mainflowWA0: async_operation sw2 = c2.start_writing(...);\n");
-		async_operation sw2 = c2.start_writing(str2.c_str(), str2.length() + 1);
-		print(PRI1, "mainflowWA0: async_operation sw3 = c3.start_writing(...);\n");
-		async_operation sw3 = c3.start_writing(str3.c_str(), str3.length() + 1);
+		print(PRI1, "mainflowWA0: async_operation<void> sw1 = c1.start_writing(...);\n");
+		async_operation<void> sw1 = c1.start_writing(str1.c_str(), str1.length() + 1);
+		print(PRI1, "mainflowWA0: async_operation<void> sw2 = c2.start_writing(...);\n");
+		async_operation<void> sw2 = c2.start_writing(str2.c_str(), str2.length() + 1);
+		print(PRI1, "mainflowWA0: async_operation<void> sw3 = c3.start_writing(...);\n");
+		async_operation<void> sw3 = c3.start_writing(str3.c_str(), str3.length() + 1);
 
-		print(PRI1, "mainflowWA0: wait_all_awaitable<async_operation> waw( { &sw1, &sw2, &sw3 } );\n");
-		wait_any_awaitable<async_operation> waw( { &sw1, &sw2, &sw3 } );
+		print(PRI1, "mainflowWA0: wait_all_awaitable<async_operation<void>> waw( { &sw1, &sw2, &sw3 } );\n");
+		wait_any_awaitable<async_operation<void>> waw( { &sw1, &sw2, &sw3 } );
 		for (int i = 0; i < 3; i++) {
 			print(PRI1, "mainflowWA0: int r = co_await waw;\n");
 			int r = co_await waw;
@@ -73,15 +73,15 @@ async_task<int> mainflowWA0(CommClient& c1, CommClient& c2, CommClient& c3)
 		}
 		
 		// Reading
-		print(PRI1, "mainflowWA0: async_operation_t<std::string> sr1 = c1.start_reading();\n");
-		async_operation_t<std::string> sr1 = c1.start_reading();
-		print(PRI1, "mainflowWA0: async_operation_t<std::string> sr2 = c2.start_reading();\n");
-		async_operation_t<std::string> sr2 = c2.start_reading();
-		print(PRI1, "mainflowWA0: async_operation_t<std::string> sr3 = c3.start_reading();\n");
-		async_operation_t<std::string> sr3 = c3.start_reading();
+		print(PRI1, "mainflowWA0: async_operation<std::string> sr1 = c1.start_reading();\n");
+		async_operation<std::string> sr1 = c1.start_reading();
+		print(PRI1, "mainflowWA0: async_operation<std::string> sr2 = c2.start_reading();\n");
+		async_operation<std::string> sr2 = c2.start_reading();
+		print(PRI1, "mainflowWA0: async_operation<std::string> sr3 = c3.start_reading();\n");
+		async_operation<std::string> sr3 = c3.start_reading();
 
-		print(PRI1, "mainflowWA0: wait_any_awaitable<async_operation> war( { &sr1, &sr2, &sr3 } ) ;\n");
-		wait_any_awaitable<async_operation> war( { &sr1, &sr2, &sr3 } );
+		print(PRI1, "mainflowWA0: wait_any_awaitable<async_operation<std::string>> war( { &sr1, &sr2, &sr3 } ) ;\n");
+		wait_any_awaitable<async_operation<std::string>> war( { &sr1, &sr2, &sr3 } );
 		for (int i = 0; i < 3; i++) {
 			print(PRI1, "mainflowWA0: int r = co_await war;\n");
 			int r = co_await war;
@@ -114,9 +114,9 @@ async_task<int> mainflowWA1(std::initializer_list<CommClient*> clients)
 
 	const int nrClients = 3; //clients.size();
 
-	async_operation asyncsc[nrClients];
-	async_operation asyncsw[nrClients];
-	async_operation_t<std::string> asyncsr[nrClients];
+	async_operation<void> asyncsc[nrClients];
+	async_operation<void> asyncsw[nrClients];
+	async_operation<std::string> asyncsr[nrClients];
 	std::string results[nrClients];
 	std::string str[nrClients];
 
@@ -134,8 +134,8 @@ async_task<int> mainflowWA1(std::initializer_list<CommClient*> clients)
 			asyncsc[j++] = cl->start_connecting();
 		}
 		
-		print(PRI1, "mainflowWA1: wait_any_awaitable<async_operation> wac(asyncsc, nrClients)\n");
-		wait_any_awaitable<async_operation> wac(asyncsc, nrClients);
+		print(PRI1, "mainflowWA1: wait_any_awaitable<async_operation<void>> wac(asyncsc, nrClients)\n");
+		wait_any_awaitable<async_operation<void>> wac(asyncsc, nrClients);
 		for (int i = 0; i < nrClients; i++) {
 			print(PRI1, "mainflowWA1: int r = co_await wac;\n");
 			int r = co_await wac;
@@ -153,8 +153,8 @@ async_task<int> mainflowWA1(std::initializer_list<CommClient*> clients)
 			j++;
 		}
 		
-		print(PRI1, "mainflowWA1: wait_any_awaitable<async_operation> waw(asyncsw, 3)\n");
-		wait_any_awaitable<async_operation> waw(asyncsw, 3);
+		print(PRI1, "mainflowWA1: wait_any_awaitable<async_operation<void>> waw(asyncsw, 3)\n");
+		wait_any_awaitable<async_operation<void>> waw(asyncsw, 3);
 		for (int i = 0; i < nrClients; i++) {
 			print(PRI1, "mainflowWA1: int r = co_await waw;\n");
 			int r = co_await waw;
@@ -168,8 +168,8 @@ async_task<int> mainflowWA1(std::initializer_list<CommClient*> clients)
 			asyncsr[j++] = cl->start_reading();
 		}
 		
-		print(PRI1, "mainflowWA1: wait_any_awaitable<async_operation_t<std::string>> war(asyncsr, 3)\n");
-		wait_any_awaitable<async_operation_t<std::string>> war(asyncsr, nrClients);
+		print(PRI1, "mainflowWA1: wait_any_awaitable<async_operation<std::string>> war(asyncsr, 3)\n");
+		wait_any_awaitable<async_operation<std::string>> war(asyncsr, nrClients);
 		for (int i = 0; i < nrClients; i++) {
 			print(PRI1, "mainflowWA1: int r = co_await war;\n");
 			int r = co_await war;
@@ -204,9 +204,9 @@ async_task<int> mainflowWA2(std::initializer_list<CommClient*> clients)
 	{
 		print(PRI1, "mainflowWA2: %d ------------------------------------------------------------------\n", i);
 
-		async_operation asyncsc[nrClients];
-		async_operation asyncsw[nrClients];
-		async_operation_t<std::string> asyncsr[3];
+		async_operation<void> asyncsc[nrClients];
+		async_operation<void> asyncsw[nrClients];
+		async_operation<std::string> asyncsr[3];
 		std::string str[nrClients];
 		std::string results[nrClients];
 
@@ -219,8 +219,8 @@ async_task<int> mainflowWA2(std::initializer_list<CommClient*> clients)
 			asyncsc[j++] = cl->start_connecting();
 		}
 		
-		print(PRI1, "mainflowWA2: wait_all_awaitable<async_operation> wac(asyncsc, nrClients)\n");
-		wait_any_awaitable<async_operation> wac(asyncsc, nrClients);
+		print(PRI1, "mainflowWA2: wait_all_awaitable<async_operation<void>> wac(asyncsc, nrClients)\n");
+		wait_any_awaitable<async_operation<void>> wac(asyncsc, nrClients);
 		for (int i = 0; i < nrClients; i++) {
 			print(PRI1, "mainflowWA2: int r = co_await wac;\n");
 			int r = co_await wac;
@@ -238,8 +238,8 @@ async_task<int> mainflowWA2(std::initializer_list<CommClient*> clients)
 			j++;
 		}
 		
-		print(PRI1, "mainflowWA2: wait_any_awaitable<async_operation> waw(asyncsw, 3)\n");
-		wait_any_awaitable<async_operation> waw(asyncsw, 3);
+		print(PRI1, "mainflowWA2: wait_any_awaitable<async_operation<void>> waw(asyncsw, 3)\n");
+		wait_any_awaitable<async_operation<void>> waw(asyncsw, 3);
 		for (int i = 0; i < 3; i++) {
 			print(PRI1, "mainflowWA2: int r = co_await waw;\n");
 			int r = co_await waw;
@@ -253,8 +253,8 @@ async_task<int> mainflowWA2(std::initializer_list<CommClient*> clients)
 			asyncsr[j++] = cl->start_reading();
 		}
 		
-		print(PRI1, "mainflowWA2: wait_any_awaitable<async_operation_t<std::string>> war(asyncsr, nrClients)\n");
-		wait_any_awaitable<async_operation_t<std::string>> war(asyncsr, nrClients);
+		print(PRI1, "mainflowWA2: wait_any_awaitable<async_operation<std::string>> war(asyncsr, nrClients)\n");
+		wait_any_awaitable<async_operation<std::string>> war(asyncsr, nrClients);
 		for (int i = 0; i < nrClients; i++) {
 			print(PRI1, "mainflowWA2: int r = co_await war;\n");
 			int r = co_await war;

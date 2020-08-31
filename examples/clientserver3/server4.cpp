@@ -53,8 +53,8 @@ public:
 		while (1)
 		{
 			// Reading
-			print(PRI1, "read_client_request: async_operation sr = commClient->start_reading();\n");
-			async_operation_t<std::string> sr = commClient->start_reading();
+			print(PRI1, "read_client_request: async_operation<std::string> sr = commClient->start_reading();\n");
+			async_operation<std::string> sr = commClient->start_reading();
 			print(PRI1, "read_client_request: std::string str = co_await sr;\n");
 			std::string str = co_await sr;
 			
@@ -84,7 +84,7 @@ public:
 		Dispatcher dispatcher;
 		ServerRequest serverRequest(commClient, m_IoContext);
 
-		async_operation_t<std::string> reqs[4];
+		async_operation<std::string> reqs[4];
 
 		reqs[0] = dispatcher.registerFunctor(
 			"Req1",
@@ -122,8 +122,8 @@ public:
 				(void)serverRequest.operation4(req4);
 			});
 
-		print(PRI1, "main_one_client: wait_any_awaitable<async_operation_t<std::string>> wat(reqs, 4);\n");
-		wait_any_awaitable<async_operation_t<std::string>> wat(reqs, 4);
+		print(PRI1, "main_one_client: wait_any_awaitable<async_operation<std::string>> wat(reqs, 4);\n");
+		wait_any_awaitable<async_operation<std::string>> wat(reqs, 4);
 
 		bool done = false;
 		print(PRI1, "main_one_client: async_task<int> rcr = read_client_request(commClient, dispatcher);\n");
@@ -155,8 +155,8 @@ public:
 			spCommCore commCore = std::make_shared<CommCore>(m_IoContext);
 
 			// Accepting
-			print(PRI1, "mainflow: async_operation sa = start_accepting(commCore);\n");
-			async_operation sa = start_accepting(commCore);
+			print(PRI1, "mainflow: async_operation<void> sa = start_accepting(commCore);\n");
+			async_operation<void> sa = start_accepting(commCore);
 			print(PRI1, "mainflow: co_await sa;\n");
 			co_await sa;
 

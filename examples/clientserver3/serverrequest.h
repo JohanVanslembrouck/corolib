@@ -34,8 +34,8 @@ public:
 		
 		// Delaying
 		steady_timer client_timer(m_ioContext);
-		print(PRI1, "operation1: async_operation st = m_commClient->start_timer(100);\n");
-		async_operation st = m_commClient->start_timer(client_timer, 100);
+		print(PRI1, "operation1: async_operation<void> st = m_commClient->start_timer(100);\n");
+		async_operation<void> st = m_commClient->start_timer(client_timer, 100);
 		print(PRI1, "operation1: co_await st;\n");
 		co_await st;
 			
@@ -43,8 +43,8 @@ public:
 		std::string strout = "Resp1:params-go-here\n";
 		
 		// Writing
-		print(PRI1, "operation1: async_operation sw = m_commClient->start_writing(...);\n");
-		async_operation sw = m_commClient->start_writing(strout.c_str(), strout.length() + 1);
+		print(PRI1, "operation1: async_operation<void> sw = m_commClient->start_writing(...);\n");
+		async_operation<void> sw = m_commClient->start_writing(strout.c_str(), strout.length() + 1);
 		print(PRI1, "operation1: co_await sw;\n");
 		co_await sw;
 	}
@@ -55,8 +55,8 @@ public:
 		
 		// Delaying
 		steady_timer client_timer(m_ioContext);
-		print(PRI1, "operation2: async_operation st = m_commClient->start_timer(200);\n");
-		async_operation st = m_commClient->start_timer(client_timer, 200);
+		print(PRI1, "operation2: async_operation<void> st = m_commClient->start_timer(200);\n");
+		async_operation<void> st = m_commClient->start_timer(client_timer, 200);
 		print(PRI1, "operation2: co_await st;\n");
 		
 		co_await st;
@@ -64,8 +64,8 @@ public:
 		std::string strout = "Resp2:params-go-here\n";
 
 		// Writing
-		print(PRI1, "operation2: async_operation sw = m_commClient->start_writing(...);\n");
-		async_operation sw = m_commClient->start_writing(strout.c_str(), strout.length() + 1);
+		print(PRI1, "operation2: async_operation<void> sw = m_commClient->start_writing(...);\n");
+		async_operation<void> sw = m_commClient->start_writing(strout.c_str(), strout.length() + 1);
 		print(PRI1, "operation2: co_await sw;\n");
 		co_await sw;
 	}
@@ -76,16 +76,16 @@ public:
 		
 		// Delaying
 		steady_timer client_timer(m_ioContext);
-		print(PRI1, "operation3: async_operation st = m_commClient->start_timer(300);\n");
-		async_operation st = m_commClient->start_timer(client_timer, 300);
+		print(PRI1, "operation3: async_operation<void> st = m_commClient->start_timer(300);\n");
+		async_operation<void> st = m_commClient->start_timer(client_timer, 300);
 		print(PRI1, "operation3: co_await st;\n");
 		
 		// Preparing output
 		std::string strout = "Resp3:params-go-here\n";
 
 		// Writing
-		print(PRI1, "operation3: async_operation sw = m_commClient->start_writing(...);\n");
-		async_operation sw = m_commClient->start_writing(strout.c_str(), strout.length() + 1);
+		print(PRI1, "operation3: async_operation<void> sw = m_commClient->start_writing(...);\n");
+		async_operation<void> sw = m_commClient->start_writing(strout.c_str(), strout.length() + 1);
 		print(PRI1, "operation3: co_await sw;\n");
 		co_await sw;
 	}
@@ -96,16 +96,16 @@ public:
 
 		// Delaying
 		steady_timer client_timer(m_ioContext);
-		print(PRI1, "operation4: async_operation st = m_commClient->start_timer(400);\n");
-		async_operation st = m_commClient->start_timer(client_timer, 400);
+		print(PRI1, "operation4: async_operation<void> st = m_commClient->start_timer(400);\n");
+		async_operation<void> st = m_commClient->start_timer(client_timer, 400);
 		print(PRI1, "operation4: co_await st;\n");
 		
 		// Preparing output
 		std::string strout = "Resp4:params-go-here\n";
 
 		// Writing
-		print(PRI1, "operation4: async_operation sw = m_commClient->start_writing(...);\n");
-		async_operation sw = m_commClient->start_writing(strout.c_str(), strout.length() + 1);
+		print(PRI1, "operation4: async_operation<void> sw = m_commClient->start_writing(...);\n");
+		async_operation<void> sw = m_commClient->start_writing(strout.c_str(), strout.length() + 1);
 		print(PRI1, "operation4: co_await sw;\n");
 		co_await sw;
 	}

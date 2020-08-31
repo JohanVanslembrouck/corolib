@@ -32,13 +32,13 @@ public:
 	{
 	}
 	
-	async_operation_t<std::string> registerFunctor(std::string tx, handleRequest op)
+	async_operation<std::string> registerFunctor(std::string tx, handleRequest op)
 	{
 		print(PRI1, "registerFunctor(%s, op)\n", tx.c_str());
 		
 		index = (index + 1) & (NROPERATIONS - 1);
 		assert(m_async_operations[index] == nullptr);
-		async_operation_t<std::string> ret{ this, index };
+		async_operation<std::string> ret{ this, index };
 	
 		m_dispatch_table[index].str = tx;
 		m_dispatch_table[index].op = op;
@@ -47,8 +47,8 @@ public:
 			print(PRI1, "lambda: idx = %d, str = <%s>\n", idx, str.c_str());
 			m_dispatch_table[idx].op(str);
 
-			async_operation_t<std::string>* om_async_operation = 
-				dynamic_cast<async_operation_t<std::string>*>(m_async_operations[idx]);
+			async_operation<std::string>* om_async_operation = 
+				dynamic_cast<async_operation<std::string>*>(m_async_operations[idx]);
 			if (om_async_operation)
 			{
 				om_async_operation->set_result(str);

@@ -37,8 +37,8 @@ public:
 	oneway_task mainflow_reading_writing(spCommCore commClient)
 	{
 		// Reading
-		print(PRI1, "mainflow_reading_writing: async_operation sr = start_reading(CommClient);\n");
-		async_operation_t<std::string> sr = commClient->start_reading();
+		print(PRI1, "mainflow_reading_writing: async_operation<std::string> sr = start_reading(CommClient);\n");
+		async_operation<std::string> sr = commClient->start_reading();
 		print(PRI1, "mainflow_reading_writing: std::string strout = co_await sr;\n");
 		std::string strout = co_await sr;
 		print(PRI1, "mainflow_reading_writing: strout = %s\n", strout.c_str());
@@ -47,8 +47,8 @@ public:
 		// to simulate a long asynchronous calculation.
 		// Delaying
 		boost::asio::steady_timer client_timer(m_IoContext);
-		print(PRI1, "mainflow_reading_writing: async_operation st = start_timer(client_timer, 500);\n");
-		async_operation st = commClient->start_timer(client_timer, 500);
+		print(PRI1, "mainflow_reading_writing: async_operation<void> st = start_timer(client_timer, 500);\n");
+		async_operation<void> st = commClient->start_timer(client_timer, 500);
 		print(PRI1, "mainflow_reading_writing: co_await st;\n");
 		co_await st;
 
@@ -57,8 +57,8 @@ public:
 		for (auto& c : strtoecho) c = toupper(c);
 
 		// Writing
-		print(PRI1, "mainflow_reading_writing: async_operation sw = start_writing(clientSession);\n");
-		async_operation sw = commClient->start_writing(strout.c_str(), strout.length() + 1);
+		print(PRI1, "mainflow_reading_writing: async_operation<void> sw = start_writing(clientSession);\n");
+		async_operation<void> sw = commClient->start_writing(strout.c_str(), strout.length() + 1);
 		print(PRI1, "mainflow_reading_writing: co_await sw;\n");
 		co_await sw;
 
@@ -79,8 +79,8 @@ public:
 			spCommCore commCore = std::make_shared<CommCore>(m_IoContext);
 
 			// Accepting
-			print(PRI1, "mainflow: async_operation sa = start_accepting(commCore);\n");
-			async_operation sa = start_accepting(commCore);
+			print(PRI1, "mainflow: async_operation<void> sa = start_accepting(commCore);\n");
+			async_operation<void> sa = start_accepting(commCore);
 			print(PRI1, "mainflow: co_await sa;\n");
 			co_await sa;
 

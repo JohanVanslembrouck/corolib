@@ -41,8 +41,8 @@ public:
 			print(PRI1, "mainflow: %d ------------------------------------------------------------------\n", i);
 
 			// Connecting
-			print(PRI1, "mainflow: async_operation sc = start_connecting();\n");
-			async_operation sc = start_connecting();
+			print(PRI1, "mainflow: async_operation<void> sc = start_connecting();\n");
+			async_operation<void> sc = start_connecting();
 			print(PRI1, "mainflow: co_await sc;\n");
 			co_await sc;
 
@@ -59,14 +59,14 @@ public:
 			str1 += " to echo\n";
 
 			// Writing
-			print(PRI1, "mainflow: async_operation sw = start_writing(...);\n");
-			async_operation sw = start_writing(str1.c_str(), str1.length() + 1);
+			print(PRI1, "mainflow: async_operation<void> sw = start_writing(...);\n");
+			async_operation<void> sw = start_writing(str1.c_str(), str1.length() + 1);
 			print(PRI1, "mainflow: co_await sw;\n");
 			co_await sw;
 
 			// Reading
-			print(PRI1, "mainflow: async_operation sr = start_reading();\n");
-			async_operation_t<std::string> sr = start_reading();
+			print(PRI1, "mainflow: async_operation<std::string> sr = start_reading();\n");
+			async_operation<std::string> sr = start_reading();
 			print(PRI1, "mainflow: std::string strout = co_await sr;\n");
 			std::string strout = co_await sr;
 			print(PRI1, "mainflow: strout = %s", strout.c_str());
@@ -75,8 +75,8 @@ public:
 			// after having read the response.
 			// Delaying
 			steady_timer client_timer(ioContext);
-			print(PRI1, "mainflow: async_operation st = start_timer(100);\n");
-			async_operation st = start_timer(client_timer, 100);
+			print(PRI1, "mainflow: async_operation<void> st = start_timer(100);\n");
+			async_operation<void> st = start_timer(client_timer, 100);
 			print(PRI1, "mainflow: co_await st;\n");
 			co_await st;
 

@@ -35,12 +35,12 @@ namespace corolib
 			print(PRI2, "%p: CommServer::CommServer(...)\n", this);
 		}
 
-		async_operation start_accepting(spCommCore commRWT)
+		async_operation<void> start_accepting(spCommCore commRWT)
 		{
 			print(PRI2, "%p: CommServer::start_accepting()\n", this);
 			index = (index + 1) & (NROPERATIONS - 1);
 			assert(m_async_operations[index] == nullptr);
-			async_operation ret{ this, index };
+			async_operation<void> ret{ this, index };
 			start_accept(commRWT, index);
 			return ret;
 		}
@@ -62,7 +62,7 @@ namespace corolib
 				[this, idx](const boost::system::error_code& ec)
 				{
 					print(PRI2, "%p; CommServer::acceptHandler(): idx = %d, entry\n", this, idx);
-					async_operation* om_async_operation = m_async_operations[idx];
+					async_operation_base* om_async_operation = m_async_operations[idx];
 
 					if (m_stop)
 					{
@@ -84,7 +84,7 @@ namespace corolib
 						}
 						else
 						{
-							// This can occur when the async_operation has gone out of scope.
+							// This can occur when the async_operation_base has gone out of scope.
 							print(PRI1, "%p: CommServer::acceptHandler(): idx = %d, Error: om_async_operation = %p\n", this, idx, om_async_operation);
 						}
 					}

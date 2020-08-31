@@ -52,12 +52,12 @@ namespace corolib
 			m_deadline.async_wait(std::bind(&CommClient::check_deadline, this));
 		}
 
-		async_operation start_connecting()
+		async_operation<void> start_connecting()
 		{
 			print(PRI2, "%p: CommClient::start_connecting()\n", this);
 			index = (index + 1) & (NROPERATIONS - 1);
 			assert(m_async_operations[index] == nullptr);
-			async_operation ret{ this, index };
+			async_operation<void> ret{ this, index };
 			start_connect(index);
 			return ret;
 		}
@@ -87,12 +87,12 @@ namespace corolib
 					(void)result_endpoint;
 
 					print(PRI2, "%p: CommClient::handle_connect(): idx = %d, entry\n", this, idx);
-					async_operation* om_async_operation = m_async_operations[idx];
+					async_operation_base* om_async_operation = m_async_operations[idx];
 
 					if (m_stopped)
 						return;
 
-					// The async_operation() function automatically opens the socket at the start
+					// The async_operation function automatically opens the socket at the start
 					// of the asynchronous operation. If the socket is closed at this time then
 					// the timeout handler must have run first.
 					if (!m_socket.is_open())
@@ -127,7 +127,7 @@ namespace corolib
 						}
 						else
 						{
-							// This can occur when the async_operation has gone out of scope.
+							// This can occur when the async_operation_base has gone out of scope.
 							print(PRI1, "%p: CommCore::handle_connect(): idx = %d, Error: om_async_operation = %p\n", this, idx, om_async_operation);
 						}
 					}

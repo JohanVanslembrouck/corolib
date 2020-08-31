@@ -18,6 +18,8 @@
 
 #include "endpoints.h"
 
+#define SEND_ACK 1
+
 using namespace corolib;
 
 extern const int corolib::priority = 0x01;
@@ -43,8 +45,8 @@ public:
 		std::string str1 = "ACK\n";
 
 		// Writing
-		print(PRI1, "acknowledgeAction: async_operation sw = start_writing(...);\n");
-		async_operation sw = start_writing(str1.c_str(), str1.length() + 1);
+		print(PRI1, "acknowledgeAction: async_operation<void> sw = start_writing(...);\n");
+		async_operation<void> sw = start_writing(str1.c_str(), str1.length() + 1);
 		print(PRI1, "acknowledgeAction: co_await sw;\n");
 		co_await sw;
 
@@ -58,22 +60,22 @@ public:
 		std::string str1 = "START\n";
 
 		// Writing
-		print(PRI1, "performAction: async_operation sw = start_writing(...);\n");
-		async_operation sw = start_writing(str1.c_str(), str1.length() + 1);
+		print(PRI1, "performAction: async_operation<void> sw = start_writing(...);\n");
+		async_operation<void> sw = start_writing(str1.c_str(), str1.length() + 1);
 		print(PRI1, "performAction: co_await sw;\n");
 		co_await sw;
 
 		// Reading
-		print(PRI1, "performAction: async_operation sr = start_reading();\n");
-		async_operation_t<std::string> sr = start_reading();
+		print(PRI1, "performAction: async_operation<std::string> sr = start_reading();\n");
+		async_operation<std::string> sr = start_reading();
 
 		// Timing
 		steady_timer client_timer(ioContext);
-		print(PRI1, "performAction: async_operation st = start_timer(client_timer, timeout);\n");
-		async_operation st = start_timer(client_timer, timeout);
+		print(PRI1, "performAction: async_operation<void> st = start_timer(client_timer, timeout);\n");
+		async_operation<void> st = start_timer(client_timer, timeout);
 
-		print(PRI1, "performAction: wait_all_awaitable<async_operation> war( { &sr, &st } ) ;\n");
-		wait_any_awaitable<async_operation> war( { &sr, &st } );
+		print(PRI1, "performAction: wait_all_awaitable<async_operation_base> war( { &sr, &st } ) ;\n");
+		wait_any_awaitable<async_operation_base> war( { &sr, &st } );
 		
 		bool done = false;
 		for (int j = 0; j < 2 && !done; j++)
@@ -97,13 +99,13 @@ public:
 				{
 					print(PRI1, "performAction: i = %d: reply has arrived in time\n", i);
 					done = true;
-
+#if SEND_ACK
 					// Send acknowledgement to server
 					print(PRI1, "performAction: async_task<int> ackAction = acknowledgeAction();\n");
 					async_task<int> ackAction = acknowledgeAction();
 					print(PRI1, "performAction: co_await ackAction;\n");
 					co_await ackAction;
-					print(PRI1, "performAction: after co_await ackAction;\n");
+#endif
 				}
 				else
 				{
@@ -121,8 +123,8 @@ public:
 					std::string str1 = "STOP\n";
 
 					// Writing
-					print(PRI1, "performAction: async_operation sw2 = start_writing(...);\n");
-					async_operation sw2 = start_writing(str1.c_str(), str1.length() + 1);
+					print(PRI1, "performAction: async_operation<void> sw2 = start_writing(...);\n");
+					async_operation<void> sw2 = start_writing(str1.c_str(), str1.length() + 1);
 					print(PRI1, "performAction: co_await sw2;\n");
 					co_await sw2;
 
@@ -156,8 +158,8 @@ public:
 			print(PRI1, "mainflow: %d ------------------------------------------------------------------\n", i);
 
 			// Connecting
-			print(PRI1, "mainflow: async_operation sc = start_connecting();\n");
-			async_operation sc = start_connecting();
+			print(PRI1, "mainflow: async_operation<void> sc = start_connecting();\n");
+			async_operation<void> sc = start_connecting();
 			print(PRI1, "mainflow: co_await sc;\n");
 			co_await sc;
 			

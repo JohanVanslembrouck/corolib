@@ -41,14 +41,14 @@ public:
 		// TODO: Marshall fields of Req1 into string
 		
 		// Writing
-		print(PRI1, "operation1: async_operation sw = start_writing(...);\n");
-		async_operation sw = start_writing(str1.c_str(), str1.length() + 1);
+		print(PRI1, "operation1: async_operation<void> sw = start_writing(...);\n");
+		async_operation<void> sw = start_writing(str1.c_str(), str1.length() + 1);
 		print(PRI1, "operation1: co_await sw;\n");
 		co_await sw;
 
 		// Reading
-		print(PRI1, "operation1: async_operation sr = start_reading();\n");
-		async_operation_t<std::string> sr = start_reading();
+		print(PRI1, "operation1: async_operation<std::string> sr = start_reading();\n");
+		async_operation<std::string> sr = start_reading();
 		print(PRI1, "operation1: std::string strout = co_await sr;\n");
 		std::string strout = co_await sr;
 		print(PRI1, "operation1: strout = %s", strout.c_str());
@@ -63,14 +63,14 @@ public:
 		// TODO: Marshall fields of Req2 into string
 
 		// Writing
-		print(PRI1, "operation2: async_operation sw = start_writing(...);\n");
-		async_operation sw = start_writing(str1.c_str(), str1.length() + 1);
+		print(PRI1, "operation2: async_operation<void> sw = start_writing(...);\n");
+		async_operation<void> sw = start_writing(str1.c_str(), str1.length() + 1);
 		print(PRI1, "operation2: co_await sw;\n");
 		co_await sw;
 
 		// Reading
-		print(PRI1, "operation2: async_operation sr = start_reading();\n");
-		async_operation_t<std::string> sr = start_reading();
+		print(PRI1, "operation2: async_operation<std::string> sr = start_reading();\n");
+		async_operation<std::string> sr = start_reading();
 		print(PRI1, "operation2: std::string strout = co_await sr;\n");
 		std::string strout = co_await sr;
 		print(PRI1, "operation2: strout = %s", strout.c_str());
@@ -85,14 +85,14 @@ public:
 		// TODO: Marshall fields of Req3 into string
 		
 		// Writing
-		print(PRI1, "operation3: async_operation sw = start_writing(...);\n");
-		async_operation sw = start_writing(str1.c_str(), str1.length() + 1);
+		print(PRI1, "operation3: async_operation<void> sw = start_writing(...);\n");
+		async_operation<void> sw = start_writing(str1.c_str(), str1.length() + 1);
 		print(PRI1, "operation3: co_await sw;\n");
 		co_await sw;
 
 		// Reading
-		print(PRI1, "operation3: async_operation sr = start_reading();\n");
-		async_operation_t<std::string> sr = start_reading();
+		print(PRI1, "operation3: async_operation<std::string> sr = start_reading();\n");
+		async_operation<std::string> sr = start_reading();
 		print(PRI1, "operation3: std::string strout = co_await sr;\n");
 		std::string strout = co_await sr;
 		print(PRI1, "operation3: strout = %s", strout.c_str());
@@ -107,14 +107,14 @@ public:
 		// TODO: Marshall fields of Req4 into string
 		
 		// Writing
-		print(PRI1, "operation4: async_operation sw = start_writing(...);\n");
-		async_operation sw = start_writing(str1.c_str(), str1.length() + 1);
+		print(PRI1, "operation4: async_operation<void> sw = start_writing(...);\n");
+		async_operation<void> sw = start_writing(str1.c_str(), str1.length() + 1);
 		print(PRI1, "operation4: co_await sw;\n");
 		co_await sw;
 
 		// Reading
-		print(PRI1, "operation4: async_operation sr = start_reading();\n");
-		async_operation_t<std::string> sr = start_reading();
+		print(PRI1, "operation4: async_operation<std::string> sr = start_reading();\n");
+		async_operation<std::string> sr = start_reading();
 		print(PRI1, "operation4: std::string strout = co_await sr;\n");
 		std::string strout = co_await sr;
 		print(PRI1, "operation4: strout = %s", strout.c_str());
@@ -123,7 +123,7 @@ public:
 		co_return Resp4{};
 	}
 			
-	async_task<int> mainflow()
+	async_task<void> mainflow()
 	{
 		print(PRI1, "mainflow: begin\n");
 		int counter = 0;
@@ -133,8 +133,8 @@ public:
 			print(PRI1, "mainflow: %d ------------------------------------------------------------------\n", i);
 
 			// Connecting
-			print(PRI1, "mainflow: async_operation sc = start_connecting();\n");
-			async_operation sc = start_connecting();
+			print(PRI1, "mainflow: async_operation<void> sc = start_connecting();\n");
+			async_operation<void> sc = start_connecting();
 			print(PRI1, "mainflow: co_await sc;\n");
 			co_await sc;
 
@@ -168,8 +168,8 @@ public:
 			
 			// Delaying
 			steady_timer client_timer(ioContext);
-			print(PRI1, "mainflow: async_operation st = start_timer(1000);\n");
-			async_operation st = start_timer(client_timer, 1000);
+			print(PRI1, "mainflow: async_operation<void> st = start_timer(1000);\n");
+			async_operation<void> st = start_timer(client_timer, 1000);
 			print(PRI1, "mainflow: co_await st;\n");
 			co_await st;
 
@@ -178,8 +178,8 @@ public:
 			stop();
 		}
 
-		print(PRI1, "mainflow: co_return 0;\n");
-		co_return 0;
+		print(PRI1, "mainflow: co_return;\n");
+		co_return;
 	}
 };
 
@@ -189,7 +189,7 @@ int main()
 	ClientApp c1(ioContext, ep);
 
 	print(PRI1, "main: async_task<int> si = mainflow(c1);\n");
-	async_task<int> si = c1.mainflow();
+	async_task<void> si = c1.mainflow();
 
 	print(PRI1, "main: ioContext.run();\n");
 	ioContext.run();

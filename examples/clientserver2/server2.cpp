@@ -40,27 +40,27 @@ public:
 	 * that it has to stop the timer and not send the reply
 	 * @param completeAction allows this coroutine to indicate to the calling coroutine
 	 * that it is about to send the reply to the client
-	 * @note one_client_write_reply cannot return an async_operation
-	 * because async_operation does not has an associated promise_type.
-	 * Therefore, completeAction has been introduced because async_operation can be used
+	 * @note one_client_write_reply cannot return an async_operation_base
+	 * because async_operation_base does not has an associated promise_type.
+	 * Therefore, completeAction has been introduced because async_operation_base can be used
 	 * as argument.
 	 */
 	async_task<int> one_client_write_reply(spCommCore commClient, 
-		async_operation& cancelAction, async_operation& completeAction)
+		async_operation_base& cancelAction, async_operation_base& completeAction)
 	{
 		// Start a timer to introduce a delay (to simulate a long asynchronous calculation)
 		// before writing the reply to the client.
 		// In reality, we can image the calculation to run on a separate thread.
 		boost::asio::steady_timer client_timer(m_IoContext);
-		print(PRI1, "one_client_write_reply: async_operation st = commClient->start_timer(client_timer, 1000);\n");
-		async_operation st = commClient->start_timer(client_timer, 1000);
+		print(PRI1, "one_client_write_reply: async_operation<void> st = commClient->start_timer(client_timer, 1000);\n");
+		async_operation<void> st = commClient->start_timer(client_timer, 1000);
 
 		// Wait for either
 		// a) the timer to expire
 		// b) the action to be canceled by the client,
 		// whichever occurs first.
-		print(PRI1, "one_client_write_reply: wait_any_awaitable<async_operation> war( { &st, &cancelAction } ) ;\n");
-		wait_any_awaitable<async_operation> war( { &st, &cancelAction} );
+		print(PRI1, "one_client_write_reply: wait_any_awaitable<async_operation_base> war( { &st, &cancelAction } ) ;\n");
+		wait_any_awaitable<async_operation_base> war( { &st, &cancelAction} );
 		
 		print(PRI1, "one_client_write_reply: int i = co_await war;\n");
 		int i = co_await war;
@@ -81,8 +81,8 @@ public:
 			completeAction.completed();
 
 			// Writing
-			print(PRI1, "one_client_write_reply: async_operation sw = commClient->start_writing(...);\n");
-			async_operation sw = commClient->start_writing(strout.c_str(), strout.length() + 1);
+			print(PRI1, "one_client_write_reply: async_operation<void> sw = commClient->start_writing(...);\n");
+			async_operation<void> sw = commClient->start_writing(strout.c_str(), strout.length() + 1);
 			print(PRI1, "one_client_write_reply: co_await sw;\n");
 			co_await sw;
 		}
@@ -113,32 +113,32 @@ public:
 	 */
 	oneway_task one_client(spCommCore commClient)
 	{
-		async_operation cancelAction;
-		async_operation completeAction;
+		async_operation_base cancelAction;
+		async_operation_base completeAction;
 		
 		// Reading
-		print(PRI1, "one_client: async_operation sr1 = commClient->start_reading();\n");
-		async_operation_t<std::string> sr1 = commClient->start_reading();
+		print(PRI1, "one_client: async_operation<std::string> sr1 = commClient->start_reading();\n");
+		async_operation<std::string> sr1 = commClient->start_reading();
 		print(PRI1, "one_client: std::string strIn = co_await sr1;\n");
 		std::string strIn = co_await sr1;
 		print(PRI1, "one_client: strIn = %s\n", strIn.c_str());
 
 		// Call one_client_write_reply to send the reply to the client after some delay.
 		// During this delay, the client may cancel the action.
-		print(PRI1, "one_client: async_operation sw = one_client_write_reply(commClient, cancelAction, completeAction);\n");
+		print(PRI1, "one_client: async_task<int> ocwr = one_client_write_reply(commClient, cancelAction, completeAction);\n");
 		async_task<int> ocwr = one_client_write_reply(commClient, cancelAction, completeAction);
 		
 		// Start reading a possible second request, which (in this example)
 		// is just a request to cancel the still running action started after the first request.
-		print(PRI1, "one_client: async_operation sr2 = commClient->start_reading();\n");
-		async_operation_t<std::string> sr2 = commClient->start_reading();
+		print(PRI1, "one_client: async_operation<std::string> sr2 = commClient->start_reading();\n");
+		async_operation<std::string> sr2 = commClient->start_reading();
 		
 		// Wait for either
 		// a) writing of the reply to the client to be started
 		// b) the action to be cancelled by the client,
 		// whichever occurs first.
-		print(PRI1, "one_client: wait_any_awaitable<async_operation> war( { &completeAction, &sr2 } ) ;\n");
-		wait_any_awaitable<async_operation> war( { &completeAction, &sr2} );
+		print(PRI1, "one_client: wait_any_awaitable<async_operation_base> war( { &completeAction, &sr2 } ) ;\n");
+		wait_any_awaitable<async_operation_base> war( { &completeAction, &sr2} );
 		print(PRI1, "one_client: int i = co_await war;\n");
 		int i = co_await war;
 
@@ -193,8 +193,8 @@ public:
 			spCommCore commCore = std::make_shared<CommCore>(m_IoContext);
 
 			// Accepting
-			print(PRI1, "mainflow: async_operation sa = start_accepting(commCore);\n");
-			async_operation sa = start_accepting(commCore);
+			print(PRI1, "mainflow: async_operation<void> sa = start_accepting(commCore);\n");
+			async_operation<void> sa = start_accepting(commCore);
 			print(PRI1, "mainflow: co_await sa;\n");
 			co_await sa;
 

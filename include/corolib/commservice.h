@@ -7,8 +7,8 @@
  * An index to the array (used as circular buffer) is passed from the 
  * function that initiates the asynchronous operation, to the completion handler 
  * (a lambda that is used as callback function).
- * The address of the async_operation (or a derived class) object cannot be used as argument in the lambda closure.
- * The constructor of the async_operation object will place its address in the array at the given index.
+ * The address of the async_operation_base (or a derived class) object cannot be used as argument in the lambda closure.
+ * The constructor of the async_operation_base object will place its address in the array at the given index.
  *
  * More flexible mechanisms are possible because the array size limits the number of operations 
  * that can be active at any moment: its size may be too big or too small.
@@ -23,10 +23,10 @@
 
 namespace corolib
 {
-	class async_operation;
+	class async_operation_base;
 
 	class CommService {
-		friend class async_operation;
+		friend class async_operation_base;
 	public:
 		virtual std::string get_result() { return "empty";  }
 
@@ -43,7 +43,7 @@ namespace corolib
 		virtual ~CommService() {}
 
 		int index;
-		async_operation* m_async_operations[NROPERATIONS];
+		async_operation_base* m_async_operations[NROPERATIONS];
 	};
 }
 

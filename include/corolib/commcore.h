@@ -53,42 +53,42 @@ namespace corolib
 			m_hearbeat_timer.cancel();
 		}
 
-		async_operation start_writing(const char* str, int size)
+		async_operation<void> start_writing(const char* str, int size)
 		{
 			index = (index + 1) & (NROPERATIONS - 1);
 			print(PRI2, "%p: CommCore::start_writing(): index = %d\n", this, index);
 			assert(m_async_operations[index] == nullptr);
-			async_operation ret{ this, index };
+			async_operation<void> ret{ this, index };
 			start_write(index, str, size);
 			return ret;
 		}
 
-		async_operation_t<std::string> start_reading(const char ch = '\n')
+		async_operation<std::string> start_reading(const char ch = '\n')
 		{
 			index = (index + 1) & (NROPERATIONS - 1);
 			print(PRI2, "%p: CommCore::start_reading(): index = %d\n", this, index);
 			assert(m_async_operations[index] == nullptr);
-			async_operation_t<std::string> ret{ this, index };
+			async_operation<std::string> ret{ this, index };
 			start_read(index, ch);
 			return ret;
 		}
 
-		async_operation start_timer(steady_timer& timer, int ms)
+		async_operation<void> start_timer(steady_timer& timer, int ms)
 		{
 			index = (index + 1) & (NROPERATIONS - 1);
 			print(PRI2, "%p: CommCore::start_timer(timer, %d): index = %d\n", this, ms, index);
 			assert(m_async_operations[index] == nullptr);
-			async_operation ret{ this, index };
+			async_operation<void> ret{ this, index };
 			start_tmr(index, timer, ms);
 			return ret;
 		}
 
-		async_operation start_dummy()
+		async_operation<void> start_dummy()
 		{
 			index = (index + 1) & (NROPERATIONS - 1);
 			print(PRI2, "%p: CommCore::start_dummy(): index = %d\n", this, index);
 			assert(m_async_operations[index] == nullptr);
-			async_operation ret{ this, index };
+			async_operation<void> ret{ this, index };
 			return ret;
 		}
 
@@ -119,7 +119,7 @@ namespace corolib
 					(void)result_n;
 
 					print(PRI2, "%p: CommCore::handle_write(): idx = %d, entry\n", this, idx);
-					async_operation* om_async_operation = m_async_operations[idx];
+					async_operation_base* om_async_operation = m_async_operations[idx];
 
 					if (m_stopped)
 					{
@@ -136,7 +136,7 @@ namespace corolib
 						}
 						else
 						{
-							// This can occur when the async_operation has gone out of scope.
+							// This can occur when the async_operation_base has gone out of scope.
 							print(PRI1, "%p: CommCore::handle_write(): idx = %d, Warning: om_async_operation == nullptr\n", this, idx);
 						}
 					}
@@ -166,9 +166,9 @@ namespace corolib
 					std::size_t bytes)
 				{
 					print(PRI2, "%p: CommCore::handle_read(): idx = %d, entry\n", this, idx);
-					async_operation* om_async_operation = m_async_operations[idx];
-					async_operation_t<std::string>* om_async_operation_t =
-						dynamic_cast<async_operation_t<std::string>*>(om_async_operation);
+					async_operation_base* om_async_operation = m_async_operations[idx];
+					async_operation<std::string>* om_async_operation_t =
+						dynamic_cast<async_operation<std::string>*>(om_async_operation);
 
 					if (m_stopped)
 					{
@@ -194,7 +194,7 @@ namespace corolib
 						}
 						else
 						{
-							// This can occur when the async_operation has gone out of scope.
+							// This can occur when the async_operation_base has gone out of scope.
 							print(PRI1, "%p: CommCore::handle_read(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
 						}
 					}
@@ -209,7 +209,7 @@ namespace corolib
 						}
 						else
 						{
-							// This can occur when the async_operation has gone out of scope.
+							// This can occur when the async_operation_base has gone out of scope.
 							print(PRI1, "%p: CommCore::handle_read(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
 						}
 					}
@@ -227,7 +227,7 @@ namespace corolib
 				[this, idx](const boost::system::error_code& error)
 				{
 					print(PRI2, "%p: CommCore::handle_timer(): idx = %d, entry\n", this, idx);
-					async_operation* om_async_operation = m_async_operations[idx];
+					async_operation_base* om_async_operation = m_async_operations[idx];
 
 					if (m_stopped)
 					{
@@ -244,7 +244,7 @@ namespace corolib
 						}
 						else
 						{
-							// This can occur when the async_operation has gone out of scope.
+							// This can occur when the async_operation_base has gone out of scope.
 							print(PRI1, "%p: CommCore::handle_timer(): idx = %d, Warning: om_async_operation == nullptr\n", this, idx);
 						}
 					}
