@@ -1,9 +1,12 @@
 /**
- * @file server2.cpp
+ * @file server5.cpp
  * @brief
  * This example illustrates the use of coroutines
  * in combination with Boost ASIO to implement a server application.
  *
+ * This variant allows mainflow_one_client to follow the progress
+ * of read_client_request.
+ * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com)
  */
  
@@ -30,10 +33,45 @@ class ServerApp : public CommServer
 public:
 	ServerApp(
 		boost::asio::io_context& ioContext,
-		unsigned short CommService) 
-		: CommServer(ioContext, CommService)
+		unsigned short CommService) :
+		CommServer(ioContext, CommService)
 	{
 		print(PRI1, "ServerApp::ServerApp(...)\n");
+	}
+	
+	struct process_info_t
+	{
+		int iteration = -1;
+	};
+
+	async_task<int> read_client_request(spCommCore commClient, Dispatcher& dispatcher, 
+		bool& done, process_info_t& process_info)
+	{
+		print(PRI1, "read_client_request: entry\n");
+		while (1)
+		{
+			process_info.iteration++;
+
+			// Reading
+			print(PRI1, "read_client_request: async_operation<std::string> sr = commClient->start_reading();\n");
+			async_operation<std::string> sr = commClient->start_reading();
+			print(PRI1, "read_client_request: std::string str = co_await sr;\n");
+			std::string str = co_await sr;
+			
+			if (str.compare("EOF") == 0)
+				break;
+
+			print(PRI1, "read_client_request: dispatcher.dispatch(sr);\n");
+			// In reality, str will contain the identification and the marshalled arguments
+			dispatcher.dispatch(str);
+		}
+
+		done = true;
+		print(PRI1, "read_client_request: commClient->stop();\n");
+		commClient->stop();
+
+		print(PRI1, "read_client_request: co_return;\n");
+		co_return 0;
 	}
 	
 	oneway_task mainflow_one_client(spCommCore commClient)
@@ -79,25 +117,23 @@ public:
 				(void)serverRequest.operation4(req4);
 			});
 		
-		while (1)
+		bool done = false;
+		process_info_t process_info;
+		print(PRI1, "mainflow_one_client: co_await read_client_request(commClient, dispatcher);\n");
+		async_task<int> rcr = read_client_request(commClient, dispatcher, done, process_info);
+
+		// Notice the while loops in read_client_request and here.
+		steady_timer client_timer(m_IoContext);
+		while (!done)
 		{
-			// Reading
-			print(PRI1, "mainflow_one_client: async_operation<std::string> sr = commClient->start_reading();\n");
-			async_operation<std::string> sr = commClient->start_reading();
-			print(PRI1, "mainflow_one_client: std::string str = co_await sr;\n");
-			std::string str = co_await sr;
-
-			if (str.compare("EOF") == 0)
-				break;
-
-			print(PRI1, "mainflow_one_client: dispatcher.dispatch(sr);\n");
-			// In reality, str will contain the identification and the marshalled arguments
-			dispatcher.dispatch(str);
+			print(PRI1, "mainflow_one_client: process_info.iteration = %d\n", process_info.iteration);
+			async_operation<void> st = commClient->start_timer(client_timer, 50);
+			co_await st;
 		}
-
-		print(PRI1, "mainflow_one_client: commClient->stop();\n");
-		commClient->stop();
 		
+		print(PRI1, "main_one_client: int i = co_await rcr;\n");
+		int i = co_await rcr;
+
 		print(PRI1, "mainflow_one_client: co_return;\n");
 		co_return;
 	}
