@@ -279,6 +279,70 @@ async_task<int> mainflowWA2(std::initializer_list<CommClient*> clients)
 	co_return 0;
 }
 
+async_task<int> mainflowOneClient(CommClient& c1, int instance, int counter)
+{
+	print(PRI1, "mainflowOneClient: %d: begin\n", instance);
+
+	// Connecting
+	print(PRI1, "mainflowOneClient: %d: async_operation<void> sc1 = c1.start_connecting();\n", instance);
+	async_operation<void> sc1 = c1.start_connecting();
+	print(PRI1, "mainflowOneClient: %d: co_await sc1;\n", instance);
+	co_await sc1;
+
+	// Writing
+	std::string str = "This is string ";
+	str += std::to_string(counter);
+	str += " to echo\n";
+	print(PRI1, "mainflowOneClient: %d: async_operation<void> sw1 = c1.start_writing(...);\n", instance);
+	async_operation<void> sw1 = c1.start_writing(str.c_str(), str.length() + 1);
+	print(PRI1, "mainflowOneClient: %d: co_await sw1;\n", instance);
+	co_await sw1;
+
+	// Reading
+	print(PRI1, "mainflowOneClient: %d: async_operation<std::string> sr1 = c1.start_reading();\n", instance);
+	async_operation<std::string> sr1 = c1.start_reading('\n');
+	print(PRI1, "mainflowOneClient: %d: std::string strout = co_await sr1;\n", instance);
+	std::string strout = co_await sr1;
+	print(PRI1, "mainflowOneClient: %d: strout = %s", instance, strout.c_str());
+
+	// Closing
+	print(PRI1, "mainflowOneClient: %d: c1.stop();\n", instance);
+	c1.stop();
+
+	co_return 0;
+}
+
+async_task<int> mainflowWA3(CommClient& c1, CommClient& c2, CommClient& c3)
+{
+	print(PRI1, "mainflowWA3: begin\n");
+
+	int counter = 0;
+	for (int i = 0; i < 40; i++)
+	{
+		print(PRI1, "mainflowWA3: %d ------------------------------------------------------------------\n", i);
+
+		print(PRI1, "mainflowWA3: mainflowOneClient(c1, 0, counter++);\n");
+		async_task<int> tc1 = mainflowOneClient(c1, 0, counter++);
+		print(PRI1, "mainflowWA3: mainflowOneClient(c2, 1, counter++);\n");
+		async_task<int> tc2 = mainflowOneClient(c2, 1, counter++);
+		print(PRI1, "mainflowWA3: mainflowOneClient(c3, 2, counter++);\n");
+		async_task<int> tc3 = mainflowOneClient(c3, 2, counter++);
+
+		print(PRI1, "mainflowWA3: wait_any_awaitable<async_task<int>> wat({ &tc1, &tc2, &tc3 });\n");
+		wait_any_awaitable<async_task<int>> wat({ &tc1, &tc2, &tc3 });
+		for (int i = 0; i < 3; i++) {
+			print(PRI1, "mainflowWA3: int r = co_await wat;\n");
+			int r = co_await wat;
+			print(PRI1, "mainflowWA3: wat %d completed\n", r);
+		}
+
+		print(PRI1, "mainflowWA3: std::this_thread::sleep_for(std::chrono::seconds(1))\n");
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+	}
+	print(PRI1, "mainflowWA3: co_return 0;\n");
+	co_return 0;
+}
+
 int main(int argc, char* argv[])
 {
     boost::asio::io_context ioContext;
@@ -293,8 +357,8 @@ int main(int argc, char* argv[])
 	int selected = 0;
 	if (argc == 2)
 		selected = atoi(argv[1]);
-	if (selected < 0 || selected > 2) {
-		print(PRI1, "main: selection must be in the range [0..2]\n");
+	if (selected < 0 || selected > 3) {
+		print(PRI1, "main: selection must be in the range [0..3]\n");
 		return 0;
 	}
 
@@ -315,6 +379,12 @@ int main(int argc, char* argv[])
 	{
 		print(PRI1, "main: async_task<int> si3 = mainflowWA2( {&c1, &c2, &c3} )\n");
 		async_task<int> si2 = mainflowWA2({ &c1, &c2, &c3 });
+	}
+	break;
+	case 3:
+	{
+		print(PRI1, "main: async_task<int> si3 = mainflowWA3( {&c1, &c2, &c3} )\n");
+		async_task<int> si2 = mainflowWA3(c1, c2, c3);
 	}
 	break;
 	}

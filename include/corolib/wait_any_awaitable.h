@@ -27,7 +27,7 @@ namespace corolib
 			{
 				wait_any* q = new wait_any();
 				m_wait_any.push_back(q);
-				a->setWaitAny(q);				// defined in async_operation
+				a->setWaitAny(q);
 			}
 		}
 
@@ -38,7 +38,7 @@ namespace corolib
 			{
 				wait_any* q = new wait_any();
 				m_wait_any.push_back(q);
-				aws[i].setWaitAny(q);			// defined in async_operation
+				aws[i].setWaitAny(q);
 			}
 		}
 

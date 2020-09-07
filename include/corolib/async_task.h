@@ -12,6 +12,8 @@
 #include <experimental/resumable>
 #include "print.h"
 #include "semaphore.h"
+#include "wait_all_counter.h"
+#include "wait_any.h"
 
 namespace corolib
 {
@@ -61,6 +63,18 @@ namespace corolib
 			return m_coro.promise().value;
 		}
 
+		void setCounter(wait_all_counter* ctr)
+		{
+			print(PRI2, "%p: void m_async_task::setCounter(%p)\n", this, ctr);
+			m_coro.promise().m_ctr = ctr;
+		}
+
+		void setWaitAny(wait_any* waitany)
+		{
+			print(PRI2, "%p: void m_async_task::setWaitAny(%p)\n", this, waitany);
+			m_coro.promise().m_waitany = waitany;
+		}
+
 		auto operator co_await() noexcept
 		{
 			class awaiter
@@ -105,6 +119,8 @@ namespace corolib
 				: m_awaiting(nullptr)
 				, m_ready(false)
 				, m_wait_for_signal(false)
+				, m_ctr(nullptr)
+				, m_waitany(nullptr)
 			{
 				print(PRI2, "%p: async_task::promise_type::promise_type()\n", this);
 			}
@@ -119,6 +135,22 @@ namespace corolib
 				print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): begin\n", this);
 				m_value = v;
 				m_ready = true;
+
+				if (m_ctr)
+				{
+					print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): before m_ctr->completed();\n", this);
+					m_ctr->completed();
+					print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): after m_ctr->completed();\n", this);
+					return;
+				}
+				if (m_waitany)
+				{
+					print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): before m_waitany->completed();\n", this);
+					m_waitany->completed();
+					print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): after m_waitany->completed();\n", this);
+					return;
+				}
+
 				if (m_awaiting)
 				{
 					print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): before m_awaiting.resume();\n", this);
@@ -163,6 +195,8 @@ namespace corolib
 			bool m_ready;
 			Semaphore m_sema;
 			bool m_wait_for_signal;
+			wait_all_counter* m_ctr;
+			wait_any* m_waitany;
 			std::experimental::coroutine_handle<> m_awaiting;
 		};
 
@@ -217,6 +251,18 @@ namespace corolib
 			}
 		}
 
+		void setCounter(wait_all_counter* ctr)
+		{
+			print(PRI2, "%p: void m_async_task::setCounter(%p)\n", this, ctr);
+			m_coro.promise().m_ctr = ctr;
+		}
+
+		void setWaitAny(wait_any* waitany)
+		{
+			print(PRI2, "%p: void m_async_task::setWaitAny(%p)\n", this, waitany);
+			m_coro.promise().m_waitany = waitany;
+		}
+
 		auto operator co_await() noexcept
 		{
 			class awaiter
@@ -259,6 +305,8 @@ namespace corolib
 				: m_awaiting(nullptr)
 				, m_ready(false)
 				, m_wait_for_signal(false)
+				, m_ctr(nullptr)
+				, m_waitany(nullptr)
 			{
 				print(PRI2, "%p: async_task::promise_type::promise_type()\n", this);
 			}
@@ -272,19 +320,35 @@ namespace corolib
 			{
 				print(PRI2, "%p: async_task::promise_type::return_void(): begin\n", this);
 				m_ready = true;
+
+				if (m_ctr)
+				{
+					print(PRI2, "%p: async_task::promise_type::return_void(): before m_ctr->completed();\n", this);
+					m_ctr->completed();
+					print(PRI2, "%p: async_task::promise_type::return_void(): after m_ctr->completed();\n", this);
+					return;
+				}
+				if (m_waitany)
+				{
+					print(PRI2, "%p: async_task::promise_type::return_void(): before m_waitany->completed();\n", this);
+					m_waitany->completed();
+					print(PRI2, "%p: async_task::promise_type::return_void(): after m_waitany->completed();\n", this);
+					return;
+				}
+				
 				if (m_awaiting)
 				{
-					print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): before m_awaiting.resume();\n", this);
+					print(PRI2, "%p: async_task::promise_type::return_void(): before m_awaiting.resume();\n", this);
 					m_awaiting.resume();
-					print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): after m_awaiting.resume();\n", this);
+					print(PRI2, "%p: async_task::promise_type::return_void(): after m_awaiting.resume();\n", this);
 				}
 				if (m_wait_for_signal)
 				{
-					print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): before sema.signal();\n", this);
+					print(PRI2, "%p: async_task::promise_type::return_void(): before sema.signal();\n", this);
 					m_sema.signal();
-					print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): after sema.signal();\n", this);
+					print(PRI2, "%p: async_task::promise_type::return_void(): after sema.signal();\n", this);
 				}
-				print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): end\n", this);
+				print(PRI2, "%p: async_task::promise_type::return_void(): end\n", this);
 			}
 
 			auto get_return_object()
@@ -315,6 +379,8 @@ namespace corolib
 			bool m_ready;
 			Semaphore m_sema;
 			bool m_wait_for_signal;
+			wait_all_counter* m_ctr;
+			wait_any* m_waitany;
 			std::experimental::coroutine_handle<> m_awaiting;
 		};
 

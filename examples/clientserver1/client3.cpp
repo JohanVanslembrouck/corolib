@@ -22,67 +22,67 @@ using namespace corolib;
 
 const int corolib::priority = 0x01;
 
-oneway_task mainflowOneClient(CommClient& c1, auto_reset_event& are, int counter)
+oneway_task mainflowOneClient(CommClient& c1, auto_reset_event& are, int instance, int counter)
 {
-	print(PRI1, "mainflowOneClient: begin\n");
+	print(PRI1, "mainflowOneClient: %d: begin\n", instance);
 
 	// Connecting
-	print(PRI1, "mainflowOneClient: async_operation<void> sc1 = c1.start_connecting();\n");
+	print(PRI1, "mainflowOneClient: %d: async_operation<void> sc1 = c1.start_connecting();\n", instance);
 	async_operation<void> sc1 = c1.start_connecting();
-	print(PRI1, "mainflowOneClient: co_await sc1;\n");
+	print(PRI1, "mainflowOneClient: %d: co_await sc1;\n", instance);
 	co_await sc1;
 
 	// Writing
 	std::string str = "This is string ";
 	str += std::to_string(counter);
 	str += " to echo\n";
-	print(PRI1, "mainflowOneClient: async_operation<void> sw1 = c1.start_writing(...);\n");
+	print(PRI1, "mainflowOneClient: %d: async_operation<void> sw1 = c1.start_writing(...);\n", instance);
 	async_operation<void> sw1 = c1.start_writing(str.c_str(), str.length() + 1);
-	print(PRI1, "mainflowOneClient: co_await sw1;\n");
+	print(PRI1, "mainflowOneClient: %d: co_await sw1;\n", instance);
 	co_await sw1;
 
 	// Reading
-	print(PRI1, "mainflowOneClient: async_operation<std::string> sr1 = c1.start_reading();\n");
+	print(PRI1, "mainflowOneClient: %d: async_operation<std::string> sr1 = c1.start_reading();\n", instance);
 	async_operation<std::string> sr1 = c1.start_reading('\n');
-	print(PRI1, "mainflowOneClient: std::string strout = co_await sr1;\n");
+	print(PRI1, "mainflowOneClient: %d: std::string strout = co_await sr1;\n", instance);
 	std::string strout = co_await sr1;
-	print(PRI1, "mainflowOneClient: strout = %s", strout.c_str());
+	print(PRI1, "mainflowOneClient: %d: strout = %s", instance, strout.c_str());
 
 	// Closing
-	print(PRI1, "mainflowOneClient: c1.stop();\n");
+	print(PRI1, "mainflowOneClient: %d: c1.stop();\n", instance);
 	c1.stop();
 
 	are.resume();
 }
 
-async_task<int> mainflowOneClient(CommClient& c1, int counter)
+async_task<int> mainflowOneClient(CommClient& c1, int instance, int counter)
 {
-	print(PRI1, "mainflowOneClient: begin\n");
+	print(PRI1, "mainflowOneClient: %d: begin\n", instance);
 
 	// Connecting
-	print(PRI1, "mainflowOneClient: async_operation<void> sc1 = c1.start_connecting();\n");
+	print(PRI1, "mainflowOneClient: %d: async_operation<void> sc1 = c1.start_connecting();\n", instance);
 	async_operation<void> sc1 = c1.start_connecting();
-	print(PRI1, "mainflowOneClient: co_await sc1;\n");
+	print(PRI1, "mainflowOneClient: %d: co_await sc1;\n", instance);
 	co_await sc1;
 
 	// Writing
 	std::string str = "This is string ";
 	str += std::to_string(counter);
 	str += " to echo\n";
-	print(PRI1, "mainflowOneClient: async_operation<void> sw1 = c1.start_writing(...);\n");
+	print(PRI1, "mainflowOneClient: %d: async_operation<void> sw1 = c1.start_writing(...);\n", instance);
 	async_operation<void> sw1 = c1.start_writing(str.c_str(), str.length() + 1);
-	print(PRI1, "mainflowOneClient: co_await sw1;\n");
+	print(PRI1, "mainflowOneClient: %d: co_await sw1;\n", instance);
 	co_await sw1;
-	
+
 	// Reading
-	print(PRI1, "mainflowOneClient: async_operation<std::string> sr1 = c1.start_reading();\n");
+	print(PRI1, "mainflowOneClient: %d: async_operation<std::string> sr1 = c1.start_reading();\n", instance);
 	async_operation<std::string> sr1 = c1.start_reading('\n');
-	print(PRI1, "mainflowOneClient: std::string strout = co_await sr1;\n");
+	print(PRI1, "mainflowOneClient: %d: std::string strout = co_await sr1;\n", instance);
 	std::string strout = co_await sr1;
-	print(PRI1, "mainflowOneClient: strout = %s", strout.c_str());
+	print(PRI1, "mainflowOneClient: %d: strout = %s", instance, strout.c_str());
 
 	// Closing
-	print(PRI1, "mainflowOneClient: c1.stop();\n");
+	print(PRI1, "mainflowOneClient: %d: c1.stop();\n", instance);
 	c1.stop();
 
 	co_return 0;
@@ -189,12 +189,12 @@ async_task<int> mainflow1(CommClient& c1, CommClient& c2, CommClient& c3)
 
 		auto_reset_event are1, are2, are3;
 	
-		print(PRI1, "mainflow1: mainflowOneClient(c1, are1, counter++);\n");
-		(void) mainflowOneClient(c1, are1, counter++);
-		print(PRI1, "mainflow1: mainflowOneClient(c2, are2; counter++);\n");
-		(void) mainflowOneClient(c2, are2, counter++);
-		print(PRI1, "mainflow1: mainflowOneClient(c3, are3, counter++);\n");
-		(void)mainflowOneClient(c3, are3, counter++);
+		print(PRI1, "mainflow1: mainflowOneClient(c1, are1, 0, counter++);\n");
+		(void) mainflowOneClient(c1, are1, 0, counter++);
+		print(PRI1, "mainflow1: mainflowOneClient(c2, are2, 1, counter++);\n");
+		(void) mainflowOneClient(c2, are2, 1, counter++);
+		print(PRI1, "mainflow1: mainflowOneClient(c3, are3, 2, counter++);\n");
+		(void)mainflowOneClient(c3, are3, 2,  counter++);
 
 		print(PRI1, "mainflow1: co_await are1;\n");
 		co_await are1;
@@ -219,12 +219,12 @@ async_task<int> mainflow2(CommClient& c1, CommClient& c2, CommClient& c3)
 	{
 		print(PRI1, "mainflow2: %d ------------------------------------------------------------------\n", i);
 		
-		print(PRI1, "mainflow2: mainflowOneClient(c1, counter++);\n");
-		async_task<int> tc1 = mainflowOneClient(c1, counter++);
-		print(PRI1, "mainflow2: mainflowOneClient(c2, counter++);\n");
-		async_task<int> tc2 = mainflowOneClient(c2, counter++);
-		print(PRI1, "mainflow1: mainflowOneClient(c3, counter++);\n");
-		async_task<int> tc3 = mainflowOneClient(c3, counter++);
+		print(PRI1, "mainflow2: mainflowOneClient(c1, 0, counter++);\n");
+		async_task<int> tc1 = mainflowOneClient(c1, 0, counter++);
+		print(PRI1, "mainflow2: mainflowOneClient(c2, 1, counter++);\n");
+		async_task<int> tc2 = mainflowOneClient(c2, 1, counter++);
+		print(PRI1, "mainflow1: mainflowOneClient(c3, 2, counter++);\n");
+		async_task<int> tc3 = mainflowOneClient(c3, 2, counter++);
 
 		print(PRI1, "mainflow2: co_await tc1;\n");
 		co_await tc1;
