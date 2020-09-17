@@ -23,6 +23,8 @@ It awaits the expiry of the timer or the reception of the "STOP" request from th
 In the case of timer expiry, the server sends the reply to the client.
 In the case of a "STOP" request, it does not send a reply to the client.
 
+The client1a application has the same behaviour as the client1 application, but it uses a small loop to have a somewhat smaller program.
+
 The server2 application has the same behaviour as the server application.
 It is more complicated  because it has split the one_client coroutine of the server application
 into two coroutines: one_client and an auxiliary coroutine one_client_write_reply.
