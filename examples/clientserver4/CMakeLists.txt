@@ -14,3 +14,4 @@ link_directories(${Boost_LIBRARY_DIR})
 
 add_executable(cs4-client1 client1.cpp)
 add_executable(cs4-server server.cpp)
+add_executable(cs4-server2 server2.cpp)

@@ -64,6 +64,8 @@ public:
 		print(PRI1, "one_client: async_operation<std::string> sr2 = commClient->start_reading();\n");
 		async_operation<std::string> sr2 = commClient->start_reading();
 
+		async_operation<void> sw;
+
 		int nrOfFeedbacks = 10;
 		bool done = false;
 		while (!done)
@@ -73,10 +75,11 @@ public:
 			// Wait for either
 			// a) the timer to expire
 			// b) the action to be cancelled by the client
+			// c) the write action to complete
 			// whichever occurs first.
 
-			print(PRI1, "one_client: wait_any_awaitable<async_operation_base> war( { &st, &sr2 } ) ;\n");
-			wait_any_awaitable<async_operation_base> war({ &st, &sr2 });
+			print(PRI1, "one_client: wait_any_awaitable<async_operation_base> war( { &st, &sr2, &sw } ) ;\n");
+			wait_any_awaitable<async_operation_base> war({ &st, &sr2, &sw });
 			print(PRI1, "one_client: int i = co_await war;\n");
 			int i = co_await war;
 
@@ -101,9 +104,7 @@ public:
 
 				// Writing
 				print(PRI1, "one_client: async_operation<void> sw = commClient->start_writing(...);\n");
-				async_operation<void> sw = commClient->start_writing(strout.c_str(), strout.length() + 1);
-				print(PRI1, "one_client: co_await sw;\n");
-				co_await sw;
+				sw = commClient->start_writing(strout.c_str(), strout.length() + 1);
 
 				if (nrOfFeedbacks > 0)
 				{
@@ -125,6 +126,11 @@ public:
 				
 				done = true;
 				// Do not send a reply to the client
+			}
+			break;
+			case 2: // Write completed
+			{
+				print(PRI1, "one_client: i = %d: write completed\n", i);
 			}
 			break;
 			default:
