@@ -76,11 +76,11 @@ public:
 
 		print(PRI1, "performAction: wait_all_awaitable<async_operation_base> war( { &sr, &st } ) ;\n");
 		wait_any_awaitable<async_operation_base> war( { &sr, &st } );
-
-		bool done = false;
 		print(PRI1, "performAction: int i = co_await war;\n");
 		int i = co_await war;
 		
+		bool done = false;
+
 		switch (i)
 		{
 		case 0:	// Reply has arrived, stop the timer and print the result
@@ -128,6 +128,8 @@ public:
 
 		if (!done)
 		{
+			print(PRI1, "performAction: wait_all_awaitable<async_operation_base> war( { &sr, &st } ) ;\n");
+			wait_any_awaitable<async_operation_base> war({ &sr, &st });
 			print(PRI1, "performAction: i = co_await war;\n");
 			i = co_await war;
 
@@ -135,6 +137,9 @@ public:
 			{
 			case 0:	// Reply has arrived, stop the timer and print the result
 			{
+				print(PRI1, "performAction: client_timer.cancel();\n");
+				client_timer.cancel();
+
 				print(PRI1, "performAction: answer arrived after STOP was sent\n");
 				print(PRI1, "performAction: sr.get_result() = %s\n", sr.get_result().c_str());
 			}

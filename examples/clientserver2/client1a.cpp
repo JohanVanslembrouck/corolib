@@ -73,13 +73,12 @@ public:
 		steady_timer client_timer(ioContext);
 		print(PRI1, "performAction: async_operation<void> st = start_timer(client_timer, timeout);\n");
 		async_operation<void> st = start_timer(client_timer, timeout);
-
-		print(PRI1, "performAction: wait_all_awaitable<async_operation_base> war( { &sr, &st } ) ;\n");
-		wait_any_awaitable<async_operation_base> war( { &sr, &st } );
 		
 		bool done = false;
 		for (int j = 0; j < 2 && !done; j++)
 		{
+			print(PRI1, "performAction: wait_all_awaitable<async_operation_base> war( { &sr, &st } ) ;\n");
+			wait_any_awaitable<async_operation_base> war({ &sr, &st });
 			print(PRI1, "performAction: int i = co_await war;\n");
 			int i = co_await war;
 
