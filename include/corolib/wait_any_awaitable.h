@@ -28,6 +28,7 @@ namespace corolib
 				wait_any* q = new wait_any();
 				m_wait_any.push_back(q);
 				a->setWaitAny(q);
+				m_elements.push_back(a);
 			}
 		}
 
@@ -39,6 +40,7 @@ namespace corolib
 				wait_any* q = new wait_any();
 				m_wait_any.push_back(q);
 				aws[i].setWaitAny(q);
+				m_elements.push_back(&aws[i]);
 			}
 		}
 
@@ -53,7 +55,10 @@ namespace corolib
 		{
 			print(PRI2, "%p: wait_any_awaitable::~wait_any_awaitable()\n", this);
 			for (int i = 0; i < m_wait_any.size(); i++)
+			{
+				m_elements[i]->setWaitAny(nullptr);
 				delete m_wait_any[i];
+			}
 		}
 
 		wait_any_awaitable& operator = (const wait_any_awaitable&) = delete;
@@ -121,6 +126,7 @@ namespace corolib
 
 	private:
 		std::vector<wait_any*> m_wait_any;
+		std::vector<TYPE*> m_elements;
 	};
 }
 

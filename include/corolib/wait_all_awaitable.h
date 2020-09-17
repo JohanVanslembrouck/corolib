@@ -16,6 +16,8 @@
 #ifndef _WAIT_ALL_AWAITABLE_
 #define _WAIT_ALL_AWAITABLE_
 
+#include <vector>
+
 #include "print.h"
 #include "wait_all_counter.h"
 #include "async_operation.h"
@@ -33,6 +35,7 @@ namespace corolib
 			for (TYPE* async_op : async_ops)
 			{
 				async_op->setCounter(&m_counter);
+				m_elements.push_back(async_op);
 			}
 		}
 
@@ -43,6 +46,7 @@ namespace corolib
 			for (int i = 0; i < size; i++)
 			{
 				async_ops[i].setCounter(&m_counter);
+				m_elements.push_back(&async_ops[i]);
 			}
 		}
 
@@ -56,6 +60,10 @@ namespace corolib
 		~wait_all_awaitable()
 		{
 			print(PRI2, "%p: wait_all_awaitable::~wait_all_awaitable()\n", this);
+			for (int i = 0; i < m_elements.size(); i++)
+			{
+				m_elements[i]->setCounter(nullptr);
+			}
 		}
 
 		wait_all_awaitable& operator = (const wait_all_awaitable&) = delete;
@@ -100,6 +108,7 @@ namespace corolib
 
 	private:
 		wait_all_counter m_counter;
+		std::vector<TYPE*> m_elements;
 	};
 }
 
