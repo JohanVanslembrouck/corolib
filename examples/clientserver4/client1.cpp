@@ -67,14 +67,15 @@ public:
 		print(PRI1, "performAction: async_operation<void> st = start_timer(client_timer, timeout);\n");
 		async_operation<void> st = start_timer(client_timer, timeout);
 
+		print(PRI1, "performAction: wait_all_awaitable<async_operation_base> war( { &sr, &st } ) ;\n");
+		wait_any_awaitable<async_operation_base> war({ &sr, &st });
+
 		int counter = 0;
 		bool done = false;
 		while (!done)
 		{
 			print(PRI1, "performAction: %d ---------------------------\n", counter);
 
-			print(PRI1, "performAction: wait_all_awaitable<async_operation_base> war( { &sr, &st } ) ;\n");
-			wait_any_awaitable<async_operation_base> war({ &sr, &st });
 			print(PRI1, "performAction: int i = co_await war;\n");
 			int i = co_await war;
 
@@ -116,14 +117,14 @@ public:
 				std::string str1 = "STOP\n";
 
 				// Writing
-				print(PRI1, "performAction: async_operation<void> sw2 = start_writing(...);\n");
+				print(PRI1, "performAction: i = %d: async_operation<void> sw2 = start_writing(...);\n", i);
 				async_operation<void> sw2 = start_writing(str1.c_str(), str1.length() + 1);
-				print(PRI1, "performAction: co_await sw2;\n");
+				print(PRI1, "performAction: i = %d: co_await sw2;\n", i);
 				co_await sw2;
 
 				// Start a timer of 500 ms
 				// Timing
-				print(PRI1, "performAction: st = start_timer(500);\n");
+				print(PRI1, "performAction: i = %d: st = start_timer(500);\n", i);
 				st = start_timer(client_timer, 500);
 				
 				done = true;

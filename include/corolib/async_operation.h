@@ -94,8 +94,19 @@ namespace corolib
 			m_awaiting = s.m_awaiting;
 			m_ready = s.m_ready;
 			m_index = s.m_index;
-			m_ctr = s.m_ctr;
-			m_waitany = s.m_waitany;
+
+			// The following 2 tests allow an async_operation that takes part in
+			// a wait_all_awaitable or wait_any_awaitable to be re-assigned.
+			// This avoids disposing the original wait_all_awaitable or wait_any_awaitable
+			// and constructing a new one.
+			if (m_ctr != nullptr && s.m_ctr == nullptr)
+				; // do not overwrite m_ctr
+			else
+				m_ctr = s.m_ctr;
+			if (m_waitany != nullptr && s.m_waitany == nullptr)
+				; // do not overwrite m_waitany
+			else
+				m_waitany = s.m_waitany;
 
 			// Tell the CommService we are at another address after the move.
 			if (m_service)

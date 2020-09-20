@@ -128,8 +128,6 @@ public:
 
 		if (!done)
 		{
-			print(PRI1, "performAction: wait_all_awaitable<async_operation_base> war( { &sr, &st } ) ;\n");
-			wait_any_awaitable<async_operation_base> war({ &sr, &st });
 			print(PRI1, "performAction: i = co_await war;\n");
 			i = co_await war;
 

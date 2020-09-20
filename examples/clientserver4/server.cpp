@@ -64,19 +64,20 @@ public:
 		print(PRI1, "one_client: async_operation<std::string> sr2 = commClient->start_reading();\n");
 		async_operation<std::string> sr2 = commClient->start_reading();
 
+		// Wait for either
+		// a) the timer to expire
+		// b) the action to be cancelled by the client
+		// whichever occurs first.
+
+		print(PRI1, "one_client: wait_any_awaitable<async_operation_base> war( { &st, &sr2 } ) ;\n");
+		wait_any_awaitable<async_operation_base> war({ &st, &sr2 });
+
 		int nrOfFeedbacks = 10;
 		bool done = false;
 		while (!done)
 		{
 			print(PRI1, "one_client: %d ---------------------------\n", nrOfFeedbacks);
 
-			// Wait for either
-			// a) the timer to expire
-			// b) the action to be cancelled by the client
-			// whichever occurs first.
-
-			print(PRI1, "one_client: wait_any_awaitable<async_operation_base> war( { &st, &sr2 } ) ;\n");
-			wait_any_awaitable<async_operation_base> war({ &st, &sr2 });
 			print(PRI1, "one_client: int i = co_await war;\n");
 			int i = co_await war;
 
@@ -100,16 +101,16 @@ public:
 				}
 
 				// Writing
-				print(PRI1, "one_client: async_operation<void> sw = commClient->start_writing(...);\n");
+				print(PRI1, "one_client: i = %d: async_operation<void> sw = commClient->start_writing(...);\n", i);
 				async_operation<void> sw = commClient->start_writing(strout.c_str(), strout.length() + 1);
-				print(PRI1, "one_client: co_await sw;\n");
+				print(PRI1, "one_client: i = %d: co_await sw;\n", i);
 				co_await sw;
 
 				if (nrOfFeedbacks > 0)
 				{
 					// Restart the timer of 1000 ms
 					// Timing
-					print(PRI1, "one_client: st = commClient->start_timer(1000);\n");
+					print(PRI1, "one_client: i = %d: st = commClient->start_timer(1000);\n", i);
 					st = commClient->start_timer(client_timer, 1000);
 				}
 				nrOfFeedbacks--;
@@ -119,9 +120,9 @@ public:
 			{
 				print(PRI1, "one_client: i = %d: second request received from client\n", i);
 				
-				print(PRI1, "one_client: std::string strIn2 = sr2.get_result();\n");
+				print(PRI1, "one_client: i = %d: std::string strIn2 = sr2.get_result();\n", i);
 				std::string strIn2 = sr2.get_result();
-				print(PRI1, "one_client: strIn2 = %s\n", strIn2.c_str());
+				print(PRI1, "one_client: i = %d: strIn2 = %s\n", i, strIn2.c_str());
 				
 				done = true;
 				// Do not send a reply to the client
@@ -132,9 +133,9 @@ public:
 			} // switch (i)
 		} // while (!done)
 #if 1
-		// Without this (small) delay there is an internal error on writing the string (onto a clossed connection?)
-		print(PRI1, "one_client: st = commClient->start_timer(200);\n");
-		st = commClient->start_timer(client_timer, 200);
+		// Without this delay there is an internal error on writing the string (onto a clossed connection?)
+		print(PRI1, "one_client: st = commClient->start_timer(500);\n");
+		st = commClient->start_timer(client_timer, 500);
 		print(PRI1, "one_client: co_await st;\n");
 		co_await st;
 #endif
