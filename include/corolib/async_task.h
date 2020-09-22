@@ -60,7 +60,7 @@ namespace corolib
 				m_coro.promise().m_wait_for_signal = true;
 				m_coro.promise().m_sema.wait();
 			}
-			return m_coro.promise().value;
+			return m_coro.promise().m_value;
 		}
 
 		void setCounter(wait_all_counter* ctr)
