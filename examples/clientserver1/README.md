@@ -12,3 +12,5 @@ After building, launch the applications in the following order:
 
 For every incoming client request, 'cs1-clientserver' makes an interaction with 'cs1-server' that runs 
 independently from the interaction with the client.
+
+client1a.cpp is a variant of client1.cpp, using the get() function to retrieve the result.

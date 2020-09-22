@@ -95,7 +95,7 @@ int main()
 	print(PRI1, "main: ClientApp c1(ioContext, ep1);\n");
 	ClientApp c1(ioContext, ep1);
 
-	print(PRI1, "main: async_task<int> si = mainflow(c1);\n");
+	print(PRI1, "main: async_task<int> si = c1.mainflow();\n");
 	async_task<int> si = c1.mainflow();
 
 	print(PRI1, "main: before ioContext.run();\n");
