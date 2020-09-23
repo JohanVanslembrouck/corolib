@@ -39,14 +39,6 @@ public:
 		print(PRI1, "mainflow: co_await sc;\n");
 		co_await sc;
 
-		if (i == 0)
-		{
-			// Introduce a delay of 3 seconds to allow multiple client1 applications to be started and run in parallel.
-			steady_timer client_timer(ioContext);
-			print(PRI1, "mainflow: co_await start_timer(3000);\n");
-			co_await start_timer(client_timer, 3000);
-		}
-
 		std::string str1 = "This is string ";
 		str1 += std::to_string(counter++);
 		str1 += " to echo\n";
@@ -85,10 +77,18 @@ public:
 		print(PRI1, "mainflow: begin\n");
 		int counter = 0;
 
-		for (int i = 0; i < 40; i++)
+		for (int i = 0; i < 100; i++)
 		{
 			print(PRI1, "mainflow: %d ------------------------------------------------------------------\n", i);
 			
+			if (i == 0)
+			{
+				// Introduce a delay of 3 seconds to allow multiple client1x applications to be started and run in parallel.
+				steady_timer client_timer(ioContext);
+				print(PRI1, "mainflow: co_await start_timer(3000);\n");
+				co_await start_timer(client_timer, 3000);
+			}
+
 			print(PRI1, "mainflow: async_task<int> task = mainflow(i, counter);\n");
 			async_task<int> task = mainflow(i, counter);
 			print(PRI1, "mainflow: int ret1 = co_await task\n");

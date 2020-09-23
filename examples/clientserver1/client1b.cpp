@@ -1,5 +1,5 @@
 /** 
- * @file client1.cpp
+ * @file client1b.cpp
  * @brief
  * Example of a client application.
  * This client application uses 1 CommClient object.
@@ -31,6 +31,39 @@ public:
 		print(PRI1, "ClientApp::ClientApp(...)\n");
 	}
 
+	async_task<int> mainflow(int i, int& counter)
+	{
+		// Connecting
+		print(PRI1, "mainflow: co_await start_connecting();\n");
+		co_await start_connecting();
+
+		std::string str1 = "This is string ";
+		str1 += std::to_string(counter++);
+		str1 += " to echo\n";
+
+		// Writing
+		print(PRI1, "mainflow: async_operation<void> co_await start_writing(...);\n");
+		co_await start_writing(str1.c_str(), str1.length() + 1);
+
+		// Reading
+		print(PRI1, "mainflow: std::string strout = co_await start_reading();\n");
+		std::string strout = co_await start_reading();
+		print(PRI1, "mainflow: strout = %s", strout.c_str());
+
+		// Just start a timer to introduce a delay to simulate a long asynchronous calculation 
+		// after having read the response.
+		// Delaying
+		steady_timer client_timer(ioContext);
+		print(PRI1, "mainflow: co_await start_timer(100);\n");
+		co_await start_timer(client_timer, 100);
+
+		// Closing
+		print(PRI1, "mainflow: stop();\n");
+		stop();
+
+		co_return i;
+	}
+
 	async_task<int> mainflow()
 	{
 		print(PRI1, "mainflow: begin\n");
@@ -39,50 +72,18 @@ public:
 		for (int i = 0; i < 100; i++)
 		{
 			print(PRI1, "mainflow: %d ------------------------------------------------------------------\n", i);
-
+			
 			if (i == 0)
 			{
-				// Introduce a delay of 3 seconds to allow multiple client1 applications to be started and run in parallel.
+				// Introduce a delay of 3 seconds to allow multiple client1x applications to be started and run in parallel.
 				steady_timer client_timer(ioContext);
 				print(PRI1, "mainflow: co_await start_timer(3000);\n");
 				co_await start_timer(client_timer, 3000);
 			}
 
-			// Connecting
-			print(PRI1, "mainflow: async_operation<void> sc = start_connecting();\n");
-			async_operation<void> sc = start_connecting();
-			print(PRI1, "mainflow: co_await sc;\n");
-			co_await sc;
-
-			std::string str1 = "This is string ";
-			str1 += std::to_string(counter++);
-			str1 += " to echo\n";
-
-			// Writing
-			print(PRI1, "mainflow: async_operation<void> sw = start_writing(...);\n");
-			async_operation<void> sw = start_writing(str1.c_str(), str1.length() + 1);
-			print(PRI1, "mainflow: co_await sw;\n");
-			co_await sw;
-
-			// Reading
-			print(PRI1, "mainflow: async_operation<std::string> sr = start_reading();\n");
-			async_operation<std::string> sr = start_reading();
-			print(PRI1, "mainflow: std::string strout = co_await sr;\n");
-			std::string strout = co_await sr;
-			print(PRI1, "mainflow: strout = %s", strout.c_str());
-
-			// Just start a timer to introduce a delay to simulate a long asynchronous calculation 
-			// after having read the response.
-			// Delaying
-			steady_timer client_timer(ioContext);
-			print(PRI1, "mainflow: async_operation<void> st = start_timer(100);\n");
-			async_operation<void> st = start_timer(client_timer, 100);
-			print(PRI1, "mainflow: co_await st;\n");
-			co_await st;
-
-			// Closing
-			print(PRI1, "mainflow: stop();\n");
-			stop();
+			print(PRI1, "mainflow: int ret = co_await mainflow(i, counter);\n");
+			int ret = co_await mainflow(i, counter);
+			print(PRI1, "mainflow: ret = %d\n", ret);
 		}
 
 		print(PRI1, "mainflow: co_return 0;\n");

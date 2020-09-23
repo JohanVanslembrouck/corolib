@@ -14,6 +14,9 @@ link_directories(${Boost_LIBRARY_DIR})
 
 add_executable(cs1-client1 client1.cpp)
 add_executable(cs1-client1a client1a.cpp)
+add_executable(cs1-client1b client1b.cpp)
+add_executable(cs1-client1c client1c.cpp)
+
 add_executable(cs1-client3 client3.cpp)
 add_executable(cs1-client3WA client3WA.cpp)
 add_executable(cs1-client3WAny client3WAny.cpp)
