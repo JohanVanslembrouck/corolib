@@ -128,7 +128,7 @@ namespace corolib
 						else
 						{
 							// This can occur when the async_operation_base has gone out of scope.
-							print(PRI1, "%p: CommCore::handle_connect(): idx = %d, Error: om_async_operation = %p\n", this, idx, om_async_operation);
+							print(PRI1, "%p: CommCore::handle_connect(): idx = %d, Warning: om_async_operation == nullptr\n", this, idx);
 						}
 					}
 					print(PRI2, "%p: CommClient::CommClient(): idx = %d, exit\n\n", this, idx);
