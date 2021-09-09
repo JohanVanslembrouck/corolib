@@ -48,6 +48,7 @@ namespace corolib
 		virtual ~async_operation_base()
 		{
 			print(PRI2, "%p: async_operation_base::~async_operation_base(): m_index = %d\n", this, m_index);
+            m_ready = false;
 			if (m_index != -1)
 			{
 				if (m_service)
@@ -55,6 +56,9 @@ namespace corolib
 					m_service->m_async_operations[m_index] = nullptr;
 				}
 			}
+            m_index = -1;
+            m_ctr = nullptr;
+            m_waitany = nullptr;
 		}
 
 		async_operation_base(const async_operation_base& s) = delete;
@@ -146,8 +150,9 @@ namespace corolib
 			}
 			else
 			{
-				print(PRI2, "%p: async_operation_base::completed(): m_awaiting not yet initialized!!!\n", this);
-				print(PRI2, "%p: async_operation_base::completed(): operation completed before co_waited!\n", this);
+                print(PRI2, "%p: async_operation_base::completed(): m_awaiting not yet initialized!!!\n", this);
+                print(PRI2, "%p: async_operation_base::completed(): operation completed before co_waited!!\n", this);
+                m_ready = true;     // Set to completed.
 			}
 		}
 
@@ -175,6 +180,9 @@ namespace corolib
 	template<typename TYPE>
 	class async_operation : public async_operation_base
 	{
+    private:
+        TYPE m_result;
+
 	public:
 		async_operation(CommService* s = nullptr, int index = 0)
 			: async_operation_base(s, index)
@@ -182,10 +190,16 @@ namespace corolib
 		{
 			print(PRI2, "%p: async_operation<TYPE>::async_operation()\n", this);
 		}
-
+#if 0
+        void set_result(std::string result)
+        {
+            print(PRI2, "%p: async_operation<TYPE>::set_result(...): result = %s\n", this, result.c_str());
+            m_result = result;
+        }
+#endif
 		void set_result(TYPE result)
 		{
-			print(PRI2, "%p: async_operation<TYPE>::set_result(...): result = %s", this, result.c_str());
+            print(PRI2, "%p: async_operation<TYPE>::set_result(...)\n", this);
 			m_result = result;
 		}
 
@@ -228,8 +242,7 @@ namespace corolib
 
 			return awaiter{ *this };
 		}
-	private:
-		TYPE m_result;
+
 	};
 
 	template<>
