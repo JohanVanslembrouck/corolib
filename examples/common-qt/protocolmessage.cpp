@@ -492,63 +492,21 @@ bool ProtocolMessage::removeStuffing(QByteArray& dest, QByteArray& src)
  * @param selection
  * @return
  */
-QByteArray composeMessage(int selection, bool latencyMeasurement, int step)
+QByteArray composeMessage(int selection, int step)
 {
     //qDebug() << Q_FUNC_INFO << selection << latencyMeasurement << step;
 
     QByteArray data;
     data.append(STX);
 
-    if (!latencyMeasurement)
+    for (int i = 0x10; i < 0x14; i++)
     {
-        for (int i = 0x30; i <= 0x39; i++)
-            data.append(static_cast<unsigned char>(i));
-
-        if (selection >= 1)
-        {
-            for (int i = 0x3A; i < 0x3F; i++)
-                data.append(static_cast<unsigned char>(i));
-        }
-        if (selection >= 2)
-        {
-            data.append(STX);
-            for (int i = 0x40; i < 0x4F; i++)
-                data.append(static_cast<unsigned char>(i));
-            data.append(ETX);
-        }
-        if (selection >= 3)
-        {
-            for (int i = 0x50; i < 0x5F; i++)
-                data.append(static_cast<unsigned char>(i));
-            data.append(DEL);
-        }
-        if (selection >= 4)
-        {
-            for (int i = 0x60; i < 0x7B; i++)
-                data.append(static_cast<unsigned char>(i));
-        }
-        if (selection >= 5)
-        {
-            for (int i = 0x80; i < 0xC0; i++)
-                data.append(static_cast<unsigned char>(i));
-        }
-        if (selection >= 6)
-        {
-            for (int i = 0xC0; i < 0xF0; i++)
-                data.append(static_cast<unsigned char>(i));
-        }
+        data.append(static_cast<unsigned char>(i));
     }
-    else
-    {
-        for (int i = 0x10; i < 0x14; i++)
-        {
-            data.append(static_cast<unsigned char>(i));
-        }
 
-        for (int i = 0; i < step * selection; i++)
-        {
-            data.append(static_cast<unsigned char>(0x20 + i));
-        }
+    for (int i = 0; i < step * selection; i++)
+    {
+        data.append(static_cast<unsigned char>(0x20 + i));
     }
 
     data.append(ETX);

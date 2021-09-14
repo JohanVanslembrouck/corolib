@@ -13,8 +13,7 @@
 #include <iomanip>      // setprecision
 using namespace std;
 
-const int NR_MESSAGE_LENGTHS = 7;
-static int nr_message_lengths = NR_MESSAGE_LENGTHS;
+static int nr_message_lengths = 10;
 
 /**
  * @brief TcpClient01::TcpClient01
@@ -50,8 +49,7 @@ TcpClient01::TcpClient01(QObject *parent, MessageCheck check)
     connect(&m_timerStartSending,   &QTimer::timeout, this, &TcpClient01::sendTCPStart);
     connect(&m_timerNoResponse,     &QTimer::timeout, this, &TcpClient01::noResponseReceived);
 
-    if (configuration.m_latencyMeasurement)
-        nr_message_lengths = configuration.m_numberMessages;
+    nr_message_lengths = configuration.m_numberMessages;
 
     configureTCP();
 }
@@ -199,9 +197,7 @@ void TcpClient01::sendTCPStart()
 QByteArray TcpClient01::prepareMessage(int selection)
 {
     //qDebug() << Q_FUNC_INFO << selection;
-    QByteArray data = composeMessage(selection,
-                                     configuration.m_latencyMeasurement,
-                                     configuration.m_step);
+    QByteArray data = composeMessage(selection, configuration.m_step);
 
     ProtocolMessage message(USE_CRC);
     message.createMessage(data);

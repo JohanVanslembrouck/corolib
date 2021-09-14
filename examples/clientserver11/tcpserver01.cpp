@@ -5,6 +5,8 @@
  * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
  */
 
+#include <QThread>
+
 #include "tcpserver01.h"
 #include "tcpconfig.h"
 
@@ -123,6 +125,8 @@ void TcpServer01::readyReadTcp(QTcpSocket* sock, QByteArray& data)
         {
             qWarning() << Q_FUNC_INFO << "received incorrect message";
         }
+
+        QThread::msleep(2);
 
         qInfo() << "TCPIP: " << m_message.content();
         m_tcpServer.sendMessage(sock, m_message.content());

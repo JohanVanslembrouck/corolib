@@ -82,14 +82,6 @@ bool TcpConfigFile::readConfigurationFile(QString fileName)
                         configuration.m_waitForConnectionTimeout = waitForConnectionTimeout;
                 }
 
-                if (QString::compare(key, "waitForEncryptedTimeout", Qt::CaseInsensitive) == 0)
-                {
-                    bool ok;
-                    qint32 waitForEncryptedTimeout = value.toInt(&ok);
-                    if (ok)
-                        configuration.m_waitForEncryptedTimeout = waitForEncryptedTimeout;
-                }
-
                 if (QString::compare(key, "reconnectTimeout", Qt::CaseInsensitive) == 0)
                 {
                     bool ok;
@@ -116,17 +108,14 @@ bool TcpConfigFile::readConfigurationFile(QString fileName)
                         configuration.m_displayInfoMessages = false;
                 }
 
-                if (QString::compare(key, "latencyMeasurement", Qt::CaseInsensitive) == 0)
-                {
-                    if (QString::compare(value, "y", Qt::CaseInsensitive) == 0)
-                        configuration.m_latencyMeasurement = true;
-                    else
-                        configuration.m_latencyMeasurement = false;
-                }
-
                 if (QString::compare(key, "numberMessages", Qt::CaseInsensitive) == 0)
                 {
                     configuration.m_numberMessages = value.toInt();
+                }
+
+                if (QString::compare(key, "numberTransactions", Qt::CaseInsensitive) == 0)
+                {
+                    configuration.m_numberTransactions = value.toInt();
                 }
 
                 if (QString::compare(key, "step", Qt::CaseInsensitive) == 0)

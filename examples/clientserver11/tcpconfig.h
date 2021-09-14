@@ -23,7 +23,6 @@ struct IPaddressAndPort
 struct TcpConfiguration
 {
     qint32          m_numberTransactions = 100;
-    bool            m_latencyMeasurement = false;
     qint32          m_numberMessages = 40;
     qint32          m_step = 5;
 
@@ -31,12 +30,11 @@ struct TcpConfiguration
     bool            m_displayProtocolMessages = false;
 
     QString         m_serverName = "localhost";
-    IPaddressAndPort    m_server = { "localhost", 22334 };
+    IPaddressAndPort m_server = { "localhost", 22334 };
 
     qint32          m_startupDelay = 0;
 
     qint32          m_waitForConnectionTimeout = 1000;
-    qint32          m_waitForEncryptedTimeout = 1000;
     qint32          m_reconnectTimeout = 5000;
     qint32          m_reconnectTimeoutAfterDisconnect = 500;
 

@@ -71,6 +71,17 @@ private:    // functions
     async_task<int> measurementLoop13();
     async_task<int> measurementLoop14();
 
+    async_task<int> measurementLoop20();
+    async_task<int> measurementLoop21();
+    async_task<int> measurementLoop22();
+
+    async_task<int> measurementLoop30();
+    async_task<int> measurementLoop31();
+    async_task<int> measurementLoop32();
+    async_task<int> measurementLoop33();
+    async_task<int> measurementLoop34();
+    async_task<int> measurementLoop35();
+
 private:
     QString                 m_serverName;
     QString                 m_serverHost;
@@ -79,6 +90,7 @@ private:
     int                     m_counter;
     int                     m_errorCounter;
     int                     m_selection;
+    int                     m_loop;
 
     QTimer                  m_timerConnectToServer;
     QTimer                  m_timerStartSending;

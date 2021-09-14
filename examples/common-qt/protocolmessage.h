@@ -62,6 +62,6 @@ private:
     MessageCheck            m_messageCheck;
 };
 
-QByteArray composeMessage(int selection, bool latencyMeasurement, int step);
+QByteArray composeMessage(int selection, int step);
 
 #endif  // __PROTOCOLMESSAGE
