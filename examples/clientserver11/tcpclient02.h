@@ -70,6 +70,8 @@ private:    // functions
     async_task<int> measurementLoop12();
     async_task<int> measurementLoop13();
     async_task<int> measurementLoop14();
+    async_task<int> measurementLoop15();
+    async_task<int> measurementLoop16();
 
     async_task<int> measurementLoop20();
     async_task<int> measurementLoop21();
@@ -81,6 +83,7 @@ private:    // functions
     async_task<int> measurementLoop33();
     async_task<int> measurementLoop34();
     async_task<int> measurementLoop35();
+    async_task<int> measurementLoop36();
 
 private:
     QString                 m_serverName;

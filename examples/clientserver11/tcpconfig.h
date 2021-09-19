@@ -33,12 +33,14 @@ struct TcpConfiguration
     IPaddressAndPort m_server = { "localhost", 22334 };
 
     qint32          m_startupDelay = 0;
+    qint32          m_delayBeforeReply = 2;
 
     qint32          m_waitForConnectionTimeout = 1000;
     qint32          m_reconnectTimeout = 5000;
     qint32          m_reconnectTimeoutAfterDisconnect = 500;
 
     bool            m_useCoroutines = false;
+    qint32          m_selectImplementation = 1;
     qint32          m_selectMeasurementLoop = 0;
 };
 

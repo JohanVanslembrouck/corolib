@@ -126,7 +126,7 @@ void TcpServer01::readyReadTcp(QTcpSocket* sock, QByteArray& data)
             qWarning() << Q_FUNC_INFO << "received incorrect message";
         }
 
-        QThread::msleep(2);
+        QThread::msleep(configuration.m_delayBeforeReply);
 
         qInfo() << "TCPIP: " << m_message.content();
         m_tcpServer.sendMessage(sock, m_message.content());

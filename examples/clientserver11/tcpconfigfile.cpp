@@ -74,6 +74,14 @@ bool TcpConfigFile::readConfigurationFile(QString fileName)
                         configuration.m_startupDelay = startupDelay;
                 }
 
+                if (QString::compare(key, "delayBeforeReply", Qt::CaseInsensitive) == 0)
+                {
+                    bool ok;
+                    qint32 delayBeforeReply = value.toInt(&ok);
+                    if (ok)
+                        configuration.m_delayBeforeReply = delayBeforeReply;
+                }
+
                 if (QString::compare(key, "waitForConnectionTimeout", Qt::CaseInsensitive) == 0)
                 {
                     bool ok;
@@ -129,6 +137,14 @@ bool TcpConfigFile::readConfigurationFile(QString fileName)
                         configuration.m_useCoroutines = true;
                     else
                         configuration.m_useCoroutines = false;
+                }
+
+                if (QString::compare(key, "selectImplementation", Qt::CaseInsensitive) == 0)
+                {
+                    bool ok;
+                    qint32 selectImplementation = value.toInt(&ok);
+                    if (ok)
+                        configuration.m_selectImplementation = selectImplementation;
                 }
 
                 if (QString::compare(key, "selectMeasurementLoop", Qt::CaseInsensitive) == 0)
