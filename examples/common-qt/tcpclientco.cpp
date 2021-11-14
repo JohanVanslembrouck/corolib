@@ -16,12 +16,14 @@
  * @param reconnectTimeoutAfterDisconnect
  */
 TcpClientCo::TcpClientCo(bool useCoroutines,
+                         qint32 selectImplementation,
                          const QString& name,
                          bool autoConnect,
                          qint32 waitForConnectionTimeout,
                          qint32 reconnectTimeout,
                          qint32 reconnectTimeoutAfterDisconnect)
     : m_useCoroutines(useCoroutines)
+    , m_selectImplementation(selectImplementation)
     , m_timer(this)
     , m_transmitTimer(this)
     , m_autoConnect(autoConnect)
@@ -181,11 +183,7 @@ void TcpClientCo::disconnectFromServer()
 void TcpClientCo::sendMessage(QByteArray& message)
 {
     qInfo() << Q_FUNC_INFO << m_name;
-
-    if (message.length() < 650)
-        qInfo() << message.length() << message;
-    else
-        qInfo() << message.length();
+    qInfo() << message.length() << message;
 
     foreach (ConnectionInfo *connectionInfo, m_connectionInfoList)
     {
@@ -335,6 +333,20 @@ async_operation<QByteArray> TcpClientCo::start_reading()
  */
 void TcpClientCo::readyReadTcpCo(QByteArray& data)
 {
+    if (m_selectImplementation == 1)
+        readyReadTcpCo1(data);
+    else if (m_selectImplementation == 2)
+        readyReadTcpCo2(data);
+    else
+        readyReadTcpCo1(data);
+}
+
+/**
+ * @brief TcpClientCo::readyReadTcpCo1
+ * @param data
+ */
+void TcpClientCo::readyReadTcpCo1(QByteArray& data)
+{
     print(PRI2, "%p: TcpClientCo::readyReadTcpCo(): m_name = %s, data.length() = %d\n",
           this,
           m_name.toStdString().c_str(),
@@ -371,6 +383,33 @@ void TcpClientCo::readyReadTcpCo(QByteArray& data)
         print(PRI2, "%p: TcpClientCo::readyReadTcpCo(): emitting signal\n", this);
         emit responseReceivedSig(msg);
     }
+}
+
+/**
+ * @brief TcpClientCo::readyReadTcpCo2
+ * @param data
+ */
+void TcpClientCo::readyReadTcpCo2(QByteArray& data)
+{
+    qInfo() << Q_FUNC_INFO;
+    qInfo() << data.length() << data;
+
+    int length = data.length();
+    int index = 0;
+    while (m_message.composeMessage(data, length, index))
+    {
+        if (m_message.checkMessage())
+        {
+            // At the moment do not take the result into account.
+        }
+        else
+        {
+            qWarning() << Q_FUNC_INFO << "received incorrect message";
+        }
+
+        QByteArray msg = m_message.content();
+        emit responseReceivedSig(msg);
+    } // while
 }
 
 /**

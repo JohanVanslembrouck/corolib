@@ -8,6 +8,8 @@
 #include "tcpclient01.h"
 #include "tcpconfig.h"
 
+#include "corolib/wait_all_awaitable.h"
+
 #include <chrono>
 #include <iostream>
 #include <iomanip>      // setprecision
@@ -26,6 +28,8 @@ TcpClient01::TcpClient01(QObject *parent, MessageCheck check)
     , m_serverPort(configuration.m_server.m_port)
 
     , m_errorCounter(0)
+    , m_selection(0)
+    , m_loop(configuration.m_selectMeasurementLoop)
 
     , m_timerConnectToServer(this)
     , m_timerStartSending(this)
@@ -138,30 +142,54 @@ void TcpClient01::noResponseReceived()
     qDebug() << Q_FUNC_INFO;
 }
 
+
+int selectNextLoop(int loop)
+{
+    switch (loop)
+    {
+    case -10: return 0;
+    case 0: return 1;
+    case 1: return 2;
+    case 2: return 3;
+    case 3: return 4;
+    case 4: return -1;
+
+    default: return -1;
+    }
+    return -1;
+}
 /**
  * @brief TcpClient01::sendTCPStart
  */
 void TcpClient01::sendTCPStart()
 {
-    qInfo() << Q_FUNC_INFO;
-
     m_selection++;
-    qInfo() << Q_FUNC_INFO << m_selection % nr_message_lengths;
+    qInfo() << Q_FUNC_INFO << m_loop << m_selection;
 
     m_counter = 0;
 
     if (!configuration.m_useCoroutines)
     {
-        m_start = chrono::high_resolution_clock::now();
-
-        QByteArray data2 = prepareMessage(m_selection % nr_message_lengths);
-        qInfo() << "sending message:" << data2;
-        m_tcpClient.sendMessage(data2);
-        m_timerNoResponse.start(10 * data2.length());
+        if (m_selection < nr_message_lengths)
+        {
+            m_start = chrono::high_resolution_clock::now();
+            QByteArray data = prepareMessage(m_selection);
+            m_tcpClient.sendMessage(data);
+            m_timerNoResponse.start(10 * data.length());
+        }
     }
     else
     {
-        switch (configuration.m_selectMeasurementLoop)
+        if (m_selection >= nr_message_lengths)
+        {
+           m_selection = 0;
+           m_loop = selectNextLoop(m_loop);
+           qDebug() << "next loop = " << m_loop;
+           if (m_loop == -1)
+               return;
+        }
+
+        switch (m_loop)
         {
         case 0:
         {
@@ -183,6 +211,12 @@ void TcpClient01::sendTCPStart()
             async_task<int> si = measurementLoop3();
         }
         break;
+        case 4:
+        {
+            async_task<int> si = measurementLoop4();
+        }
+        break;
+
         default:
              qDebug() << "Please select a valid measurement loop";
         }
@@ -261,8 +295,9 @@ void TcpClient01::readyReadTcp(QByteArray& data)
     qInfo() << Q_FUNC_INFO;
     qInfo() << data.length() << data;
 
-    QByteArray data2;
-    while (m_message.composeMessage(data, data2))
+    int length = data.length();
+    int index = 0;
+    while (m_message.composeMessage(data, length, index))
     {
         if (m_message.checkMessage())
         {
@@ -284,7 +319,7 @@ void TcpClient01::readyReadTcp(QByteArray& data)
             qInfo() << "counter:" << m_counter << "received message:" << m_message.content();
             if (++m_counter < configuration.m_numberTransactions)
             {
-                QByteArray data2 = prepareMessage(m_selection % nr_message_lengths);
+                QByteArray data2 = prepareMessage(m_selection);
                 qInfo() << "sending message:" << data2;
                 m_tcpClient.sendMessage(data2);
                 m_timerNoResponse.start(10 * data2.length());
@@ -294,17 +329,6 @@ void TcpClient01::readyReadTcp(QByteArray& data)
                 calculateElapsedTime();
                 m_timerStartSending.start(100);
             }
-        }
-
-        if (data2.length() == 0)
-        {
-            break;
-        }
-        else
-        {
-            qInfo() << Q_FUNC_INFO << "data contained subsequent message with length" << data2.length();
-            data = data2;
-            data2.clear();
         }
     } // while
 }
@@ -402,11 +426,11 @@ void TcpClient01::start_read(const int idx)
  */
 async_task<int> TcpClient01::measurementLoop0()
 {
-    //qDebug() << Q_FUNC_INFO;
+    qInfo() << Q_FUNC_INFO;
     m_start = chrono::high_resolution_clock::now();
     for (int i = 0; i < configuration.m_numberTransactions; i++)
     {
-        QByteArray data1 = prepareMessage(m_selection % nr_message_lengths);
+        QByteArray data1 = prepareMessage(m_selection);
         m_tcpClient.sendMessage(data1);
         m_timerNoResponse.start(10 * data1.length());
         async_operation<QByteArray> op = start_reading();
@@ -429,7 +453,7 @@ async_task<int> TcpClient01::measurementLoop1()
     for (int i = 0; i < configuration.m_numberTransactions; i++)
     {
         async_operation<QByteArray> op = start_reading();
-        QByteArray data1 = prepareMessage(m_selection % nr_message_lengths);
+        QByteArray data1 = prepareMessage(m_selection);
         m_tcpClient.sendMessage(data1);
         m_timerNoResponse.start(10 * data1.length());
         QByteArray dataOut = co_await op;
@@ -446,13 +470,13 @@ async_task<int> TcpClient01::measurementLoop1()
  */
 async_task<int> TcpClient01::measurementLoop2()
 {
-    //qDebug() << Q_FUNC_INFO;
+    qInfo() << Q_FUNC_INFO;
     m_start = chrono::high_resolution_clock::now();
     for (int i = 0; i < configuration.m_numberTransactions; i++)
     {
-        QByteArray data1 = prepareMessage(m_selection % nr_message_lengths);
+        QByteArray data1 = prepareMessage(m_selection);
         m_tcpClient.sendMessage(data1);
-        QByteArray data2 = prepareMessage(m_selection % nr_message_lengths);
+        QByteArray data2 = prepareMessage(m_selection);
         m_tcpClient.sendMessage(data2);
 
         async_operation<QByteArray> op1 = start_reading();
@@ -478,15 +502,47 @@ async_task<int> TcpClient01::measurementLoop3()
     m_start = chrono::high_resolution_clock::now();
     for (int i = 0; i < configuration.m_numberTransactions; i++)
     {
-        QByteArray data1 = prepareMessage(m_selection % nr_message_lengths);
+        QByteArray data1 = prepareMessage(m_selection);
         m_tcpClient.sendMessage(data1);
-        QByteArray data2 = prepareMessage(m_selection % nr_message_lengths);
+        QByteArray data2 = prepareMessage(m_selection);
         m_tcpClient.sendMessage(data2);
 
         async_operation<QByteArray> op1 = start_reading();
         async_operation<QByteArray> op2 = start_reading();
         QByteArray dataOut1 = co_await op1;
         QByteArray dataOut2 = co_await op2;
+
+        qInfo() << dataOut1.length() << ":" << dataOut1;
+        qInfo() << dataOut2.length() << ":" << dataOut2;
+    }
+    calculateElapsedTime();
+    m_timerStartSending.start(100);
+    co_return 0;
+}
+
+/**
+ * @brief TcpClient01::measurementLoop4
+ * @return
+ */
+async_task<int> TcpClient01::measurementLoop4()
+{
+    qInfo() << Q_FUNC_INFO;
+    m_start = chrono::high_resolution_clock::now();
+    for (int i = 0; i < configuration.m_numberTransactions; i++)
+    {
+        QByteArray data1 = prepareMessage(m_selection);
+        m_tcpClient.sendMessage(data1);
+        QByteArray data2 = prepareMessage(m_selection);
+        m_tcpClient.sendMessage(data2);
+
+        async_operation<QByteArray> op1 = start_reading();
+        async_operation<QByteArray> op2 = start_reading();
+
+        wait_all_awaitable<async_operation<QByteArray>> wa( { &op1, &op2 } );
+        co_await wa;
+
+        QByteArray dataOut1 = op1.get_result();
+        QByteArray dataOut2 = op2.get_result();
 
         qInfo() << dataOut1.length() << ":" << dataOut1;
         qInfo() << dataOut2.length() << ":" << dataOut2;

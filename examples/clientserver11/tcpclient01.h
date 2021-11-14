@@ -66,6 +66,7 @@ private:    // functions
     async_task<int> measurementLoop1();  // coroutine
     async_task<int> measurementLoop2();  // coroutine
     async_task<int> measurementLoop3();  // coroutine
+    async_task<int> measurementLoop4();  // coroutine
 
     QString                 m_serverName;
     QString                 m_serverHost;
@@ -74,6 +75,7 @@ private:    // functions
     int                     m_counter;
     int                     m_errorCounter;
     int                     m_selection;
+    int                     m_loop;
 
     QTimer                  m_timerConnectToServer;
     QTimer                  m_timerStartSending;

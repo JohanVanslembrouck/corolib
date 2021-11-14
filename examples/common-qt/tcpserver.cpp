@@ -134,11 +134,7 @@ void TcpServer::newTCPConnection()
 void TcpServer::sendMessage(QTcpSocket* sock, QByteArray& message)
 {
     qInfo() << Q_FUNC_INFO;
-
-    if (message.length() < 650)
-        qInfo() << message.length() << message;
-    else
-        qInfo() << message.length();
+    qInfo() << message.length() << message;
 
     for (ConnectionInfo *connectionInfo : m_connectionInfoList)
     {

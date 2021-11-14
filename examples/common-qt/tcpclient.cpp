@@ -164,11 +164,7 @@ void TcpClient::disconnectFromServer()
 void TcpClient::sendMessage(QByteArray& message)
 {
     qInfo() << Q_FUNC_INFO << m_name;
-
-    if (message.length() < 650)
-        qInfo() << message.length() << message;
-    else
-        qInfo() << message.length();
+    qInfo() << message.length() << message;
 
     foreach (ConnectionInfo *connectionInfo, m_connectionInfoList)
     {

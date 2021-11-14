@@ -238,6 +238,70 @@ bool ProtocolMessage::composeMessage(QByteArray& data, QByteArray& data2)
 }
 
 /**
+ * @brief ProtocolMessage::composeMessage
+ * @param data
+ * @param length
+ * @param index
+ * @return
+ */
+bool ProtocolMessage::composeMessage(const char* data, int length, int& index)
+{
+    bool messageComplete = false;
+
+    for ( ; index < length; index++)
+    {
+        char b = data[index];
+
+        if (m_parsingState == WAITING_FOR_STX)
+        {
+            if (b == STX)
+            {
+                m_messageBuffer.clear();
+                m_messageBuffer.append(STX);
+                m_parsingState = WAITING_FOR_ETX;
+            }
+            else
+            {
+                //qWarning() << Q_FUNC_INFO << "received bytes while waiting for STX";
+            }
+        }
+        else
+        {
+            m_messageBuffer.append(b);
+            if (b == STX)
+            {
+                //qWarning() << Q_FUNC_INFO << "received STX while waiting for ETX";
+            }
+            if (b == ETX)
+            {
+                m_parsingState = WAITING_FOR_STX;
+                messageComplete = true;
+                break;
+            }
+        }
+    }
+
+    if (messageComplete)
+    {
+        // If there are any bytes in data after the ETX,
+        // copy them to data2.
+        index++;
+#if 0
+        if (index < length)
+        {
+            if (data[index] != STX)
+            {
+                // 0 received instead
+                qWarning() << Q_FUNC_INFO << "first byte after ETX != STX" << (unsigned char) data[idx];
+            }
+        }
+#endif
+    }
+
+    return messageComplete;
+}
+
+/**
  * @brief ProtocolMessage::calculateChecksum
  * @param dest
  * @param src

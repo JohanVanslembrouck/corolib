@@ -114,8 +114,9 @@ void TcpServer01::readyReadTcp(QTcpSocket* sock, QByteArray& data)
     qInfo() << Q_FUNC_INFO;
     qInfo() << data.length() << data;
 
-    QByteArray data2;
-    while (m_message.composeMessage(data, data2))
+    int length = data.length();
+    int index = 0;
+    while (m_message.composeMessage(data, length, index))
     {
         if (m_message.checkMessage())
         {
@@ -130,17 +131,6 @@ void TcpServer01::readyReadTcp(QTcpSocket* sock, QByteArray& data)
 
         qInfo() << "TCPIP: " << m_message.content();
         m_tcpServer.sendMessage(sock, m_message.content());
-
-        if (data2.length() == 0)
-        {
-            break;
-        }
-        else
-        {
-            qInfo() << Q_FUNC_INFO << "data contained subsequent message with length" << data2.length();
-            data = data2;
-            data2.clear();
-        }
     } // while
 }
 

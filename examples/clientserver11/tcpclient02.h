@@ -85,6 +85,11 @@ private:    // functions
     async_task<int> measurementLoop35();
     async_task<int> measurementLoop36();
 
+    async_task<int> measurementLoop40(TcpClientCo& tcpClient);
+    async_task<int> measurementLoop41();
+    async_task<int> measurementLoop42();
+    async_task<int> measurementLoop43();
+
 private:
     QString                 m_serverName;
     QString                 m_serverHost;

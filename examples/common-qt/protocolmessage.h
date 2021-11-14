@@ -40,6 +40,7 @@ public:
 
     bool checkMessage();
     bool composeMessage(QByteArray& data, QByteArray& data2);
+    bool composeMessage(const char* data, int length, int& index);
     void createMessage(QByteArray& data);
 
     QByteArray& content() { return m_messageBuffer; }
