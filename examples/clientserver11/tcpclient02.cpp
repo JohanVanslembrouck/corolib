@@ -1198,8 +1198,6 @@ async_task<int> TcpClient02::measurementLoop40(TcpClientCo& tcpClient)
         calculateElapsedTime(msgLength);
     }
     qDebug() << Q_FUNC_INFO << "end";
-    m_timerStartSending.start(100);
-    m_selection = nr_message_lengths;
     co_return 0;
 }
 
@@ -1209,10 +1207,14 @@ async_task<int> TcpClient02::measurementLoop40(TcpClientCo& tcpClient)
  */
 async_task<int> TcpClient02::measurementLoop41()
 {
+    qDebug() << Q_FUNC_INFO << "begin";
     async_task<int> t1 = measurementLoop40(m_tcpClient1);
     async_task<int> t2 = measurementLoop40(m_tcpClient2);
     co_await t1;
     co_await t2;
+    qDebug() << Q_FUNC_INFO << "end";
+    m_timerStartSending.start(100);
+    m_selection = nr_message_lengths;
     co_return 0;
 }
 
@@ -1222,10 +1224,14 @@ async_task<int> TcpClient02::measurementLoop41()
  */
 async_task<int> TcpClient02::measurementLoop42()
 {
+    qDebug() << Q_FUNC_INFO << "begin";
     async_task<int> t1 = measurementLoop40(m_tcpClient1);
     async_task<int> t2 = measurementLoop40(m_tcpClient2);
     co_await t2;
     co_await t1;
+    qDebug() << Q_FUNC_INFO << "end";
+    m_timerStartSending.start(100);
+    m_selection = nr_message_lengths;
     co_return 0;
 }
 
@@ -1235,8 +1241,13 @@ async_task<int> TcpClient02::measurementLoop42()
  */
 async_task<int> TcpClient02::measurementLoop43()
 {
+    qDebug() << Q_FUNC_INFO << "begin";
     async_task<int> t1 = measurementLoop40(m_tcpClient1);
     async_task<int> t2 = measurementLoop40(m_tcpClient2);
-    wait_all_awaitable< async_task<int> > war({ & t1, &t2 });
+    wait_all_awaitable< async_task<int> > wa({ & t1, &t2 });
+    co_await wa;
+    qDebug() << Q_FUNC_INFO << "end";
+    m_timerStartSending.start(100);
+    m_selection = nr_message_lengths;
     co_return 0;
 }
