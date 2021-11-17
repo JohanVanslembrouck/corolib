@@ -17,11 +17,14 @@ The tcpclient02 application, on the other hand, has to make a stricter distincti
 
 The tcpserver01 application does not use coroutines. Both client applications can be configured to use (or not use) coroutines, see variable useCoroutines in their .cfg files.
 
-Each client application generates messages of different lengths in the range [10, 10 + numberMessages[.
-A client object (m_tcpClient in tcpclient01.h, m_tcpClient and m_tcpClient in tcpclient02.h) 
-sends each message of a given length numberTransactions times to the server. The application then calculates the time for one transaction.
-(A transaction consists of sending a single message to the server application and the server sending back the message to the client.)
-So, in essence, the client applications use a double loop. Using coroutines, this double loop can be implemented as two nested for loops in a single coroutine, as can be seen in TcpClient02::measurementLoop20 till TcpClient02::measurementLoop40.
-Without coroutines, counting the number of transactions and the messages of various sizes has to be implemented with two counters initialized, incremented and tested in several functions. This makes it more difficult to recognize the double loop pattern.
-The coroutine approach leads to a more natural synchronous style of writing, but the execution is asynchronous. 
+Each client application generates messages with lengths in the range [10, 10 + numberMessages[.
+A client object (m_tcpClient in tcpclient01.h, m_tcpClient1 and m_tcpClient2 in tcpclient02.h) then sends each message of a given length numberTransactions times to the server. 
+The server just reflects the received message to the client.
+The client co_awaits the reply for every sent message.
+So, in essence, the client applications use a double loop. 
+
+* Using coroutines, this double loop can be implemented as two nested for loops in a single coroutine, as can be seen in TcpClient02::measurementLoop20 till TcpClient02::measurementLoop40.
+* Without coroutines, the two counters have to be initialized, incremented and tested in several functions. This makes it more difficult to recognize the double loop pattern.
+
+The coroutine approach leads to a more natural synchronous style of coding, but the execution is asynchronous. 
 This becomes even more clear in the coroutines TcpClient02::measurementLoop41 till TcpClient02::measurementLoop43, where the execution of the two invocations of TcpClient02::measurementLoop40 is interleaved.
