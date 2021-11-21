@@ -25,14 +25,26 @@ int main(int argc, char *argv[])
 
     QCoreApplication app(argc, argv);
 
-    // When launched automatically at boot time, the full path of the .cfg file is needed"
-    const QString configFileName = "tcpclient02.cfg";
-
     TcpConfigFile configFile;
 
-    if (!configFile.readConfigurationFile(configFileName))
-        // If not, the default settings will be used.
-        qInfo() << "Could not open configuration file - using default settings";
+    if (argc > 1)
+    {
+        // Passing a configuration file via the command line could be useful for testing.
+        QString configFileName = argv[1];
+        if (!configFile.readConfigurationFile(configFileName))
+        {
+            qInfo() << "Could not open configuration file passed from the command line - using default settings";
+        }
+    }
+    else
+    {
+        const QString configFileName = "tcpclient02.cfg";
+
+        if (!configFile.readConfigurationFile(configFileName))
+        {
+            qInfo() << "Could not open configuration file - using default settings";
+        }
+    }
 
     if (!configuration.m_displayInfoMessages)
         QLoggingCategory::setFilterRules(QStringLiteral("*.info=false"));

@@ -16,7 +16,6 @@
  */
 TcpServer01::TcpServer01(QObject *parent, MessageCheck check)
     : QObject(parent)
-    , m_serverName(configuration.m_serverName)
     , m_serverHost(configuration.m_server.m_ipAddress)
     , m_serverPort(configuration.m_server.m_port)
     , m_tcpServer()

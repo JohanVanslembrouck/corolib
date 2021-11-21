@@ -60,8 +60,15 @@ bool TcpConfigFile::readConfigurationFile(QString fileName)
                     QStringList ipAddressAndPort = value.split(':');
                     QString ipAddress = ipAddressAndPort[0];
                     quint16 port = ipAddressAndPort[1].toUShort();
+
+                    configuration.m_indexLastValidConfiguration++;
+
                     configuration.m_server.m_ipAddress = ipAddress;
                     configuration.m_server.m_port = port;
+
+                    int i = configuration.m_indexLastValidConfiguration;
+                    configuration.m_servers[i].m_ipAddress = ipAddress;
+                    configuration.m_servers[i].m_port = port;
                 }
 
                 // Timers

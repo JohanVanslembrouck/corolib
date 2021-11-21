@@ -23,9 +23,7 @@ static int nr_message_lengths = 10;
  */
 TcpClient01::TcpClient01(QObject *parent, MessageCheck check)
     : QObject(parent)
-    , m_serverName(configuration.m_serverName)
-    , m_serverHost(configuration.m_server.m_ipAddress)
-    , m_serverPort(configuration.m_server.m_port)
+    , m_server(configuration.m_server)
 
     , m_errorCounter(0)
     , m_selection(0)
@@ -43,7 +41,7 @@ TcpClient01::TcpClient01(QObject *parent, MessageCheck check)
 
     , m_message(check)
 {
-    qInfo() << Q_FUNC_INFO << m_serverHost << ":" << m_serverPort;
+    qInfo() << Q_FUNC_INFO << m_server.m_ipAddress << ":" << m_server.m_port;
 
     m_timerConnectToServer.setSingleShot(true);
     m_timerStartSending.setSingleShot(true);
@@ -128,9 +126,9 @@ void TcpClient01::connectToServer()
     qInfo() << "";
     qInfo() << Q_FUNC_INFO;
 
-    qInfo() << "m_serverHost = " << m_serverHost << ", m_serverPort = " << m_serverPort;
+    qInfo() << "m_server.m_ipAddress = " << m_server.m_ipAddress << ", m_server.m_port = " << m_server.m_port;
 
-    bool result = m_tcpClient.connectToServer(m_serverHost, m_serverPort);
+    bool result = m_tcpClient.connectToServer(m_server.m_ipAddress, m_server.m_port);
     if (!result)
         qDebug() << Q_FUNC_INFO << "immediate connection failed";
     else

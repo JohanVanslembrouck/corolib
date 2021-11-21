@@ -50,7 +50,6 @@ private:    // functions
     void configureTCP();
 
 private:
-    QString                 m_serverName;
     QString                 m_serverHost;
     quint16                 m_serverPort;
 

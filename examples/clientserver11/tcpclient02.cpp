@@ -23,10 +23,6 @@ static int nr_message_lengths = 10;
  */
 TcpClient02::TcpClient02(QObject *parent, MessageCheck check)
     : QObject(parent)
-    , m_serverName(configuration.m_serverName)
-    , m_serverHost(configuration.m_server.m_ipAddress)
-    , m_serverPort(configuration.m_server.m_port)
-
     , m_errorCounter(0)
     , m_selection(0)
     , m_loop(configuration.m_selectMeasurementLoop)
@@ -53,7 +49,10 @@ TcpClient02::TcpClient02(QObject *parent, MessageCheck check)
 
     , m_message(check)
 {
-    qInfo() << Q_FUNC_INFO << m_serverHost << ":" << m_serverPort;
+    qInfo() << Q_FUNC_INFO;
+
+    m_servers[0] = configuration.m_servers[0];
+    m_servers[1] = configuration.m_servers[1];
 
     m_timerConnectToServer.setSingleShot(true);
     m_timerStartSending.setSingleShot(true);
@@ -140,12 +139,10 @@ void TcpClient02::connectToServer()
     qInfo() << "";
     qInfo() << Q_FUNC_INFO;
 
-    qInfo() << "m_serverHost = " << m_serverHost << ", m_serverPort = " << m_serverPort;
-
-    bool result1 = m_tcpClient1.connectToServer(m_serverHost, m_serverPort);
+    bool result1 = m_tcpClient1.connectToServer(m_servers[0].m_ipAddress, m_servers[0].m_port);
     if (!result1)
         qDebug() << Q_FUNC_INFO << "immediate connection failed";
-    bool result2 = m_tcpClient2.connectToServer(m_serverHost, m_serverPort);
+    bool result2 = m_tcpClient2.connectToServer(m_servers[1].m_ipAddress, m_servers[1].m_port);
     if (!result2)
         qDebug() << Q_FUNC_INFO << "immediate connection failed";
 
@@ -179,7 +176,7 @@ int selectNextLoop(int loop)
     case 21: return 22;
     case 22: return 30;
 
-    case 30: return 31;
+    case 30: return 32;     // Skip 31
     case 31: return 32;
     case 32: return 33;
     case 33: return 34;
@@ -444,7 +441,6 @@ void TcpClient02::readyReadTcp(QByteArray& data)
 
         if (configuration.m_useCoroutines)
         {
-            emit responseReceivedSig();
             m_timerNoResponse.stop();
         }
         else

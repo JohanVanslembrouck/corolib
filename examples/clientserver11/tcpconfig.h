@@ -32,6 +32,9 @@ struct TcpConfiguration
     QString         m_serverName = "localhost";
     IPaddressAndPort m_server = { "localhost", 22334 };
 
+    int              m_indexLastValidConfiguration = -1;
+    IPaddressAndPort m_servers[32];
+
     qint32          m_startupDelay = 0;
     qint32          m_delayBeforeReply = 2;
 

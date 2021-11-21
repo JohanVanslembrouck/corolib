@@ -68,9 +68,7 @@ private:    // functions
     async_task<int> measurementLoop3();  // coroutine
     async_task<int> measurementLoop4();  // coroutine
 
-    QString                 m_serverName;
-    QString                 m_serverHost;
-    quint16                 m_serverPort;
+    IPaddressAndPort        m_server;
 
     int                     m_counter;
     int                     m_errorCounter;

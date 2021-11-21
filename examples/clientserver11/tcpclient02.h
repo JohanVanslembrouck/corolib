@@ -31,9 +31,6 @@ class TcpClient02 : public QObject
 public:
     explicit TcpClient02(QObject *parent = nullptr, MessageCheck check = NO_CHECK);
 
-signals:
-    void responseReceivedSig();
-
 public slots:
     void start();
     void quit();
@@ -91,9 +88,7 @@ private:    // functions
     async_task<int> measurementLoop43();
 
 private:
-    QString                 m_serverName;
-    QString                 m_serverHost;
-    quint16                 m_serverPort;
+    IPaddressAndPort        m_servers[2];
 
     int                     m_counter;
     int                     m_errorCounter;
