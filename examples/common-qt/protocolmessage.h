@@ -63,6 +63,6 @@ private:
     MessageCheck            m_messageCheck;
 };
 
-QByteArray composeMessage(int selection, int step);
+QByteArray composeMessage(int selection, int step, int repetition = 1);
 
 #endif  // __PROTOCOLMESSAGE

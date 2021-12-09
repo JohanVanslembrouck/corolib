@@ -556,12 +556,14 @@ bool ProtocolMessage::removeStuffing(QByteArray& dest, QByteArray& src)
  * @param selection
  * @return
  */
-QByteArray composeMessage(int selection, int step)
+QByteArray composeMessage(int selection, int step, int repetition)
 {
     //qDebug() << Q_FUNC_INFO << selection << latencyMeasurement << step;
 
     QByteArray data;
     data.append(STX);
+
+    data.append(static_cast<unsigned char>(repetition));
 
     for (int i = 0x10; i < 0x14; i++)
     {

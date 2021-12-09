@@ -53,7 +53,7 @@ private slots:
 private:    // functions
     void connectToServerDelayed();
     void connectToTCPServer(QString& serverIPaddress, quint16 serverPort);
-    QByteArray prepareMessage(int selection);
+    QByteArray prepareMessage(int selection, int repetition = 1);
     void calculateElapsedTime(int messageLength);
     void configureTCP();
 
@@ -86,6 +86,19 @@ private:    // functions
     async_task<int> measurementLoop41();
     async_task<int> measurementLoop42();
     async_task<int> measurementLoop43();
+    async_task<int> measurementLoop44();
+
+    async_task<int> measurementLoop50(TcpClientCo& tcpClient, int nrRepetitions = 1);
+    async_task<int> measurementLoop51();
+    async_task<int> measurementLoop52();
+    async_task<int> measurementLoop53();
+    async_task<int> measurementLoop54();
+
+    async_task<int> measurementLoop60(TcpClientCo& tcpClient, int nrRepetitions = 1);
+    async_task<int> measurementLoop61();
+    async_task<int> measurementLoop62();
+    async_task<int> measurementLoop63();
+    async_task<int> measurementLoop64();
 
 private:
     IPaddressAndPort        m_servers[2];

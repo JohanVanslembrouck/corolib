@@ -168,6 +168,17 @@ namespace corolib
 			m_waitany = waitany;
 		}
 
+        int get_index()
+        {
+            return m_index;
+        }
+
+        void reset()
+        {
+            m_ready = false;    // Allows the same operation to be co_awaited again
+                                // without returning immediately.
+        }
+
 	protected:
 		CommService* m_service;
 		std::experimental::coroutine_handle<> m_awaiting;

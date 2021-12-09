@@ -56,8 +56,9 @@ public:
     void sendMessage(QByteArray& message);
 
 	// Coroutine related
-    async_operation<QByteArray> start_reading();
-    void start_read(const int idx);
+    async_operation<QByteArray> start_reading(bool doDisconnect = true);
+    void start_read(const int idx, bool doDisconnect = true);
+    void stop_reading(int idx);
 
 private:    // functions
     void enableKeepAlive(QTcpSocket *socket);

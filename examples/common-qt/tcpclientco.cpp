@@ -314,20 +314,6 @@ void TcpClientCo::closeConnection(QTcpSocket *socket)
 }
 
 /**
- * @brief TcpClientCo::start_reading
- * @return
- */
-async_operation<QByteArray> TcpClientCo::start_reading()
-{
-    index = (index + 1) & (NROPERATIONS - 1);
-    print(PRI2, "%p: TcpClientCo::start_reading(): index = %d\n", this, index);
-    assert(m_async_operations[index] == nullptr);
-    async_operation<QByteArray> ret{ this, index };
-    start_read(index);
-    return ret;
-}
-
-/**
  * @brief TcpClientCo::readyReadTcpCo
  * @param data
  */
@@ -412,16 +398,31 @@ void TcpClientCo::readyReadTcpCo2(QByteArray& data)
     } // while
 }
 
+
+/**
+ * @brief TcpClientCo::start_reading
+ * @return
+ */
+async_operation<QByteArray> TcpClientCo::start_reading(bool doDisconnect)
+{
+    index = (index + 1) & (NROPERATIONS - 1);
+    print(PRI2, "%p: TcpClientCo::start_reading(): index = %d\n", this, index);
+    assert(m_async_operations[index] == nullptr);
+    async_operation<QByteArray> ret{ this, index };
+    start_read(index, doDisconnect);
+    return ret;
+}
+
 /**
  * @brief TcpClientCo::start_read
  * @param idx
  */
-void TcpClientCo::start_read(const int idx)
+void TcpClientCo::start_read(const int idx, bool doDisconnect)
 {
     print(PRI2, "%p: TcpClientCo::start_read(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
 
     m_connections[idx] = connect(this, &TcpClientCo::responseReceivedSig,
-        [this, idx](QByteArray msg)
+        [this, idx, doDisconnect](QByteArray msg)
         {
             print(PRI2, "%p: TcpClientCo::start_read() lambda: idx = %d\n", this, idx);
 
@@ -437,13 +438,28 @@ void TcpClientCo::start_read(const int idx)
             else
             {
                 // This can occur when the async_operation_base has gone out of scope.
-                print(PRI2, "%p: TcpClient01::handle_read(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
+                print(PRI2, "%p: TcpClientCo::start_read(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
             }
 
-            if (!disconnect(m_connections[idx]))
+            if (doDisconnect)
             {
-                print(PRI1, "%p: TcpClient01::handle_read(): idx = %d, Warning: disconnect failed\n", this, idx);
+                if (!disconnect(m_connections[idx]))
+                {
+                    print(PRI1, "%p: TcpClientCo::handle_read(): idx = %d, Warning: disconnect failed\n", this, idx);
+                }
             }
         }
     );
+}
+
+/**
+ * @brief TcpClientCo::stop_reading
+ * @param idx
+ */
+void TcpClientCo::stop_reading(int idx)
+{
+    if (!disconnect(m_connections[idx]))
+    {
+        print(PRI1, "%p: TcpClientCo::stop_reading(): idx = %d, Warning: disconnect failed\n", this, idx);
+    }
 }
