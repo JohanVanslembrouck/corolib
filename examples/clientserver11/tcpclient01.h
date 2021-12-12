@@ -56,7 +56,7 @@ private:    // functions
     void connectToServerDelayed();
     void connectToTCPServer(QString& serverIPaddress, quint16 serverPort);
     QByteArray prepareMessage(int selection);
-    void calculateElapsedTime();
+    void calculateElapsedTime(std::chrono::high_resolution_clock::time_point start);
     void configureTCP();
 
     // Coroutine related
@@ -83,7 +83,6 @@ private:    // functions
     ProtocolMessage         m_message;
 
     std::chrono::high_resolution_clock::time_point m_start;
-    std::chrono::high_resolution_clock::time_point m_end;
 
     QMetaObject::Connection m_connections[NROPERATIONS];
 };

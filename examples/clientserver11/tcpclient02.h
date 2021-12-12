@@ -54,7 +54,8 @@ private:    // functions
     void connectToServerDelayed();
     void connectToTCPServer(QString& serverIPaddress, quint16 serverPort);
     QByteArray prepareMessage(int selection, int repetition = 1);
-    void calculateElapsedTime(int messageLength);
+    void calculateElapsedTime(std::chrono::high_resolution_clock::time_point start,
+                              int messageLength);
     void configureTCP();
 
     // The following are all coroutines
@@ -93,12 +94,18 @@ private:    // functions
     async_task<int> measurementLoop52();
     async_task<int> measurementLoop53();
     async_task<int> measurementLoop54();
+    async_task<int> measurementLoop55();
+    async_task<int> measurementLoop56();
+    async_task<int> measurementLoop57();
 
     async_task<int> measurementLoop60(TcpClientCo& tcpClient, int nrRepetitions = 1);
     async_task<int> measurementLoop61();
     async_task<int> measurementLoop62();
     async_task<int> measurementLoop63();
     async_task<int> measurementLoop64();
+    async_task<int> measurementLoop65();
+    async_task<int> measurementLoop66();
+    async_task<int> measurementLoop67();
 
 private:
     IPaddressAndPort        m_servers[2];
@@ -117,7 +124,6 @@ private:
     ProtocolMessage         m_message;
 
     std::chrono::high_resolution_clock::time_point m_start;
-    std::chrono::high_resolution_clock::time_point m_end;
 };
 
 #endif // TCPCLIENT02_H
