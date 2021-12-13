@@ -20,20 +20,20 @@
 
 namespace corolib
 {
-	const int PRI1 = 0x01;
-	const int PRI2 = 0x02;
-	const int PRI3 = 0x04;
-	const int PRI4 = 0x08;
-	const int PRI5 = 0x10;
-	const int PRI6 = 0x20;
-	const int PRI7 = 0x40;
-	const int PRI8 = 0x80;
+    const int PRI1 = 0x01;
+    const int PRI2 = 0x02;
+    const int PRI3 = 0x04;
+    const int PRI4 = 0x08;
+    const int PRI5 = 0x10;
+    const int PRI6 = 0x20;
+    const int PRI7 = 0x40;
+    const int PRI8 = 0x80;
 
-	const int NR_THREADS = 128;
+    const int NR_THREADS = 128;
 
-	extern const int priority;
+    void set_priority(int pri);
 
-	void print(int pri, const char* fmt, ...);
+    void print(int pri, const char* fmt, ...);
 }
 
 #endif

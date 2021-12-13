@@ -44,4 +44,4 @@ HEADERS += \
 
 INCLUDEPATH += \
     ../common-qt \
-    ../../include \
+    ../../include/corolib \

@@ -15,69 +15,75 @@
 #include <string>
 #include <thread>
 
-#include "../include/corolib/print.h"
+#include "print.h"
 
 namespace corolib
 {
-	uint64_t threadids[NR_THREADS];
+    uint64_t threadids[NR_THREADS];
 
-	int get_thread_number64(uint64_t id)
-	{
-		for (int i = 0; i < NR_THREADS; i++)
-		{
-			if (threadids[i] == id)
-				return i;
-			if (threadids[i] == 0) {
-				threadids[i] = id;
-				return i;
-			}
-		}
-		return -1;
-	}
+    int priority = 1;
 
-	int get_thread_number32(uint32_t id)
-	{
-		for (int i = 0; i < NR_THREADS; i++)
-		{
-			if (threadids[i] == id)
-				return i;
-			if (threadids[i] == 0)
-			{
-				threadids[i] = id;
-				return i;
-			}
-		}
-		return -1;
-	}
+    int get_thread_number64(uint64_t id)
+    {
+        for (int i = 0; i < NR_THREADS; i++)
+        {
+            if (threadids[i] == id)
+                return i;
+            if (threadids[i] == 0) {
+                threadids[i] = id;
+                return i;
+            }
+        }
+        return -1;
+    }
 
-	uint64_t get_thread_id()
-	{
-		auto id = std::this_thread::get_id();
-		uint64_t* ptr = (uint64_t*)&id;
-		return (uint64_t)(*ptr);
-	}
+    int get_thread_number32(uint32_t id)
+    {
+        for (int i = 0; i < NR_THREADS; i++)
+        {
+            if (threadids[i] == id)
+                return i;
+            if (threadids[i] == 0)
+            {
+                threadids[i] = id;
+                return i;
+            }
+        }
+        return -1;
+    }
 
-	extern const int priority;
+    uint64_t get_thread_id()
+    {
+        auto id = std::this_thread::get_id();
+        uint64_t* ptr = (uint64_t*)&id;
+        return (uint64_t)(*ptr);
+    }
 
-	void print(int pri, const char* fmt, ...)
-	{
-		va_list arg;
-		if (priority & pri)
-		{
-			char msg[512];
+    void set_priority(int pri)
+    {
+        priority = pri;
+    }
 
-			va_start(arg, fmt);
+    void print(int pri, const char* fmt, ...)
+    {
+        va_list arg;
+        if (priority & pri)
+        {
+            char msg[512];
+
+            va_start(arg, fmt);
 #if defined(_WIN32)
-			int n = vsprintf_s(msg, fmt, arg);
+            int n = vsprintf_s(msg, fmt, arg);
 #else
-			int n = vsprintf(msg, fmt, arg);
+            int n = vsprintf(msg, fmt, arg);
 #endif
-			va_end(arg);
+            va_end(arg);
 
-			int threadid = (sizeof(std::thread::id) == sizeof(uint32_t)) ?
-				get_thread_number32((uint32_t)get_thread_id()) :
-				get_thread_number64(get_thread_id());
-			fprintf(stderr, "%02d: %s", threadid, msg);
-		}
-	}
+            (void) n;
+            int threadid = (sizeof(std::thread::id) == sizeof(uint32_t)) ?
+            get_thread_number32((uint32_t)get_thread_id()) :
+            get_thread_number64(get_thread_id());
+            fprintf(stderr, "%02d: %s", threadid, msg);
+        }
+    }
 }

@@ -13,47 +13,47 @@
 
 namespace corolib
 {
-	struct wait_any
-	{
-		wait_any()
-			: m_awaiting(nullptr)
-			, m_completed(false)
-		{
-			print(PRI2, "%p: wait_any::wait_any()\n", this);
-		}
+    struct wait_any
+    {
+        wait_any()
+            : m_awaiting(nullptr)
+            , m_completed(false)
+        {
+            print(PRI2, "%p: wait_any::wait_any()\n", this);
+        }
 
-		void set_awaiting(std::experimental::coroutine_handle<> awaiting)
-		{
-			print(PRI2, "%p: wait_any::set_awaiting()\n", this);
-			m_awaiting = awaiting;
-		}
+        void set_awaiting(std::experimental::coroutine_handle<> awaiting)
+        {
+            print(PRI2, "%p: wait_any::set_awaiting()\n", this);
+            m_awaiting = awaiting;
+        }
 
-		bool get_completed()
-		{
-			print(PRI2, "%p: wait_any::get_completed()\n", this);
-			return m_completed;
-		}
+        bool get_completed()
+        {
+            print(PRI2, "%p: wait_any::get_completed()\n", this);
+            return m_completed;
+        }
 
-		bool get_and_reset_completed()
-		{
-			print(PRI2, "%p: wait_any::get_and_reset_completed()\n", this);
-			bool completed = m_completed;
-			m_completed = false;
-			return completed;
-		}
+        bool get_and_reset_completed()
+        {
+            print(PRI2, "%p: wait_any::get_and_reset_completed()\n", this);
+            bool completed = m_completed;
+            m_completed = false;
+            return completed;
+        }
 
-		void completed()
-		{
-			print(PRI2, "%p: wait_any::completed()\n", this);
-			m_completed = true;
-			// Resume the awaiting coroutine
-			m_awaiting.resume();
-		}
+        void completed()
+        {
+            print(PRI2, "%p: wait_any::completed()\n", this);
+            m_completed = true;
+            // Resume the awaiting coroutine
+            m_awaiting.resume();
+        }
 
-	private:
-		std::experimental::coroutine_handle<> m_awaiting;
-		bool m_completed;
-	};
+    private:
+        std::experimental::coroutine_handle<> m_awaiting;
+        bool m_completed;
+    };
 }
 
 #endif

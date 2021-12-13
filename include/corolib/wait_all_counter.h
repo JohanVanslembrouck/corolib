@@ -17,40 +17,40 @@
 
 namespace corolib
 {
-	struct wait_all_counter
-	{
-		wait_all_counter(int nr)
-			: m_awaiting(nullptr)
-			, m_nr(nr)
-		{
-			print(PRI2, "%p: wait_all_counter::wait_all_counter(%d)\n", this, nr);
-		}
+    struct wait_all_counter
+    {
+        wait_all_counter(int nr)
+            : m_awaiting(nullptr)
+            , m_nr(nr)
+        {
+            print(PRI2, "%p: wait_all_counter::wait_all_counter(%d)\n", this, nr);
+        }
 
-		void set_awaiting(std::experimental::coroutine_handle<> awaiting)
-		{
-			m_awaiting = awaiting;
-		}
+        void set_awaiting(std::experimental::coroutine_handle<> awaiting)
+        {
+            m_awaiting = awaiting;
+        }
 
-		int get_counter()
-		{
-			return m_nr;
-		}
+        int get_counter()
+        {
+            return m_nr;
+        }
 
-		void completed()
-		{
-			print(PRI2, "%p: wait_all_counter::completed(): m_nr = %d\n", this, m_nr);
-			m_nr--;
-			if (m_nr == 0)
-			{
-				print(PRI2, "%p: wait_all_counter::completed(): all replies received\n", this);
-				m_awaiting.resume();
-			}
-		}
+        void completed()
+        {
+            print(PRI2, "%p: wait_all_counter::completed(): m_nr = %d\n", this, m_nr);
+            m_nr--;
+            if (m_nr == 0)
+            {
+                print(PRI2, "%p: wait_all_counter::completed(): all replies received\n", this);
+                m_awaiting.resume();
+            }
+        }
 
-	private:
-		std::experimental::coroutine_handle<> m_awaiting;
-		int m_nr;
-	};
+    private:
+        std::experimental::coroutine_handle<> m_awaiting;
+        int m_nr;
+    };
 }
 
 #endif

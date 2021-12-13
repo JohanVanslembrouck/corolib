@@ -23,28 +23,28 @@
 
 namespace corolib
 {
-	class async_operation_base;
+    class async_operation_base;
 
-	class CommService {
-		friend class async_operation_base;
-	public:
-		virtual std::string get_result() { return "empty";  }
+    class CommService {
+        friend class async_operation_base;
+    public:
+        virtual std::string get_result() { return "empty";  }
 
-	protected:
-		static const int NROPERATIONS = 128;	// use 2^N
+    protected:
+        static const int NROPERATIONS = 128;    // use 2^N
 
-		CommService()
-			: index(-1)
-		{
-			for (int i = 0; i < NROPERATIONS; i++)
-				m_async_operations[i] = nullptr;
-		}
+        CommService()
+            : index(-1)
+        {
+            for (int i = 0; i < NROPERATIONS; i++)
+                m_async_operations[i] = nullptr;
+        }
 
-		virtual ~CommService() {}
+        virtual ~CommService() {}
 
-		int index;
-		async_operation_base* m_async_operations[NROPERATIONS];
-	};
+        int index;
+        async_operation_base* m_async_operations[NROPERATIONS];
+    };
 }
 
 #endif
