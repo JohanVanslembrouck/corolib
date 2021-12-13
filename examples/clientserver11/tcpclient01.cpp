@@ -8,7 +8,7 @@
 #include "tcpclient01.h"
 #include "tcpconfig.h"
 
-#include "corolib/wait_all_awaitable.h"
+#include "wait_all_awaitable.h"
 
 #include <chrono>
 #include <iostream>
