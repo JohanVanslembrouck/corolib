@@ -11,7 +11,6 @@
 #include "tcpconfigfile.h"
 #include "tcpserver01.h"
 
-
 /**
  * @brief main
  * @param argc

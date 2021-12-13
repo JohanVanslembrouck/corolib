@@ -19,8 +19,6 @@
 
 using namespace corolib;
 
-const int corolib::priority = 0x01;
-
 async_task<int> mainflowWA0(CommClient& c1, CommClient& c2, CommClient& c3)
 {
 	print(PRI1, "mainflowWA0: begin\n");
@@ -345,6 +343,8 @@ async_task<int> mainflowWA3(CommClient& c1, CommClient& c2, CommClient& c3)
 
 int main(int argc, char* argv[])
 {
+	set_priority(0x01);
+
     boost::asio::io_context ioContext;
 
 	print(PRI1, "main: CommClient c1(ioContext, ep1);\n");

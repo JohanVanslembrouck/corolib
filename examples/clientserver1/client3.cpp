@@ -20,8 +20,6 @@
 
 using namespace corolib;
 
-const int corolib::priority = 0x01;
-
 oneway_task mainflowOneClient(CommClient& c1, auto_reset_event& are, int instance, int counter)
 {
 	print(PRI1, "mainflowOneClient: %d: begin\n", instance);
@@ -558,6 +556,8 @@ async_task<int> mainflow6(std::initializer_list<CommClient*> clients)
 
 int main(int argc, char* argv[])
 {
+	set_priority(0x01);
+
     boost::asio::io_context ioContext;
 
 	print(PRI1, "main: CommClient c1(ioContext, ep1);\n");

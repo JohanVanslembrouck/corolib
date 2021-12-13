@@ -11,8 +11,6 @@
 #include "tcpconfigfile.h"
 #include "tcpclient02.h"
 
-const int corolib::priority = 0x01;
-
 /**
  * @brief main
  * @param argc
@@ -22,6 +20,8 @@ const int corolib::priority = 0x01;
 int main(int argc, char *argv[])
 {
     QT_USE_NAMESPACE
+
+    corolib::set_priority(0x01);
 
     QCoreApplication app(argc, argv);
 

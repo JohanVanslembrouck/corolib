@@ -20,8 +20,6 @@
 
 using namespace corolib;
 
-extern const int corolib::priority = 0x01;
-
 #include "reqresptypes.h"
 
 using handleRequest = 
@@ -295,6 +293,8 @@ void asyncSignal(boost::asio::io_context& ioContext)
 
 int main()
 {
+	set_priority(0x01);
+
     boost::asio::io_context ioContextSignal;
     boost::asio::io_context ioContextServer;
 

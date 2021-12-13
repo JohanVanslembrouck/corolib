@@ -16,8 +16,6 @@
 
 using namespace corolib;
 
-extern const int corolib::priority = 0x01;
-
 boost::asio::io_context ioContext;
 
 class ClientApp : public CommClient
@@ -93,6 +91,8 @@ public:
 
 int main()
 {
+	set_priority(0x01);
+
 	print(PRI1, "main: ClientApp c1(ioContext, ep1);\n");
 	ClientApp c1(ioContext, ep1);
 

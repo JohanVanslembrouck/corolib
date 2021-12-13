@@ -23,8 +23,6 @@ using namespace corolib;
 #include "dispatcher.h"
 #include "serverrequest.h"
 
-extern const int corolib::priority = 0x01;
-
 class ServerApp : public CommServer
 {
 public:
@@ -161,6 +159,8 @@ void asyncSignal(boost::asio::io_context& ioContext)
 
 int main()
 {
+	set_priority(0x01);
+
     boost::asio::io_context ioContextSignal;
     boost::asio::io_context ioContextServer;
 

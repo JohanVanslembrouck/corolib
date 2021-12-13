@@ -22,8 +22,6 @@
 
 using namespace corolib;
 
-const int corolib::priority = 0x01;
-
 std::atomic_bool stop{false};
 
 using boost::asio::steady_timer;
@@ -184,6 +182,8 @@ void asyncSignal(boost::asio::io_context& ioContext)
 
 int main()
 {
+	set_priority(0x01);
+
     std::thread t{asyncSignal, std::ref(ioContextSignal)};
 
 	ClientServerApp server1{ioContextServer, port_clientserver};

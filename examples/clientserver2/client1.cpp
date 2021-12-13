@@ -22,8 +22,6 @@
 
 using namespace corolib;
 
-extern const int corolib::priority = 0x01;
-
 int secondtimeout = 200;
 
 boost::asio::io_context ioContext;
@@ -204,6 +202,8 @@ public:
 
 int main(int argc, char* argv[])
 {
+	set_priority(0x01);
+
 	if (argc == 2)
 		secondtimeout = atoi(argv[1]);
 
