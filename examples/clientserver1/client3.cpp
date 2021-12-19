@@ -554,6 +554,102 @@ async_task<int> mainflow6(std::initializer_list<CommClient*> clients)
 	co_return 0;
 }
 
+void mainflowX(CommClient& c1, CommClient& c2, CommClient& c3, int selected)
+{
+	switch (selected) {
+	case 0:
+	{
+		print(PRI1, "mainflowX: before async_task<int> si0 = mainflow0(c1, c2, c3);\n");
+		async_task<int> si0 = mainflow0(c1, c2, c3);
+		print(PRI1, "mainflowX: after async_task<int> si0 = mainflow0(c1, c2, c3);\n");
+	}
+	break;
+	case 1:
+	{
+		print(PRI1, "mainflowX: before async_task<int> si1 = mainflow1(c1, c2, c3);\n");
+		async_task<int> si1 = mainflow1(c1, c2, c3);
+		print(PRI1, "mainflowX: after async_task<int> si1 = mainflow1(c1, c2, c3);\n");
+	}
+	break;
+	case 2:
+	{
+		print(PRI1, "mainflowX: before async_task<int> si2 = mainflow2(c1, c2, c3);\n");
+		async_task<int> si2 = mainflow2(c1, c2, c3);
+		print(PRI1, "mainflowX: after async_task<int> si2 = mainflow2(c1, c2, c3);\n");
+	}
+	break;
+	case 3:
+	{
+		print(PRI1, "mainflowX: before async_task<int> si3 = mainflow3(c1, c2, c3);\n");
+		async_task<int> si3 = mainflow3(c1, c2, c3);
+		print(PRI1, "main: after async_task<int> si3 = mainflow3(c1, c2, c3);\n");
+	}
+	break;
+	case 4:
+	{
+		print(PRI1, "mainflowX: before async_task<int> si4 = mainflow4(c1, c2, c3);\n");
+		async_task<int> si4 = mainflow4(c1, c2, c3);
+		print(PRI1, "mainflowX: after async_task<int> si4 = mainflow4(c1, c2, c3);\n");
+	}
+	break;
+	case 5:
+	{
+		print(PRI1, "mainflowX: before async_task<int> si5 = mainflow5({&c1, &c2, &c3})\n");
+		async_task<int> si5 = mainflow5({ &c1, &c2, &c3 });
+		print(PRI1, "mainflowX: after async_task<int> si5 = mainflow5({&c1, &c2, &c3})\n");
+	}
+	break;
+	case 6:
+	{
+		print(PRI1, "mainflowX: before async_task<int> si6 = mainflow6({&c1, &c2, &c3})\n");
+		async_task<int> si6 = mainflow6({ &c1, &c2, &c3 });
+		print(PRI1, "mainflowX: after async_task<int> si6 = mainflow6({&c1, &c2, &c3})\n");
+	}
+	break;
+	}
+}
+
+async_task<int> mainflowAll(CommClient& c1, CommClient& c2, CommClient& c3)
+{
+	print(PRI1, "mainflowAll: before async_task<int> si0 = mainflow0(c1, c2, c3);\n");
+	async_task<int> si0 = mainflow0(c1, c2, c3);
+	print(PRI1, "mainflowAll: co_await si0;\n");
+	co_await si0;
+	
+	print(PRI1, "mainflowAll: before async_task<int> si1 = mainflow1(c1, c2, c3);\n");
+	async_task<int> si1 = mainflow1(c1, c2, c3);
+	print(PRI1, "mainflowAll: co_await si1;\n");
+	co_await si1;
+
+	print(PRI1, "mainflowAll: before async_task<int> si2 = mainflow2(c1, c2, c3);\n");
+	async_task<int> si2 = mainflow2(c1, c2, c3);
+	print(PRI1, "mainflowAll: co_await si2;\n");
+	co_await si2;
+	
+	print(PRI1, "mainflowAll: before async_task<int> si3 = mainflow3(c1, c2, c3);\n");
+	async_task<int> si3 = mainflow3(c1, c2, c3);
+	print(PRI1, "mainflowAll: co_await si3;\n");
+	co_await si3;
+	
+	print(PRI1, "mainflowAll: before async_task<int> si4 = mainflow4(c1, c2, c3);\n");
+	async_task<int> si4 = mainflow4(c1, c2, c3);
+	print(PRI1, "mainflowAll: co_await si4;\n");
+	co_await si4;
+	
+	print(PRI1, "mainflowAll: before async_task<int> si5 = mainflow5({&c1, &c2, &c3})\n");
+	async_task<int> si5 = mainflow5({ &c1, &c2, &c3 });
+	print(PRI1, "mainflowAll: co_await si5;\n");
+	co_await si5;
+	
+	print(PRI1, "mainflowAll: before async_task<int> si6 = mainflow6({&c1, &c2, &c3})\n");
+	async_task<int> si6 = mainflow6({ &c1, &c2, &c3 });
+	print(PRI1, "mainflowAll: co_await si6;\n");
+	co_await si6;
+	
+	print(PRI1, "mainflowAll: co_return 0;\n");
+	co_return 0;
+}
+
 int main(int argc, char* argv[])
 {
 	set_priority(0x01);
@@ -567,69 +663,30 @@ int main(int argc, char* argv[])
 	print(PRI1, "main: CommClient c3(ioContext, ep1);\n");
 	CommClient c3(ioContext, ep1);
 
-	int selected = 0;
 	if (argc == 2)
+	{
+		int selected = 0;
 		selected = atoi(argv[1]);
-	if (selected < 0 || selected > 6) {
-		print(PRI1, "main: selection must be in the range [0..6]\n");
-		return 0;
+		if (selected < 0 || selected > 6)
+		{
+			print(PRI1, "main: selection must be in the range [0..6]\n");
+			return 0;
+		}
+		print(PRI1, "main: mainflowX(c1, c2, c3, selected);\n");
+		mainflowX(c1, c2, c3, selected);
 	}
-
-	switch (selected) {
-	case 0:
+	else
 	{
-		print(PRI1, "main: before async_task<int> si0 = mainflow0(c1, c2, c3);\n");
-		async_task<int> si0 = mainflow0(c1, c2, c3);
-		print(PRI1, "main: after async_task<int> si0 = mainflow0(c1, c2, c3);\n");
-	}
-	break;
-	case 1:
-	{
-		print(PRI1, "main: before async_task<int> si1 = mainflow1(c1, c2, c3);\n");
-		async_task<int> si1 = mainflow1(c1, c2, c3);
-		print(PRI1, "main: after async_task<int> si1 = mainflow1(c1, c2, c3);\n");
-	}
-	break;
-	case 2:
-	{
-		print(PRI1, "main: before async_task<int> si2 = mainflow2(c1, c2, c3);\n");
-		async_task<int> si2 = mainflow2(c1, c2, c3);
-		print(PRI1, "main: after async_task<int> si2 = mainflow2(c1, c2, c3);\n");
-	}
-	break;
-	case 3:
-	{
-		print(PRI1, "main: before async_task<int> si3 = mainflow3(c1, c2, c3);\n");
-		async_task<int> si3 = mainflow3(c1, c2, c3);
-		print(PRI1, "main: after async_task<int> si3 = mainflow3(c1, c2, c3);\n");
-	}
-	break;
-	case 4:
-	{
-		print(PRI1, "main: before async_task<int> si4 = mainflow4(c1, c2, c3);\n");
-		async_task<int> si4 = mainflow4(c1, c2, c3);
-		print(PRI1, "main: after async_task<int> si4 = mainflow4(c1, c2, c3);\n");
-	}
-	break;
-	case 5:
-	{
-		print(PRI1, "main: before async_task<int> si5 = mainflow5({&c1, &c2, &c3})\n");
-		async_task<int> si5 = mainflow5({&c1, &c2, &c3});
-		print(PRI1, "main: after async_task<int> si5 = mainflow5({&c1, &c2, &c3})\n");
-	}
-	break;
-	case 6:
-	{
-		print(PRI1, "main: before async_task<int> si6 = mainflow6({&c1, &c2, &c3})\n");
-		async_task<int> si6 = mainflow6({ &c1, &c2, &c3 });
-		print(PRI1, "main: after async_task<int> si6 = mainflow6({&c1, &c2, &c3})\n");
-	}
-	break;
+		print(PRI1, "main: async_task<int> si = mainflowAll(c1, c2, c3);\n");
+		async_task<int> si = mainflowAll(c1, c2, c3);
 	}
 
 	print(PRI1, "main: before ioContext.run();\n");
 	ioContext.run();
 	print(PRI1, "main: after ioContext.run();\n");
+
+	print(PRI1, "main: std::this_thread::sleep_for(std::chrono::seconds(1))\n");
+	std::this_thread::sleep_for(std::chrono::seconds(1));
 
     print(PRI1, "main: return 0;\n");
 	return 0;
