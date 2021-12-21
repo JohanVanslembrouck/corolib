@@ -22,12 +22,12 @@ The Qt examples are currently not built from the top-level CMakeLists.txt file, 
 
 The GitHub repository contains the library itself and several examples.
 
-The library (include/corolib) has 2 parts:
-* Files async_operation.h, async_task.h, auto_reset_event.h, commservice.h, oneway_task.h, print.h, semaphore.h, wait_all_awaitable.h, wait_all_counter.h, wait_any.h and wait_any_awaitable.h are independent of Boost and are also used by the Qt examples.
+The library (include/corolib) has two parts:
+* Files async_operation.h, async_task.h, auto_reset_event.h, commservice.h, oneway_task.h, print.h, semaphore.h, wait_all_awaitable.h, wait_all_counter.h, wait_any.h and wait_any_awaitable.h are independent of Boost and are also used by the Qt examples. The README file in include/corolib gives more information for each of the classes.
 * Files commclient.h, commcore.h and commserver.h use boost/asio and are only used by the Boost examples.
 Folder lib contains the source (.cpp) files for the header files (.h) in include/corolib.
 
-The examples have also 2 parts:
+The examples have also two parts:
 * Folders clientserver1, clientserver2, clientserver3 and clientserver4 use Boost.
 * Folder clientserver11 uses Qt and folder common-qt defines classes that are used by clientserver11 (and other examples that may be added in the future).
 
