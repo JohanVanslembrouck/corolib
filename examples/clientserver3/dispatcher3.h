@@ -1,22 +1,23 @@
 /**
- * @file dispatcher2.h
+ * @file dispatcher3.h
  * @brief
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
  */
-#ifndef _DISPATCHER2_H_
-#define _DISPATCHER2_H_
+#ifndef _DISPATCHER3_H_
+#define _DISPATCHER3_H_
 
 #include <functional>
 
 #include "corolib/commservice.h"
 #include "corolib/async_operation.h"
+#include "corolib/async_task.h"
 #include "corolib/print.h"
 
 using handleRequest =
-	std::function<void(std::string)>;
+	std::function<async_task<int>(std::string)>;
 using handleRequest2 =
-	std::function<void(std::string, int)> ;
+    std::function<async_task<int>(std::string, int)>;
 
 struct dispatch_table
 {
@@ -42,10 +43,11 @@ public:
 	
 		m_dispatch_table[index].str = tx;
 		m_dispatch_table[index].op = op;
-		m_dispatch_table[index].op2 = [this](std::string str, int idx)
+		m_dispatch_table[index].op2 = [this](std::string str, int idx) -> async_task<int>
 		{
 			print(PRI1, "lambda: idx = %d, str = <%s>\n", idx, str.c_str());
-			m_dispatch_table[idx].op(str);
+			async_task<int> t = m_dispatch_table[idx].op(str);
+			co_await t;
 
 			async_operation<std::string>* om_async_operation = 
 				dynamic_cast<async_operation<std::string>*>(m_async_operations[idx]);
@@ -54,6 +56,8 @@ public:
 				om_async_operation->set_result(str);
 				om_async_operation->completed();
 			}
+
+			co_return 0;
 		};
 		return ret;
 	}

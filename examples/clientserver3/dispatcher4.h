@@ -1,28 +1,26 @@
 /**
- * @file dispatcher2.h
+ * @file dispatcher4.h
  * @brief
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
  */
-#ifndef _DISPATCHER2_H_
-#define _DISPATCHER2_H_
+#ifndef _DISPATCHER4_H_
+#define _DISPATCHER4_H_
 
 #include <functional>
 
 #include "corolib/commservice.h"
 #include "corolib/async_operation.h"
+#include "corolib/async_task.h"
 #include "corolib/print.h"
 
 using handleRequest =
-	std::function<void(std::string)>;
-using handleRequest2 =
-	std::function<void(std::string, int)> ;
+	std::function<async_task<int>(std::string)>;
 
 struct dispatch_table
 {
 	std::string 	str;
 	handleRequest	op;
-	handleRequest2	op2;
 };
 
 class Dispatcher : public CommService
@@ -32,7 +30,7 @@ public:
 	{
 	}
 	
-	async_operation<std::string> registerFunctor(std::string tx, handleRequest op)
+	void registerFunctor(std::string tx, handleRequest op)
 	{
 		print(PRI1, "registerFunctor(%s, op)\n", tx.c_str());
 		
@@ -42,20 +40,6 @@ public:
 	
 		m_dispatch_table[index].str = tx;
 		m_dispatch_table[index].op = op;
-		m_dispatch_table[index].op2 = [this](std::string str, int idx)
-		{
-			print(PRI1, "lambda: idx = %d, str = <%s>\n", idx, str.c_str());
-			m_dispatch_table[idx].op(str);
-
-			async_operation<std::string>* om_async_operation = 
-				dynamic_cast<async_operation<std::string>*>(m_async_operations[idx]);
-			if (om_async_operation)
-			{
-				om_async_operation->set_result(str);
-				om_async_operation->completed();
-			}
-		};
-		return ret;
 	}
 
 	std::string getHeader(std::string str) {
@@ -68,7 +52,7 @@ public:
 		return "";
 	}
 
-	void dispatch(std::string str)
+	async_task<int> dispatch(std::string str)
 	{
 		print(PRI2, "Dispatcher::dispatch(<%s>), index = %d\n", str.c_str(), index);
 		
@@ -80,10 +64,12 @@ public:
 			if (m_dispatch_table[i].str.compare(header) == 0)
 			{
 				print(PRI1, "Dispatcher::dispatch(): found match at index %d\n", i);
-				m_dispatch_table[index].op2(str, i);
+				async_task<int> t = m_dispatch_table[i].op(str);
+				co_await t;
 				break;
 			}
 		}
+		co_return 0;
 	}
 
 protected:
