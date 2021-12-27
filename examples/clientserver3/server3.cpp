@@ -4,7 +4,7 @@
  * This example illustrates the use of coroutines
  * in combination with Boost ASIO to implement a server application.
  *
- * The difference with server2.cpp is the use of a dedicated coroutine read_client_request.
+ * The difference with server2.cpp is the use of a dedicated coroutine read_client_request that is co_awaited in mainflow_one_client.
  * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com)
  */

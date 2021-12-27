@@ -1,15 +1,14 @@
 /**
- * @file server4.cpp
+ * @file server7.cpp
  * @brief
  * This example illustrates the use of coroutines
  * in combination with Boost ASIO to implement a server application.
  * 
- * This application is an extension of server3.cpp.
- * It uses a different Dispatcher implementation than server2.cpp and server3.cpp.
- * After having dispatched an operation (passed as a lambda), the dispatcher also completes
- * an asynchronous operation. This way main_one_client gets feedback on the invoked operation
- * and can (if applicable) take some additional actions.
- * 
+ * Because we can now co_await the lambda passed to the dispatcher,
+ * the asynchronous operation that is completed by the dispatcher (in server4.cpp, server5.cpp and server6.cpp) 
+ * has become obsolete.
+ * This operation has been removed in server7.cpp.
+ *
  * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com)
  */
  

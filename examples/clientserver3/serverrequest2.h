@@ -1,5 +1,5 @@
 /**
- * @file serverrequest.h
+ * @file serverrequest2.h
  * @brief
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)

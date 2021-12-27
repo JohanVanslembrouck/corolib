@@ -5,7 +5,7 @@ The library has two parts:
 * Files commclient.h, commcore.h and commserver.h use boost/asio and are only used by the Boost examples.
 Folder lib contains the source (.cpp) files for the header files (.h) in include/corolib.
 
-The following three classes are related:
+The following classes are related:
 * template<typename TYPE> class async_operation (file async_operation.h) implements operator co_await() but it does not define a promise_type.
   Therefore it cannot be used to create coroutines.
   This class is meant to be used as a return type of a normal C++ (member) function, making the bridge between non-coroutines and coroutines.
@@ -22,11 +22,12 @@ The following three classes are related:
   It could be considered a stripped-down version of class async_operation.
   This class can be used as a return type of a normal C++ (member) function.
   The returned object is then co_awaited in a coroutine. 
-  On resumption in co_await, its state is reset automatically, so when the same object is co_awaited again, the co_await call will suspend until the object's resume() function is called.
-  The auto_reset_event class could be considered to be a coroutine-style implementation of a semaphore.
-  Note that async_operation allows to reset the state using the function reset();
+  On resumption in co_await, its state is reset automatically, so when the same object is co_awaited again, 
+  the co_await call will suspend until the object's resume() function is called again.
+  The auto_reset_event class could be considered to be a coroutine-style implementation of a semaphore. 
+  Note that async_operation allows to reset the state on demand using the function reset().
   
-The following class is the base class for all asynchronous operations we want to implement.
+The following class is the base class for all asynchronous operation classes we want to implement.
 
 - class CommService (file commservice.h) is the base class for all classes defining functions that return an object of type class async_operation.
   The class defines an array of pointers to async_operations. 
@@ -47,14 +48,14 @@ The following classes are related and deal with the completion of one or all ope
 - template<typename TYPE> struct wait_all_awaitable (file wait_all_awaitable.h) implements operator co_await.
   Its contructor is passed a list of operations that all have to be completed before the coroutine will resume.
   All operations receive a pointer to the wait_all_counter data member (see next point).
-  Each operation calls the wait_all_counter's completed function when it completes.
+  Each operation calls the wait_all_counter's completed() function when it completes.
 - struct wait_all_counter (file wait_all_counter.h) is used as data member in wait_all_awaitable.
   It implements a counter that is decremented each time its completed() function is called.
   When the counter reaches zero, the coroutine is resumed.
 - template<typename TYPE> struct wait_any_awaitable (file wait_any_awaitable.h) implements operator co_await.
   Its contructor is passed a list of operations; one of the operations has to be completed before the coroutine will resume.
   Each operation receives a pointer to a dedicated wait_any object (see next point).
-  Each operation calls the wait_all_counter's completed function when it completes.
+  Each operation calls the wait_all_counter's completed() function when it completes.
 - struct wait_any (file wait_any.h) is used as a data member in wait_any_awaitable 
   (more in particular for a data member with type std::vector<wait_any*>).
   When an operation calls the completed() function on its wait_any object, the coroutine is resumed.

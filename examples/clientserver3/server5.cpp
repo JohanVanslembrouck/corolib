@@ -4,8 +4,11 @@
  * This example illustrates the use of coroutines
  * in combination with Boost ASIO to implement a server application.
  *
- * This variant allows mainflow_one_client to follow the progress
- * of read_client_request.
+ * This application is a variant of server4.cpp.
+ * It allows coroutine mainflow_one_client to follow the progress
+ * of coroutine read_client_request by passing it a struct process_info_t.
+ * In contrast to server4.cpp, server5.cpp does not use wait_any_awaitable.
+ * Therefore, it does not have to save the return value of the dispatcher.registerFunctor calls.
  * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com)
  */
@@ -17,7 +20,6 @@
 #include "corolib/commserver.h"
 #include "corolib/async_operation.h"
 #include "corolib/oneway_task.h"
-#include "corolib/wait_any_awaitable.h"
 
 #include "endpoints.h"
 
