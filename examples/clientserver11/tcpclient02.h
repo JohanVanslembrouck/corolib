@@ -107,6 +107,15 @@ private:    // functions
     async_task<int> measurementLoop66();
     async_task<int> measurementLoop67();
 
+    async_task<int> measurementLoop70(TcpClientCo& tcpClient, int nrRepetitions = 1, int timeout = 50);
+    async_task<int> measurementLoop71();
+    async_task<int> measurementLoop72();
+    async_task<int> measurementLoop73();
+    async_task<int> measurementLoop74();
+    async_task<int> measurementLoop75();
+    async_task<int> measurementLoop76();
+    async_task<int> measurementLoop77();
+
 private:
     IPaddressAndPort        m_servers[2];
 

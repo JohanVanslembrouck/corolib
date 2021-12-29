@@ -203,7 +203,15 @@ int selectNextLoop(int loop)
     case 64: return 65;
     case 65: return 66;
     case 66: return 67;
-    case 67: return -1;
+    case 67: return 71;
+
+    case 71: return 72;
+    case 72: return 73;
+    case 73: return 74;
+    case 74: return 75;
+    case 75: return 76;
+    case 76: return 77;
+    case 77: return -1;
 
     default: return -1;
     }
@@ -288,6 +296,14 @@ void TcpClient02::sendTCPStart()
         case 65: { async_task<int> si = measurementLoop65(); } break;
         case 66: { async_task<int> si = measurementLoop66(); } break;
         case 67: { async_task<int> si = measurementLoop67(); } break;
+
+        case 71: { async_task<int> si = measurementLoop71(); } break;
+        case 72: { async_task<int> si = measurementLoop72(); } break;
+        case 73: { async_task<int> si = measurementLoop73(); } break;
+        case 74: { async_task<int> si = measurementLoop74(); } break;
+        case 75: { async_task<int> si = measurementLoop75(); } break;
+        case 76: { async_task<int> si = measurementLoop76(); } break;
+        case 77: { async_task<int> si = measurementLoop77(); } break;
 
         default:
             qDebug() << "Please select a valid measurement loop";
@@ -1500,6 +1516,165 @@ async_task<int> TcpClient02::measurementLoop67()
     qDebug() << Q_FUNC_INFO << "begin";
     async_task<int> t1 = measurementLoop60(m_tcpClient1, 5);
     async_task<int> t2 = measurementLoop60(m_tcpClient2, 7);
+    wait_all_awaitable< async_task<int> > wa({ & t1, &t2 });
+    co_await wa;
+    qDebug() << Q_FUNC_INFO << "end";
+    m_timerStartSending.start(100);
+    m_selection = nr_message_lengths;
+    co_return 0;
+}
+
+/**
+ * @brief TcpClient02::measurementLoop70
+ * @param tcpClient
+ * @return
+ */
+async_task<int> TcpClient02::measurementLoop70(TcpClientCo& tcpClient, int nrRepetitions, int timeout)
+{
+    qDebug() << Q_FUNC_INFO << "begin";
+    int msgLength = 0;
+    for (int selection = 0; selection < nr_message_lengths; selection++)
+    {
+        std::chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
+        for (int i = 0; i < configuration.m_numberTransactions; i++)
+        {
+            QTimer timer(this);
+            timer.setSingleShot(true);
+            qInfo() << Q_FUNC_INFO << "async_operation<void> opT = tcpClient.start_timer(timer, timeout)";
+            async_operation<void> opT = tcpClient.start_timer(timer, timeout);
+            qInfo() << Q_FUNC_INFO << "before co_await opT";
+            co_await opT;
+            qInfo() << Q_FUNC_INFO << "after co_await opT";
+
+            QByteArray data = prepareMessage(selection, nrRepetitions);
+            msgLength = data.length();
+            tcpClient.sendMessage(data);
+
+            async_operation<QByteArray> op = tcpClient.start_reading(false);
+            for (int i = 0; i < nrRepetitions; i++)
+            {
+                QByteArray dataOut = co_await op;
+                op.reset();
+                qInfo() << dataOut.length() << ":" << dataOut;
+            }
+            int idx = op.get_index();
+            tcpClient.stop_reading(idx);
+        }
+        calculateElapsedTime(start, msgLength);
+    }
+    qDebug() << Q_FUNC_INFO << "end";
+    co_return 0;
+}
+
+/**
+ * @brief TcpClient02::measurementLoop71
+ * @return
+ */
+async_task<int> TcpClient02::measurementLoop71()
+{
+    qDebug() << Q_FUNC_INFO << "begin";
+    async_task<int> t1 = measurementLoop70(m_tcpClient1, 5, 50);
+    co_await t1;
+    qDebug() << Q_FUNC_INFO << "end";
+    m_timerStartSending.start(100);
+    m_selection = nr_message_lengths;
+    co_return 0;
+}
+
+/**
+ * @brief TcpClient02::measurementLoop72
+ * @return
+ */
+async_task<int> TcpClient02::measurementLoop72()
+{
+    qDebug() << Q_FUNC_INFO << "begin";
+    async_task<int> t1 = measurementLoop70(m_tcpClient1, 5, 30);
+    async_task<int> t2 = measurementLoop70(m_tcpClient2, 5, 20);
+    co_await t1;
+    co_await t2;
+    qDebug() << Q_FUNC_INFO << "end";
+    m_timerStartSending.start(100);
+    m_selection = nr_message_lengths;
+    co_return 0;
+}
+
+/**
+ * @brief TcpClient02::measurementLoop73
+ * @return
+ */
+async_task<int> TcpClient02::measurementLoop73()
+{
+    qDebug() << Q_FUNC_INFO << "begin";
+    async_task<int> t1 = measurementLoop70(m_tcpClient1, 5, 30);
+    async_task<int> t2 = measurementLoop70(m_tcpClient2, 5, 20);
+    co_await t2;
+    co_await t1;
+    qDebug() << Q_FUNC_INFO << "end";
+    m_timerStartSending.start(100);
+    m_selection = nr_message_lengths;
+    co_return 0;
+}
+
+/**
+ * @brief TcpClient02::measurementLoop74
+ * @return
+ */
+async_task<int> TcpClient02::measurementLoop74()
+{
+    qDebug() << Q_FUNC_INFO << "begin";
+    async_task<int> t1 = measurementLoop70(m_tcpClient1, 5, 30);
+    async_task<int> t2 = measurementLoop70(m_tcpClient2, 5, 20);
+    wait_all_awaitable< async_task<int> > wa({ & t1, &t2 });
+    co_await wa;
+    qDebug() << Q_FUNC_INFO << "end";
+    m_timerStartSending.start(100);
+    m_selection = nr_message_lengths;
+    co_return 0;
+}
+
+/**
+ * @brief TcpClient02::measurementLoop75
+ * @return
+ */
+async_task<int> TcpClient02::measurementLoop75()
+{
+    qDebug() << Q_FUNC_INFO << "begin";
+    async_task<int> t1 = measurementLoop70(m_tcpClient1, 5, 30);
+    async_task<int> t2 = measurementLoop70(m_tcpClient2, 7, 20);
+    co_await t1;
+    co_await t2;
+    qDebug() << Q_FUNC_INFO << "end";
+    m_timerStartSending.start(100);
+    m_selection = nr_message_lengths;
+    co_return 0;
+}
+
+/**
+ * @brief TcpClient02::measurementLoop76
+ * @return
+ */
+async_task<int> TcpClient02::measurementLoop76()
+{
+    qDebug() << Q_FUNC_INFO << "begin";
+    async_task<int> t1 = measurementLoop70(m_tcpClient1, 5, 30);
+    async_task<int> t2 = measurementLoop70(m_tcpClient2, 7, 20);
+    co_await t2;
+    co_await t1;
+    qDebug() << Q_FUNC_INFO << "end";
+    m_timerStartSending.start(100);
+    m_selection = nr_message_lengths;
+    co_return 0;
+}
+
+/**
+ * @brief TcpClient02::measurementLoop77
+ * @return
+ */
+async_task<int> TcpClient02::measurementLoop77()
+{
+    qDebug() << Q_FUNC_INFO << "begin";
+    async_task<int> t1 = measurementLoop70(m_tcpClient1, 5, 30);
+    async_task<int> t2 = measurementLoop70(m_tcpClient2, 7, 20);
     wait_all_awaitable< async_task<int> > wa({ & t1, &t2 });
     co_await wa;
     qDebug() << Q_FUNC_INFO << "end";

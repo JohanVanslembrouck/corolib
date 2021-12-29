@@ -17,9 +17,9 @@
 
 #include "connectioninfo.h"
 
-#include "corolib/async_operation.h"
-#include "corolib/commservice.h"
-#include "corolib/async_task.h"
+#include "async_operation.h"
+#include "commservice.h"
+#include "async_task.h"
 
 #include "protocolmessage.h"
 
@@ -57,12 +57,17 @@ public:
 
 	// Coroutine related
     async_operation<QByteArray> start_reading(bool doDisconnect = true);
-    void start_read(const int idx, bool doDisconnect = true);
-    void stop_reading(int idx);
+    async_operation<void> start_timer(QTimer& timer, int ms);
 
-private:    // functions
+    void stop_reading(int idx);
+    void stop_timer(int idx);
+
+protected:    // functions
     void enableKeepAlive(QTcpSocket *socket);
     void closeConnection(QTcpSocket *socket);
+
+    void start_read(const int idx, bool doDisconnect = true);
+    void start_tmr(const int idx, QTimer& tmr, int ms);
 
     void readyReadTcpCo(QByteArray& data);
     void readyReadTcpCo1(QByteArray& data);
