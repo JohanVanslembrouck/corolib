@@ -104,6 +104,8 @@ bool TcpClient::connectToServer(QString& serverIPaddress, quint16 serverPort)
                 connectionInfo->m_connection_disconnected = connect(socket, &QTcpSocket::disconnected, this, &TcpClient::disconnectedServer);
                 connectionInfo->m_connection_stateChanged = connect(socket, &QTcpSocket::stateChanged, this, &TcpClient::stateChanged);
                 m_connectionInfoList.append(connectionInfo);
+
+                emit connectedSig();
                 retVal = true;
             }
             else

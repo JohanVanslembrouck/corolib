@@ -43,6 +43,7 @@ struct TcpConfiguration
     qint32          m_reconnectTimeoutAfterDisconnect = 500;
 
     bool            m_useCoroutines = false;
+    bool            m_useAsyncConnect = false;
     qint32          m_selectImplementation = 1;
     qint32          m_selectMeasurementLoop = 0;
 };

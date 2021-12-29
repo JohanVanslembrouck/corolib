@@ -50,6 +50,7 @@ TcpClient01::TcpClient01(QObject *parent, MessageCheck check)
     connect(&m_timerConnectToServer,&QTimer::timeout, this, &TcpClient01::connectToServer);
     connect(&m_timerStartSending,   &QTimer::timeout, this, &TcpClient01::sendTCPStart);
     connect(&m_timerNoResponse,     &QTimer::timeout, this, &TcpClient01::noResponseReceived);
+    connect(&m_tcpClient,           &TcpClient::connectedSig, this, &TcpClient01::connected);
 
     nr_message_lengths = configuration.m_numberMessages;
 
@@ -131,16 +132,30 @@ void TcpClient01::connectToServer()
     bool result = m_tcpClient.connectToServer(m_server.m_ipAddress, m_server.m_port);
     if (!result)
         qDebug() << Q_FUNC_INFO << "immediate connection failed";
-    else
-        sendTCPStart();
 }
 
+/**
+ * @brief TcpClient01::connected
+ */
+void TcpClient01::connected()
+{
+    qDebug() << Q_FUNC_INFO;
+    sendTCPStart();
+}
+
+/**
+ * @brief TcpClient01::noResponseReceived
+ */
 void TcpClient01::noResponseReceived()
 {
     qDebug() << Q_FUNC_INFO;
 }
 
-
+/**
+ * @brief selectNextLoop
+ * @param loop
+ * @return
+ */
 int selectNextLoop(int loop)
 {
     switch (loop)
@@ -189,31 +204,11 @@ void TcpClient01::sendTCPStart()
 
         switch (m_loop)
         {
-        case 0:
-        {
-            async_task<int> si = measurementLoop0();
-        }
-        break;
-        case 1:
-        {
-            async_task<int> si = measurementLoop1();
-        }
-        break;
-        case 2:
-        {
-            async_task<int> si = measurementLoop2();
-        }
-        break;
-        case 3:
-        {
-            async_task<int> si = measurementLoop3();
-        }
-        break;
-        case 4:
-        {
-            async_task<int> si = measurementLoop4();
-        }
-        break;
+        case 0: { async_task<int> si = measurementLoop0(); } break;
+        case 1: { async_task<int> si = measurementLoop1(); } break;
+        case 2: { async_task<int> si = measurementLoop2(); } break;
+        case 3: { async_task<int> si = measurementLoop3(); } break;
+        case 4: { async_task<int> si = measurementLoop4(); } break;
 
         default:
              qDebug() << "Please select a valid measurement loop";
@@ -329,14 +324,6 @@ void TcpClient01::readyReadTcp(QByteArray& data)
             }
         }
     } // while
-}
-
-/**
- * @brief TcpClient01::connected
- */
-void TcpClient01::connected()
-{
-    qDebug() << Q_FUNC_INFO;
 }
 
 /**

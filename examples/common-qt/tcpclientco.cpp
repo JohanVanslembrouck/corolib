@@ -123,6 +123,8 @@ bool TcpClientCo::connectToServer(QString& serverIPaddress, quint16 serverPort)
                 connectionInfo->m_connection_disconnected = connect(socket, &QTcpSocket::disconnected, this, &TcpClientCo::disconnectedServer);
                 connectionInfo->m_connection_stateChanged = connect(socket, &QTcpSocket::stateChanged, this, &TcpClientCo::stateChanged);
                 m_connectionInfoList.append(connectionInfo);
+
+                emit connectedSig();
                 retVal = true;
             }
             else
@@ -531,3 +533,61 @@ void TcpClientCo::stop_timer(int idx)
     }
 }
 
+/**
+ * @brief TcpClientCo::start_connecting
+ * @param serverIpAddress
+ * @param port
+ * @return
+ */
+async_operation<void> TcpClientCo::start_connecting(QString& serverIpAddress, quint16 port)
+{
+    index = (index + 1) & (NROPERATIONS - 1);
+    print(PRI2, "%p: TcpClientCo::start_connecting(): index = %d\n", this, index);
+    assert(m_async_operations[index] == nullptr);
+    async_operation<void> ret{ this, index };
+    start_connect(index, serverIpAddress, port);
+    return ret;
+}
+
+/**
+ * @brief TcpClientCo::start_connect
+ * @param idx
+ * @param serverIpAddress
+ * @param port
+ */
+void TcpClientCo::start_connect(const int idx, QString& serverIpAddress, quint16 port)
+{
+    print(PRI2, "%p: TcpClientCo::start_connect(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
+
+    m_connections[idx] = connect(this, &TcpClientCo::connectedSig,
+        [this, idx]()
+        {
+            print(PRI2, "%p: TcpClientCo::start_connect() lambda: idx = %d\n", this, idx);
+
+            async_operation_base* om_async_operation = m_async_operations[idx];
+            async_operation<void>* om_async_operation_t =
+                dynamic_cast<async_operation<void>*>(om_async_operation);
+
+            if (om_async_operation_t)
+            {
+                om_async_operation_t->completed();
+            }
+            else
+            {
+                // This can occur when the async_operation_base has gone out of scope.
+                print(PRI2, "%p: TcpClientCo::start_connect(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
+            }
+
+            if (!disconnect(m_connections[idx]))
+            {
+                print(PRI1, "%p: TcpClientCo::start_connect(): idx = %d, Warning: disconnect failed\n", this, idx);
+            }
+        }
+    );
+
+    //connectToServer(serverIpAddress, port);
+
+    m_serverIPaddress = serverIpAddress;
+    m_serverPort = port;
+    m_timer.start(10);
+}

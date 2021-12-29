@@ -59,6 +59,8 @@ private:    // functions
     void configureTCP();
 
     // The following are all coroutines
+    async_task<int> connectToServerAsync();
+
     async_task<int> measurementLoop0();
     async_task<int> measurementLoop1();
     async_task<int> measurementLoop2();
@@ -123,6 +125,7 @@ private:
     int                     m_errorCounter;
     int                     m_selection;
     int                     m_loop;
+    int                     m_nrConnectedClients;
 
     QTimer                  m_timerConnectToServer;
     QTimer                  m_timerStartSending;

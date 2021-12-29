@@ -146,6 +146,14 @@ bool TcpConfigFile::readConfigurationFile(QString fileName)
                         configuration.m_useCoroutines = false;
                 }
 
+                if (QString::compare(key, "useAsyncConnect", Qt::CaseInsensitive) == 0)
+                {
+                    if (QString::compare(value, "y", Qt::CaseInsensitive) == 0)
+                        configuration.m_useAsyncConnect = true;
+                    else
+                        configuration.m_useAsyncConnect = false;
+                }
+
                 if (QString::compare(key, "selectImplementation", Qt::CaseInsensitive) == 0)
                 {
                     bool ok;

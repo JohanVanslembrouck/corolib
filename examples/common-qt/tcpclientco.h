@@ -31,6 +31,7 @@ class TcpClientCo : public QObject, public CommService
 
 signals:
     void readyReadTcpSig(QByteArray& data);
+    void connectedSig();
     void responseReceivedSig(QByteArray data);
     void disconnectedServerSig();
 
@@ -58,6 +59,7 @@ public:
 	// Coroutine related
     async_operation<QByteArray> start_reading(bool doDisconnect = true);
     async_operation<void> start_timer(QTimer& timer, int ms);
+    async_operation<void> start_connecting(QString& serverIpAddress, quint16 port);
 
     void stop_reading(int idx);
     void stop_timer(int idx);
@@ -68,6 +70,7 @@ protected:    // functions
 
     void start_read(const int idx, bool doDisconnect = true);
     void start_tmr(const int idx, QTimer& tmr, int ms);
+    void start_connect(const int idx, QString& serverIpAddress, quint16 port);
 
     void readyReadTcpCo(QByteArray& data);
     void readyReadTcpCo1(QByteArray& data);

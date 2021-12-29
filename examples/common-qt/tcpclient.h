@@ -23,6 +23,7 @@ class TcpClient : public QObject
 
 signals:
     void readyReadTcpSig(QByteArray& data);
+    void connectedSig();
     void disconnectedServerSig();
 
 public slots:

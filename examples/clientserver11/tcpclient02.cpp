@@ -26,6 +26,7 @@ TcpClient02::TcpClient02(QObject *parent, MessageCheck check)
     , m_errorCounter(0)
     , m_selection(0)
     , m_loop(configuration.m_selectMeasurementLoop)
+    , m_nrConnectedClients(0)
 
     , m_timerConnectToServer(this)
     , m_timerStartSending(this)
@@ -61,6 +62,11 @@ TcpClient02::TcpClient02(QObject *parent, MessageCheck check)
     connect(&m_timerConnectToServer,&QTimer::timeout, this, &TcpClient02::connectToServer);
     connect(&m_timerStartSending,   &QTimer::timeout, this, &TcpClient02::sendTCPStart);
     connect(&m_timerNoResponse,     &QTimer::timeout, this, &TcpClient02::noResponseReceived);
+    if (!configuration.m_useAsyncConnect)
+    {
+        connect(&m_tcpClient1,          &TcpClientCo::connectedSig, this, &TcpClient02::connected);
+        connect(&m_tcpClient2,          &TcpClientCo::connectedSig, this, &TcpClient02::connected);
+    }
 
     nr_message_lengths = configuration.m_numberMessages;
 
@@ -139,22 +145,68 @@ void TcpClient02::connectToServer()
     qInfo() << "";
     qInfo() << Q_FUNC_INFO;
 
-    bool result1 = m_tcpClient1.connectToServer(m_servers[0].m_ipAddress, m_servers[0].m_port);
-    if (!result1)
-        qDebug() << Q_FUNC_INFO << "immediate connection failed";
-    bool result2 = m_tcpClient2.connectToServer(m_servers[1].m_ipAddress, m_servers[1].m_port);
-    if (!result2)
-        qDebug() << Q_FUNC_INFO << "immediate connection failed";
-
-    if (result1 && result2)
-        sendTCPStart();
+    if (!configuration.m_useAsyncConnect)
+    {
+        bool result1 = m_tcpClient1.connectToServer(m_servers[0].m_ipAddress, m_servers[0].m_port);
+        if (!result1)
+            qDebug() << Q_FUNC_INFO << "immediate connection failed";
+        bool result2 = m_tcpClient2.connectToServer(m_servers[1].m_ipAddress, m_servers[1].m_port);
+        if (!result2)
+            qDebug() << Q_FUNC_INFO << "immediate connection failed";
+    }
+    else
+    {
+        async_task<int> t = connectToServerAsync();
+    }
 }
 
+/**
+ * @brief TcpClient02::connectToServerAsync
+ */
+async_task<int> TcpClient02::connectToServerAsync()
+{
+    qInfo() << "";
+    qInfo() << Q_FUNC_INFO;
+
+    async_operation<void> c1 = m_tcpClient1.start_connecting(m_servers[0].m_ipAddress, m_servers[0].m_port);
+    async_operation<void> c2 = m_tcpClient2.start_connecting(m_servers[1].m_ipAddress, m_servers[1].m_port);
+    wait_all_awaitable< async_operation<void> > wa({ &c1, &c2 });
+
+    qDebug() << Q_FUNC_INFO << "before co_await wa;";
+    co_await wa;
+    qDebug() << Q_FUNC_INFO << "after co_await wa;";
+
+    sendTCPStart();
+
+    co_return 0;
+}
+
+/**
+ * @brief TcpClient02::connected
+ */
+void TcpClient02::connected()
+{
+    qDebug() << Q_FUNC_INFO;
+    m_nrConnectedClients++;
+    if (m_nrConnectedClients == 2)
+    {
+         sendTCPStart();
+    }
+}
+
+/**
+ * @brief TcpClient02::noResponseReceived
+ */
 void TcpClient02::noResponseReceived()
 {
     qDebug() << Q_FUNC_INFO;
 }
 
+/**
+ * @brief selectNextLoop
+ * @param loop
+ * @return
+ */
 int selectNextLoop(int loop)
 {
     switch (loop)
@@ -421,14 +473,6 @@ void TcpClient02::readyReadTcp(QByteArray& data)
             }
         }
     } // while
-}
-
-/**
- * @brief TcpClient02::connected
- */
-void TcpClient02::connected()
-{
-    qDebug() << Q_FUNC_INFO;
 }
 
 /**
