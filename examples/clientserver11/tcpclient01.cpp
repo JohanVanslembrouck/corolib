@@ -394,12 +394,12 @@ void TcpClient01::start_read(const int idx)
             else
             {
                 // This can occur when the async_operation_base has gone out of scope.
-                print(PRI2, "%p: TcpClient01::handle_read(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
+                print(PRI2, "%p: TcpClient01::start_read(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
             }
 
             if (!disconnect(m_connections[idx]))
             {
-                print(PRI1, "%p: TcpClient01::handle_read(): idx = %d, Warning: disconnect failed\n", this, idx);
+                print(PRI1, "%p: TcpClient01::start_read(): idx = %d, Warning: disconnect failed\n", this, idx);
             }
         }
     );

@@ -5,8 +5,8 @@
  * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
  */
 
-#ifndef TCPSERVER01_H
-#define TCPSERVER01_H
+#ifndef TCPSERVER02_H
+#define TCPSERVER02_H
 
 #include <QObject>
 #include <QTimer>
@@ -16,12 +16,24 @@
 #include "connectioninfo.h"
 #include "tcpserver.h"
 
-class TcpServer01 : public QObject
+#include "async_operation.h"
+#include "commservice.h"
+#include "async_task.h"
+
+using namespace corolib;
+
+struct readInfo
+{
+    QTcpSocket* sock;
+    QByteArray  data;
+};
+
+class TcpServer02 : public QObject, public CommService
 {
     Q_OBJECT
 
 public:
-    explicit TcpServer01(QObject *parent = nullptr, MessageCheck check = NO_CHECK);
+    explicit TcpServer02(QObject *parent = nullptr, MessageCheck check = NO_CHECK);
 
 signals:
 
@@ -48,6 +60,19 @@ private slots:
 private:    // functions
     void configureTCP();
 
+    // Coroutine related
+    async_operation<int> start_accepting();
+    void start_accept(const int idx);
+    async_operation<readInfo> start_reading();
+    void start_read(const int idx);
+    async_operation<int> start_disconnecting();
+    void start_disconnect(const int idx);
+
+    async_task<int> mainTask();
+    async_task<int> acceptTask();
+    async_task<int> readTask();
+    async_task<int> disconnectTask();
+
 private:
     QString                 m_serverHost;
     quint16                 m_serverPort;
@@ -56,6 +81,8 @@ private:
     ProtocolMessage         m_message;
 
     int                     m_errorCounter;
+
+    QMetaObject::Connection m_connections[NROPERATIONS];
 };
 
-#endif // TCPSERVER01_H
+#endif // TCPSERVER02_H

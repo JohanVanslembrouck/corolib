@@ -54,7 +54,7 @@ void TcpServer01::configureTCP()
 void TcpServer01::start()
 {
     qInfo() << Q_FUNC_INFO;
-     m_tcpServer.startListening(m_serverPort);
+    m_tcpServer.startListening(m_serverPort);
 }
 
 /**
