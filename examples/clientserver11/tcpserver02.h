@@ -61,12 +61,14 @@ private:    // functions
     void configureTCP();
 
     // Coroutine related
-    async_operation<int> start_accepting();
-    void start_accept(const int idx);
-    async_operation<readInfo> start_reading();
-    void start_read(const int idx);
-    async_operation<int> start_disconnecting();
-    void start_disconnect(const int idx);
+    async_operation<int> start_accepting(bool doDisconnect = false);
+    void start_accept(const int idx, bool doDisconnect = false);
+    async_operation<readInfo> start_reading(bool doDisconnect = false);
+    void start_read(const int idx, bool doDisconnect = false);
+    async_operation<void> start_timer(QTimer& timer, int ms, bool doDisconnect = false);
+    void start_tmr(const int idx, QTimer& tmr, int ms, bool doDisconnect = false);
+    async_operation<int> start_disconnecting(bool doDisconnect = false);
+    void start_disconnect(const int idx, bool doDisconnect = false);
 
     async_task<int> mainTask();
     async_task<int> acceptTask();
