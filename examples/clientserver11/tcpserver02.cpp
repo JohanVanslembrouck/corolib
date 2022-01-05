@@ -279,6 +279,8 @@ void TcpServer02::start_read(const int idx, bool doDisconnect)
     m_connections[idx] = connect(&m_tcpServer, &TcpServer::readyReadTcpSig,
         [this, idx, doDisconnect](QTcpSocket* sock, QByteArray& data)
         {
+            print(PRI2, "%p: TcpServer02::start_read() lambda: idx = %d\n", this, idx);
+
             readInfo readInfo_;
             readInfo_.sock = sock;
             readInfo_.data = data;
@@ -456,23 +458,26 @@ async_task<int> TcpServer02::readTask()
 {
     qDebug() << Q_FUNC_INFO;
 
-
     static int nrMessages = 0;
 
     QTimer timer(this);
     timer.setSingleShot(true);
     qInfo() << Q_FUNC_INFO << "async_operation<void> opT = start_timer(timer, 0)";
-    async_operation<void> op_timer = start_timer(timer, 0);
+    async_operation<void> op_timer = start_timer(timer, 100);
+    op_timer.auto_reset(true);
     co_await op_timer;
     op_timer.reset();
 
     async_operation<readInfo> op_read = start_reading();
+    op_read.auto_reset(true);
+
     while (1)
     {
-        readInfo readInfo_ = co_await op_read;
-        op_read.reset();
         nrMessages++;
-        qInfo() << Q_FUNC_INFO << "----------- after co_await op_read -----------" << nrMessages;
+
+        print(PRI2, "--- before co_await op_read --- %d\n", nrMessages);
+        readInfo readInfo_ = co_await op_read;
+        print(PRI2, "--- after co_await op_read --- %d\n", nrMessages);
 
         QTcpSocket* sock = readInfo_.sock;
         QByteArray  data = readInfo_.data;
@@ -503,9 +508,10 @@ async_task<int> TcpServer02::readTask()
                 QThread::msleep(configuration.m_delayBeforeReply);
 #else
                 timer.start(configuration.m_delayBeforeReply);
-                qInfo() << Q_FUNC_INFO << "co_await opT";
+                qInfo() << Q_FUNC_INFO << "co_await op_timer";
+                print(PRI2, "--- before co_await op_timer --- %d\n", nrMessages);
                 co_await op_timer;
-                op_timer.reset();
+                print(PRI2, "--- after co_await op_timer --- %d\n", nrMessages);
 #endif
                 qInfo() << Q_FUNC_INFO << "m_tcpServer.sendMessage(sock, content)";
                 m_tcpServer.sendMessage(sock, content);
@@ -513,6 +519,64 @@ async_task<int> TcpServer02::readTask()
         } // while (m_message.composeMessage(data, length, index))
     } // while (1)
 
+    co_return 1;
+}
+
+/**
+ * @brief TcpServer02::timerTask
+ * @return
+ */
+async_task<int> TcpServer02::timerTask()
+{
+    qDebug() << Q_FUNC_INFO << "begin";
+
+    static int nrMessages = 0;
+
+    QTimer timer(this);
+    timer.setSingleShot(true);
+
+    async_operation<void> op_timer = start_timer(timer, 0);
+    op_timer.auto_reset(true);
+
+    print(PRI2, "--- before co_await op_timer --- 0000\n");
+    co_await op_timer;
+    print(PRI2, "--- after co_await op_timer --- 0000\n");
+
+    // For testing timer expiry, allow iterating at least once.
+    for (int i = 0; i < 0; i++)
+    {
+        timer.start(1000);
+        print(PRI2, "--- before co_await op_timer --- 1000\n");
+        co_await op_timer;
+        print(PRI2, "--- after co_await op_timer --- 1000\n");
+        //op_timer.reset();
+
+        timer.start(2000);
+        print(PRI1, "--- before co_await op_timer --- 2000\n");
+        co_await op_timer;
+        print(PRI1, "--- after co_await op_timer --- 2000\n");
+        //op_timer.reset();
+
+        timer.start(3000);
+        print(PRI1, "--- before co_await op_timer --- 3000\n");
+        co_await op_timer;
+        print(PRI1, "--- after co_await op_timer --- 3000\n");
+        //op_timer.reset();
+
+        timer.start(4000);
+        print(PRI2, "--- before co_await op_timer --- 4000\n");
+        co_await op_timer;
+        print(PRI2, "--- after co_await op_timer --- 4000\n");
+        //op_timer.reset();
+
+        timer.start(5000);
+        print(PRI2, "--- before co_await op_timer --- 5000\n");
+        co_await op_timer;
+        print(PRI2, "--- after co_await op_timer --- 5000\n");
+        //op_timer.reset();
+    }
+
+    qDebug() << Q_FUNC_INFO << "end";
     co_return 1;
 }
 
@@ -546,7 +610,8 @@ async_task<int> TcpServer02::mainTask()
     async_task<int> t1 = acceptTask();
     async_task<int> t2 = readTask();
     async_task<int> t3 = disconnectTask();
+    async_task<int> t4 = timerTask();
 
-    wait_all_awaitable< async_task<int> > wa({ &t1, &t2, &t3 });
+    wait_all_awaitable< async_task<int> > wa({ &t1, &t2, &t3, &t4 });
     co_await wa;
 }

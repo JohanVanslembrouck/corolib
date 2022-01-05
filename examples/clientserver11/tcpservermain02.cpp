@@ -21,6 +21,8 @@ int main(int argc, char *argv[])
 {
     QT_USE_NAMESPACE
 
+    corolib::set_priority(0x01);
+
     QCoreApplication app(argc, argv);
 
     TcpConfigFile configFile;

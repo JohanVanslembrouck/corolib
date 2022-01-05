@@ -73,6 +73,7 @@ private:    // functions
     async_task<int> mainTask();
     async_task<int> acceptTask();
     async_task<int> readTask();
+    async_task<int> timerTask();
     async_task<int> disconnectTask();
 
 private:

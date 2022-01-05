@@ -27,6 +27,7 @@ namespace corolib
             : m_service(s)
             , m_awaiting(nullptr)            // initialized in await_suspend()
             , m_ready(false)                // set to true in completed()
+            , m_autoreset(false)
             , m_index(index)
             , m_ctr(nullptr)
             , m_waitany(nullptr)
@@ -49,6 +50,7 @@ namespace corolib
         {
             print(PRI2, "%p: async_operation_base::~async_operation_base(): m_index = %d\n", this, m_index);
             m_ready = false;
+            m_autoreset = false;
             if (m_index != -1)
             {
                 if (m_service)
@@ -67,6 +69,7 @@ namespace corolib
             : m_service(s.m_service)
             , m_awaiting(s.m_awaiting)
             , m_ready(s.m_ready)
+            , m_autoreset(s.m_autoreset)
             , m_index(s.m_index)
             , m_ctr(s.m_ctr)
             , m_waitany(s.m_waitany)
@@ -79,6 +82,7 @@ namespace corolib
             s.m_service = nullptr;
             s.m_awaiting = nullptr;
             s.m_ready = false;
+            s.m_autoreset = false;
             s.m_index = -1;        // indicates move
             s.m_ctr = nullptr;
             s.m_waitany = nullptr;
@@ -97,6 +101,7 @@ namespace corolib
             m_service = s.m_service;
             m_awaiting = s.m_awaiting;
             m_ready = s.m_ready;
+            m_autoreset = s.m_autoreset;
             m_index = s.m_index;
 
             // The following 2 tests allow an async_operation that takes part in
@@ -119,6 +124,7 @@ namespace corolib
             s.m_service = nullptr;
             s.m_awaiting = nullptr;
             s.m_ready = false;
+            s.m_autoreset = false;
             s.m_index = -1;        // indicates move
             s.m_ctr = nullptr;
             s.m_waitany = nullptr;
@@ -173,16 +179,26 @@ namespace corolib
             return m_index;
         }
 
+        /**
+         * @brief reset Allows the same operation to be co_awaited again
+         * without returning immediately.
+         */
         void reset()
         {
-            m_ready = false;    // Allows the same operation to be co_awaited again
-                                // without returning immediately.
+            m_ready = false;
+            m_awaiting = nullptr;
+        }
+
+        void auto_reset(bool autoreset)
+        {
+            m_autoreset = autoreset;
         }
 
     protected:
         CommService* m_service;
         std::experimental::coroutine_handle<> m_awaiting;
         bool m_ready;
+        bool m_autoreset;
         int m_index;
         wait_all_counter* m_ctr;
         wait_any* m_waitany;
@@ -231,19 +247,21 @@ namespace corolib
 
                 bool await_ready()
                 {
-                    print(PRI2, "%p: async_operation<TYPE>::await_ready(): return %d;\n", &m_async, m_async.m_ready);
+                    print(PRI2, "%p: m_async = %p: async_operation<TYPE>::await_ready(): return %d;\n", this, &m_async, m_async.m_ready);
                     return m_async.m_ready;
                 }
 
                 void await_suspend(std::experimental::coroutine_handle<> awaiting)
                 {
-                    print(PRI2, "%p: async_operation<TYPE>::await_suspend(...)\n", &m_async);
+                    print(PRI2, "%p: m_async = %p: async_operation<TYPE>::await_suspend(...)\n", this, &m_async);
                     m_async.m_awaiting = awaiting;
                 }
 
                 TYPE await_resume()
                 {
-                    print(PRI2, "%p: async_operation<TYPE>::await_resume(): m_async = %p\n", this, &m_async);
+                    print(PRI2, "%p: m_async = %p: async_operation<TYPE>::await_resume()\n", this, &m_async);
+                    if (m_async.m_autoreset)
+                        m_async.reset();
                     return m_async.m_result;
                 }
 
@@ -277,19 +295,21 @@ namespace corolib
 
                 bool await_ready()
                 {
-                    print(PRI2, "%p: async_operation<void>::await_ready(): return %d;\n", &m_async, m_async.m_ready);
+                    print(PRI2, "%p: m_async = %p: async_operation<void>::await_ready(): return %d;\n", this, &m_async, m_async.m_ready);
                     return m_async.m_ready;
                 }
 
                 void await_suspend(std::experimental::coroutine_handle<> awaiting)
                 {
-                    print(PRI2, "%p: async_operation<void>::await_suspend(...)\n", &m_async);
+                    print(PRI2, "%p: m_async = %p: async_operation<void>::await_suspend(...)\n", this, &m_async);
                     m_async.m_awaiting = awaiting;
                 }
 
                 void await_resume()
                 {
-                    print(PRI2, "%p: async_operation<void>::await_resume(): m_async = %p\n", this, &m_async);
+                    print(PRI2, "%p: m_async = %p: async_operation<void>::await_resume()\n", this, &m_async);
+                    if (m_async.m_autoreset)
+                        m_async.reset();
                 }
 
             private:
