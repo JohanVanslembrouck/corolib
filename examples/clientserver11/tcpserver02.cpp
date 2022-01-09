@@ -330,7 +330,7 @@ async_operation<void> TcpServer02::start_timer(QTimer& timer, int ms, bool doDis
     }
 #endif
     async_operation<void> ret{ this, index };
-    start_tmr(index, timer, ms);
+    start_tmr(index, timer, ms, doDisconnect);
     return ret;
 }
 
@@ -523,64 +523,6 @@ async_task<int> TcpServer02::readTask()
 }
 
 /**
- * @brief TcpServer02::timerTask
- * @return
- */
-async_task<int> TcpServer02::timerTask()
-{
-    qDebug() << Q_FUNC_INFO << "begin";
-
-    static int nrMessages = 0;
-
-    QTimer timer(this);
-    timer.setSingleShot(true);
-
-    async_operation<void> op_timer = start_timer(timer, 0);
-    op_timer.auto_reset(true);
-
-    print(PRI2, "--- before co_await op_timer --- 0000\n");
-    co_await op_timer;
-    print(PRI2, "--- after co_await op_timer --- 0000\n");
-
-    // For testing timer expiry, allow iterating at least once.
-    for (int i = 0; i < 0; i++)
-    {
-        timer.start(1000);
-        print(PRI2, "--- before co_await op_timer --- 1000\n");
-        co_await op_timer;
-        print(PRI2, "--- after co_await op_timer --- 1000\n");
-        //op_timer.reset();
-
-        timer.start(2000);
-        print(PRI1, "--- before co_await op_timer --- 2000\n");
-        co_await op_timer;
-        print(PRI1, "--- after co_await op_timer --- 2000\n");
-        //op_timer.reset();
-
-        timer.start(3000);
-        print(PRI1, "--- before co_await op_timer --- 3000\n");
-        co_await op_timer;
-        print(PRI1, "--- after co_await op_timer --- 3000\n");
-        //op_timer.reset();
-
-        timer.start(4000);
-        print(PRI2, "--- before co_await op_timer --- 4000\n");
-        co_await op_timer;
-        print(PRI2, "--- after co_await op_timer --- 4000\n");
-        //op_timer.reset();
-
-        timer.start(5000);
-        print(PRI2, "--- before co_await op_timer --- 5000\n");
-        co_await op_timer;
-        print(PRI2, "--- after co_await op_timer --- 5000\n");
-        //op_timer.reset();
-    }
-
-    qDebug() << Q_FUNC_INFO << "end";
-    co_return 1;
-}
-
-/**
  * @brief TcpServer02::disconnectTask
  * @return
  */
@@ -610,8 +552,7 @@ async_task<int> TcpServer02::mainTask()
     async_task<int> t1 = acceptTask();
     async_task<int> t2 = readTask();
     async_task<int> t3 = disconnectTask();
-    async_task<int> t4 = timerTask();
 
-    wait_all_awaitable< async_task<int> > wa({ &t1, &t2, &t3, &t4 });
+    wait_all_awaitable< async_task<int> > wa({ &t1, &t2, &t3 });
     co_await wa;
 }

@@ -62,18 +62,17 @@ private:    // functions
 
     // Coroutine related
     async_operation<int> start_accepting(bool doDisconnect = false);
-    void start_accept(const int idx, bool doDisconnect = false);
+    void start_accept(const int idx, bool doDisconnect);
     async_operation<readInfo> start_reading(bool doDisconnect = false);
-    void start_read(const int idx, bool doDisconnect = false);
+    void start_read(const int idx, bool doDisconnect);
     async_operation<void> start_timer(QTimer& timer, int ms, bool doDisconnect = false);
-    void start_tmr(const int idx, QTimer& tmr, int ms, bool doDisconnect = false);
+    void start_tmr(const int idx, QTimer& tmr, int ms, bool doDisconnect);
     async_operation<int> start_disconnecting(bool doDisconnect = false);
-    void start_disconnect(const int idx, bool doDisconnect = false);
+    void start_disconnect(const int idx, bool doDisconnect);
 
     async_task<int> mainTask();
     async_task<int> acceptTask();
     async_task<int> readTask();
-    async_task<int> timerTask();
     async_task<int> disconnectTask();
 
 private:
