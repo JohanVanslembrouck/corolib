@@ -15,8 +15,6 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-#include <string>
-#include <thread>
 
 namespace corolib
 {
@@ -33,6 +31,7 @@ namespace corolib
 
     void set_priority(int pri);
 
+	inline void print() { fprintf(stderr, "\n"); }
     void print(int pri, const char* fmt, ...);
 }
 
