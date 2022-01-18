@@ -1,13 +1,13 @@
 /**
- *  Filename: class01.h
+ *  Filename: class02.h
  *  Description:
  *
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
  *
  */
  
-#ifndef _CLASS01_H_
-#define _CLASS01_H_
+#ifndef _CLASS02_H_
+#define _CLASS02_H_
 
 #include <functional>
 
@@ -27,20 +27,22 @@ enum UseMode
 	USE_THREAD
 };
 
-class Class01 : public CommService
+class Class02 : public CommService
 {
 public:
-	Class01(UseMode useMode = USE_NONE) 
+	Class02(UseMode useMode = USE_NONE) 
 		: m_useMode(useMode)
 	{
 	}
 	
-	async_operation<int> start_operation();
+	async_operation<int> start_operation1();
+	async_operation<int> start_operation2();
 	
-	std::function<void(int)> operation;
+	std::function<void(int)> operation[NROPERATIONS];
 
 protected:
-	void start_op(const int idx);
+	void start_op1(const int idx);
+	void start_op2(const int idx);
 
 private:
 	UseMode	m_useMode;
