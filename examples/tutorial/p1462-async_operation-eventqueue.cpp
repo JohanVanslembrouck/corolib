@@ -34,10 +34,10 @@ async_task<int> coroutine5a()
 		print(PRI1, "coroutine5a(): v += co_await op1;\n");
 		v += co_await op1;
 
-		print(PRI1, "coroutine5a(): async_operation<int> op2a = object01.start_operation2();\n");
-		async_operation<int> op2a = object01.start_operation2();
-		print(PRI1, "coroutine5a(): async_operation<int> op2a = object01.start_operation2();\n");
-		async_operation<int> op2b = object01.start_operation2();
+		print(PRI1, "coroutine5a(): async_operation<int> op2a = object01.start_operation2(1);\n");
+		async_operation<int> op2a = object01.start_operation2(1);
+		print(PRI1, "coroutine5a(): async_operation<int> op2a = object01.start_operation2(2);\n");
+		async_operation<int> op2b = object01.start_operation2(2);
 		wait_all_awaitable<async_operation<int>> wa({ &op2a, &op2b });
 		print(PRI1, "coroutine5a(): co_await wa;\n");
 		co_await wa;
@@ -59,10 +59,10 @@ async_task<int> coroutine5b()
 		print(PRI1, "coroutine5b(): v += co_await op1;\n");
 		v += co_await op1;
 
-		print(PRI1, "coroutine5b(): async_operation<int> op2a = object02.start_operation2();\n");
-		async_operation<int> op2a = object02.start_operation2();
-		print(PRI1, "coroutine5b(): async_operation<int> op2b = object02.start_operation2();\n");
-		async_operation<int> op2b = object02.start_operation2();
+		print(PRI1, "coroutine5b(): async_operation<int> op2a = object02.start_operation2(1);\n");
+		async_operation<int> op2a = object02.start_operation2(1);
+		print(PRI1, "coroutine5b(): async_operation<int> op2b = object02.start_operation2(2);\n");
+		async_operation<int> op2b = object02.start_operation2(2);
 		wait_all_awaitable<async_operation<int>> wa({ &op2a, &op2b });
 		print(PRI1, "coroutine5b(): co_await wa;\n");
 		co_await wa;

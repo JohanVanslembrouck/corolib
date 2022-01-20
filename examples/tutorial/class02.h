@@ -36,13 +36,13 @@ public:
 	}
 	
 	async_operation<int> start_operation1();
-	async_operation<int> start_operation2();
+	async_operation<int> start_operation2(int bias = 0);
 	
 	std::function<void(int)> operation[NROPERATIONS];
 
 protected:
 	void start_op1(const int idx);
-	void start_op2(const int idx);
+	void start_op2(const int idx, int bias);
 
 private:
 	UseMode	m_useMode;

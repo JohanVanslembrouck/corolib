@@ -1,5 +1,5 @@
 /**
- *  Filename: p1464-async_operation-thread.cpp
+ *  Filename: p1460-async_operation.cpp
  *  Description:
  *
  *  Tested with Visual Studio 2019.
@@ -20,8 +20,8 @@ using namespace corolib;
 
 #include "class02.h"
 
-Class02 object01(USE_THREAD);
-Class02 object02(USE_THREAD);
+Class02 object01;
+Class02 object02;
 
 async_task<int> coroutine5a()
 {
@@ -130,6 +130,25 @@ int main()
 {
 	print(PRI1, "main(): async_task<int> a = coroutine1();\n");
 	async_task<int> a = coroutine1();
+
+	// Begin manual event completion
+	print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+	for (int i = 0; i < 12; i++)
+	{
+		print(PRI1, "main(): before object01.operation[%d](10);\n", i);
+		object01.operation[i](10);
+		print(PRI1, "main(): after object01.operation[%d](10);\n", i);
+
+		print(PRI1, "main(): before object02.operation[%d](10);\n", i);
+		object02.operation[i](10);
+		print(PRI1, "main(): after object02.operation[%d](10);\n", i);
+
+		print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	}
+	// End manual event completion
 
 	print(PRI1, "main(): int v = a.get();\n");
 	int v = a.get();

@@ -83,6 +83,8 @@ target_link_libraries(p1452-async_operation-eventqueue corolib)
 add_executable(p1454-async_operation-thread p1454-async_operation-thread.cpp class01.cpp)
 target_link_libraries(p1454-async_operation-thread corolib)
 
+add_executable(p1460-async_operation p1460-async_operation.cpp class02.cpp)
+target_link_libraries(p1460-async_operation corolib)
 add_executable(p1462-async_operation-eventqueue p1462-async_operation-eventqueue.cpp class02.cpp)
 target_link_libraries(p1462-async_operation-eventqueue corolib)
 add_executable(p1464-async_operation-thread p1464-async_operation-thread.cpp class02.cpp)

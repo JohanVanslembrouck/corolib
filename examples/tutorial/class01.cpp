@@ -24,7 +24,7 @@ void Class01::start_op(const int idx)
 
 	operation = [this, idx](int i)
 	{
-		print(PRI1, "%p: Class01::start_op(idx)\n", this, idx);
+		print(PRI1, "%p: Class01::start_op(%d)\n", this, idx);
 
 		async_operation_base* om_async_operation = m_async_operations[idx];
 		async_operation<int>* om_async_operation_t =
