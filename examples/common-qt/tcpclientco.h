@@ -15,12 +15,11 @@
 #include <QList>
 #include <QTimer>
 
+#include <corolib/async_operation.h>
+#include <corolib/commservice.h>
+#include <corolib/async_task.h>
+
 #include "connectioninfo.h"
-
-#include "async_operation.h"
-#include "commservice.h"
-#include "async_task.h"
-
 #include "protocolmessage.h"
 
 using namespace corolib;

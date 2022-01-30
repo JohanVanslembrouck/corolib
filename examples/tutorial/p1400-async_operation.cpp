@@ -10,10 +10,10 @@
 
 #include <functional>
 
-#include "print.h"
-#include "auto_reset_event.h"
-#include "async_task.h"
-#include "async_operation.h"
+#include <corolib/print.h>
+#include <corolib/auto_reset_event.h>
+#include <corolib/async_task.h>
+#include <corolib/async_operation.h>
 
 using namespace corolib;
 
@@ -126,8 +126,8 @@ int main()
 	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	// End manual event completion
 	
-	print(PRI1, "main(): int v = a.get();\n");
-	int v = a.get();
+	print(PRI1, "main(): int v = a.get_result();\n");
+	int v = a.get_result();
 	print(PRI1, "main(): v = %d\n", v);
 
 	print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");

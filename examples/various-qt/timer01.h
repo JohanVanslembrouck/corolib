@@ -11,9 +11,9 @@
 #include <QObject>
 #include <QTimer>
 
-#include "async_operation.h"
-#include "commservice.h"
-#include "async_task.h"
+#include <corolib/async_operation.h>
+#include <corolib/commservice.h>
+#include <corolib/async_task.h>
 
 using namespace corolib;
 

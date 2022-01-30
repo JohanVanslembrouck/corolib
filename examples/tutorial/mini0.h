@@ -9,9 +9,9 @@
 #ifndef _MINI0_H_
 #define _MINI0_H_
 
-#include "print.h"
-#include "auto_reset_event.h"
-#include "async_task.h"
+#include <corolib/print.h>
+#include <corolib/auto_reset_event.h>
+#include <corolib/async_task.h>
 
 using namespace corolib;
 

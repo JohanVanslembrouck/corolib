@@ -8,10 +8,12 @@
  */
 
 #include <string>
-#include "corolib/print.h"
-#include "corolib/async_operation.h"
-#include "corolib/commclient.h"
-#include "corolib/async_task.h"
+
+#include <corolib/print.h>
+#include <corolib/async_operation.h>
+#include <corolib/commclient.h>
+#include <corolib/async_task.h>
+
 #include "endpoints.h"
 
 using namespace corolib;
@@ -94,7 +96,7 @@ public:
 			print(PRI1, "mainflow: ret1 = %d\n", ret1);
 
 			print(PRI1, "mainflow: int ret2 = task.get()\n");
-			int ret2 = task.get();
+			int ret2 = task.get_result();
 			print(PRI1, "mainflow: ret2 = %d\n", ret2);
 		}
 

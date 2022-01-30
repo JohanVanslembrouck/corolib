@@ -8,11 +8,12 @@
 #include "tcpclient01.h"
 #include "tcpconfig.h"
 
-#include "wait_all_awaitable.h"
-
 #include <chrono>
 #include <iostream>
 #include <iomanip>      // setprecision
+
+#include <corolib/wait_all_awaitable.h>
+
 using namespace std;
 
 static int nr_message_lengths = 10;

@@ -8,9 +8,9 @@
  *
  */
 
-#include "print.h"
-#include "auto_reset_event.h"
-#include "async_task.h"
+#include <corolib/print.h>
+#include <corolib/auto_reset_event.h>
+#include <corolib/async_task.h>
 
 using namespace corolib;
 
@@ -38,8 +38,8 @@ int main()
 	async_task<int> the_coroutine1 = coroutine1();
 	print(PRI1, "main(): are1.resume();\n");
 	are1.resume();
-	print(PRI1, "main(): int v = the_coroutine1.get();\n");
-	int v = the_coroutine1.get();
+	print(PRI1, "main(): int v = the_coroutine1.get_result();\n");
+	int v = the_coroutine1.get_result();
 	print(PRI1, "main(): v = %d\n", v);
 	return 0;
 }

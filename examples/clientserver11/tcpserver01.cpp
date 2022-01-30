@@ -27,7 +27,6 @@ TcpServer01::TcpServer01(QObject *parent, MessageCheck check)
     configureTCP();
 }
 
-
 /**
  * @brief TcpServer01::configureTCP
  */

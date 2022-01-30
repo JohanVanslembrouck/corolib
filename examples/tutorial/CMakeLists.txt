@@ -8,7 +8,7 @@ else()
 	set(CMAKE_CXX_FLAGS "-Wall")
 endif()
 
-include_directories(../../include/corolib)
+include_directories(../../include)
 
 link_directories(${Boost_LIBRARY_DIR})
 

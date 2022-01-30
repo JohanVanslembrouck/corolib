@@ -17,10 +17,10 @@
  *
  */
 
-#include "print.h"
-#include "auto_reset_event.h"
-#include "async_task.h"
-#include "oneway_task.h"
+#include <corolib/print.h>
+#include <corolib/auto_reset_event.h>
+#include <corolib/async_task.h>
+#include <corolib/oneway_task.h>
 
 using namespace corolib;
 
@@ -108,8 +108,8 @@ int main()
 	print(); print(PRI1, "main(): m2.resume();\n");
 	m2.resume();
 
-	print(); print(PRI1, "main(): int v = a1.get();\n");
-	int v = a1.get();
+	print(); print(PRI1, "main(): int v = a1.get_result();\n");
+	int v = a1.get_result();
 	print(PRI1, "main(): v = %d\n", v);
 	return 0;
 }

@@ -5,14 +5,14 @@
  * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
  */
 
-#include "tcpclient02.h"
-#include "tcpconfig.h"
-
-#include "wait_all_awaitable.h"
-
 #include <chrono>
 #include <iostream>
 #include <iomanip>      // setprecision
+
+#include "tcpclient02.h"
+#include "tcpconfig.h"
+
+#include <corolib/wait_all_awaitable.h>
 using namespace std;
 
 static int nr_message_lengths = 10;

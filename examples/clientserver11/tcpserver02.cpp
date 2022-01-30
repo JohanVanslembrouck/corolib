@@ -7,7 +7,7 @@
 
 #include <QThread>
 
-#include "wait_all_awaitable.h"
+#include <corolib/wait_all_awaitable.h>
 
 #include "tcpserver02.h"
 #include "tcpconfig.h"
@@ -519,7 +519,7 @@ async_task<int> TcpServer02::readTask()
         } // while (m_message.composeMessage(data, length, index))
     } // while (1)
 
-    co_return 1;
+    co_return 0;
 }
 
 /**
@@ -538,7 +538,7 @@ async_task<int> TcpServer02::disconnectTask()
         qDebug() << Q_FUNC_INFO << "after co_await op_disconnect";
     }
 
-    co_return 1;
+    co_return 0;
 }
 
 /**
@@ -555,4 +555,6 @@ async_task<int> TcpServer02::mainTask()
 
     wait_all_awaitable< async_task<int> > wa({ &t1, &t2, &t3 });
     co_await wa;
+
+    co_return 0;
 }

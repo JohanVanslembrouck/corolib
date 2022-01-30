@@ -11,8 +11,8 @@
 
 #include <functional>
 
-#include "commservice.h"
-#include "async_operation.h"
+#include <corolib/commservice.h>
+#include <corolib/async_operation.h>
 
 #include "eventqueue.h"
 

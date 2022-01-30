@@ -7,9 +7,9 @@ else()
 	set(CMAKE_CXX_FLAGS "-Wall")
 endif()
 
-include_directories(../include/corolib ${Boost_INCLUDE_DIR})
+include_directories(../include ${Boost_INCLUDE_DIR})
 
-add_library(corolib print.cpp commcore.cpp commclient.cpp commserver.cpp)
+add_library(corolib print.cpp async_operation.cpp commcore.cpp commclient.cpp commserver.cpp)
 
 target_link_libraries(corolib)
 

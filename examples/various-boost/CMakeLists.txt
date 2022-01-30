@@ -8,8 +8,8 @@ else()
 	set(CMAKE_CXX_FLAGS "-Wall")
 endif()
 
-include_directories(../../include/corolib ${Boost_INCLUDE_DIR})
+include_directories(../../include ${Boost_INCLUDE_DIR})
 
 link_directories(${Boost_LIBRARY_DIR})
 
-add_executable(timer01 timermain01.cpp timer01.cpp ../../lib/print.cpp)
+add_executable(timer01 timermain01.cpp timer01.cpp ../../lib/print.cpp ../../lib/async_operation.cpp)

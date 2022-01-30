@@ -7,7 +7,8 @@
  */
  
 #include "class02.h"
-#include "print.h"
+
+#include <corolib/print.h>
 
 async_operation<int> Class02::start_operation1()
 {

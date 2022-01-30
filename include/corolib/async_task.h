@@ -52,9 +52,9 @@ namespace corolib
             return *this;
         }
 
-        TYPE get()
+        TYPE get_result()
         {
-            print(PRI2, "%p: async_task::get()\n", this);
+            print(PRI2, "%p: async_task::get_result()\n", this);
             if (!m_coro.promise().m_ready)
             {
                 m_coro.promise().m_wait_for_signal = true;
@@ -116,7 +116,8 @@ namespace corolib
             friend struct async_task;
 
             promise_type()
-                : m_awaiting(nullptr)
+                : m_value{}
+                , m_awaiting(nullptr)
                 , m_ready(false)
                 , m_wait_for_signal(false)
                 , m_ctr(nullptr)
@@ -214,7 +215,7 @@ namespace corolib
 
         async_task(const async_task& s) = delete;
 
-        async_task(async_task&& s)
+        async_task(async_task&& s) noexcept
             : m_coro(s.m_coro)
         {
             print(PRI2, "%p: async_task::async_task(async_task&& s)\n", this);
@@ -233,7 +234,7 @@ namespace corolib
 
         async_task& operator = (const async_task&) = delete;
 
-        async_task& operator = (async_task&& s)
+        async_task& operator = (async_task&& s) noexcept
         {
             print(PRI2, "%p: async_task::async_task = (async_task&& s)\n", this);
             m_coro = s.m_coro;

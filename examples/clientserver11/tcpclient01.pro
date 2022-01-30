@@ -19,6 +19,7 @@ SOURCES += \
         ../common-qt/protocolmessage.cpp \
         ../common-qt/tcpclient.cpp \
         ../../lib/print.cpp \
+        ../../lib/async_operation.cpp \
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -42,4 +43,4 @@ HEADERS += \
 
 INCLUDEPATH += \
     ../common-qt \
-    ../../include/corolib \
+    ../../include \

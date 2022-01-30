@@ -14,10 +14,10 @@
  *
  */
 
-#include "print.h"
-#include "async_task.h"
-#include "auto_reset_event.h"
-#include "semaphore.h"
+#include <corolib/print.h>
+#include <corolib/async_task.h>
+#include <corolib/auto_reset_event.h>
+#include <corolib/semaphore.h>
 
 using namespace corolib;
 
@@ -92,8 +92,8 @@ int main()
 {
 	print(PRI1, "main(): 1: async_task<int> sync1 = coroutine1();\n");
 	async_task<int> sync1 = coroutine1();
-	print(PRI1, "main(): 2: int v = sync1.get();\n");
-	int v = sync1.get();
+	print(PRI1, "main(): 2: int v = sync1.get_result();\n");
+	int v = sync1.get_result();
 	print(PRI1, "main(): 3: v = %d\n", v);
 	return 0;
 }

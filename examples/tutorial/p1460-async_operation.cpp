@@ -10,11 +10,11 @@
 
 #include <functional>
 
-#include "print.h"
-#include "auto_reset_event.h"
-#include "async_task.h"
-#include "async_operation.h"
-#include "wait_all_awaitable.h"
+#include <corolib/print.h>
+#include <corolib/auto_reset_event.h>
+#include <corolib/async_task.h>
+#include <corolib/async_operation.h>
+#include <corolib/wait_all_awaitable.h>
 
 using namespace corolib;
 
@@ -83,8 +83,8 @@ async_task<int> coroutine4()
 	wait_all_awaitable<async_task<int>> wa({ &a, &b });
 	print(PRI1, "coroutine4(): co_await wa;\n");
 	co_await wa;
-	print(PRI1, "coroutine4(): int v = a.get() + b.get();\n");
-	int v = a.get() + b.get();
+	print(PRI1, "coroutine4(): int v = a.get_result() + b.get_result();\n");
+	int v = a.get_result() + b.get_result();
 	print(PRI1, "coroutine4(): co_return v+1 = %d;\n", v+1);
 	co_return v+1;
 }
@@ -150,8 +150,8 @@ int main()
 	}
 	// End manual event completion
 
-	print(PRI1, "main(): int v = a.get();\n");
-	int v = a.get();
+	print(PRI1, "main(): int v = a.get_result();\n");
+	int v = a.get_result();
 	print(PRI1, "main(): v = %d\n", v);
 
 	print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
