@@ -1,5 +1,5 @@
 /** 
- *  Filename: p1050-resume_same_thread.cpp
+ *  Filename: p1052-resume_same_thread.cpp
  *  Description:
  *
  *

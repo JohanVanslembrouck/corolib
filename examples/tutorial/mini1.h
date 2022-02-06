@@ -10,8 +10,8 @@
  *
  */
 
-#ifndef _MINI0_H_
-#define _MINI0_H_
+#ifndef _MINI1_H_
+#define _MINI1_H_
 
 #include <corolib/print.h>
 #include <corolib/auto_reset_event.h>
