@@ -14,11 +14,15 @@ link_directories(${Boost_LIBRARY_DIR})
 
 add_executable(p1000 p1000.cpp)
 target_link_libraries(p1000 corolib)
+add_executable(p1002-no-coroutines p1002-no-coroutines.cpp)
+target_link_libraries(p1002-no-coroutines corolib)
 add_executable(p1010-thread p1010-thread.cpp)
 target_link_libraries(p1010-thread corolib)
 
 add_executable(p1050-resume_same_thread p1050-resume_same_thread.cpp)
 target_link_libraries(p1050-resume_same_thread corolib)
+add_executable(p1052-resume_same_thread p1052-resume_same_thread.cpp)
+target_link_libraries(p1052-resume_same_thread corolib)
 add_executable(p1060-resume_new_thread p1060-resume_new_thread.cpp)
 target_link_libraries(p1060-resume_new_thread corolib)
 

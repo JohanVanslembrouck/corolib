@@ -39,9 +39,9 @@ oneway_task coroutine6(const char* name, auto_reset_event &m, auto_reset_event& 
 
 async_task<int> coroutine5()
 {
-	print(PRI1, "coroutine5(): coroutine6(m1, m1, m1a);\n");
+	print(PRI1, "coroutine5(): coroutine6(\"m1\", m1, m1a);\n");
 	(void) coroutine6("m1", m1, m1a);
-	print(PRI1, "coroutine5(): coroutine6(m2, m2, m2a);\n");
+	print(PRI1, "coroutine5(): coroutine6(\"m2\", m2, m2a);\n");
 	(void) coroutine6("m2", m2, m2a);
 
 	print(PRI1, "coroutine5(): co_await m1a;\n");

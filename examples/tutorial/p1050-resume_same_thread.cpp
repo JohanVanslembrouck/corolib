@@ -18,25 +18,23 @@ struct resume_same_thread
 {
 	bool await_ready() noexcept
 	{
-		print(PRI2, "resume_same_thread ::await_ready()\n");
-		return false;
+		print(PRI1, "resume_same_thread::await_ready()\n");
+		return true;
 	}
 
 	void await_suspend(std::experimental::coroutine_handle<> handle) noexcept
 	{
-		print(PRI2, "resume_same_thread ::await_suspend(...): before handle.resume();\n");
-		handle.resume();
-		print(PRI2, "resume_same_thread ::await_suspend(...): after handle.resume();\n\n");
+		print(PRI1, "resume_same_thread::await_suspend(...);\n");
 	}
 
 	void await_resume() noexcept
 	{
-		print(PRI2, "resume_same_thread ::await_resume()\n");
+		print(PRI1, "resume_same_thread::await_resume()\n");
 	}
 };
 
 async_task<int> coroutine5() {
-	print(PRI1, "coroutine5(): resume_same_thread\n");
+	print(PRI1, "coroutine5(): co_await resume_same_thread\n");
 	co_await resume_same_thread();
 	int v = 1;
 	print(PRI1, "coroutine5(): co_return v+1 = %d;\n", v+1);
@@ -92,7 +90,7 @@ async_task<int> coroutine1()
 
 /**
  * Because main() cannot be a coroutine (it cannot return a coroutine type),
- * it cannot use co_await. Instead it calls get() on the coroutine object
+ * it cannot use co_await. Instead it calls get_result() on the coroutine object
  * returned from coroutine1().
  */
 int main()
@@ -102,8 +100,6 @@ int main()
 	print(PRI1, "main(): int v = a.get_result();\n");
 	int v = a.get_result();
 	print(PRI1, "main(): v = %d\n", v);
-	print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	print(PRI1, "main(): return 0;\n");
 	return 0;
 }

@@ -13,3 +13,5 @@ add_subdirectory(examples/clientserver3)
 add_subdirectory(examples/clientserver4)
 
 add_subdirectory(examples/various-boost)
+
+add_subdirectory(examples/tutorial)
