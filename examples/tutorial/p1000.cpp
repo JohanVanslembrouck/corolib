@@ -9,14 +9,13 @@
  */
 
 #include <corolib/print.h>
-#include <corolib/auto_reset_event.h>
 #include <corolib/async_task.h>
 
 using namespace corolib;
 
 async_task<int> coroutine5()
 {
-	print(PRI1, "coroutine5(): int v = 1;\n");
+    print(PRI1, "coroutine5(): int v = 1;\n");
 	int v = 1;
 	print(PRI1, "coroutine5(): co_return v+1 = %d;\n", v+1);
 	co_return v+1;
@@ -76,6 +75,8 @@ async_task<int> coroutine1()
  */
 int main()
 {
+	set_print_level(0x01);		// Use 0x03 to follow the flow in corolib
+
 	print(PRI1, "main(): async_task<int> a = coroutine1();\n");
 	async_task<int> a = coroutine1();
 	print(PRI1, "main(): int v = a.get_result();\n");

@@ -1,6 +1,7 @@
 /** 
- *  Filename: p1010-thread.cpp
- *  Description: 
+ *  Filename: p1054-resume_same_thread.cpp
+ *  Description:
+ *
  *
  *  Tested with Visual Studio 2019.
  *
@@ -13,43 +14,46 @@
 
 using namespace corolib;
 
-/**
- * coroutine5() starts a thread and then co_wait's a coroutine object
- * created at its beginning.
- * The thread starts a timer and resumes coroutine5() when the timer expires.
- * This implementation uses implementation details from async_task<T> and
- * is therefore more a hack.
- * See p0422.cpp for a cleaner solution, but uses an extra coroutine type.
- */
-async_task<int> coroutine5()
+struct resume_same_thread
 {
-    print(PRI1, "coroutine5()\n");
-    
-#if 1
-    // If this section is compiled out,
-    // then the behavior of the program is the same as if
-    // "ordinary" functions were used.
-    
-    async_task<int>::promise_type p;
-    p.initial_suspend();    // without this statement, m_async_task.coro.done() in await_ready() returns 1 instead of 0
-    async_task<int> a = p.get_return_object();
+    auto operator co_await() noexcept
+    {
+        class awaiter
+        {
+        public:
+            awaiter(resume_same_thread& awaitable) :
+                m_awaitable(awaitable)
+            {}
 
-    std::thread thread1([&]() {
-        print(PRI1, "thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            bool await_ready() noexcept
+            {
+                print(PRI1, "resume_same_thread::await_ready()\n");
+                return false;
+            }
 
-        print();
-        print(PRI1, "thread1: p.set_return_value(1);\n");
-        p.return_value(1);
-        p.final_suspend();
-        });
-    thread1.detach();
+            void await_suspend(std::experimental::coroutine_handle<> handle) noexcept
+            {
+                print(PRI1, "resume_same_thread::await_suspend(...): before handle.resume();\n");
+                handle.resume();
+                print(PRI1, "resume_same_thread::await_suspend(...): after handle.resume();\n\n");
+            }
 
-    print(PRI1, "coroutine5(): int v = co_await a;\n");
-    int v = co_await a;
-#else
+            void await_resume() noexcept
+            {
+                print(PRI1, "resume_same_thread::await_resume()\n");
+            }
+
+        private:
+            resume_same_thread& m_awaitable;
+        };
+        return awaiter{ *this };
+    }
+};
+
+async_task<int> coroutine5() {
+    print(PRI1, "coroutine5(): co_await resume_same_thread\n");
+    co_await resume_same_thread();
     int v = 1;
-#endif
     print(PRI1, "coroutine5(): co_return v+1 = %d;\n", v+1);
     co_return v+1;
 }
@@ -68,13 +72,13 @@ async_task<int> coroutine3()
 {
     print(PRI1, "coroutine3(): async_task<int> a1 = coroutine4();\n");
     async_task<int> a1 = coroutine4();
-    print(PRI1, "coroutine3(): int v1 = co_await a1;\n");
+    print(PRI1, "coroutine3(): int v = co_await a1;\n");
     int v1 = co_await a1;
 
     print();
-    print(PRI1, "coroutine3(): eager<int> a2 = coroutine4();\n");
+    print(PRI1, "coroutine3(): async_task<int> a2 = coroutine4();\n");
     async_task<int> a2 = coroutine4();
-    print(PRI1, "coroutine3(): int v2 = co_await a2;\n");
+    print(PRI1, "coroutine3(): int v = co_await a2;\n");
     int v2 = co_await a2;
 
     print(PRI1, "coroutine3(): co_return v1+v2+1 = %d;\n", v1+v2+1);
@@ -112,7 +116,7 @@ int main()
 
     print(PRI1, "main(): async_task<int> a = coroutine1();\n");
     async_task<int> a = coroutine1();
-    print(PRI1, "main(): int v = awa.get_result();\n");
+    print(PRI1, "main(): int v = a.get_result();\n");
     int v = a.get_result();
     print(PRI1, "main(): v = %d\n", v);
     print(PRI1, "main(): return 0;\n");

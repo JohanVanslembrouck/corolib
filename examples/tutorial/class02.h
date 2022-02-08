@@ -22,30 +22,30 @@ using namespace corolib;
 
 enum UseMode
 {
-	USE_NONE,
-	USE_EVENTQUEUE,
-	USE_THREAD
+    USE_NONE,
+    USE_EVENTQUEUE,
+    USE_THREAD
 };
 
 class Class02 : public CommService
 {
 public:
-	Class02(UseMode useMode = USE_NONE) 
-		: m_useMode(useMode)
-	{
-	}
-	
-	async_operation<int> start_operation1();
-	async_operation<int> start_operation2(int bias = 0);
-	
-	std::function<void(int)> operation[NROPERATIONS];
+    Class02(UseMode useMode = USE_NONE) 
+        : m_useMode(useMode)
+    {
+    }
+    
+    async_operation<int> start_operation1();
+    async_operation<int> start_operation2(int bias = 0);
+    
+    std::function<void(int)> operation[NROPERATIONS];
 
 protected:
-	void start_op1(const int idx);
-	void start_op2(const int idx, int bias);
+    void start_op1(const int idx);
+    void start_op2(const int idx, int bias);
 
 private:
-	UseMode	m_useMode;
+    UseMode    m_useMode;
 };
 
 #endif

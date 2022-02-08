@@ -30,6 +30,7 @@ namespace corolib
     const int NR_THREADS = 128;
 
     void set_priority(int pri);
+    inline void set_print_level(int pri) { set_priority(pri); }
 
 	inline void print() { fprintf(stderr, "\n"); }
     void print(int pri, const char* fmt, ...);

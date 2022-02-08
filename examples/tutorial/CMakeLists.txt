@@ -23,9 +23,12 @@ add_executable(p1050-resume_same_thread p1050-resume_same_thread.cpp)
 target_link_libraries(p1050-resume_same_thread corolib)
 add_executable(p1052-resume_same_thread p1052-resume_same_thread.cpp)
 target_link_libraries(p1052-resume_same_thread corolib)
+add_executable(p1054-resume_same_thread p1054-resume_same_thread.cpp)
+target_link_libraries(p1054-resume_same_thread corolib)
 add_executable(p1060-resume_new_thread p1060-resume_new_thread.cpp)
 target_link_libraries(p1060-resume_new_thread corolib)
-
+add_executable(p1064-resume_new_thread p1064-resume_new_thread.cpp)
+target_link_libraries(p1064-resume_new_thread corolib)
 
 add_executable(p1100-auto_reset_event p1100-auto_reset_event.cpp)
 target_link_libraries(p1100-auto_reset_event corolib)
@@ -33,7 +36,6 @@ add_executable(p1110-auto_reset_event-oneway_task p1110-auto_reset_event-oneway_
 target_link_libraries(p1110-auto_reset_event-oneway_task corolib)
 add_executable(p1120-auto_reset_event-thread p1120-auto_reset_event-thread.cpp)
 target_link_libraries(p1120-auto_reset_event-thread corolib)
-
 
 add_executable(p1200-mini0 p1200-mini0.cpp)
 target_link_libraries(p1200-mini0 corolib)
@@ -93,3 +95,8 @@ add_executable(p1462-async_operation-eventqueue p1462-async_operation-eventqueue
 target_link_libraries(p1462-async_operation-eventqueue corolib)
 add_executable(p1464-async_operation-thread p1464-async_operation-thread.cpp class02.cpp)
 target_link_libraries(p1464-async_operation-thread corolib)
+
+add_executable(p1472-async_operation-eventqueue p1472-async_operation-eventqueue.cpp class02.cpp)
+target_link_libraries(p1472-async_operation-eventqueue corolib)
+add_executable(p1474-async_operation-thread p1474-async_operation-thread.cpp class02.cpp)
+target_link_libraries(p1474-async_operation-thread corolib)
