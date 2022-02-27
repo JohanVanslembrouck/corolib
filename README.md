@@ -3,6 +3,30 @@
 
 The 'corolib' library demonstrates how C++ coroutines can be used to write asynchronous distributed applications.
 
+Coroutines are a natural way to write efficient distributed applications.
+An application running on one processor can start an operation on another processor or computer (remote method invocation).
+* Using a synchronous operation, the application will block until the operation has responded.
+In the meantime, the application cannot respond to new requests unless this request is processed in a separate thread 
+or the operation itself runs on a separate thread.
+* Using an asynchronous operation, the application can start the operation, 
+proceed with other tasks that do not depend on the response, and then await the response 
+in an event loop where other inputs can be handled as well.
+The response will usually be handled by a piece of code that is typically located in a callback function 
+registered at the invocation of the operation.
+A disadvantage is that starting the operation (sending the request) and processing the response are at different places in the code.
+* Using an asynchronous operation in combination with coroutines, the callback function can be hidden in the library (corolib in this case) and
+the response can be handled after the co_await statement in the coroutine in which the asynchronous operation was originally invoked.
+This is a more natural place than handling the response in a separate piece of code. The use of coroutines allow asynchronous applications
+to be written using a synchronous (sequential) style.
+
+Coroutines can also be used as a replacement for threads.
+Two or more coroutines can be started one after the other.
+Each of these coroutines can implement a potentially infinite loop, invoking asynchronous requests
+and then processing their response in the same code block inside the loop.
+These coroutines may thus never co_return, but when suspended for the first time,
+they pass control to the coroutine that started them and that will pass control to the event loop.
+Yet everything runs on the same thread, with coroutines proceding in an interleaved and colloraborative way.
+
 For its communication 'corolib' uses the Boost ASIO library or Qt (QTcpSocket, QTcpServer). I used Boost 1.70 and Qt 5.14.2, but many other versions will do.
 
 I developed 'corolib' with Visual Studio 2019 and Qt Creator 4.12.0 on a Windows 10 laptop.
