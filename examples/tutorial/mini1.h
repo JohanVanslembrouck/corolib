@@ -14,7 +14,6 @@
 #define _MINI1_H_
 
 #include <corolib/print.h>
-//#include <corolib/auto_reset_event.h>
 #include <corolib/async_task.h>
 
 using namespace corolib;
@@ -22,7 +21,7 @@ using namespace corolib;
 template<typename T>
 struct mini1
 {
-    std::experimental::coroutine_handle<> m_awaiting;
+    std::coroutine_handle<> m_awaiting;
 
     void resume()
     {
@@ -55,9 +54,9 @@ struct mini1
                 return false;
             }
 
-            void await_suspend(std::experimental::coroutine_handle<> awaiting)
+            void await_suspend(std::coroutine_handle<> awaiting)
             {
-                print(PRI2, "%p: mini::await_suspend(std::experimental::coroutine_handle<> awaiting)\n", this);
+                print(PRI2, "%p: mini::await_suspend(std::coroutine_handle<> awaiting)\n", this);
                 m_mini.m_awaiting = awaiting;
             }
 

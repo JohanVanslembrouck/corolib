@@ -31,7 +31,7 @@ struct resume_same_thread
                 return false;
             }
 
-            void await_suspend(std::experimental::coroutine_handle<> handle) noexcept
+            void await_suspend(std::coroutine_handle<> handle) noexcept
             {
                 print(PRI1, "resume_same_thread::await_suspend(...): before handle.resume();\n");
                 handle.resume();

@@ -14,7 +14,7 @@
 #ifndef _AUTO_RESET_EVENT_H_
 #define _AUTO_RESET_EVENT_H_
 
-#include <experimental/resumable>
+#include <coroutine>
 #include "print.h"
 
 namespace corolib
@@ -76,9 +76,9 @@ namespace corolib
                     return m_are.m_ready;
                 }
 
-                void await_suspend(std::experimental::coroutine_handle<> awaiting)
+                void await_suspend(std::coroutine_handle<> awaiting)
                 {
-                    print(PRI2, "%p: auto_reset_event::await_suspend(std::experimental::coroutine_handle<> awaiting)\n", this);
+                    print(PRI2, "%p: auto_reset_event::await_suspend(std::coroutine_handle<> awaiting)\n", this);
                     m_are.m_awaiting = awaiting;
                 }
 
@@ -96,7 +96,7 @@ namespace corolib
         }
 
     private:
-        std::experimental::coroutine_handle<> m_awaiting;
+        std::coroutine_handle<> m_awaiting;
         bool m_ready;
     };
 }

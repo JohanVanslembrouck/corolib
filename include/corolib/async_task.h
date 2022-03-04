@@ -9,7 +9,7 @@
 #ifndef _ASYNC_TASK_H_
 #define _ASYNC_TASK_H_
 
-#include <experimental/resumable>
+#include <coroutine>
 #include "print.h"
 #include "semaphore.h"
 #include "wait_all_counter.h"
@@ -21,7 +21,7 @@ namespace corolib
     struct async_task
     {
         struct promise_type;
-        using handle_type = std::experimental::coroutine_handle<promise_type>;
+        using handle_type = std::coroutine_handle<promise_type>;
 
         async_task(const async_task& s) = delete;
 
@@ -91,9 +91,9 @@ namespace corolib
                     return ready;
                 }
 
-                void await_suspend(std::experimental::coroutine_handle<> awaiting)
+                void await_suspend(std::coroutine_handle<> awaiting)
                 {
-                    print(PRI2, "%p: m_async_task::await_suspend(std::experimental::coroutine_handle<> awaiting)\n", this);
+                    print(PRI2, "%p: m_async_task::await_suspend(std::coroutine_handle<> awaiting)\n", this);
                     m_async_task.m_coro.promise().m_awaiting = awaiting;
                 }
 
@@ -176,13 +176,13 @@ namespace corolib
             auto initial_suspend()
             {
                 print(PRI2, "%p: async_task::promise_type::initial_suspend()\n", this);
-                return std::experimental::suspend_never{};
+                return std::suspend_never{};
             }
 
             auto final_suspend() noexcept
             {
                 print(PRI2, "%p: async_task::promise_type::final_suspend()\n", this);
-                return std::experimental::suspend_always{};
+                return std::suspend_always{};
             }
 
             void unhandled_exception()
@@ -198,7 +198,7 @@ namespace corolib
             bool m_wait_for_signal;
             wait_all_counter* m_ctr;
             wait_any* m_waitany;
-            std::experimental::coroutine_handle<> m_awaiting;
+            std::coroutine_handle<> m_awaiting;
         };
 
     private:
@@ -211,7 +211,7 @@ namespace corolib
     struct async_task<void>
     {
         struct promise_type;
-        using handle_type = std::experimental::coroutine_handle<promise_type>;
+        using handle_type = std::coroutine_handle<promise_type>;
 
         async_task(const async_task& s) = delete;
 
@@ -280,9 +280,9 @@ namespace corolib
                     return ready;
                 }
 
-                void await_suspend(std::experimental::coroutine_handle<> awaiting)
+                void await_suspend(std::coroutine_handle<> awaiting)
                 {
-                    print(PRI2, "%p: m_async_task::await_suspend(std::experimental::coroutine_handle<> awaiting)\n", this);
+                    print(PRI2, "%p: m_async_task::await_suspend(std::coroutine_handle<> awaiting)\n", this);
                     m_async_task.m_coro.promise().m_awaiting = awaiting;
                 }
 
@@ -361,13 +361,13 @@ namespace corolib
             auto initial_suspend()
             {
                 print(PRI2, "%p: async_task::promise_type::initial_suspend()\n", this);
-                return std::experimental::suspend_never{};
+                return std::suspend_never{};
             }
 
             auto final_suspend() noexcept
             {
                 print(PRI2, "%p: async_task::promise_type::final_suspend()\n", this);
-                return std::experimental::suspend_always{};
+                return std::suspend_always{};
             }
 
             void unhandled_exception()
@@ -382,7 +382,7 @@ namespace corolib
             bool m_wait_for_signal;
             wait_all_counter* m_ctr;
             wait_any* m_waitany;
-            std::experimental::coroutine_handle<> m_awaiting;
+            std::coroutine_handle<> m_awaiting;
         };
 
     private:

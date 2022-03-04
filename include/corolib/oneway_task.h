@@ -10,7 +10,7 @@
 #ifndef _ONEWAY_TASK_H_
 #define _ONEWAY_TASK_H_
 
-#include <experimental/resumable>
+#include <coroutine>
 #include "print.h"
 
 namespace corolib
@@ -39,12 +39,12 @@ namespace corolib
                 print(PRI2, "%p: oneway_task::promise_type::~promise_type()\n", this);
             }
 
-            std::experimental::suspend_never initial_suspend() {
+            std::suspend_never initial_suspend() {
                 print(PRI2, "%p: oneway_task::promise_type::initial_suspend()\n", this);
                 return {};
             }
 
-            std::experimental::suspend_never final_suspend() noexcept {
+            std::suspend_never final_suspend() noexcept {
                 print(PRI2, "%p: oneway_task::promise_type::final_suspend()\n", this);
                 return {};
             }

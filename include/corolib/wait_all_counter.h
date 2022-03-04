@@ -12,7 +12,7 @@
 #ifndef _WAIT_ALL_COUNTER_H_
 #define _WAIT_ALL_COUNTER_H_
 
-#include <experimental/resumable>
+#include <coroutine>
 #include "print.h"
 
 namespace corolib
@@ -26,7 +26,7 @@ namespace corolib
             print(PRI2, "%p: wait_all_counter::wait_all_counter(%d)\n", this, nr);
         }
 
-        void set_awaiting(std::experimental::coroutine_handle<> awaiting)
+        void set_awaiting(std::coroutine_handle<> awaiting)
         {
             m_awaiting = awaiting;
         }
@@ -48,7 +48,7 @@ namespace corolib
         }
 
     private:
-        std::experimental::coroutine_handle<> m_awaiting;
+        std::coroutine_handle<> m_awaiting;
         int m_nr;
     };
 }

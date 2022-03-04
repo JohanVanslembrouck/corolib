@@ -16,7 +16,7 @@ using namespace corolib;
 
 struct mini0
 {
-    std::experimental::coroutine_handle<> m_awaiting;
+    std::coroutine_handle<> m_awaiting;
 
     void resume()
     {
@@ -42,9 +42,9 @@ struct mini0
                 return false;
             }
 
-            void await_suspend(std::experimental::coroutine_handle<> awaiting)
+            void await_suspend(std::coroutine_handle<> awaiting)
             {
-                print(PRI2, "%p: mini::await_suspend(std::experimental::coroutine_handle<> awaiting)\n", this);
+                print(PRI2, "%p: mini::await_suspend(std::coroutine_handle<> awaiting)\n", this);
                 m_mini.m_awaiting = awaiting;
             }
 

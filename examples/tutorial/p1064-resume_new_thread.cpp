@@ -30,7 +30,7 @@ struct resume_new_thread
                 return false;
             }
 
-            void await_suspend(std::experimental::coroutine_handle<> handle) noexcept {
+            void await_suspend(std::coroutine_handle<> handle) noexcept {
                 print(PRI1, "resume_new_thread::await_suspend(...)\n");
                 std::thread(
                     [handle] {

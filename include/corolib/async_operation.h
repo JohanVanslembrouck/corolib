@@ -12,7 +12,7 @@
 #ifndef _ASYNC_OPERATION_H_
 #define _ASYNC_OPERATION_H_
 
-#include <experimental/coroutine>
+#include <coroutine>
 #include "print.h"
 #include "commservice.h"
 #include "wait_all_counter.h"
@@ -68,7 +68,7 @@ namespace corolib
 
     protected:
         CommService* m_service;
-        std::experimental::coroutine_handle<> m_awaiting;
+        std::coroutine_handle<> m_awaiting;
         bool m_ready;
         bool m_autoreset;
         int m_index;
@@ -123,7 +123,7 @@ namespace corolib
                     return m_async.m_ready;
                 }
 
-                void await_suspend(std::experimental::coroutine_handle<> awaiting)
+                void await_suspend(std::coroutine_handle<> awaiting)
                 {
                     print(PRI2, "%p: m_async = %p: async_operation<TYPE>::await_suspend(...)\n", this, &m_async);
                     m_async.m_awaiting = awaiting;
@@ -171,7 +171,7 @@ namespace corolib
                     return m_async.m_ready;
                 }
 
-                void await_suspend(std::experimental::coroutine_handle<> awaiting)
+                void await_suspend(std::coroutine_handle<> awaiting)
                 {
                     print(PRI2, "%p: m_async = %p: async_operation<void>::await_suspend(...)\n", this, &m_async);
                     m_async.m_awaiting = awaiting;
