@@ -12,14 +12,14 @@ in a synchronous or asynchronous way.
 
 * Using a synchronous operation, the application will block until the operation has responded.
 
-In the meantime, the application cannot respond to new requests unless new requests are processed 
+> In the meantime, the application cannot respond to new requests unless new requests are processed 
 on a separate thread or the operation itself runs on a separate thread.
 
 * Using an asynchronous operation, the application can start the operation by sending a request to the remote application, 
 proceed with other tasks that do not depend on the response, and then await the response 
 in an event loop where other inputs can be handled as well.
 
-The response will usually be handled by a piece of code that is typically located in a callback function 
+> The response will usually be handled by a piece of code that is typically located in a callback function 
 registered at the invocation of the operation.
 A disadvantage is that starting the operation (sending the request) and processing 
 the response are at different places (functions) in the code.
@@ -33,7 +33,7 @@ The callback functions are not easily reusable to implement other applications.
 * Using an asynchronous operation in combination with coroutines, a generic callback function can be hidden in the library (corolib in this case) 
 and the response can be handled after the co_await statement in the coroutine in which the asynchronous operation was originally invoked.
 
-The callback function will pass the result of the operation to the application flow and resume it.
+> The callback function will pass the result of the operation to the application flow and resume it.
 Depending on the result, the main application will then continue its flow and invoke a new asynchronous operation.
 This is a more natural place than handling the response in the callback function.
 
