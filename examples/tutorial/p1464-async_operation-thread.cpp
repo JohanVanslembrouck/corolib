@@ -35,7 +35,8 @@ async_task<int> coroutine5a()
         async_operation<int> op2a = object01.start_operation2(1);
         print(PRI1, "coroutine5a(): async_operation<int> op2a = object01.start_operation2(2);\n");
         async_operation<int> op2b = object01.start_operation2(2);
-        wait_all_awaitable<async_operation<int>> wa({ &op2a, &op2b });
+        print(PRI1, "wait_all<async_operation<int>> wa({ &op2a, &op2b });\n");
+        wait_all<async_operation<int>> wa({ &op2a, &op2b });
         print(PRI1, "coroutine5a(): co_await wa;\n");
         co_await wa;
         print(PRI1, "coroutine5a(): int v = a.get() + b.get();\n");
@@ -60,7 +61,8 @@ async_task<int> coroutine5b()
         async_operation<int> op2a = object02.start_operation2(1);
         print(PRI1, "coroutine5b(): async_operation<int> op2b = object02.start_operation2(2);\n");
         async_operation<int> op2b = object02.start_operation2(2);
-        wait_all_awaitable<async_operation<int>> wa({ &op2a, &op2b });
+        print(PRI1, "wait_all<async_operation<int>> wa({ &op2a, &op2b });\n");
+        wait_all<async_operation<int>> wa({ &op2a, &op2b });
         print(PRI1, "coroutine5b(): co_await wa;\n");
         co_await wa;
         print(PRI1, "coroutine5b(): int v = a.get() + b.get();\n");
@@ -76,8 +78,8 @@ async_task<int> coroutine4()
     async_task<int> a = coroutine5a();
     print(PRI1, "coroutine4(): async_task<int> b = coroutine5b();\n");
     async_task<int> b = coroutine5b();
-    print(PRI1, "coroutine4(): wait_all_awaitable<async_task<int>> wa({ &a, &b });\n");
-    wait_all_awaitable<async_task<int>> wa({ &a, &b });
+    print(PRI1, "coroutine4(): wait_all<async_task<int>> wa({ &a, &b });\n");
+    wait_all<async_task<int>> wa({ &a, &b });
     print(PRI1, "coroutine4(): co_await wa;\n");
     co_await wa;
     print(PRI1, "coroutine4(): int v = a.get_result() + b.get_result();\n");

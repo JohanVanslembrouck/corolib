@@ -245,7 +245,7 @@ async_task<int> Timer01::mainTask()
     async_task<int> t2 = timerTask02();
     async_task<int> t3 = timerTask03();
 
-    wait_all_awaitable< async_task<int> > wa({ &t1, &t2, &t3 });
+    wait_all<async_task<int>> wa({ &t1, &t2, &t3 });
     co_await wa;
 
     co_return 1;

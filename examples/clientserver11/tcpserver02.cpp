@@ -553,7 +553,7 @@ async_task<int> TcpServer02::mainTask()
     async_task<int> t2 = readTask();
     async_task<int> t3 = disconnectTask();
 
-    wait_all_awaitable< async_task<int> > wa({ &t1, &t2, &t3 });
+    wait_all<async_task<int>> wa({ &t1, &t2, &t3 });
     co_await wa;
 
     co_return 0;

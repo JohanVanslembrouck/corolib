@@ -69,7 +69,7 @@ namespace corolib
             m_coro.promise().m_ctr = ctr;
         }
 
-        void setWaitAny(wait_any* waitany)
+        void setWaitAny(wait_any_one* waitany)
         {
             print(PRI2, "%p: void m_async_task::setWaitAny(%p)\n", this, waitany);
             m_coro.promise().m_waitany = waitany;
@@ -197,7 +197,7 @@ namespace corolib
             Semaphore m_sema;
             bool m_wait_for_signal;
             wait_all_counter* m_ctr;
-            wait_any* m_waitany;
+            wait_any_one* m_waitany;
             std::coroutine_handle<> m_awaiting;
         };
 
@@ -258,7 +258,7 @@ namespace corolib
             m_coro.promise().m_ctr = ctr;
         }
 
-        void setWaitAny(wait_any* waitany)
+        void setWaitAny(wait_any_one* waitany)
         {
             print(PRI2, "%p: void m_async_task::setWaitAny(%p)\n", this, waitany);
             m_coro.promise().m_waitany = waitany;
@@ -381,7 +381,7 @@ namespace corolib
             Semaphore m_sema;
             bool m_wait_for_signal;
             wait_all_counter* m_ctr;
-            wait_any* m_waitany;
+            wait_any_one* m_waitany;
             std::coroutine_handle<> m_awaiting;
         };
 

@@ -40,7 +40,7 @@ namespace corolib
             m_ctr = ctr;
         }
 
-        void setWaitAny(wait_any* waitany)
+        void setWaitAny(wait_any_one* waitany)
         {
             print(PRI2, "%p: void async_operation_base::setWaitAny(%p)\n", this, waitany);
             m_waitany = waitany;
@@ -73,7 +73,7 @@ namespace corolib
         bool m_autoreset;
         int m_index;
         wait_all_counter* m_ctr;
-        wait_any* m_waitany;
+        wait_any_one* m_waitany;
     };
 
     template<typename TYPE>

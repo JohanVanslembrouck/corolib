@@ -110,13 +110,15 @@ namespace corolib
         m_index = s.m_index;
 
         // The following 2 tests allow an async_operation that takes part in
-        // a wait_all_awaitable or wait_any_awaitable to be re-assigned.
-        // This avoids disposing the original wait_all_awaitable or wait_any_awaitable
+        // a wait_all or wait_any to be re-assigned.
+        // This avoids disposing the original wait_all or wait_any
         // and constructing a new one.
+
         if (m_ctr != nullptr && s.m_ctr == nullptr)
             ; // do not overwrite m_ctr
         else
             m_ctr = s.m_ctr;
+
         if (m_waitany != nullptr && s.m_waitany == nullptr)
             ; // do not overwrite m_waitany
         else

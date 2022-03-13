@@ -524,7 +524,7 @@ async_task<int> TcpClient01::measurementLoop4()
         async_operation<QByteArray> op1 = start_reading();
         async_operation<QByteArray> op2 = start_reading();
 
-        wait_all_awaitable<async_operation<QByteArray>> wa( { &op1, &op2 } );
+        wait_all<async_operation<QByteArray>> wa( { &op1, &op2 } );
         co_await wa;
 
         QByteArray dataOut1 = op1.get_result();

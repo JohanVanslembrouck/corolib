@@ -26,8 +26,8 @@ async_task<int> coroutine5()
     async_operation<int> op1 = object01.start_operation();
     print(PRI1, "coroutine5(): async_operation<int> op2 = object02.start_operation();\n");
     async_operation<int> op2 = object02.start_operation();
-    print(PRI1, "coroutine5(): wait_all_awaitable<async_operation<int>> wa({ &op1, &op2 });\n");
-    wait_all_awaitable<async_operation<int>> wa({ &op1, &op2 });
+    print(PRI1, "coroutine5(): wait_all<async_operation<int>> wa({ &op1, &op2 });\n");
+    wait_all<async_operation<int>> wa({ &op1, &op2 });
     print(PRI1, "coroutine5(): co_await wa;\n");
     co_await wa;
     print(PRI1, "coroutine5(): int v = op1.get_result() + op2.get_result();\n");
