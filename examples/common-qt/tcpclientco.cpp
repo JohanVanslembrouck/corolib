@@ -407,9 +407,8 @@ void TcpClientCo::readyReadTcpCo2(QByteArray& data)
  */
 async_operation<QByteArray> TcpClientCo::start_reading(bool doDisconnect)
 {
-    index = (index + 1) & (NROPERATIONS - 1);
+    int index = get_free_index();
     print(PRI2, "%p: TcpClientCo::start_reading(): index = %d\n", this, index);
-    assert(m_async_operations[index] == nullptr);
     async_operation<QByteArray> ret{ this, index };
     start_read(index, doDisconnect);
     return ret;
@@ -474,9 +473,8 @@ void TcpClientCo::stop_reading(int idx)
  */
 async_operation<void> TcpClientCo::start_timer(QTimer& timer, int ms)
 {
-    index = (index + 1) & (NROPERATIONS - 1);
+    int index = get_free_index();
     print(PRI2, "%p: TcpClientCo::start_timer(): index = %d\n", this, index);
-    assert(m_async_operations[index] == nullptr);
     async_operation<void> ret{ this, index };
     start_tmr(index, timer, ms);
     return ret;
@@ -541,9 +539,8 @@ void TcpClientCo::stop_timer(int idx)
  */
 async_operation<void> TcpClientCo::start_connecting(QString& serverIpAddress, quint16 port)
 {
-    index = (index + 1) & (NROPERATIONS - 1);
+    int index = get_free_index();
     print(PRI2, "%p: TcpClientCo::start_connecting(): index = %d\n", this, index);
-    assert(m_async_operations[index] == nullptr);
     async_operation<void> ret{ this, index };
     start_connect(index, serverIpAddress, port);
     return ret;

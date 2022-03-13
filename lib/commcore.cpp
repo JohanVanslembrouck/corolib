@@ -47,9 +47,8 @@ void CommCore::stop()
 
 async_operation<void> CommCore::start_writing(const char* str, int size)
 {
-    index = (index + 1) & (NROPERATIONS - 1);
+    int index = get_free_index();
     print(PRI2, "%p: CommCore::start_writing(): index = %d\n", this, index);
-    assert(m_async_operations[index] == nullptr);
     async_operation<void> ret{ this, index };
     start_write(index, str, size);
     return ret;
@@ -57,9 +56,8 @@ async_operation<void> CommCore::start_writing(const char* str, int size)
 
 async_operation<std::string> CommCore::start_reading(const char ch)
 {
-    index = (index + 1) & (NROPERATIONS - 1);
+    int index = get_free_index();
     print(PRI2, "%p: CommCore::start_reading(): index = %d\n", this, index);
-    assert(m_async_operations[index] == nullptr);
     async_operation<std::string> ret{ this, index };
     start_read(index, ch);
     return ret;
@@ -67,9 +65,8 @@ async_operation<std::string> CommCore::start_reading(const char ch)
 
 async_operation<void> CommCore::start_timer(steady_timer& timer, int ms)
 {
-    index = (index + 1) & (NROPERATIONS - 1);
+    int index = get_free_index();
     print(PRI2, "%p: CommCore::start_timer(timer, %d): index = %d\n", this, ms, index);
-    assert(m_async_operations[index] == nullptr);
     async_operation<void> ret{ this, index };
     start_tmr(index, timer, ms);
     return ret;
@@ -77,9 +74,8 @@ async_operation<void> CommCore::start_timer(steady_timer& timer, int ms)
 
 async_operation<void> CommCore::start_dummy()
 {
-    index = (index + 1) & (NROPERATIONS - 1);
+    int index = get_free_index();
     print(PRI2, "%p: CommCore::start_dummy(): index = %d\n", this, index);
-    assert(m_async_operations[index] == nullptr);
     async_operation<void> ret{ this, index };
     return ret;
 }

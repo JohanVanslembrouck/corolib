@@ -23,45 +23,44 @@ void Timer01::start()
 
 async_operation<void> Timer01::start_timer(steady_timer& timer, int ms)
 {
-	index = (index + 1) & (NROPERATIONS - 1);
-	print(PRI1, "%p: CommCore::start_timer(timer, %d): index = %d\n", this, ms, index);
-	assert(m_async_operations[index] == nullptr);
-	async_operation<void> ret{ this, index };
-	start_tmr(index, timer, ms);
-	return ret;
+    int index = get_free_index();
+    print(PRI1, "%p: CommCore::start_timer(timer, %d): index = %d\n", this, ms, index);
+    async_operation<void> ret{ this, index };
+    start_tmr(index, timer, ms);
+    return ret;
 }
 
 void Timer01::start_tmr(const int idx, steady_timer& tmr, int ms)
 {
-	print(PRI1, "%p: Timer01::start_tmr()\n", this);
+    print(PRI1, "%p: Timer01::start_tmr()\n", this);
 
-	tmr.expires_after(std::chrono::milliseconds(ms));
+    tmr.expires_after(std::chrono::milliseconds(ms));
 
-	tmr.async_wait(
-		[this, idx](const boost::system::error_code& error)
-		{
-			print(PRI1, "%p: Timer01::handle_timer(): idx = %d, entry\n", this, idx);
-			async_operation_base* om_async_operation = m_async_operations[idx];
+    tmr.async_wait(
+        [this, idx](const boost::system::error_code& error)
+        {
+            print(PRI1, "%p: Timer01::handle_timer(): idx = %d, entry\n", this, idx);
+            async_operation_base* om_async_operation = m_async_operations[idx];
 
-			if (!error)
-			{
-				print(PRI1, "%p: Timer01::handle_timer(): idx = %d, om_async_operation = %p\n", this, idx, om_async_operation);
-				if (om_async_operation)
-				{
-					om_async_operation->completed();
-				}
-				else
-				{
-					// This can occur when the async_operation_base has gone out of scope.
-					print(PRI1, "%p: Timer01::handle_timer(): idx = %d, Warning: om_async_operation == nullptr\n", this, idx);
-				}
-			}
-			else
-			{
-				print(PRI1, "%p: Timer01::handle_timer(): idx = %d, Error on timer: %s\n", this, idx, error.message().c_str());
-				//stop();
-			}
-		});
+            if (!error)
+            {
+                print(PRI1, "%p: Timer01::handle_timer(): idx = %d, om_async_operation = %p\n", this, idx, om_async_operation);
+                if (om_async_operation)
+                {
+                    om_async_operation->completed();
+                }
+                else
+                {
+                    // This can occur when the async_operation_base has gone out of scope.
+                    print(PRI1, "%p: Timer01::handle_timer(): idx = %d, Warning: om_async_operation == nullptr\n", this, idx);
+                }
+            }
+            else
+            {
+                print(PRI1, "%p: Timer01::handle_timer(): idx = %d, Error on timer: %s\n", this, idx, error.message().c_str());
+                //stop();
+            }
+        });
 }
 
 
@@ -240,13 +239,15 @@ async_task<int> Timer01::timerTask03()
  */
 async_task<int> Timer01::mainTask()
 {
-
     async_task<int> t1 = timerTask01();
     async_task<int> t2 = timerTask02();
     async_task<int> t3 = timerTask03();
 
+    print(PRI1, "--- mainTask: wait_all<async_task<int>> wa({ &t1, &t2, &t3 });\n");
     wait_all<async_task<int>> wa({ &t1, &t2, &t3 });
+    print(PRI1, "--- mainTask: co_await wa;\n");
     co_await wa;
 
+    print(PRI1, "--- mainTask: co_return 0;\n");
     co_return 1;
 }

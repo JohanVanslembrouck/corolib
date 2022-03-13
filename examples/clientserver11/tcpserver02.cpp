@@ -207,9 +207,8 @@ void TcpServer02::stateChanged(QAbstractSocket::SocketState socketState)
  */
 async_operation<int> TcpServer02::start_accepting(bool doDisconnect)
 {
-    index = (index + 1) & (NROPERATIONS - 1);
+    int index = get_free_index();
     print(PRI2, "%p: TcpServer02::start_accepting(): index = %d\n", this, index);
-    assert(m_async_operations[index] == nullptr);
     async_operation<int> ret{ this, index };
     start_accept(index, doDisconnect);
     return ret;
@@ -259,9 +258,8 @@ void TcpServer02::start_accept(const int idx, bool doDisconnect)
  */
 async_operation<readInfo> TcpServer02::start_reading(bool doDisconnect)
 {
-    index = (index + 1) & (NROPERATIONS - 1);
+    int index = get_free_index();
     print(PRI2, "%p: TcpServer02::start_reading(): index = %d\n", this, index);
-    assert(m_async_operations[index] == nullptr);
     async_operation<readInfo> ret{ this, index };
     start_read(index, doDisconnect);
     return ret;
@@ -319,9 +317,8 @@ void TcpServer02::start_read(const int idx, bool doDisconnect)
  */
 async_operation<void> TcpServer02::start_timer(QTimer& timer, int ms, bool doDisconnect)
 {
-    index = (index + 1) & (NROPERATIONS - 1);
+    int index = get_free_index();
     print(PRI2, "%p: TcpServer02::start_timer(): index = %d\n", this, index);
-    assert(m_async_operations[index] == nullptr);
 #if 0
     while (m_async_operations[index] != nullptr)
     {
@@ -383,9 +380,8 @@ void TcpServer02::start_tmr(const int idx, QTimer& tmr, int ms, bool doDisconnec
  */
 async_operation<int> TcpServer02::start_disconnecting(bool doDisconnect)
 {
-    index = (index + 1) & (NROPERATIONS - 1);
+    int index = get_free_index();
     print(PRI2, "%p: TcpServer02::start_disconnecting(): index = %d\n", this, index);
-    assert(m_async_operations[index] == nullptr);
     async_operation<int> ret{ this, index };
     start_disconnect(index, doDisconnect);
     return ret;

@@ -36,8 +36,7 @@ CommServer::CommServer(
 async_operation<void> CommServer::start_accepting(spCommCore commRWT)
 {
     print(PRI2, "%p: CommServer::start_accepting()\n", this);
-    index = (index + 1) & (NROPERATIONS - 1);
-    assert(m_async_operations[index] == nullptr);
+    int index = get_free_index();
     async_operation<void> ret{ this, index };
     start_accept(commRWT, index);
     return ret;

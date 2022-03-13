@@ -362,9 +362,8 @@ void TcpClient01::stateChanged(QAbstractSocket::SocketState socketState)
  */
 async_operation<QByteArray> TcpClient01::start_reading()
 {
-    index = (index + 1) & (NROPERATIONS - 1);
+    int index = get_free_index();
     print(PRI2, "%p: TcpClient01::start_reading(): index = %d\n", this, index);
-    assert(m_async_operations[index] == nullptr);
     async_operation<QByteArray> ret{ this, index };
     start_read(index);
     return ret;

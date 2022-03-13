@@ -45,9 +45,8 @@ void Timer01::start()
  */
 async_operation<void> Timer01::start_timer(QTimer& timer, int ms, bool doDisconnect)
 {
-    index = (index + 1) & (NROPERATIONS - 1);
+    int index = get_free_index();
     print(PRI1, "%p: Timer01::start_timer(): index = %d\n", this, index);
-    assert(m_async_operations[index] == nullptr);
     async_operation<void> ret{ this, index };
     start_tmr(index, timer, ms, doDisconnect);
     return ret;
@@ -335,8 +334,11 @@ async_task<int> Timer01::mainTask()
     async_task<int> t3 = timerTask03();
     async_task<int> t4 = timerTask04();
 
+    print(PRI1, "--- mainTask: wait_all<async_task<int>> wa({ &t1, &t2, &t3, &t4 });\n");
     wait_all<async_task<int>> wa({ &t1, &t2, &t3, &t4 });
+    print(PRI1, "--- mainTask: co_await wa;\n");
     co_await wa;
 
+    print(PRI1, "--- mainTask: co_return 0;\n");
     co_return 0;
 }

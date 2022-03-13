@@ -12,7 +12,7 @@
 
 async_operation<int> Class01::start_operation()
 {
-    index = (index + 1) & (NROPERATIONS - 1);
+    int index = get_free_index();
     print(PRI1, "%p: Class01::start_operation(): index = %d\n", this, index);
     async_operation<int> ret{ this, index };
     start_op(index);

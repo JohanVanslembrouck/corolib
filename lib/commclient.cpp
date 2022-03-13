@@ -38,7 +38,7 @@ CommClient::CommClient(boost::asio::io_context& io_context,
 void CommClient::start()
 {
     print(PRI2, "%p: CommClient::start()\n", this);
-    index = (index + 1) & (NROPERATIONS - 1);
+    int index = get_free_index();
     assert(m_async_operations[index] == nullptr);
     start_connect(index);
 
@@ -51,8 +51,7 @@ void CommClient::start()
 async_operation<void> CommClient::start_connecting()
 {
     print(PRI2, "%p: CommClient::start_connecting()\n", this);
-    index = (index + 1) & (NROPERATIONS - 1);
-    assert(m_async_operations[index] == nullptr);
+    int index = get_free_index();
     async_operation<void> ret{ this, index };
     start_connect(index);
     return ret;

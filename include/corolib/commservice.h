@@ -20,6 +20,7 @@
 #define _COMMSERVICE_H_
 
 #include <string>
+#include <assert.h>
 
 namespace corolib
 {
@@ -30,11 +31,35 @@ namespace corolib
     public:
         virtual std::string get_result() { return "empty";  }
 
+        int get_free_index0()
+        {
+            m_index = (m_index + 1) & (NROPERATIONS - 1);
+            assert(m_async_operations[m_index] == nullptr);
+            return m_index;
+        }
+
+        int get_free_index()
+        {
+            // Assume that half of the entries can be reserved for a longer time
+            for (int i = 0; i < NROPERATIONS / 2; i++)
+            {
+                m_index = (m_index + 1) & (NROPERATIONS - 1);
+                if (m_async_operations[m_index] == nullptr)
+                {
+                    // Found free entry
+                    return m_index;
+                }
+            }
+            // No more free entries
+            assert(m_async_operations[m_index] == nullptr);
+            return -1;
+        }
+
     protected:
         static const int NROPERATIONS = 128;    // use 2^N
 
         CommService()
-            : index(-1)
+            : m_index(-1)
         {
             for (int i = 0; i < NROPERATIONS; i++)
                 m_async_operations[i] = nullptr;
@@ -42,7 +67,7 @@ namespace corolib
 
         virtual ~CommService() {}
 
-        int index;
+        int m_index;
         async_operation_base* m_async_operations[NROPERATIONS];
     };
 }

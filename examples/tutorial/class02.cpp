@@ -12,7 +12,7 @@
 
 async_operation<int> Class02::start_operation1()
 {
-    index = (index + 1) & (NROPERATIONS - 1);
+    int index = get_free_index();
     print(PRI1, "%p: Class02::start_operation1(): index = %d\n", this, index);
     async_operation<int> ret{ this, index };
     start_op1(index);
@@ -63,7 +63,7 @@ void Class02::start_op1(const int idx)
 
 async_operation<int> Class02::start_operation2(int bias)
 {
-    index = (index + 1) & (NROPERATIONS - 1);
+    int index = get_free_index();
     print(PRI1, "%p: Class02::start_operation2(): index = %d\n", this, index);
     async_operation<int> ret{ this, index };
     start_op2(index, bias);
