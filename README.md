@@ -12,31 +12,18 @@ in a synchronous or asynchronous way.
 
 * Using a synchronous operation, the application will block until the operation has responded.
 
-&nbsp;&nbsp;&nbsp;&nbsp;In the meantime, the application cannot respond to new requests unless new requests are processed 
-on a separate thread or the operation itself runs on a separate thread.
+    In the meantime, the application cannot respond to new requests unless new requests are processed on a separate thread or the operation itself runs on a separate thread.
 
 * Using an asynchronous operation, the application can start the operation by sending a request to the remote application, 
 proceed with other tasks that do not depend on the response, and then await the response 
 in an event loop where other inputs can be handled as well.
 
-&nbsp;&nbsp;&nbsp;&nbsp;The response will usually be handled by a piece of code that is typically located in a callback function 
-registered at the invocation of the operation.
-A disadvantage is that starting the operation (sending the request) and processing 
-the response are at different places (functions) in the code.
-Local variables in the function that started the operations are not accessesible in the callback function 
-but they can be passed in a lambda closure.
-After having processed the response in the callback function, and depending on the response,
-the callback function will typically start another operation and pass another callback function to process the response.
-This leads to a chain of callback functions, with the first part processing the response of one operation 
-and the second part continuing the program flow.
-The callback functions are not easily reusable to implement other applications.
+    The response will usually be handled by a piece of code that is typically located in a callback function registered at the invocation of the operation. A disadvantage is that starting the operation (sending the request) and processing the response are at different places (functions) in the code. Local variables in the function that started the operations are not accessesible in the callback function but they can be passed in a lambda closure. After having processed the response in the callback function, and depending on the response, the callback function will typically start another operation and pass another callback function to process the response. This leads to a chain of callback functions, with the first part processing the response of one operation  and the second part continuing the program flow. The callback functions are not easily reusable to implement other applications.
 
 * Using an asynchronous operation in combination with coroutines, a generic callback function can be hidden in the library (corolib in this case) 
 and the response can be handled after the co_await statement in the coroutine in which the asynchronous operation was originally invoked.
 
-&nbsp;&nbsp;&nbsp;&nbsp;The callback function will pass the result of the operation to the application flow and resume it.
-Depending on the result, the main application will then continue its flow and invoke a new asynchronous operation.
-This is a more natural place than handling the response in the callback function.
+   The callback function will pass the result of the operation to the application flow and resume it. Depending on the result, the main application will then continue its flow and invoke a new asynchronous operation. This is a more natural place than handling the response in the callback function.
 
 In short: the use of coroutines allow asynchronous applications to be written using a synchronous (sequential) style.
 
@@ -70,8 +57,7 @@ the first statement starts an operation on a remote object.
 While the remote object is processing the request and preparing the reply,
 the application can proceed with actions that do not rely on the result.
 
-&nbsp;&nbsp;&nbsp;&nbsp;This style can be further exploited by placing the first statement
-a bit higher in the code, above all statements that do not depend on the result, but at a place where all inputs are available.
+    This style can be further exploited by placing the first statement a bit higher in the code, above all statements that do not depend on the result, but at a place where all inputs are available.
 Several operations can be started one after the other and the results can then be processed afterwards.
 
 2. When learning coroutines, the first approach more clearly shows what is going on.
