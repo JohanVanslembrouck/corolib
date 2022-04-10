@@ -172,7 +172,7 @@ to interfaceAHandler_impl that returns true if the ORB performed the callback.
 If the application was originally a pure client, then using the callback mechanism 
 may have an impact on the architecture of the application. 
 If the application was designed as a server application then it already had an event loop 
-and the callback functions can/will be called from this event loop.
+and the callback functions can/will be called from this event loop (see below).
 
 Again, it is easy to use this interface to start a callback operation on several remote objects in a loop, 
 do some other work, and then enter the event loop. The application may use an array of remote objects, 
@@ -180,6 +180,21 @@ an array of callback objects, and a counter to count how many objects have repli
 
 This section only gave a very high-level introduction to AMI. 
 The reader is referred to [Schmidt et al.] for more information on CORBA AMI.
+
+## Callback chain
+
+In the previous section the callback was waited for in a local event loop, waiting only for the responses
+of outstanding requests, and thus ignoring other inputs.
+In a server application there is typically only one event loop and all inputs and registered callback functions
+will be handled in this event loop. This leads to a different style of programming.
+
+After having processed the response to a request in a callback function, and depending on the response (successful, failure),
+the callback function will typically start another operation and pass another callback function to process the response.
+This leads to a chain of callback functions, with the first part processing the response of one operation 
+and the second part continuing the program flow.
+The callback functions are not easily reusable to implement other applications.
+
+This breaks the sequential style of programming that can used with synchronous operations and even with the polling approach.
 
 ## C++ example
 
@@ -232,6 +247,5 @@ The IDL compiler generates the following C++ code (some details have been remove
 
 ## References
 
->     [Schmidt et al.] Object Interconnections – Programming Asynchronous Method Invocations with CORBA Messaging (Column 16),
-    Douglas C. Schmidt and Steve Vinoski,
-    https://www.dre.vanderbilt.edu/~schmidt/PDF/C++-report-col16.pdf
+[Schmidt et al.] Object Interconnections – Programming Asynchronous Method Invocations with CORBA Messaging (Column 16), Douglas C. Schmidt and Steve Vinoski,
+https://www.dre.vanderbilt.edu/~schmidt/PDF/C++-report-col16.pdf

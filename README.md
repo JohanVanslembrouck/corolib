@@ -18,16 +18,10 @@ itself runs on a separate thread.
 
 * Using an asynchronous operation, the application can start the operation by sending a request to the remote application, 
 proceed with other tasks that do not depend on the response, and then await the response 
-either by polling for the response or in an event loop where other inputs can be handled as well.
+either using polling or using callback functions called from a local or global event loop.
 
-    The response will usually be handled by a piece of code that is located in a callback function registered at the invocation of the operation.
-A disadvantage is that starting the operation (sending the request) and processing the response are at different places (functions) in the code.
-Local variables in the function that started the operations are not accessesible in the callback function but they can be passed in a lambda closure.
-After having processed the response in the callback function, and depending on the response, the callback function will typically start another operation
-and pass another callback function to process the response.
-This leads to a chain of callback functions, with the first part processing the response of one operation 
-and the second part continuing the program flow. The callback functions are not easily reusable to implement other applications.
-
+    The reader is referred to reading/CORBA-AMI.md for more information on this approach.
+	
 * Using an asynchronous operation in combination with coroutines, a generic callback function can be hidden in the library (corolib in this case) 
 and the response can be handled after the co_await statement in the coroutine in which the asynchronous operation was originally invoked.
 
