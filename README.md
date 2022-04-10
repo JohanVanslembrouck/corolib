@@ -5,29 +5,39 @@ The 'corolib' library demonstrates how C++ coroutines can be used to write async
 
 ## Why coroutines?
 
-Coroutines are a natural way to write efficient (distributed) applications in a natural way.
+Reason 1: Coroutines allowing writing (distributed) applications using a natural synchronous style,
+but with the efficiency benefits of asynchronous communication.
 
 An application running on one processor can start an operation in an application on the same or another processor 
 in a synchronous or asynchronous way.
 
 * Using a synchronous operation, the application will block until the operation has responded.
 
-    In the meantime, the application cannot respond to new requests unless new requests are processed on a separate thread or the operation itself runs on a separate thread.
+    In the meantime, the application cannot respond to new requests unless new requests are processed on a separate thread or the operation 
+itself runs on a separate thread.
 
 * Using an asynchronous operation, the application can start the operation by sending a request to the remote application, 
 proceed with other tasks that do not depend on the response, and then await the response 
-in an event loop where other inputs can be handled as well.
+either by polling for the response or in an event loop where other inputs can be handled as well.
 
-    The response will usually be handled by a piece of code that is typically located in a callback function registered at the invocation of the operation. A disadvantage is that starting the operation (sending the request) and processing the response are at different places (functions) in the code. Local variables in the function that started the operations are not accessesible in the callback function but they can be passed in a lambda closure. After having processed the response in the callback function, and depending on the response, the callback function will typically start another operation and pass another callback function to process the response. This leads to a chain of callback functions, with the first part processing the response of one operation  and the second part continuing the program flow. The callback functions are not easily reusable to implement other applications.
+    The response will usually be handled by a piece of code that is located in a callback function registered at the invocation of the operation.
+A disadvantage is that starting the operation (sending the request) and processing the response are at different places (functions) in the code.
+Local variables in the function that started the operations are not accessesible in the callback function but they can be passed in a lambda closure.
+After having processed the response in the callback function, and depending on the response, the callback function will typically start another operation
+and pass another callback function to process the response.
+This leads to a chain of callback functions, with the first part processing the response of one operation 
+and the second part continuing the program flow. The callback functions are not easily reusable to implement other applications.
 
 * Using an asynchronous operation in combination with coroutines, a generic callback function can be hidden in the library (corolib in this case) 
 and the response can be handled after the co_await statement in the coroutine in which the asynchronous operation was originally invoked.
 
-   The callback function will pass the result of the operation to the application flow and resume it. Depending on the result, the main application will then continue its flow and invoke a new asynchronous operation. This is a more natural place than handling the response in the callback function.
+   The callback function will pass the result of the operation back to the application flow and resume it.
+Depending on the result, the main application will then continue its flow and invoke a new asynchronous operation.
+This is a more natural place than handling the response in the callback function.
 
 In short: the use of coroutines allow asynchronous applications to be written using a synchronous (sequential) style.
 
-Coroutines can also be used as a replacement for threads.
+Reason 2: Coroutines can be used as an alternative for threads.
 
 Two or more coroutines can be started one after the other.
 Each of these coroutines can implement a potentially infinite loop, invoking asynchronous requests
@@ -57,10 +67,17 @@ the first statement starts an operation on a remote object.
 While the remote object is processing the request and preparing the reply,
 the application can proceed with actions that do not rely on the result.
 
-    This style can be further exploited by placing the first statement a bit higher in the code, above all statements that do not depend on the result, but at a place where all inputs are available.
+    This style can be further exploited by placing the first statement a bit higher in the code, 
+above all statements that do not depend on the result, but at a place where all inputs are available.
 Several operations can be started one after the other and the results can then be processed afterwards.
 
-2. When learning coroutines, the first approach more clearly shows what is going on.
+2. The first style is closer to the polling style used in CORBA AMI.
+
+	It was the intention to include a short description to CORBA (Common Object Request Broker Architecture) 
+AMI (Asynchronous Method Invocation) in this file. However, because of the size of the explanation it has been
+placed in a separate file, CORBA-AMI.md.
+
+2. When learning coroutines, the first approach shows more clearly what is going on.
 It shows the return type of the asynchronous operation, making it easier to find and examine the implementation.
 
 3. An explicit declaration makes it easier to await the result of several operations using wait_all or wait_any.
