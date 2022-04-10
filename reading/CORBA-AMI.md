@@ -5,46 +5,46 @@
 CORBA (Common Object Request Broker Architecture) has introduced AMI (Asynchronous Method Invocation) in version 2.4 in October 2000.
 Consider the following interface definition:
 
-	module moduleA
-	{
-		interface interfaceA
-		{
-			attribute typeA1 attr1;
-			readonly attribute typeA2 attr2;
-			// more attributes
+    module moduleA
+    {
+        interface interfaceA
+        {
+            attribute typeA1 attr1;
+            readonly attribute typeA2 attr2;
+            // more attributes
 
-			typeR operation1(in typeI1 argI1, ..., 
-							 inout typeIO1 argIO1, ...,
-							 out typeO1 argO1, ...) raises (typeEx1, …);
-			oneway void operation2(in typeI1 argI1, ...);
-			// more operations
-		}
-	}
+            typeR operation1(in typeI1 argI1, ..., 
+                             inout typeIO1 argIO1, ...,
+                             out typeO1 argO1, ...) raises (typeEx1, …);
+            oneway void operation2(in typeI1 argI1, ...);
+            // more operations
+        }
+    }
 
 The IDL compiler can be asked to generate both a synchronous and an asynchronous API.
 In a programming language that has the same syntax as IDL, the generated interface looks as follows:
 
-	module moduleA
-	{
-		valueType interfaceAPoller;
-		interface interfaceAHandler;
+    module moduleA
+    {
+        valueType interfaceAPoller;
+        interface interfaceAHandler;
 
-		interface interfaceA
-		{
-			typeR operation1(in typeI1 argI1, ..., 
-							 inout typeIO1 argIO1, ...,
-							 out typeO1 argO1, ...) raises (typeEx1, …);
-			// more operations
+        interface interfaceA
+        {
+            typeR operation1(in typeI1 argI1, ..., 
+                             inout typeIO1 argIO1, ...,
+                             out typeO1 argO1, ...) raises (typeEx1, …);
+            // more operations
 
-			// For every operation we have a sendp_ function looking as follows:
-			interfaceAPoller
-				sendp_operation1(in typeI1 argI1, ..., in typeIO1 argIO1, ...);
-	 
-			// For every operation we have a sendc_ function looking as follows:
-			void sendc_operation1(InterfaceAHandler handler,
-								  in typeI1 argI1, ..., in typeIO1 argIO1, ...);
-		}
-	}
+            // For every operation we have a sendp_ function looking as follows:
+            interfaceAPoller
+                sendp_operation1(in typeI1 argI1, ..., in typeIO1 argIO1, ...);
+     
+            // For every operation we have a sendc_ function looking as follows:
+            void sendc_operation1(InterfaceAHandler handler,
+                                  in typeI1 argI1, ..., in typeIO1 argIO1, ...);
+        }
+    }
 
 Apart from the synchronous function (operation1), the CORBA IDL compiler also generates 
 a sendp_operation1 that starts a polling interaction, and a sendc_operation1 that will result 
@@ -57,16 +57,16 @@ Both mechanisms are described in some more detail now.
 
 The sendp_ function returns a valueof type interfaceAPoller, which has the following definition:
 
-	module moduleA
-	{
-		valuetype interfaceAPoller
-		{
-			bool get_operation1(in timeout,
-								out argIO1, ..., out typeO1 argO1, ...,
-								out typeR ret_val);
-			// more operations
-		}
-	}
+    module moduleA
+    {
+        valuetype interfaceAPoller
+        {
+            bool get_operation1(in timeout,
+                                out argIO1, ..., out typeO1 argO1, ...,
+                                out typeR ret_val);
+            // more operations
+        }
+    }
 
 For every operation in the IDL, the poller has an operation whose name is prefixed with get_. 
 The operation takes a timeout as first argument, followed by the 'out' arguments of the original operation. 
@@ -108,38 +108,38 @@ and a counter to count how many objects have replied.
 
 In the case of callback, the IDL compiler generates an additional interface:
 
-	module moduleA
-	{
-		interface interfaceAHandler
-		{
-			void operation1(in typeIO1 argIO1, ..., 
-							in typeO1 argO1, ..., 
-							in typeR ret_val);
-			void operation1_exception(typeEx1);
+    module moduleA
+    {
+        interface interfaceAHandler
+        {
+            void operation1(in typeIO1 argIO1, ..., 
+                            in typeO1 argO1, ..., 
+                            in typeR ret_val);
+            void operation1_exception(typeEx1);
 
-			// more operations
-		}
-	}
+            // more operations
+        }
+    }
 
 The application developer has to provide an implementation of operations in this interface, 
 which is usually done in a class derived from interfaceAHandler, e.g. interfaceAHandler_impl. 
 The developer can/should add one or more member variables (and access functions) 
 so that interfaceAHandler_impl::operation1 can save the result for later use by the application.
 
-	module moduleA
-	{
-		interface interfaceAHandler_impl : interfaceAHandler
-		{
-			void operation1(in typeIO1 argIO1, ..., 
-							in typeO1 argO1, ..., 
-							in typeR ret_val);
-			bool operation1ReplyReceived();
-			void operation1_exception(typeEx1);
+    module moduleA
+    {
+        interface interfaceAHandler_impl : interfaceAHandler
+        {
+            void operation1(in typeIO1 argIO1, ..., 
+                            in typeO1 argO1, ..., 
+                            in typeR ret_val);
+            bool operation1ReplyReceived();
+            void operation1_exception(typeEx1);
 
-			// more operations
-		}
-	}
-	
+            // more operations
+        }
+    }
+    
 The application creates an object interfaceAHandler_impl and will pass this object as first argument 
 to the sendc_operation1. 
 The ORB will save this object and invoke a callback function when the remote object has responded. 
@@ -161,7 +161,7 @@ The client application can use this operation as follows:
         run_event_loop(timeout);
     } while (!hndlr.operation1ReplyReceived());
     // Reply of operation1 has arrived.
-	// Read the content of interfaceAHandler_impl hndlr.
+    // Read the content of interfaceAHandler_impl hndlr.
 
 The client application will now also act as server: it will have to enter an event loop 
 (when this is appropriate in the application’s control flow), 
@@ -186,52 +186,52 @@ The reader is referred to [Schmidt et al.] for more information on CORBA AMI.
 To conclude this brief introduction to CORBA AMI, the following example uses an IDL defining 
 an operation that takes one argument (of command1_t) and returns a value of response1_t. 
 
-	module moduleA
-	{
-		valuetype command1_t;
-		valuetype response1_t;
+    module moduleA
+    {
+        valuetype command1_t;
+        valuetype response1_t;
 
-		interface interfaceA
-		{
-			response1_t operation1(in command1_t command);
-		};
-	};
+        interface interfaceA
+        {
+            response1_t operation1(in command1_t command);
+        };
+    };
 
 The IDL compiler generates the following C++ code (some details have been removed):
 
-	class moduleA
-	{
-	public:
-		class interfaceA : virtual public CORBA::Object {
-		public:
-			moduleA::response1_t operation1(const moduleA::command1_t& command);
+    class moduleA
+    {
+    public:
+        class interfaceA : virtual public CORBA::Object {
+        public:
+            moduleA::response1_t operation1(const moduleA::command1_t& command);
 
-			void sendc_operation1(moduleA::interfaceA_Handler_ptr ami_handler,
-								  const moduleA::command1_t& command);
+            void sendc_operation1(moduleA::interfaceA_Handler_ptr ami_handler,
+                                  const moduleA::command1_t& command);
 
-			interfaceA_Poller sendp_operation1(const moduleA::command1_t& command);
-		};
+            interfaceA_Poller sendp_operation1(const moduleA::command1_t& command);
+        };
 
-		class interfaceA_Poller {
-		public:
-			CORBA::Boolean operation1Poller(int timeout, moduleA::response1_t& ami_return_val);
-		};
+        class interfaceA_Poller {
+        public:
+            CORBA::Boolean operation1Poller(int timeout, moduleA::response1_t& ami_return_val);
+        };
 
-		class interfaceA_Handler : virtual public CORBA::Object {
-		public:
-			virtual void operation1(const moduleA::response1_t& ami_return_val)= 0;
-			virtual void operation1_excep(CORBA::Environment *ev)= 0;
-	   };
-	};
+        class interfaceA_Handler : virtual public CORBA::Object {
+        public:
+            virtual void operation1(const moduleA::response1_t& ami_return_val)= 0;
+            virtual void operation1_excep(CORBA::Environment *ev)= 0;
+       };
+    };
 
-	class interfaceA_Handler_impl : virtual public moduleA::interfaceA_Handler {
-	public: 
-		virtual void operation1(const moduleA::response1_t&  ami_return_val);
-		void operation1_excep( CORBA::Environment *ev);
-	};
+    class interfaceA_Handler_impl : virtual public moduleA::interfaceA_Handler {
+    public: 
+        virtual void operation1(const moduleA::response1_t&  ami_return_val);
+        void operation1_excep( CORBA::Environment *ev);
+    };
 
 ## References
 
-> 	[Schmidt et al.] Object Interconnections – Programming Asynchronous Method Invocations with CORBA Messaging (Column 16)
-	Douglas C. Schmidt and Steve Vinoski
-	https://www.dre.vanderbilt.edu/~schmidt/PDF/C++-report-col16.pdf
+>     [Schmidt et al.] Object Interconnections – Programming Asynchronous Method Invocations with CORBA Messaging (Column 16),
+    Douglas C. Schmidt and Steve Vinoski,
+    https://www.dre.vanderbilt.edu/~schmidt/PDF/C++-report-col16.pdf
