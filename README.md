@@ -67,9 +67,7 @@ Several operations can be started one after the other and the results can then b
 
 2. The first style is closer to the polling style used in CORBA AMI.
 
-	It was the intention to include a short description to CORBA (Common Object Request Broker Architecture) 
-AMI (Asynchronous Method Invocation) in this file. However, because of the size of the explanation it has been
-placed in a separate file, CORBA-AMI.md.
+	The reader is referred again to reading/CORBA-AMI.md for more information on this approach.
 
 2. When learning coroutines, the first approach shows more clearly what is going on.
 It shows the return type of the asynchronous operation, making it easier to find and examine the implementation.
