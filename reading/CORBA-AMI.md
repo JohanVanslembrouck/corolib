@@ -21,13 +21,25 @@ Consider the following interface definition:
             typeR operation1(in typeI1 argI1, ..., 
                              inout typeIO1 argIO1, ...,
                              out typeO1 argO1, ...) raises (typeEx1, …);
-            oneway void operation2(in typeI1 argI1, ...);
+            void operation2(in typeI1 argI1, ...);
+            oneway void operation3(in typeI1 argI1, ...);
             // more operations
         }
     }
 
 Notice that typeA1, typeI1, … are types that should have been defined upfront before using them. 
 Their definitions have been omitted in this example.
+
+Although operation2 has only 'in' arguments and a void return type,
+it is a blocking operation: the client application can only proceed after the
+server has executed the operation and has send a 'void' return value
+to the client.
+
+This is not the case for oneway operation3: the client application will proceed immediately
+and the server application may execute the operation at a moment the client has advanced
+well beyond the operation invocation.
+The client may even invoke this oneway operation several times
+after each other, queuing up at the server side waiting for execution.
 
 ## Synchronous RMI (Remote Method Invocation)
 
@@ -154,13 +166,14 @@ Apart from the synchronous function (operation1), the CORBA IDL compiler also ge
 a sendp_operation1 that starts a polling interaction, and a sendc_operation1 that will result 
 in a callback function being invoked on an object the client has created.
 
-The sendp_ and sendc_  functions only use the 'in' and 'inout' arguments of the original operation.
+The sendp_operation1 and sendc_operation1 functions only use the 'in' and 'inout' arguments of the original operation.
 
 Both mechanisms are described in some more detail now.
 
 ### Polling
 
-The sendp_ function returns a valueof type interfaceAPoller, which has the following definition:
+The sendp_operation1 function returns a value of type interfaceAPoller,
+which has the following definition:
 
     module moduleA
     {
@@ -168,7 +181,7 @@ The sendp_ function returns a valueof type interfaceAPoller, which has the follo
         {
             bool operation1(in timeout,
                             out argIO1, ..., 
-						    out typeO1 argO1, ...,
+                            out typeO1 argO1, ...,
                             out typeR ret_val) raises (CORBA::WrongTransaction);
             // more operations
         }
@@ -220,10 +233,10 @@ In the case of callback, the IDL compiler generates an additional interface:
     {
         interface interfaceAHandler
         {
-            virtual void operation1(in typeIO1 argIO1, ..., 
-                                    in typeO1 argO1, ..., 
-                                    in typeR ret_val);
-            virtual void operation1_exception(typeEx1);
+            void operation1(in typeIO1 argIO1, ..., 
+                            in typeO1 argO1, ..., 
+                            in typeR ret_val);
+            void operation1_exception(typeEx1);
 
             // more operations
         }
@@ -231,8 +244,9 @@ In the case of callback, the IDL compiler generates an additional interface:
 
 The application developer has to provide an implementation for the operations in this interface, 
 which is usually done in a class derived from interfaceAHandler, e.g. interfaceAHandler_impl. 
-The developer can/should add one or more member variables (and access functions) 
-so that interfaceAHandler_impl::operation1 can save the result for later use by the application.
+
+The following IDL definition illustrates this, although this interface will not be generated in IDL format,
+but has to be implemented directly in C++.
 
     module moduleA
     {
@@ -247,6 +261,10 @@ so that interfaceAHandler_impl::operation1 can save the result for later use by 
             // more operations
         }
     }
+	
+The developer can/should add one or more member variables (and access functions) 
+so that interfaceAHandler_impl::operation1 can save the result for later use by the application.
+Here we have added operation1ReplyReceived().
     
 The application creates an object interfaceAHandler_impl and will pass this object as first argument 
 to the sendc_operation1. 
@@ -286,12 +304,17 @@ do some other work, and then enter the event loop.
 The application may use an array of remote objects, 
 an array of callback objects, and a counter to count how many objects have replied.
 
+C# uses another approach in which the callback function will be invoked on a separate thread.
+The main thread will have to check if the callback function has already been executed.
+One way is to use a variable that is set by the callback function and checked 'polled' by the main thread.
+Another way is to use a semaphore: the main application can wait on a semaphore that is set in the callback function.
+
 This section only gave a very high-level introduction to AMI. 
 The reader is referred to [Schmidt et al.] for more information on CORBA AMI.
 
 ## C++ coroutines
 
-Using C++ coroutines, we can rewrite the example as follows:
+Using C++ coroutines (in corolib), we can rewrite the example as follows:
 
 	async_task<int> coroutine1 {
 	
@@ -310,11 +333,12 @@ Using C++ coroutines, we can rewrite the example as follows:
         // Do some other work that does not need the reply from the remote object
         
         ret_type ret_val;
-        ret_val = co_await op;	// The coroutine will return control to its calling function/coroutine if the reply has not been received.
+        ret_val = co_await op; // The coroutine will return control to its calling function/coroutine 
+                               // if the reply has not been received.
 		// The coroutine will continue from this point when the reply has been received.
 		...
 		
-		co_return 0;
+	    co_return 0;
 	}
 	
 First we define define a struct that will contain all in/out and out arguments, 
@@ -328,12 +352,41 @@ that returns a value of type async_task and that uses co_return to return from t
 An advantage of coroutines (compared to CORBA AMI) is that the coroutine will not block at co_await until the reply has been received,
 but that control is returned to the caller or resumer of the coroutine, so that other coroutines can proceed.
 
-A disadvantage is that more manual coding is necessary, unless we could generate coroutine code from an IDL definition.
+The following alternative is closer to the polling example in CORBA.
+
+	int function1 {
+	
+        struct ret_type {
+            typeIO1 argIO1; 
+            ...;
+            typeO1 argO1;
+            ...:
+            typeR retV;
+            typeEx1 ex1;
+            ...
+        };
+        
+        async_operation<ret_type> op = remoteObject.send_operation1(argI1, ..., argIO1, ...);
+
+        // Do some other work that does not need the reply from the remote object
+        
+        ret_type ret_val;
+        ret_val = op.get_result();
+		...
+		
+	    return 0;
+	}
+
+Notice that the call to send_operation does not have to be placed in a coroutine because we do not use co_await (and co_await).
+
+A disadvantage of coroutines is that more manual coding is necessary, 
+unless we could generate coroutine code from an IDL definition.
 
 ## C++ example (CORBA)
 
 To conclude this brief introduction to CORBA AMI, the following example uses an IDL defining 
-an operation that takes one argument (of command1_t) and returns a value of response1_t. 
+an operation that takes one argument (of command1_t) and returns a value of response1_t 
+and it shows the C++ classes generated from it.
 
     module moduleA
     {
