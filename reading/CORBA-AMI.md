@@ -352,33 +352,6 @@ that returns a value of type async_task and that uses co_return to return from t
 An advantage of coroutines (compared to CORBA AMI) is that the coroutine will not block at co_await until the reply has been received,
 but that control is returned to the caller or resumer of the coroutine, so that other coroutines can proceed.
 
-The following alternative is closer to the polling example in CORBA.
-
-	int function1 {
-	
-        struct ret_type {
-            typeIO1 argIO1; 
-            ...;
-            typeO1 argO1;
-            ...:
-            typeR retV;
-            typeEx1 ex1;
-            ...
-        };
-        
-        async_operation<ret_type> op = remoteObject.send_operation1(argI1, ..., argIO1, ...);
-
-        // Do some other work that does not need the reply from the remote object
-        
-        ret_type ret_val;
-        ret_val = op.get_result();
-		...
-		
-	    return 0;
-	}
-
-Notice that the call to send_operation does not have to be placed in a coroutine because we do not use co_await (and co_await).
-
 A disadvantage of coroutines is that more manual coding is necessary, 
 unless we could generate coroutine code from an IDL definition.
 

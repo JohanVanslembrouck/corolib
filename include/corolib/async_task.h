@@ -52,6 +52,19 @@ namespace corolib
             return *this;
         }
 
+        /**
+         * @brief get_result retrieves the result of the embedded promise.
+         * It the coroutine returning the async_task object has not yet returned,
+         * get_result will wait for the semaphone to be signaled,
+         * which can only be done from another thread
+         * (the wait() call on the semaphore will block the current thread).
+         * Therefore:
+         * Use co_await first to make sure that the coroutine has returned.
+         * If this is not possible (because you cannot use co_await in a normal function),
+         * make sure there is another thread that will
+         * resume the coroutine and make it return.
+         * @return
+         */
         TYPE get_result()
         {
             print(PRI2, "%p: async_task::get_result()\n", this);
@@ -242,6 +255,11 @@ namespace corolib
             return *this;
         }
 
+        /**
+         * @brief wait is the counterpart of get_result for an asynchronous task
+         * that returns void instead of any other type.
+         * See get_result for more information on its use.
+         */
         void wait()
         {
             print(PRI2, "%p: async_task::wait()\n", this);

@@ -32,6 +32,12 @@ namespace corolib
         async_operation_base& operator = (const async_operation_base&) = delete;
         async_operation_base& operator = (async_operation_base&& s) noexcept;
     
+        /**
+         * @brief completed is called from the callback function
+         * on completion of the asynchronous operation.
+         * Implemented in async_operation.cpp.
+         * This function should be called after the call of async_operation<TYPE>::set_result(TYPE).
+         */
         void completed();
 		
         void setCounter(wait_all_counter* ctr)
@@ -83,6 +89,11 @@ namespace corolib
         TYPE m_result;
 
     public:
+        /**
+         * @brief async_operation is the constructor for an asynchronous operation.
+         * @param s
+         * @param index
+         */
         async_operation(CommService* s = nullptr, int index = 0)
             : async_operation_base(s, index)
             , m_result{}
@@ -96,18 +107,38 @@ namespace corolib
             m_result = result;
         }
 #endif
+        /**
+         * @brief set_result sets the value of m_result.
+         * This function has to be called from the callback function
+         * with the result of the asynchronous operation.
+         * (The callback function is typically called from a communication framework.)
+         * @param result
+         */
         void set_result(TYPE result)
         {
             print(PRI2, "%p: async_operation<TYPE>::set_result(...)\n", this);
             m_result = result;
         }
 
+        /**
+         * @brief get_result allows retrieving the result of the asynchronous operation.
+         * It can be used as an alternative to co_await and after co_await was called:
+         * the operation has to be completed because otherwise the value of m_result
+         * ïs still the one initialized in the constructor.
+         * The function is usually called after using co_await wait_all or co_await wait_any,
+         * because these objects cannot return the result of one or all of
+         * their contained asynchronous operations.
+         * @return
+         */
         TYPE get_result()
         {
             print(PRI2, "%p: async_operation<TYPE>::get_result()\n", this);
             return m_result;
         }
 
+        /**
+         * @brief operator co_await allows to use async_operation as an awaitable.
+         */
         auto operator co_await() noexcept
         {
             class awaiter
