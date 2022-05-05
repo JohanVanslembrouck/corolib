@@ -10,7 +10,8 @@ First I discuss the advantages and disadvantages the original program and of var
 Then I show how we can stay close to the natural style of the first coroutine-less program while solving
 the disadvantages of this program and its variants using coroutines, while trying to avoid or limit disadvantages.
 
-Not real remote method invocations (RMIs) are used in the examples.
+No real remote method invocations (RMIs) are used in the examples.
+Instead, the delay that may result of the invocation is simulated by means of a timer.
 
 ## Case 1: program with if-then-else
 
@@ -18,6 +19,8 @@ Function with 3 remote method invocations (RMIs) and an if-then-else. Depending 
 we enter the if-then or else case, where another remote method is invoked.
 
 ### co-less01.cpp
+
+The original code looks as follows:
 
 ```c++
 struct Class01 {
@@ -38,24 +41,65 @@ struct Class01 {
 };
 ```
 
+The method invocations look as local method invocations, but they can be remote method invocations as well.
+The code for this remote invocation can be completely generated from an interface definition, e.g. written using CORBA's IDL.
+
 Advantages:
 
-* Natural style, same style as if all function calls are local.
+* Natural coding style, same style as if all function calls (method invocations) are local.
 
 Disadvantages:
 
 * Program is not reactive: during a remote method invocation the calling function is blocked and the program cannot respond to other inputs:
+This extends to the call of function1(): the program cannot react to other inputs while function1() is called.
+
+The following code shows how function1 is called when the program receives event1 or event2.
+Normally a different function will be "connected" to every event.
+
+```c++
+int main() {
+    printf("main();\n");
+    connect(event1, []() { class01.function1(); });
+    connect(event2, []() { class01.function1(); });
+    eventQueue.run();
+    return 0;
+}
+```
+The name "connect" has been inspired by the connect mechanism used by Qt to connect signals to slots.
 
 ### co-less01th.cpp
 
-Not yet implemented
+It is possible to make the program reactive by running every function on its own thread.
+The implementation of function1 does not have to be changed. This can be done as follows:
 
 ```c++
-
+int main() {
+    printf("main();\n");
+    connect(event1, []() { std::thread th(&Class01::function1, &class01); th.join(); });
+    connect(event2, []() { std::thread th(&Class01::function1, &class01); th.join(); });
+    eventQueue.run();
+    return 0;
+}
 ```
+
+Advantages:
+
+* Program is reactive again, with only minimal changes.
+
+Disadvantages:
+
+* Overhead of thread creation (stack, scheduling).
+* If functions share variables, then race conditions are possible. 
+Mutexes and atomic access may have to be used.
+This approach may lead to sporadic errors (Heigenbugs) that are difficult to reproduce and to correct.
 
 ### co-less02.cpp
 
+This example is an intermediate step towards co-less03.cpp.
+This example uses a local event loop that is placed close after the invocation of an asychronous variant
+of the original two-way in-out RMI.
+
+The local event loop can only handle the czllback function passed to the asynchronous function.
 
 ```c++
 struct Class02 {
@@ -361,7 +405,6 @@ struct RemoteObject2 {
 ```
 
 
-
 ## co-less07.cpp
 
 
@@ -422,10 +465,6 @@ struct RemoteObject3 {
 
 Not yet implemented.
 
-```c++
-
-```
-
 
 ## co-full03.cpp
 
@@ -453,6 +492,8 @@ struct RemoteObject2 {
 };
 ```
 
-
 ## Conclusions
+
+Using coroutines we can stay close to the natural synchronous coding style of a program, 
+while making the program reactive again.
 

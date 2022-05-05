@@ -12,6 +12,9 @@ include_directories(../../include)
 add_executable(co-less01 co-less01.cpp)
 target_link_libraries(co-less01)
 
+add_executable(co-less01th co-less01th.cpp)
+target_link_libraries(co-less01th)
+
 add_executable(co-less02 co-less02.cpp)
 target_link_libraries(co-less02)
 
