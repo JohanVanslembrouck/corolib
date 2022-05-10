@@ -1,58 +1,63 @@
 # corolib
- A C++ coroutine library for asynchronous distributed applications
 
-The 'corolib' library demonstrates how C++ coroutines can be used to write asynchronous distributed applications.
+A C++ coroutine library for writing asynchronous distributed applications
 
 ## Why coroutines?
 
-Reason 1: Coroutines allowing writing (distributed) applications using a natural synchronous style,
-but with the efficiency benefits of asynchronous communication.
+Reason 1: Coroutines allow writing (distributed) applications using a natural synchronous style,
+but with the efficiency benefits of asynchronous execution.
 
-An application running on one processor can start an operation in an application on the same or another processor 
+An application running on one processor can invoke an operation in an application on the same or another processor 
 in a synchronous or asynchronous way.
 
-* Using a synchronous operation, the application will block until the operation has responded.
+* Using a synchronous operation, the application will block until the remote application has replied.
 
     In the meantime, the application cannot respond to new requests unless new requests are processed on a separate thread or the operation 
 itself runs on a separate thread.
 
 * Using an asynchronous operation, the application can start the operation by sending a request to the remote application, 
-proceed with other tasks that do not depend on the response, and then await the response 
-either using polling or using callback functions called from a local or global event loop.
+proceed with other tasks that do not depend on the response and then await the response 
+either using polling or using a callback function that is called from a local or global event loop.
 
     The reader is referred to reading/CORBA-AMI.md for more information on this approach.
 	
-* Using an asynchronous operation in combination with coroutines, a generic callback function can be hidden in the library (corolib in this case) 
-and the response can be handled after the co_await statement in the coroutine in which the asynchronous operation was originally invoked.
+* Using an asynchronous operation in combination with coroutines, the callback function can be hidden in the library (corolib in this case) 
+and the response will be returned by the co_await statement.
+Usually this co_await statement will be placed in the coroutine in which the asynchronous operation was invoked.
 
-   The callback function will pass the result of the operation back to the application flow and resume it.
-Depending on the result, the main application will then continue its flow and invoke a new asynchronous operation.
-This is a more natural place than handling the response in the callback function.
+   The callback function will pass the result of the remote operation invocation to the application and resume it.
+The application will then continue its flow and invoke new asynchronous operations.
+This is a more natural place than handling the response in the callback function from which new operations will be invoked.
 
-In short: the use of coroutines allow asynchronous applications to be written using a synchronous (sequential) style.
-
+   The reader is also referred to examples/why-coroutines for examples demonstrating the three approaches in several stand-alone applications.
+   
 Reason 2: Coroutines can be used as an alternative for threads.
 
 Two or more coroutines can be started one after the other.
 Each of these coroutines can implement a potentially infinite loop, invoking asynchronous requests
 and then processing their response in the same code block inside the loop.
-These coroutines may thus never co_return, but when suspended for the first time,
-they pass control to the coroutine that started them and that will eventually pass control to the event loop.
+These coroutines may thus never co_return.
+When suspended for the first time,
+they pass control to the coroutine or function that started them and that will eventually pass control to an event loop.
 Yet everything runs on the same thread, with coroutines proceding in an interleaved and colloraborative way.
 
 ## Coding style
 
 I will use the following coding style in almost all example applications:
 
+```c++
 	// Start an asynchronous operation on a (remote) object.
 	async_operation<aType> retObj = proxy_to_object.start_operation(in1, in2);
 	// Do some other things that do not rely on the result of the operation.
-	// Finally co_await the result if nothing else can be done.
+	// Finally co_await the result if nothing else can be done in this coroutine.
     aType returnVal = co_await retObj; 
+```
 
 instead of using only a single line:
 
+```c++
 	aType returnVal = co_await proxy_to_object.start_operation(in1, in2);
+```
 
 There are several reasons:
 
@@ -65,10 +70,6 @@ the application can proceed with actions that do not rely on the result.
 above all statements that do not depend on the result, but at a place where all inputs are available.
 Several operations can be started one after the other and the results can then be processed afterwards.
 
-2. The first style is closer to the polling style used in CORBA AMI.
-
-	The reader is referred again to reading/CORBA-AMI.md for more information on this approach.
-
 2. When learning coroutines, the first approach shows more clearly what is going on.
 It shows the return type of the asynchronous operation, making it easier to find and examine the implementation.
 
@@ -78,12 +79,16 @@ It shows the return type of the asynchronous operation, making it easier to find
 for several asynchronous operation invocations that return an object of the same type.
 Therefore the object has to be declared explicitly.
 
+5. The proposed style is closer to the polling style used in CORBA AMI.
+
+	The reader is referred again to reading/CORBA-AMI.md for more information on this approach.
+
 ## Communication libraries and frameworks
 
-For its communication 'corolib' uses the Boost ASIO library or Qt (QTcpSocket, QTcpServer).
+For its communication corolib uses the Boost ASIO library or Qt (QTcpSocket, QTcpServer).
 I used Boost 1.70 and Qt 5.14.2, but many other versions will do.
 
-I developed 'corolib' with Visual Studio 2019 and Qt Creator 4.12.0 on a Windows 10 laptop.
+I developed corolib with Visual Studio 2019 and Qt Creator 4.12.0 on a Windows 10 laptop.
 
 Building the Visual Studio projects makes use of the CMake support of Visual Studio:
 
@@ -118,20 +123,21 @@ The examples folder has the following subfolders:
 Two or more applications have to be started, e.g. a server application and one or more client applications.
 * Folder clientserver11 uses Qt and folder common-qt defines classes that are used by clientserver11 
 (and other examples that may be added in the future).
-* Folder various-boost contains stand-alone applications that use Boost. It contains only a timer application at this moment.
-* Folder various-qt contains stand-alone applications that use Qt. It contains only a timer application at this moment.
+* Folder various-boost contains stand-alone applications that use Boost. At this moment it contains only a timer application.
+* Folder various-qt contains stand-alone applications that use Qt. Again, at this moment it contains only a timer application.
+* Folder contains various examples that explain the advantages of C++ coroutines for writing (distributed) applications.
 
 ## Comparison with other libraries
 
-'corolib' is only a small library, but it allows to write a lot of client-server applications.
+corolib is only a small library, but it allows to write a lot of client-server applications.
 For a more comprehensive library, see https://github.com/lewissbaker/cppcoro
-Some code in 'corolib' has been inspired by 'cppcoro'.
+Some code in corolib has been inspired by cppcoro.
 
-The approach in 'corolib' is different from 'cppcoro' in the following ways:
-* 'corolib' is meant as a library to learn about coroutines in C++, not as a means for evaluating the coroutines TS.
+The approach in corolib is different from cppcoro in the following ways:
+* corolib is meant as a library to learn about coroutines in C++, not as a means for evaluating the coroutines TS.
 That is why there are many print statements in the code: running the programs with priority level 2 reveals the flow of control when using coroutines.
 The output also shows that all coroutines run on the same thread but that several coroutines run in an interleaved way.
 * I wanted to make a strict separation between the coroutine part and the asynchronous communication library.
 This explains the use of Boost ASIO and Qt: the code in these libraries is not "aware" that is used by coroutines.
 
-Contact: Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+Contact: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
