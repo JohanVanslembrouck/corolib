@@ -76,6 +76,11 @@ namespace corolib
             return m_coro.promise().m_value;
         }
 
+        bool is_ready()
+        {
+            return m_coro.promise().m_ready;
+        }
+
         void setCounter(wait_all_counter* ctr)
         {
             print(PRI2, "%p: void m_async_task::setCounter(%p)\n", this, ctr);
@@ -268,6 +273,11 @@ namespace corolib
                 m_coro.promise().m_wait_for_signal = true;
                 m_coro.promise().m_sema.wait();
             }
+        }
+
+        bool is_ready()
+        {
+            return m_coro.promise().m_ready;
         }
 
         void setCounter(wait_all_counter* ctr)

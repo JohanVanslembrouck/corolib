@@ -29,24 +29,32 @@ namespace corolib
     struct wait_all
     {
         wait_all(std::initializer_list<TYPE*> async_ops)
-            : m_counter(async_ops.size())
+            : m_counter(0)
         {
             print(PRI2, "%p: wait_all::wait_all(std::initializer_list<TYPE*> async_ops)\n", this);
             for (TYPE* async_op : async_ops)
             {
-                async_op->setCounter(&m_counter);
-                m_elements.push_back(async_op);
+                if (!async_op->is_ready())
+                {
+                    async_op->setCounter(&m_counter);
+                    m_elements.push_back(async_op);
+                    m_counter.increment();
+                }
             }
         }
 
         wait_all(TYPE* async_ops, int size)
-            : m_counter(size)
+            : m_counter(0)
         {
             print(PRI2, "%p: wait_all::wait_all(TYPE* async_ops, int size)\n", this);
             for (int i = 0; i < size; i++)
             {
-                async_ops[i].setCounter(&m_counter);
-                m_elements.push_back(&async_ops[i]);
+                if (async_ops[i].is_ready())
+                {
+                    async_ops[i].setCounter(&m_counter);
+                    m_elements.push_back(&async_ops[i]);
+                    m_counter.increment();
+                }
             }
         }
 
@@ -84,6 +92,7 @@ namespace corolib
 
                 bool await_ready()
                 {
+                    print(PRI2, "%p: wait_all::await_ready(): m_sync.m_counter.get_counter() = %d;\n", this, m_sync.m_counter.get_counter());
                     bool ready = (m_sync.m_counter.get_counter() == 0);
                     print(PRI2, "%p: wait_all::await_ready(): return %d;\n", this, ready);
                     return ready;

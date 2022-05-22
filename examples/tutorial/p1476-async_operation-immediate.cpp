@@ -1,5 +1,5 @@
 /**
- *  Filename: p1472-async_operation-eventqueue.cpp
+ *  Filename: p1476-async_operation-immediate.cpp
  *  Description:
  *
  *  Tested with Visual Studio 2019.
@@ -18,8 +18,8 @@ using namespace corolib;
 
 #include "class02.h"
 
-Class02 object01(USE_EVENTQUEUE);
-Class02 object02(USE_EVENTQUEUE);
+Class02 object01(USE_IMMEDIATE_COMPLETION);
+Class02 object02(USE_IMMEDIATE_COMPLETION);
 
 bool running = true;
 
@@ -153,9 +153,6 @@ int main()
 
     print(PRI1, "main(): async_task<int> a = coroutine1();\n");
     async_task<int> a = coroutine1();
-
-    print(PRI1, "main():  eventQueue.run();\n");
-    eventQueue.run();
 
     print(PRI1, "main(): int v = a.get_result();\n");
     int v = a.get_result();

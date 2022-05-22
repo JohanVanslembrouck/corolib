@@ -25,10 +25,13 @@ namespace corolib
             int i = 0;
             for (TYPE* a : aws)
             {
-                wait_any_one* q = new wait_any_one();
-                m_wait_any.push_back(q);
-                a->setWaitAny(q);
-                m_elements.push_back(a);
+                if (!a->is_ready())
+                {
+                    wait_any_one* q = new wait_any_one();
+                    m_wait_any.push_back(q);
+                    a->setWaitAny(q);
+                    m_elements.push_back(a);
+                }
             }
         }
 
@@ -37,10 +40,13 @@ namespace corolib
             print(PRI2, "%p: wait_any::wait_any(TYPE* aws, int size)\n", this);
             for (int i = 0; i < size; i++)
             {
-                wait_any_one* q = new wait_any_one();
-                m_wait_any.push_back(q);
-                aws[i].setWaitAny(q);
-                m_elements.push_back(&aws[i]);
+                if (!aws[i].is_ready())
+                {
+                    wait_any_one* q = new wait_any_one();
+                    m_wait_any.push_back(q);
+                    aws[i].setWaitAny(q);
+                    m_elements.push_back(&aws[i]);
+                }
             }
         }
 

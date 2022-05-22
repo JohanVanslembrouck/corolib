@@ -36,6 +36,11 @@ namespace corolib
             return m_nr;
         }
 
+        void increment()
+        {
+            m_nr++;
+        }
+
         void completed()
         {
             print(PRI2, "%p: wait_all_counter::completed(): m_nr = %d\n", this, m_nr);

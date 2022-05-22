@@ -24,7 +24,8 @@ enum UseMode
 {
     USE_NONE,
     USE_EVENTQUEUE,
-    USE_THREAD
+    USE_THREAD,
+    USE_IMMEDIATE_COMPLETION
 };
 
 class Class01 : public CommService

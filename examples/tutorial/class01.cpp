@@ -48,7 +48,7 @@ void Class01::start_op(const int idx)
     {
         eventQueue.push(operation);
     }
-    if (m_useMode == USE_THREAD)
+    else if (m_useMode == USE_THREAD)
     {
         std::thread thread1([this]() {
             print(PRI1, "Class01::start_op(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
@@ -58,6 +58,10 @@ void Class01::start_op(const int idx)
             print(PRI1, "Class01::start_op(): thread1: return;\n");
             });
         thread1.detach();
+    }
+    else if (m_useMode == USE_IMMEDIATE_COMPLETION)
+    {
+        operation(10);
     }
 }
 

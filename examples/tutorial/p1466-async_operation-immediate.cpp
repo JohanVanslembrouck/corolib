@@ -1,5 +1,5 @@
 /**
- *  Filename: p1472-async_operation-eventqueue.cpp
+ *  Filename: p1466-async_operation-immediate.cpp
  *  Description:
  *
  *  Tested with Visual Studio 2019.
@@ -9,7 +9,6 @@
  */
 
 #include <corolib/print.h>
-#include <corolib/auto_reset_event.h>
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
 #include <corolib/wait_all_awaitable.h>
@@ -18,16 +17,14 @@ using namespace corolib;
 
 #include "class02.h"
 
-Class02 object01(USE_EVENTQUEUE);
-Class02 object02(USE_EVENTQUEUE);
-
-bool running = true;
+Class02 object01(USE_IMMEDIATE_COMPLETION);
+Class02 object02(USE_IMMEDIATE_COMPLETION);
 
 async_task<int> coroutine5a()
 {
     print(PRI1, "coroutine5a()\n");
     int v = 0;
-    while (running)
+    for(int i = 0; i < 2; i++)
     {
         print(PRI1, "coroutine5a(): async_operation<int> op1 = object01.start_operation1();\n");
         async_operation<int> op1 = object01.start_operation1();
@@ -53,7 +50,7 @@ async_task<int> coroutine5b()
 {
     print(PRI1, "coroutine5b()\n");
     int v = 0;
-    while (running)
+    for(int i = 0; i < 2; i++)
     {
         print(PRI1, "coroutine5b(): async_operation<int> op1 = object02.start_operation1();\n");
         async_operation<int> op1 = object02.start_operation1();
@@ -75,41 +72,14 @@ async_task<int> coroutine5b()
     co_return v+1;
 }
 
-async_task<int> coroutine5c()
-{
-    print(PRI1, "coroutine5c()\n");
-
-    auto_reset_event are;
-
-    std::thread thread1([&are]() {
-        print(PRI1, "coroutine5c(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(30000));\n");
-        std::this_thread::sleep_for(std::chrono::milliseconds(30000));
-        print(PRI1, "coroutine5c(): thread1: are.resume();\n");
-        are.resume();
-        print(PRI1, "coroutine5c(): thread1: return;\n");
-        });
-    thread1.detach();
-
-    print(PRI1, "coroutine5c(): co_await are;\n");
-    co_await are;
-
-    print(PRI1, "coroutine5c(): running = false;\n");
-    running = false;
-
-    print(PRI1, "coroutine5c(): co_return 0;\n");
-    co_return 0;
-}
-
 async_task<int> coroutine4()
 {
     print(PRI1, "coroutine4(): async_task<int> a = coroutine5a();\n");
     async_task<int> a = coroutine5a();
     print(PRI1, "coroutine4(): async_task<int> b = coroutine5b();\n");
     async_task<int> b = coroutine5b();
-    print(PRI1, "coroutine4(): async_task<int> c = coroutine5c();\n");
-    async_task<int> c = coroutine5c();
-    print(PRI1, "coroutine4(): wait_all<async_task<int>> wa({ &a, &b, &c });\n");
-    wait_all<async_task<int>> wa({ &a, &b, &c });
+    print(PRI1, "coroutine4(): wait_all<async_task<int>> wa({ &a, &b });\n");
+    wait_all<async_task<int>> wa({ &a, &b });
     print(PRI1, "coroutine4(): co_await wa;\n");
     co_await wa;
     print(PRI1, "coroutine4(): int v = a.get_result() + b.get_result();\n");
@@ -123,9 +93,17 @@ async_task<int> coroutine3()
     print(PRI1, "coroutine3(): async_task<int> a1 = coroutine4();\n");
     async_task<int> a1 = coroutine4();
     print(PRI1, "coroutine3(): int v = co_await a1;\n");
-    int v = co_await a1;
-    print(PRI1, "coroutine3(): co_return v+1 = %d;\n", v+1);
-    co_return v+1;
+    int v1 = co_await a1;
+
+    print();
+    print(PRI1, "coroutine3(): async_task<int> a2 = coroutine4();\n");
+    async_task<int> a2 = coroutine4();
+    print(PRI1, "coroutine3(): int v = co_await a2;\n");
+    int v2 = co_await a2;
+
+    print();
+    print(PRI1, "coroutine3(): co_return v1+v2+1 = %d;\n", v1+v2+1);
+    co_return v1+v2+1;
 }
 
 async_task<int> coroutine2()
@@ -153,9 +131,6 @@ int main()
 
     print(PRI1, "main(): async_task<int> a = coroutine1();\n");
     async_task<int> a = coroutine1();
-
-    print(PRI1, "main():  eventQueue.run();\n");
-    eventQueue.run();
 
     print(PRI1, "main(): int v = a.get_result();\n");
     int v = a.get_result();

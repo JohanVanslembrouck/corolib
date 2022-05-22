@@ -10,8 +10,6 @@ endif()
 
 include_directories(../../include)
 
-link_directories(${Boost_LIBRARY_DIR})
-
 add_executable(p1000 p1000.cpp)
 target_link_libraries(p1000 corolib)
 add_executable(p1002-no-coroutines p1002-no-coroutines.cpp)
@@ -53,6 +51,8 @@ add_executable(p1402-async_operation-eventqueue p1402-async_operation-eventqueue
 target_link_libraries(p1402-async_operation-eventqueue corolib)
 add_executable(p1404-async_operation-thread p1404-async_operation-thread.cpp)
 target_link_libraries(p1404-async_operation-thread corolib)
+add_executable(p1406-async_operation-immediate p1406-async_operation-immediate.cpp)
+target_link_libraries(p1406-async_operation-immediate corolib)
 
 add_executable(p1410-async_operation p1410-async_operation.cpp class01.cpp)
 target_link_libraries(p1410-async_operation corolib)
@@ -60,6 +60,8 @@ add_executable(p1412-async_operation-eventqueue p1412-async_operation-eventqueue
 target_link_libraries(p1412-async_operation-eventqueue corolib)
 add_executable(p1414-async_operation-thread p1414-async_operation-thread.cpp class01.cpp)
 target_link_libraries(p1414-async_operation-thread corolib)
+add_executable(p1416-async_operation-immediate p1416-async_operation-immediate.cpp class01.cpp)
+target_link_libraries(p1416-async_operation-immediate corolib)
 
 add_executable(p1420-async_operation p1420-async_operation.cpp class01.cpp)
 target_link_libraries(p1420-async_operation corolib)
@@ -67,6 +69,8 @@ add_executable(p1422-async_operation-eventqueue p1422-async_operation-eventqueue
 target_link_libraries(p1422-async_operation-eventqueue corolib)
 add_executable(p1424-async_operation-thread p1424-async_operation-thread.cpp class01.cpp)
 target_link_libraries(p1424-async_operation-thread corolib)
+add_executable(p1426-async_operation-immediate p1426-async_operation-immediate.cpp class01.cpp)
+target_link_libraries(p1426-async_operation-immediate corolib)
 
 add_executable(p1430-async_operation p1430-async_operation.cpp class01.cpp)
 target_link_libraries(p1430-async_operation corolib)
@@ -74,6 +78,8 @@ add_executable(p1432-async_operation-eventqueue p1432-async_operation-eventqueue
 target_link_libraries(p1432-async_operation-eventqueue corolib)
 add_executable(p1434-async_operation-thread p1434-async_operation-thread.cpp class01.cpp)
 target_link_libraries(p1434-async_operation-thread corolib)
+add_executable(p1436-async_operation-immediate p1436-async_operation-immediate.cpp class01.cpp)
+target_link_libraries(p1436-async_operation-immediate corolib)
 
 add_executable(p1440-async_operation p1440-async_operation.cpp class01.cpp)
 target_link_libraries(p1440-async_operation corolib)
@@ -81,6 +87,8 @@ add_executable(p1442-async_operation-eventqueue p1442-async_operation-eventqueue
 target_link_libraries(p1442-async_operation-eventqueue corolib)
 add_executable(p1444-async_operation-thread p1444-async_operation-thread.cpp class01.cpp)
 target_link_libraries(p1444-async_operation-thread corolib)
+add_executable(p1446-async_operation-immediate p1446-async_operation-immediate.cpp class01.cpp)
+target_link_libraries(p1446-async_operation-immediate corolib)
 
 add_executable(p1450-async_operation p1450-async_operation.cpp class01.cpp)
 target_link_libraries(p1450-async_operation corolib)
@@ -88,6 +96,8 @@ add_executable(p1452-async_operation-eventqueue p1452-async_operation-eventqueue
 target_link_libraries(p1452-async_operation-eventqueue corolib)
 add_executable(p1454-async_operation-thread p1454-async_operation-thread.cpp class01.cpp)
 target_link_libraries(p1454-async_operation-thread corolib)
+add_executable(p1456-async_operation-immediate p1456-async_operation-immediate.cpp class01.cpp)
+target_link_libraries(p1456-async_operation-immediate corolib)
 
 add_executable(p1460-async_operation p1460-async_operation.cpp class02.cpp)
 target_link_libraries(p1460-async_operation corolib)
@@ -95,8 +105,12 @@ add_executable(p1462-async_operation-eventqueue p1462-async_operation-eventqueue
 target_link_libraries(p1462-async_operation-eventqueue corolib)
 add_executable(p1464-async_operation-thread p1464-async_operation-thread.cpp class02.cpp)
 target_link_libraries(p1464-async_operation-thread corolib)
+add_executable(p1466-async_operation-immediate p1466-async_operation-immediate.cpp class02.cpp)
+target_link_libraries(p1466-async_operation-immediate corolib)
 
 add_executable(p1472-async_operation-eventqueue p1472-async_operation-eventqueue.cpp class02.cpp)
 target_link_libraries(p1472-async_operation-eventqueue corolib)
 add_executable(p1474-async_operation-thread p1474-async_operation-thread.cpp class02.cpp)
 target_link_libraries(p1474-async_operation-thread corolib)
+add_executable(p1476-async_operation-immediate p1476-async_operation-immediate.cpp class02.cpp)
+target_link_libraries(p1476-async_operation-immediate corolib)

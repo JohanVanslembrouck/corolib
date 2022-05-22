@@ -40,6 +40,11 @@ namespace corolib
          */
         void completed();
 		
+        bool is_ready()
+        {
+            return m_ready;
+        }
+
         void setCounter(wait_all_counter* ctr)
         {
             print(PRI2, "%p: void async_operation_base::setCounter(%p)\n", this, ctr);
