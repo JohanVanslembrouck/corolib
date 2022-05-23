@@ -1,5 +1,5 @@
 /**
- *  Filename: p1426-async_operation-immediate.cpp
+ *  Filename: p1428-async_operation-evtq-imm.cpp
  *  Description:
  *
  *  Tested with Visual Studio 2019.
@@ -17,7 +17,7 @@ using namespace corolib;
 
 #include "class01.h"
 
-Class01 object01(USE_IMMEDIATE_COMPLETION);
+Class01 object01(USE_EVENTQUEUE);
 Class01 object02(USE_IMMEDIATE_COMPLETION);
 
 async_task<int> coroutine5()
@@ -52,8 +52,7 @@ async_task<int> coroutine3()
     print(PRI1, "coroutine3(): int v = co_await a1;\n");
     int v1 = co_await a1;
 
-    print();
-    print(PRI1, "coroutine3(): eager<int> a2 = coroutine4();\n");
+    print(); print(PRI1, "coroutine3(): eager<int> a2 = coroutine4();\n");
     async_task<int> a2 = coroutine4();
     print(PRI1, "coroutine3(): int v = co_await a2;\n");
     int v2 = co_await a2;
@@ -89,6 +88,9 @@ int main()
 
     print(PRI1, "main(): async_task<int> a = coroutine1();\n");
     async_task<int> a = coroutine1();
+
+    print(PRI1, "main():  eventQueue.run();\n");
+    eventQueue.run();
 
     print(PRI1, "main(): int v = a.get_result();\n");
     int v = a.get_result();

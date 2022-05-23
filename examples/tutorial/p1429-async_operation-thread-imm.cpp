@@ -1,5 +1,5 @@
 /**
- *  Filename: p1426-async_operation-immediate.cpp
+ *  Filename: p1429-async_operation-thread-imm.cpp
  *  Description:
  *
  *  Tested with Visual Studio 2019.
@@ -17,7 +17,7 @@ using namespace corolib;
 
 #include "class01.h"
 
-Class01 object01(USE_IMMEDIATE_COMPLETION);
+Class01 object01(USE_THREAD);
 Class01 object02(USE_IMMEDIATE_COMPLETION);
 
 async_task<int> coroutine5()
