@@ -1,6 +1,6 @@
 # corolib
 
-A C++ coroutine library for writing asynchronous distributed applications
+A C++ coroutine library for writing asynchronous distributed applications.
 
 ## Why coroutines?
 
@@ -50,7 +50,7 @@ I will use the following coding style in almost all example applications:
 	async_operation<aType> retObj = proxy_to_object.start_operation(in1, in2);
 	// Do some other things that do not rely on the result of the operation.
 	// Finally co_await the result if nothing else can be done in this coroutine.
-    aType returnVal = co_await retObj; 
+	aType returnVal = co_await retObj; 
 ```
 
 instead of using only a single line:
@@ -86,7 +86,7 @@ Therefore the object has to be declared explicitly.
 ## Communication libraries and frameworks
 
 For its communication corolib uses the Boost ASIO library or Qt (QTcpSocket, QTcpServer).
-I used Boost 1.70 and Qt 5.14.2, but many other versions will do.
+I originally used Boost 1.70 (now Boost 1.79) and Qt 5.14.2, but many other versions will do.
 
 I developed corolib with Visual Studio 2019 and Qt Creator 4.12.0 on a Windows 10 laptop.
 
@@ -98,8 +98,8 @@ and select the CMakeLists.txt in the top-level folder.
 
 In the CMakeLists.txt in the top-level folder, adapt the following variables to your own installation of the Boost library:
 
-	set(Boost_INCLUDE_DIR C:/Boost/include/boost-1_70)
-	set(Boost_LIBRARY_DIR C:/Boost/lib)
+	set(Boost_INCLUDE_DIR C:/local/boost/boost_1_79_0)
+	set(Boost_LIBRARY_DIR C:/local/boost/boost_1_79_0/stage/lib)
 	
 The Qt examples are not built from the top-level CMakeLists.txt file,
 but have to be built from the .pro files in examples/clientserver11.

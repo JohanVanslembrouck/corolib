@@ -93,8 +93,11 @@ The following gives a brief description of all examples in this tutorial.
   possibly because this was the only way to avoid modifications
   to the original implementation of future/promise.
 
-The following examples come in triples 
-(p14X0-async_operation.cpp, p14X2-async_operation-eventqueue.cpp, p14X4-async_operation-thread.cpp)
+    Note that this example used to work with the experimental implementation of coroutines. It does not work anymore with the final implementation.
+
+The following examples come in groups
+(p14X0-async_operation.cpp, p14X2-async_operation-eventqueue.cpp, p14X4-async_operation-thread.cpp, 
+p14X6-async_operation-immediate.cpp, p14X8-async_operation-evtq-imm.cpp, p14X9-async_operation-thread-imm.cpp)
 Each triple implements the same flow in a different way.
 These examples are the core of this tutorial because they use both async_task and async_operation 
 as in the examples using the Boost library and Qt.
@@ -116,7 +119,15 @@ as in the examples using the Boost library and Qt.
   The main() function calls get_result() on the first coroutine (coroutine1).
   This will block the main() function until completion of all coroutines.
 
-The following describes implementation of the examples per triple.
+* The p14X6-async_operation-immediate.cpp examples start asychronous operations that complete immediately.
+
+* The p14X8-async_operation-evtq-imm.cpp examples start one asynchronous operation that is placed on an event queue for later completeion and a second
+  that complete immediately.
+
+* The p14X9-async_operation-thread-imm.cpp examples start one asynchronous operation that will be completed from a thread and a second
+  that complete immediately.
+  
+The following describes implementation of the examples per group.
 
 * p140X.cpp defines a function start_op that creates a lambda object that will be assigned to a global variable.
   The lambda object contains a reference to an async_operation object.

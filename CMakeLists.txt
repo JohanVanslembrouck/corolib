@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.17)
 
-set(Boost_INCLUDE_DIR C:/Boost/include/boost-1_70)
-set(Boost_LIBRARY_DIR C:/Boost/lib)
+set(Boost_INCLUDE_DIR C:/local/boost/boost_1_79_0)
+set(Boost_LIBRARY_DIR C:/local/boost/boost_1_79_0/stage/lib)
 
 project (corolib)
 
