@@ -122,10 +122,10 @@ as in the examples using the Boost library and Qt.
 * The p14X6-async_operation-immediate.cpp examples start asychronous operations that complete immediately.
 
 * The p14X8-async_operation-evtq-imm.cpp examples start one asynchronous operation that is placed on an event queue for later completeion and a second
-  that complete immediately.
+  that completes immediately.
 
 * The p14X9-async_operation-thread-imm.cpp examples start one asynchronous operation that will be completed from a thread and a second
-  that complete immediately.
+  that completes immediately.
   
 The following describes implementation of the examples per group.
 

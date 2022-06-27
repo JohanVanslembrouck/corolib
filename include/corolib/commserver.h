@@ -33,7 +33,7 @@ namespace corolib
 
     public:
         void stop();
-        void start_accept(spCommCore commRWT, int idx);
+        void start_accepting_impl(spCommCore commRWT, int idx);
 
     protected:
         boost::asio::io_context& m_IoContext;

@@ -43,9 +43,9 @@ namespace corolib
         void transfer(size_t bytes);
 
     protected:
-        void start_write(const int idx, const char* str, int size);
-        void start_read(const int idx, const char ch = '\n');
-        void start_tmr(const int idx, steady_timer& tmr, int ms);
+        void start_writing_impl(const int idx, const char* str, int size);
+        void start_reading_impl(const int idx, const char ch = '\n');
+        void start_timer_impl(const int idx, steady_timer& tmr, int ms);
         std::string get_result() override;
         void check_deadline();
 

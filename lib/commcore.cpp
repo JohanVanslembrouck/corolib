@@ -50,7 +50,7 @@ async_operation<void> CommCore::start_writing(const char* str, int size)
     int index = get_free_index();
     print(PRI2, "%p: CommCore::start_writing(): index = %d\n", this, index);
     async_operation<void> ret{ this, index };
-    start_write(index, str, size);
+    start_writing_impl(index, str, size);
     return ret;
 }
 
@@ -59,7 +59,7 @@ async_operation<std::string> CommCore::start_reading(const char ch)
     int index = get_free_index();
     print(PRI2, "%p: CommCore::start_reading(): index = %d\n", this, index);
     async_operation<std::string> ret{ this, index };
-    start_read(index, ch);
+    start_reading_impl(index, ch);
     return ret;
 }
 
@@ -68,7 +68,7 @@ async_operation<void> CommCore::start_timer(steady_timer& timer, int ms)
     int index = get_free_index();
     print(PRI2, "%p: CommCore::start_timer(timer, %d): index = %d\n", this, ms, index);
     async_operation<void> ret{ this, index };
-    start_tmr(index, timer, ms);
+    start_timer_impl(index, timer, ms);
     return ret;
 }
 
@@ -88,12 +88,12 @@ void CommCore::transfer(size_t bytes)
     std::copy(m_input_buffer.cbegin(), m_input_buffer.cbegin() + bytes, m_read_buffer.begin());
 }
 
-void CommCore::start_write(const int idx, const char* str, int size)
+void CommCore::start_writing_impl(const int idx, const char* str, int size)
 {
-    print(PRI2, "%p: CommCore::start_write()\n", this);
+    print(PRI2, "%p: CommCore::start_writing_impl()\n", this);
     if (m_stopped)
     {
-        print(PRI2, "%p: CommCore::start_write(): idx = %d, stopped\n", idx);
+        print(PRI2, "%p: CommCore::start_writing_impl(): idx = %d, stopped\n", idx);
         return;
     }
 
@@ -136,9 +136,9 @@ void CommCore::start_write(const int idx, const char* str, int size)
         });
 }
 
-void CommCore::start_read(const int idx, const char ch)
+void CommCore::start_reading_impl(const int idx, const char ch)
 {
-    print(PRI2, "%p: CommCore::start_read()\n", this);
+    print(PRI2, "%p: CommCore::start_reading_impl()\n", this);
     m_input_buffer = "";
     //m_read_buffer = "";
     m_bytes = 0;
@@ -204,9 +204,9 @@ void CommCore::start_read(const int idx, const char ch)
         });
 }
 
-void CommCore::start_tmr(const int idx, steady_timer& tmr, int ms)
+void CommCore::start_timer_impl(const int idx, steady_timer& tmr, int ms)
 {
-    print(PRI2, "%p: CommCore::start_tmr()\n", this);
+    print(PRI2, "%p: CommCore::start_timer_impl()\n", this);
 
     tmr.expires_after(std::chrono::milliseconds(ms));
 

@@ -34,7 +34,7 @@ namespace corolib
         async_operation<void> start_connecting();
 
     protected:
-        void start_connect(const int idx);
+        void start_connecting_impl(const int idx);
         
     protected:
         boost::asio::ip::tcp::endpoint m_ep;

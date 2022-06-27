@@ -67,9 +67,9 @@ protected:    // functions
     void enableKeepAlive(QTcpSocket *socket);
     void closeConnection(QTcpSocket *socket);
 
-    void start_read(const int idx, bool doDisconnect = true);
-    void start_tmr(const int idx, QTimer& tmr, int ms);
-    void start_connect(const int idx, QString& serverIpAddress, quint16 port);
+    void start_reading_impl(const int idx, bool doDisconnect = true);
+    void start_timer_impl(const int idx, QTimer& tmr, int ms);
+    void start_connecting_impl(const int idx, QString& serverIpAddress, quint16 port);
 
     void readyReadTcpCo(QByteArray& data);
     void readyReadTcpCo1(QByteArray& data);

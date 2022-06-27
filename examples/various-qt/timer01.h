@@ -27,7 +27,7 @@ public:
 
 private:    // functions
     async_operation<void> start_timer(QTimer& timer, int ms, bool doDisconnect = false);
-    void start_tmr(const int idx, QTimer& tmr, int ms, bool doDisconnect = false);
+    void start_timer_impl(const int idx, QTimer& tmr, int ms, bool doDisconnect = false);
 
     async_task<int> mainTask();
     async_task<int> timerTask01();

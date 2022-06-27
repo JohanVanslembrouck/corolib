@@ -48,27 +48,27 @@ async_operation<void> Timer01::start_timer(QTimer& timer, int ms, bool doDisconn
     int index = get_free_index();
     print(PRI1, "%p: Timer01::start_timer(): index = %d\n", this, index);
     async_operation<void> ret{ this, index };
-    start_tmr(index, timer, ms, doDisconnect);
+    start_timer_impl(index, timer, ms, doDisconnect);
     return ret;
 }
 
 /**
- * @brief Timer01::start_tmr
+ * @brief Timer01::start_timer_impl
  * @param idx
  * @param tmr
  * @param ms
  * @param doDisconnect
  */
-void Timer01::start_tmr(const int idx, QTimer& tmr, int ms, bool doDisconnect)
+void Timer01::start_timer_impl(const int idx, QTimer& tmr, int ms, bool doDisconnect)
 {
-    print(PRI1, "%p: Timer01::start_tmr(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
+    print(PRI1, "%p: Timer01::start_timer_impl(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
 
     tmr.start(ms);
 
     m_connections[idx] = connect(&tmr, &QTimer::timeout,
         [this, idx, doDisconnect]()
         {
-            print(PRI1, "%p: Timer01::start_tmr() lambda: idx = %d\n", this, idx);
+            print(PRI1, "%p: Timer01::handle_timer() lambda: idx = %d\n", this, idx);
 
             async_operation_base* om_async_operation = m_async_operations[idx];
             async_operation<void>* om_async_operation_t =
@@ -81,14 +81,14 @@ void Timer01::start_tmr(const int idx, QTimer& tmr, int ms, bool doDisconnect)
             else
             {
                 // This can occur when the async_operation_base has gone out of scope.
-                print(PRI1, "%p: Timer01::start_tmr(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
+                print(PRI1, "%p: Timer01::handle_timer(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
             }
             if (doDisconnect)
             {
-                print(PRI1, "%p: Timer01::start_tmr(): idx = %d, disconnecting\n", this, idx);
+                print(PRI1, "%p: Timer01::handle_timer(): idx = %d, disconnecting\n", this, idx);
                 if (!disconnect(m_connections[idx]))
                 {
-                    print(PRI1, "%p: Timer01::start_tmr(): idx = %d, Warning: disconnect failed\n", this, idx);
+                    print(PRI1, "%p: Timer01::handle_timer(): idx = %d, Warning: disconnect failed\n", this, idx);
                 }
             }
         }

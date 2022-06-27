@@ -410,22 +410,22 @@ async_operation<QByteArray> TcpClientCo::start_reading(bool doDisconnect)
     int index = get_free_index();
     print(PRI2, "%p: TcpClientCo::start_reading(): index = %d\n", this, index);
     async_operation<QByteArray> ret{ this, index };
-    start_read(index, doDisconnect);
+    start_reading_impl(index, doDisconnect);
     return ret;
 }
 
 /**
- * @brief TcpClientCo::start_read
+ * @brief TcpClientCo::start_reading_impl
  * @param idx
  */
-void TcpClientCo::start_read(const int idx, bool doDisconnect)
+void TcpClientCo::start_reading_impl(const int idx, bool doDisconnect)
 {
-    print(PRI2, "%p: TcpClientCo::start_read(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
+    print(PRI2, "%p: TcpClientCo::start_reading_impl(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
 
     m_connections[idx] = connect(this, &TcpClientCo::responseReceivedSig,
         [this, idx, doDisconnect](QByteArray msg)
         {
-            print(PRI2, "%p: TcpClientCo::start_read() lambda: idx = %d\n", this, idx);
+            print(PRI2, "%p: TcpClientCo::handle_read() lambda: idx = %d\n", this, idx);
 
             async_operation_base* om_async_operation = m_async_operations[idx];
             async_operation<QByteArray>* om_async_operation_t =
@@ -439,14 +439,14 @@ void TcpClientCo::start_read(const int idx, bool doDisconnect)
             else
             {
                 // This can occur when the async_operation_base has gone out of scope.
-                print(PRI2, "%p: TcpClientCo::start_read(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
+                print(PRI2, "%p: TcpClientCo::handle_read(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
             }
 
             if (doDisconnect)
             {
                 if (!disconnect(m_connections[idx]))
                 {
-                    print(PRI1, "%p: TcpClientCo::start_read(): idx = %d, Warning: disconnect failed\n", this, idx);
+                    print(PRI1, "%p: TcpClientCo::handle_read(): idx = %d, Warning: disconnect failed\n", this, idx);
                 }
             }
         }
@@ -476,26 +476,26 @@ async_operation<void> TcpClientCo::start_timer(QTimer& timer, int ms)
     int index = get_free_index();
     print(PRI2, "%p: TcpClientCo::start_timer(): index = %d\n", this, index);
     async_operation<void> ret{ this, index };
-    start_tmr(index, timer, ms);
+    start_timer_impl(index, timer, ms);
     return ret;
 }
 
 /**
- * @brief TcpClientCo::start_tmr
+ * @brief TcpClientCo::start_timer_impl
  * @param idx
  * @param tmr
  * @param ms
  */
-void TcpClientCo::start_tmr(const int idx, QTimer& tmr, int ms)
+void TcpClientCo::start_timer_impl(const int idx, QTimer& tmr, int ms)
 {
-    print(PRI2, "%p: TcpClientCo::start_tmr(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
+    print(PRI2, "%p: TcpClientCo::start_timer_impl(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
 
     tmr.start(ms);
 
     m_connections[idx] = connect(&tmr, &QTimer::timeout,
         [this, idx]()
         {
-            print(PRI2, "%p: TcpClientCo::start_tmr() lambda: idx = %d\n", this, idx);
+            print(PRI2, "%p: TcpClientCo::handle_timer() lambda: idx = %d\n", this, idx);
 
             async_operation_base* om_async_operation = m_async_operations[idx];
             async_operation<void>* om_async_operation_t =
@@ -508,12 +508,12 @@ void TcpClientCo::start_tmr(const int idx, QTimer& tmr, int ms)
             else
             {
                 // This can occur when the async_operation_base has gone out of scope.
-                print(PRI2, "%p: TcpClientCo::start_tmr(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
+                print(PRI2, "%p: TcpClientCo::handle_timer(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
             }
 
             if (!disconnect(m_connections[idx]))
             {
-                print(PRI1, "%p: TcpClientCo::start_tmr(): idx = %d, Warning: disconnect failed\n", this, idx);
+                print(PRI1, "%p: TcpClientCo::handle_timer(): idx = %d, Warning: disconnect failed\n", this, idx);
             }
         }
     );
@@ -542,24 +542,24 @@ async_operation<void> TcpClientCo::start_connecting(QString& serverIpAddress, qu
     int index = get_free_index();
     print(PRI2, "%p: TcpClientCo::start_connecting(): index = %d\n", this, index);
     async_operation<void> ret{ this, index };
-    start_connect(index, serverIpAddress, port);
+    start_connecting_impl(index, serverIpAddress, port);
     return ret;
 }
 
 /**
- * @brief TcpClientCo::start_connect
+ * @brief TcpClientCo::start_connecting_impl
  * @param idx
  * @param serverIpAddress
  * @param port
  */
-void TcpClientCo::start_connect(const int idx, QString& serverIpAddress, quint16 port)
+void TcpClientCo::start_connecting_impl(const int idx, QString& serverIpAddress, quint16 port)
 {
-    print(PRI2, "%p: TcpClientCo::start_connect(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
+    print(PRI2, "%p: TcpClientCo::start_connecting_impl(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
 
     m_connections[idx] = connect(this, &TcpClientCo::connectedSig,
         [this, idx]()
         {
-            print(PRI2, "%p: TcpClientCo::start_connect() lambda: idx = %d\n", this, idx);
+            print(PRI2, "%p: TcpClientCo::handle_connect() lambda: idx = %d\n", this, idx);
 
             async_operation_base* om_async_operation = m_async_operations[idx];
             async_operation<void>* om_async_operation_t =
@@ -572,12 +572,12 @@ void TcpClientCo::start_connect(const int idx, QString& serverIpAddress, quint16
             else
             {
                 // This can occur when the async_operation_base has gone out of scope.
-                print(PRI2, "%p: TcpClientCo::start_connect(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
+                print(PRI2, "%p: TcpClientCo::handle_connect(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
             }
 
             if (!disconnect(m_connections[idx]))
             {
-                print(PRI1, "%p: TcpClientCo::start_connect(): idx = %d, Warning: disconnect failed\n", this, idx);
+                print(PRI1, "%p: TcpClientCo::handle_connect(): idx = %d, Warning: disconnect failed\n", this, idx);
             }
         }
     );
