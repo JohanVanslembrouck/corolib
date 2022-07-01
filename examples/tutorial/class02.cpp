@@ -33,7 +33,7 @@ void Class02::start_op1(const int idx)
 
         if (om_async_operation_t)
         {
-            print(PRI1, "%p: Class02::start_op1(%d): om_async_operation_t->set_result(%d)\n", this, idx, i);
+            print(PRI1, "%p: Class02::start_op1(%d): om_async_operation_t->set_result(%d);\n", this, idx, i);
             om_async_operation_t->set_result(i);
             om_async_operation_t->completed();
         }
@@ -88,7 +88,7 @@ void Class02::start_op2(const int idx, int bias)
 
         if (om_async_operation_t)
         {
-            print(PRI1, "%p: Class02::start_op2(%d, %d): om_async_operation_t->set_result(%d)\n", this, idx, bias, bias + i);
+            print(PRI1, "%p: Class02::start_op2(%d, %d): om_async_operation_t->set_result(%d);\n", this, idx, bias, bias + i);
             om_async_operation_t->set_result(bias + i);
             om_async_operation_t->completed();
         }

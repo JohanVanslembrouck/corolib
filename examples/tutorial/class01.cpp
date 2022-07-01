@@ -33,7 +33,7 @@ void Class01::start_op(const int idx)
 
         if (om_async_operation_t)
         {
-            print(PRI1, "%p: Class01::start_op(%d): om_async_operation_t->set_result(%d)\n", this, idx, i);
+            print(PRI1, "%p: Class01::start_op(%d): om_async_operation_t->set_result(%d);\n", this, idx, i);
             om_async_operation_t->set_result(i);
             om_async_operation_t->completed();
         }
