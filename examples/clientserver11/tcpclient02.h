@@ -1,8 +1,11 @@
 /**
- * @file
+ * @file tcpclient02.h
  * @brief
+ * Second TCP client application.
+ * It uses two TcpClientCo data members for the communication with two server applications.
+ * It uses coroutine functionality.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #ifndef TCPCLIENT02_H

@@ -1,11 +1,9 @@
 /** 
- *  Filename: p1002-no-coroutines.cpp
- *  Description: 
+ * @file p1002-no-coroutines.cpp
+ * @brief
+ * This example has the same structure and result as p1000.cpp but uses pure functions.
  *
- *  Tested with Visual Studio 2019.
- *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
- *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <corolib/print.h>

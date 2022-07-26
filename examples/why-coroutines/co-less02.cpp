@@ -1,9 +1,8 @@
 /**
- *  Filename: co-less02.cpp
- *  Description:
+ * @file co-less02.cpp
+ * @brief
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
- *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <stdio.h>

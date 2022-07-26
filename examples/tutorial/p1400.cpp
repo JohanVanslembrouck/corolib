@@ -1,9 +1,12 @@
 /**
- *  Filename: p1400.cpp
- *  Description:
+ * @file p1400.cpp
+ * @brief
+ * Example with 5 coroutines.
+ * coroutineI (I = 1..4) co_awaits coroutineI+1.
+ * coroutine3 calls coroutine4 twice.
+ * coroutine5 starts an asynchronous operation and awaits its completion.
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
- *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <corolib/print.h>
@@ -12,13 +15,21 @@
 
 using namespace corolib;
 
-void start_op(async_operation<int>* op);
+/**
+ * @brief start_operation_impl is implemented in 
+ * p1400-async_operation.cpp,
+ * p1402-async_operation-eventqueue.cpp,
+ * p1404-async_operation-thread.cpp and
+ * p1406-async_operation-immediate.cpp.
+ */
+void start_operation_impl(async_operation<int>* op);
 
 async_task<int> coroutine5()
 {
+	print(PRI1, "coroutine5(): async_operation<int> op;\n");
     async_operation<int> op;
-    print(PRI1, "coroutine5(): start_op(&op);\n");
-    start_op(&op);
+    print(PRI1, "coroutine5(): start_operation_impl(&op);\n");
+    start_operation_impl(&op);
     print(PRI1, "coroutine5(): int v = co_await op;\n");
     int v = co_await op;
     print(PRI1, "coroutine5(): co_return v+1 = %d;\n", v + 1);

@@ -1,8 +1,9 @@
 /**
- * @file
- * @brief
+ * @file tcpclientco.cpp
+ * @brief Implementation of a TCP client class.
+ * Uses coroutines
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include "tcpclientco.h"
@@ -25,7 +26,7 @@ TcpClientCo::TcpClientCo(bool useCoroutines,
     : m_useCoroutines(useCoroutines)
     , m_selectImplementation(selectImplementation)
     , m_timer(this)
-    , m_transmitTimer(this)
+    , m_receiveTimer(this)
     , m_autoConnect(autoConnect)
     , m_name(name)
     , m_waitForConnectionTimeout(waitForConnectionTimeout)
@@ -42,12 +43,12 @@ void TcpClientCo::configure()
 {
     qInfo() << Q_FUNC_INFO << m_name;
 
-    // Client starts timer to reconnect to server if connection was lost.
+    // Client starts timer to reconnect to server if the connection was lost.
     m_timer.setSingleShot(true);
-    m_transmitTimer.setSingleShot(true);
+    m_receiveTimer.setSingleShot(true);
 
-    connect(&m_timer,         &QTimer::timeout, this, &TcpClientCo::connectToServerTimed);
-    connect(&m_transmitTimer, &QTimer::timeout, this, &TcpClientCo::transmitTimed);
+    connect(&m_timer,        &QTimer::timeout, this, &TcpClientCo::connectToServerTimed);
+    connect(&m_receiveTimer, &QTimer::timeout, this, &TcpClientCo::receiveTimed);
 }
 
 /**
@@ -61,9 +62,9 @@ void TcpClientCo::connectToServerTimed()
 }
 
 /**
- * @brief TcpClientCo::transmitTimed
+ * @brief TcpClientCo::receiveTimed
  */
-void TcpClientCo::transmitTimed()
+void TcpClientCo::receiveTimed()
 {
     qInfo() << Q_FUNC_INFO << m_name;
 
@@ -159,8 +160,7 @@ bool TcpClientCo::connectToServer(QString& serverIPaddress, quint16 serverPort)
 }
 
 /**
- * @brief TcpClientCo::disconnectFromServer
- * Function called from business logic class to disconnect from server
+ * @brief TcpClientCo::disconnectFromServer is called from the business logic class to disconnect from server
  */
 void TcpClientCo::disconnectFromServer()
 {
@@ -206,7 +206,7 @@ void TcpClientCo::sendMessage(QByteArray& message)
 }
 
 /**
- * @brief TcpClientCo::readyReadTcp
+ * @brief TcpClientCo::readyReadTcp reads all data that has arrived on the socket
  *
  */
 void TcpClientCo::readyReadTcp()
@@ -229,8 +229,7 @@ void TcpClientCo::readyReadTcp()
 }
 
 /**
- * @brief TcpClientCo::disconnectedServer
- * is used exclusively on the client side to deal with a disconnected server.
+ * @brief TcpClientCo::disconnectedServer deals with a disconnected server.
  */
 void TcpClientCo::disconnectedServer()
 {
@@ -330,12 +329,14 @@ void TcpClientCo::readyReadTcpCo(QByteArray& data)
 }
 
 /**
- * @brief TcpClientCo::readyReadTcpCo1
+ * @brief TcpClientCo::readyReadTcpCo1 collects the received bytes to compose a message.
+ * When a complete message has arrived, readyReadTcpCo1 emits a signal responseReceivedSig.
+ * The coroutine related code will connect a lambda slot function to this signal.
  * @param data
  */
 void TcpClientCo::readyReadTcpCo1(QByteArray& data)
 {
-    print(PRI2, "%p: TcpClientCo::readyReadTcpCo(): m_name = %s, data.length() = %d\n",
+    print(PRI2, "%p: TcpClientCo::readyReadTcpCo1(): m_name = %s, data.length() = %d\n",
           this,
           m_name.toStdString().c_str(),
           data.length());
@@ -356,25 +357,35 @@ void TcpClientCo::readyReadTcpCo1(QByteArray& data)
             qWarning() << Q_FUNC_INFO << "received incorrect message";
         }
 
+        // Are there any bytes yet for a second message?
         if (data2.length() != 0)
             qInfo() << Q_FUNC_INFO << "data2.length() = " << data2.length();
 
         m_data = data2;
         if (m_data.length() != 0)
         {
+            // There are bytes for a second message
             qInfo() << Q_FUNC_INFO << "starting timer";
-            m_transmitTimer.start(0);
+            m_receiveTimer.start(0);
+            // When the timer expires (which is immediately),
+            // readyReadTcpCo (and readyReadTcpCo1) will be called again.
+            // This "indirection" is used to first return to the Qt event loop
+            // instead of reading all remaining bytes from the same slot function call.
         }
 
         QByteArray msg = m_message.content();
 
-        print(PRI2, "%p: TcpClientCo::readyReadTcpCo(): emitting signal\n", this);
+        print(PRI2, "%p: TcpClientCo::readyReadTcpCo1(): emitting signal\n", this);
         emit responseReceivedSig(msg);
     }
 }
 
 /**
- * @brief TcpClientCo::readyReadTcpCo2
+ * @brief TcpClientCo::readyReadTcpCo2 collects the received bytes to compose a message.
+ * When a complete message has arrived, readyReadTcpCo1 emits a signal responseReceivedSig.
+ * The coroutine related code will connect a lambda slot function to this signal.
+ * In contrast to readyReadTcpCo1, readyReadTcpCo2 uses a variant of 
+ * composeMessage that can be called in a loop.
  * @param data
  */
 void TcpClientCo::readyReadTcpCo2(QByteArray& data)
@@ -415,7 +426,11 @@ async_operation<QByteArray> TcpClientCo::start_reading(bool doDisconnect)
 }
 
 /**
- * @brief TcpClientCo::start_reading_impl
+ * @brief TcpClientCo::start_reading_impl uses Qt's connect to associate 
+ * the TcpClientCo::responseReceivedSig signal function emitted by itself
+ * with a lambda that is used as slot functor.
+ * The lambda uses Qt's disconnect to break the association with the signal
+ * at the end of its invocation if doDisconnect equals true (this is the default value).
  * @param idx
  */
 void TcpClientCo::start_reading_impl(const int idx, bool doDisconnect)
@@ -481,7 +496,11 @@ async_operation<void> TcpClientCo::start_timer(QTimer& timer, int ms)
 }
 
 /**
- * @brief TcpClientCo::start_timer_impl
+ * @brief TcpClientCo::start_timer_impl uses Qt's connect to associate 
+ * the QTimer::timeout signal function emitted by tmr
+ * with a lambda that is used as slot functor.
+ * The lambda uses Qt's disconnect to break the association with the signal
+ * at the end of its invocation.
  * @param idx
  * @param tmr
  * @param ms
@@ -547,7 +566,10 @@ async_operation<void> TcpClientCo::start_connecting(QString& serverIpAddress, qu
 }
 
 /**
- * @brief TcpClientCo::start_connecting_impl
+ * @brief TcpClientCo::start_connecting_impl uses Qt's connect to associate 
+ * the TcpClientCo::connectedSig signal function emitted by itself
+ * with a lambda that is used as slot functor.
+ * The lambda uses Qt's disconnect to break the association with the signal function.
  * @param idx
  * @param serverIpAddress
  * @param port

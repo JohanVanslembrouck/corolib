@@ -1,9 +1,9 @@
 /**
- *  Filename: class02.h
- *  Description:
+ * @file class02.h
+ * @brief
+ * Defines a class with (the simulation of) two asynchronous operations.
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
- *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
  
 #ifndef _CLASS02_H_
@@ -39,11 +39,11 @@ public:
     async_operation<int> start_operation1();
     async_operation<int> start_operation2(int bias = 0);
     
-    std::function<void(int)> operation[NROPERATIONS];
+    std::function<void(int)> eventHandler[NROPERATIONS];
 
 protected:
-    void start_op1(const int idx);
-    void start_op2(const int idx, int bias);
+    void start_operation1_impl(const int idx);
+    void start_operation2_impl(const int idx, int bias);
 
 private:
     UseMode    m_useMode;

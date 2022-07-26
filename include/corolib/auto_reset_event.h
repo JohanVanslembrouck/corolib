@@ -8,7 +8,11 @@
  * When coroutine1 is resumed, the m_ready flag is reset.
  * The behavior is similar to using a semaphore, but this is the "coroutine way".
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * Its name is identical to the class defined in cppcoro/lib/auto_reset_event.hpp.
+ * However, the implementation in cppcoro is closer to the implementation of a semaphore as
+ * the one in semaphore.h.
+ *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _AUTO_RESET_EVENT_H_
@@ -19,8 +23,10 @@
 
 namespace corolib
 {
-    struct auto_reset_event {
-
+    class auto_reset_event 
+	{
+    public:
+	
         auto_reset_event()
             : m_awaiting(nullptr)
             , m_ready(false)

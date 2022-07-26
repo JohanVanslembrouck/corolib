@@ -1,8 +1,16 @@
 /**
- * @file
+ * @file tcpserver02.h
  * @brief
+ * Second TCP server application.
+ * It uses a TcpServer data member for communication with client applications.
+ * It uses coroutine functionality.
+ * TcpServer02 uses 3 coroutine with an infinite loop:
+ * - acceptTask accepts connections from a client application
+ * - readTask reads requests from a client application
+ * - disconnectTask handles disconnecitons from a client application
+ * The mainTask coroutine waits for these 3 tasks to co_return (which should never be the case).
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #ifndef TCPSERVER02_H
@@ -70,6 +78,7 @@ private:    // functions
     async_operation<int> start_disconnecting(bool doDisconnect = false);
     void start_disconnecting_impl(const int idx, bool doDisconnect);
 
+    // The following are all coroutines
     async_task<int> mainTask();
     async_task<int> acceptTask();
     async_task<int> readTask();

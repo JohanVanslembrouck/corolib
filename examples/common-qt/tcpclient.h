@@ -1,8 +1,9 @@
 /**
- * @file
- * @brief
+ * @file tcpclient.h
+ * @brief TCP client class.
+ * Does not use coroutines.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _TCPCLIENT_H_

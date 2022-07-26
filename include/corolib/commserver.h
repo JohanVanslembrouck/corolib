@@ -5,7 +5,7 @@
  * CommServer just implements the accept operation.
  * The communication with the connected client is then performed using a CommCore object.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _COMMSERVER_H_

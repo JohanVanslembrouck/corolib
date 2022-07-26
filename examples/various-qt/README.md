@@ -5,6 +5,7 @@ At the moment this folder contains only an example using timers in combination w
 Notice that op_timer1 (returned from start_timer) can be co_await-ed for several times because 
 it has been instructed to reset itself:
 
+```c++
     async_operation<void> op_timer1 = start_timer(timer1, 0);
     op_timer1.auto_reset(true);
 
@@ -23,5 +24,4 @@ it has been instructed to reset itself:
         co_await op_timer1;
         print(PRI1, "--- timerTask01: after co_await op_timer1 --- 5000\n");
     }
-
-	
+```

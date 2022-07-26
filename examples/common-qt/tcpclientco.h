@@ -1,8 +1,9 @@
 /**
- * @file
- * @brief
+ * @file tcpclientco.h
+ * @brief TCP client class.
+ * Uses coroutines.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _TCPCLIENTCO_H_
@@ -39,7 +40,7 @@ public slots:
     void disconnectedServer();
     void stateChanged(QAbstractSocket::SocketState socketState);
     void connectToServerTimed();
-    void transmitTimed();
+    void receiveTimed();
 
 public:
     TcpClientCo(bool useCoroutines = true,
@@ -82,7 +83,7 @@ private:
     QList<ConnectionInfo *> m_connectionInfoList;
 
     QTimer      m_timer;
-    QTimer      m_transmitTimer;
+    QTimer      m_receiveTimer;
 
     QString     m_serverIPaddress;
     quint16     m_serverPort;

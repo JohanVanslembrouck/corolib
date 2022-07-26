@@ -1,9 +1,8 @@
 /**
- *  Filename: common.h
- *  Description:
+ * @file common.h
+ * @brief
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
- *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _COMMON_H_

@@ -1,11 +1,13 @@
 /** 
- *  Filename: p1000.cpp
- *  Description: 
+ * @file p1000.cpp
+ * @brief
+ * Example with 5 coroutines.
+ * CoroutineI (I = 1..4) co_awaits coroutineI+1.
+ * The leaf coroutine coroutine5 just co_returns a value.
+ * In this example the coroutines are not suspended/resumed, but simply return.
+ * This example can thus be rewritten using pure functions, see p1002-no-coroutines.cpp
  *
- *  Tested with Visual Studio 2019.
- *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
- *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <corolib/print.h>
@@ -69,7 +71,7 @@ async_task<int> coroutine1()
 }
 
 /**
- * Because main() cannot be a coroutine (it cannot return a coroutine type),
+ * @brief Because main() cannot be a coroutine (it cannot return a coroutine type),
  * it cannot use co_await. Instead it calls get_result() on the coroutine object
  * returned from coroutine1().
  */

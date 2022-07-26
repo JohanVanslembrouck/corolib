@@ -1,9 +1,8 @@
 /**
- *  Filename: co-less05.cpp
- *  Description:
+ * @file co-less05.cpp
+ * @brief
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
- *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <stdio.h>
@@ -70,7 +69,7 @@ Class05 class05;
 int main() {
     printf("main();\n");
     connect(event1, []() { class05.function1(); });
-    //connect(event2, []() { class05.function1(); });
+  //connect(event2, []() { class05.function1(); });
     eventQueue.run();
     return 0;
 }

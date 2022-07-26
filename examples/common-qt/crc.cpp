@@ -1,8 +1,9 @@
 /**
- * @file
+ * @file crc.cpp
  * @brief
+ * Implementation of a CRC 32 calculation.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <stdio.h>

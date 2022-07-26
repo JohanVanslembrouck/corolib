@@ -1,17 +1,13 @@
 /**
- *  Filename: p1120-auto_reset_event-thread.cpp
- *  Description:
+ * @file p1120-auto_reset_event-thread.cpp
+ * @brief
  *
- *        This example defines coroutine5 based
- *        on the coroutine extension of future by Microsoft.
- *        See implementation of await_ready(), await_suspend()
- *        and await_resume().
+ * This example defines coroutine5 based on the coroutine extension of future by Microsoft.
+ * See implementation of await_ready(), await_suspend() and await_resume().
  *
- *  Tested with Visual Studio 2019.
+ * Based upon: https://kirit.com/How%20C%2B%2B%20coroutines%20work/Awaiting
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
- *  Based upon: https://kirit.com/How%20C%2B%2B%20coroutines%20work/Awaiting
- *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <corolib/print.h>

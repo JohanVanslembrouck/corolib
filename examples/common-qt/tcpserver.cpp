@@ -1,8 +1,9 @@
 /**
- * @file
- * @brief
+ * @file tcpserver.cpp
+ * @brief TCP server class built around QTcpServer.
+ * Does not use coroutines.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <QNetworkInterface>
@@ -127,7 +128,7 @@ void TcpServer::newTCPConnection()
 }
 
 /**
- * @brief TcpServer::sendMessage
+ * @brief TcpServer::sendMessage writes the bytes of a message onto a TCP socket
  * @param sock
  * @param message
  */
@@ -173,7 +174,7 @@ void TcpServer::readyReadTcp()
         if (data.length() < 650)
             qInfo() << data.length() << data;
         else
-            qInfo() << data.length();
+            qInfo() << data.length();    // Only print the length of long messages, not the content
 
         bool found = false;
         for (ConnectionInfo* connectionInfo : m_connectionInfoList)

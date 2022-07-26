@@ -1,11 +1,9 @@
 /**
- *  Filename: p1424-async_operation-thread.cpp
- *  Description:
+ * @file p1424-async_operation-thread.cpp
+ * @brief
  *
- *  Tested with Visual Studio 2019.
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
- *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <corolib/print.h>
@@ -20,7 +18,7 @@ using namespace corolib;
 Class01 object01(USE_THREAD);
 Class01 object02(USE_THREAD);
 
-//#include "p1420.cpp"
+// Uses coroutine1 implemented in p1420.cpp
 async_task<int> coroutine1();
 
 int main()

@@ -1,15 +1,12 @@
 /**
- *  Filename: p1210-mini1-thread.cpp
- *  Description:
+ * @file p1210-mini1-thread.cpp
+ * @brief
  *
- *        Uses a dedicated coroutine type (mini1).
- *        An object of this type is resumed from
- *        the thread launched from coroutine5.
+ * Uses a dedicated awaitable type (mini1).
+ * A thread launched by coroutine5 calls set_and_resume() on a mini1 object after a delay of 1 second.
+ * This call resumes the coroutine that co_waits the mini1 object, which is coroutine5 itself.
  *
- *  Tested with Visual Studio 2019.
- *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
- *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <corolib/print.h>
@@ -48,7 +45,8 @@ async_task<int> coroutine4()
     co_return v+1;
 }
 
-async_task<int> coroutine3() {
+async_task<int> coroutine3()
+{
     print(PRI1, "coroutine3(): async_task<int> a1 = coroutine4();\n");
     async_task<int> a1 = coroutine4();
     print(PRI1, "coroutine3(): int v1 = co_await a1;\n");

@@ -6,7 +6,7 @@
  * The file should probably be replaced by a configuration file that is read at run time
  * to avoid having to recompile the application for every configuration.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _ENDPOINTS_H_

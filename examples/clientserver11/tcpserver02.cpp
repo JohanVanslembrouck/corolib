@@ -1,8 +1,9 @@
 /**
  * @file tcpserver02.cpp
  * @brief
+ * Implementation of the second TCP server application.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <QThread>
@@ -29,7 +30,6 @@ TcpServer02::TcpServer02(QObject *parent, MessageCheck check)
     configureTCP();
 }
 
-
 /**
  * @brief TcpServer02::configureTCP
  */
@@ -50,8 +50,8 @@ void TcpServer02::configureTCP()
  * @brief TcpServer02::start
  * called from main() after having created a TcpServer02 object
  *
- * Note:
- *      server.listen(QHostAddress::LocalHost, port);
+ * @note
+ * server.listen(QHostAddress::LocalHost, port);
  * accepts only connections from clients using "localhost" or "127.0.0.1",
  * not even if the IP address is the same as that of the computer.
  *
@@ -215,7 +215,11 @@ async_operation<int> TcpServer02::start_accepting(bool doDisconnect)
 }
 
 /**
- * @brief TcpServer02::start_accepting_impl
+ * @brief TcpServer02::start_accepting_impl uses Qt's connect to associate
+ * the TcpServer::newTCPConnectionSig signal emitted by the m_tcpServer data member
+ * with a lambda that is used as slot functor.
+ * The lambda will use Qt's disconnect to break the association with the signal if doDisconnect equals true.
+ * In this application doDisconnect defaults to false.
  * @param idx
  * @param doDisconnect
  */
@@ -266,7 +270,11 @@ async_operation<readInfo> TcpServer02::start_reading(bool doDisconnect)
 }
 
 /**
- * @brief TcpServer02::start_reading_impl
+ * @brief TcpServer02::start_reading_impl uses Qt's connect to associate
+ * the TcpServer::readyReadTcpSig signal emitted by the m_tcpServer data member
+ * with a lambda that is used as slot functor.
+ * The lambda will use Qt's disconnect to break the association with the signal if doDisconnect equals true.
+ * In this application doDisconnect defaults to false.
  * @param idx
  * @param doDisconnect
  */
@@ -332,7 +340,11 @@ async_operation<void> TcpServer02::start_timer(QTimer& timer, int ms, bool doDis
 }
 
 /**
- * @brief TcpServer02::start_timer_impl
+ * @brief TcpServer02::start_timer_impl uses Qt's connect to associate
+ * the QTimer::timeout signal emitted by tmer
+ * with a lambda that is used as slot functor.
+ * The lambda will use Qt's disconnect to break the association with the signal if doDisconnect equals true.
+ * In this application doDisconnect defaults to false.
  * @param idx
  * @param tmr
  * @param ms
@@ -388,7 +400,11 @@ async_operation<int> TcpServer02::start_disconnecting(bool doDisconnect)
 }
 
 /**
- * @brief TcpServer02::start_disconnecting_impl
+ * @brief TcpServer02::start_disconnecting_impl uses Qt's connect to associate
+ * the TcpServer::disconnectedClientSig signal emitted by the m_tcpServer data member
+ * with a lambda that is used as slot functor.
+ * The lambda will use Qt's disconnect to break the association with the signal if doDisconnect equals true.
+ * In this application doDisconnect defaults to false.
  * @param idx
  * @param doDisconnect
  */
@@ -447,7 +463,8 @@ async_task<int> TcpServer02::acceptTask()
 }
 
 /**
- * @brief TcpServer02::readTask
+ * @brief TcpServer02::readTask receives messages sent by a client application
+ * and sends the same message nrRepetitions times as response to the client.
  * @return
  */
 async_task<int> TcpServer02::readTask()
@@ -482,8 +499,10 @@ async_task<int> TcpServer02::readTask()
 
         int length = data.length();
         int index = 0;
+        // Compose one or more messages from the received byte array.
         while (m_message.composeMessage(data, length, index))
         {
+            // A complete message is received. Check its content first.
             if (m_message.checkMessage())
             {
                 // At the moment do not take the result into account.
@@ -495,11 +514,14 @@ async_task<int> TcpServer02::readTask()
 
             QByteArray content = m_message.content();
             qInfo() << "TCPIP: " << content;
+            // The second byte in the message indicates the number of responses
+            // the client application expects:
             int nrRepetitions = content[1];
 
             for (int i = 0; i < nrRepetitions; i++)
             {
                 qInfo() << Q_FUNC_INFO << ": i =" << i;
+                // Send each response after a delay
 #if 0
                 QThread::msleep(configuration.m_delayBeforeReply);
 #else
@@ -551,6 +573,7 @@ async_task<int> TcpServer02::mainTask()
 
     wait_all<async_task<int>> wa({ &t1, &t2, &t3 });
     co_await wa;
+    // We should never reach this point.
 
     co_return 0;
 }

@@ -1,8 +1,19 @@
 /**
  * @file wait_any_awaitable.h
  * @brief
+ * wait_any waits for any of the async_operation or async_task objects passed to it in its constructor
+ * to complete. These objects are placed in a vector m_elements.
+ * 
+ * For every async_operation or async_task object in m_elements, wait_any creates a wait_any_on
+ * object and places it in a second vector m_wait_any.
+ * It associates each element in m_elements with the corresponding element in m_wait_any.
+ * This way the async_operation or async_task object in m_elements can
+ * inform wait_any via the corresponding element in m_wait_any that it has completed.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * TODO1: verify instantiation of wait_any with an appropriate type using C++20 concepts.
+ * TODO2: implement other ways to pass the async_operation or async_task objects.
+ *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _WAIT_ANY_AWAITABLE_
@@ -17,14 +28,20 @@
 namespace corolib
 {
     template<typename TYPE>
-    struct wait_any
+    class wait_any
     {
+    public:
+	    /**
+         * @brief constructor that takes an initializer list and
+		 * populates the internal vector m_elements with its elements.
+         */
         wait_any(std::initializer_list<TYPE*> aws)
         {
             print(PRI2, "%p: wait_any::wait_any(std::initializer_list<TYPE*> aws)\n", this);
             int i = 0;
             for (TYPE* a : aws)
             {
+                // Only place the object in m_elements if it has not yet been completed.
                 if (!a->is_ready())
                 {
                     wait_any_one* q = new wait_any_one();
@@ -35,11 +52,16 @@ namespace corolib
             }
         }
 
+        /**
+         * @brief constructor that takes a pointer to a C-style array of objects and its size
+		 * and that populates the internal vector m_elements with its elements.
+         */
         wait_any(TYPE* aws, int size)
         {
             print(PRI2, "%p: wait_any::wait_any(TYPE* aws, int size)\n", this);
             for (int i = 0; i < size; i++)
             {
+                // Only place the object in m_elements if it has not yet been completed.
                 if (!aws[i].is_ready())
                 {
                     wait_any_one* q = new wait_any_one();

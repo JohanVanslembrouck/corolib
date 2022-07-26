@@ -1,3 +1,11 @@
+/**
+ * @file tcpserver.h
+ * @brief TCP server class built around QTcpServer.
+ * Does not use coroutines.
+ *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ */
+
 #ifndef _TCPSERVER_H_
 #define _TCPSERVER_H_
 

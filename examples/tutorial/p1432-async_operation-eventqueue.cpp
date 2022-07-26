@@ -1,11 +1,9 @@
 /**
- *  Filename: p1432-async_operation-eventqueue.cpp
- *  Description:
+ * @file p1432-async_operation-eventqueue.cpp
+ * @brief
  *
- *  Tested with Visual Studio 2019.
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
- *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <corolib/print.h>
@@ -18,6 +16,7 @@ using namespace corolib;
 Class01 object01(USE_EVENTQUEUE);
 Class01 object02(USE_EVENTQUEUE);
 
+// Uses coroutine1 implemented in p1430.cpp
 async_task<int> coroutine1();
 
 int main()

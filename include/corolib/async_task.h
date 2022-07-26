@@ -1,9 +1,13 @@
 /**
  * @file async_task.h
  * @brief
- * Defines an eager awaitable type.
+ * async_task<TYPE> defines an eager awaitable type.
+ * It includes a promise_type, so it can be used as the return type of a coroutine.
+ * It also defines operator co_await, so another coroutine can co_await the async_task<TYPE> object.
+ * The TYPE in async_task<TYPE> corresponds to the "real" return type of the coroutine
+ * (the type the user is interested in).
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _ASYNC_TASK_H_
@@ -18,8 +22,10 @@
 namespace corolib
 {
     template<typename TYPE>
-    struct async_task
+    class async_task
     {
+    public:
+	
         struct promise_type;
         using handle_type = std::coroutine_handle<promise_type>;
 
@@ -54,7 +60,7 @@ namespace corolib
 
         /**
          * @brief get_result retrieves the result of the embedded promise.
-         * It the coroutine returning the async_task object has not yet returned,
+         * If the coroutine returning the async_task object has not yet returned,
          * get_result will wait for the semaphone to be signaled,
          * which can only be done from another thread
          * (the wait() call on the semaphore will block the current thread).
@@ -81,12 +87,20 @@ namespace corolib
             return m_coro.promise().m_ready;
         }
 
+        /**
+         * @brief called from the constructors and destructor of wait_all
+         *
+         */
         void setCounter(wait_all_counter* ctr)
         {
             print(PRI2, "%p: void m_async_task::setCounter(%p)\n", this, ctr);
             m_coro.promise().m_ctr = ctr;
         }
 
+        /**
+		 * @brief called from the constructors and destructor of wait_any
+         *
+         */
         void setWaitAny(wait_any_one* waitany)
         {
             print(PRI2, "%p: void m_async_task::setWaitAny(%p)\n", this, waitany);
@@ -131,7 +145,7 @@ namespace corolib
 
         struct promise_type
         {
-            friend struct async_task;
+            friend class async_task;
 
             promise_type()
                 : m_value{}
@@ -226,8 +240,10 @@ namespace corolib
 
 
     template<>
-    struct async_task<void>
+    class async_task<void>
     {
+    public:
+	
         struct promise_type;
         using handle_type = std::coroutine_handle<promise_type>;
 
@@ -328,7 +344,7 @@ namespace corolib
 
         struct promise_type
         {
-            friend struct async_task;
+            friend class async_task;
 
             promise_type()
                 : m_awaiting(nullptr)

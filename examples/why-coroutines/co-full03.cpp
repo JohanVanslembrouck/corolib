@@ -1,11 +1,9 @@
 /**
- *  Filename: co-full03.cpp
- *  Description:
+ * @file co-full03.cpp
+ * @brief
  *
- *  Tested with Visual Studio 2019.
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
- *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include "common.h"
@@ -165,7 +163,7 @@ Class03 class03;
 int main() {
     printf("main();\n");
     connect(event1, []() { class03.coroutine1(); });
-    //connect(event2, []() { class03.coroutine1(); });
+  //connect(event2, []() { class03.coroutine1(); });
     eventQueue.run();
     return 0;
 }

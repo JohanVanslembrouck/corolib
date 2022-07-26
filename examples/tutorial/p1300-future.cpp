@@ -1,21 +1,15 @@
 /** 
- *  Filename: p1300-future.cpp
- *  Description:
+ * @file p1300-future.cpp
+ * @brief
  *
- *        Instead of using a user-defined coroutine type (as in most other examples),
- *        this example uses the future type that Microsoft has extended 
- *        with coroutine functionality and comes with the installation of 
- *        Microsoft Studio 2019.
+ * Instead of using a user-defined coroutine type (as in most other examples),
+ * this example uses the future type that Microsoft has extended 
+ * with coroutine functionality and comes with the installation of Microsoft Studio 2019.
  *
- *        This implementation spawns a lot of additional threads
- *        (see trace), probably because this was the only way
- *        to avoid modifications to the existing implementation
- *        of future/promise.
+ * This implementation spawns a lot of additional threads, probably because this was the only way
+ * to avoid modifications to the existing implementation of future/promise.
  *
- *  Tested with Visual Studio 2019.
- *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
- *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
  
 #include <corolib/print.h>

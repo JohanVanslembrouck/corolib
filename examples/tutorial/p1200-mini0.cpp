@@ -1,16 +1,12 @@
 /**
- *  Filename: p1200-mini0.cpp
- *  Description:
+ * @file p1200-mini0.cpp
+ * @brief
  *
- *        Uses a dedicated coroutine type (mini0).
+ * Uses a dedicated awaitable type (mini0).
+ * coroutine5 co_awaits a global object of this type.
+ * main() resuumes coroutine5 by calling the resume() member function on this global object.
  *
- *        An global object of this type is co_awaited in coroutine5 and
- *         is resumed from main().
- *
- *  Tested with Visual Studio 2019.
- *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
- *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <corolib/print.h>
@@ -24,7 +20,6 @@ mini0 m;
 
 async_task<int> coroutine5()
 {
-    print(PRI1, "coroutine5()\n");
     print(PRI1, "coroutine5(): co_await m;\n");
     co_await m;
     int v = 1;

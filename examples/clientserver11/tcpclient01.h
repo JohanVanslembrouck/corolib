@@ -1,8 +1,11 @@
 /**
- * @file
+ * @file tcpclient01.h
  * @brief
+ * First TCP client application.
+ * It uses a TcpClient data member for the communication with the server application.
+ * It uses coroutine functionality.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #ifndef TCPCLIENT01_H
@@ -61,12 +64,14 @@ private:    // functions
 
     // Coroutine related
     async_operation<QByteArray> start_reading();
-    void start_read(const int idx);
-    async_task<int> measurementLoop0();  // coroutine
-    async_task<int> measurementLoop1();  // coroutine
-    async_task<int> measurementLoop2();  // coroutine
-    async_task<int> measurementLoop3();  // coroutine
-    async_task<int> measurementLoop4();  // coroutine
+    void start_reading_impl(const int idx);
+	
+    // The following are all coroutines
+    async_task<int> measurementLoop0();
+    async_task<int> measurementLoop1();
+    async_task<int> measurementLoop2();
+    async_task<int> measurementLoop3();
+    async_task<int> measurementLoop4();
 
     IPaddressAndPort        m_server;
 

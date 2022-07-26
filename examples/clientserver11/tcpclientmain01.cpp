@@ -1,8 +1,8 @@
 /**
- * @file
- * @brief
+ * @file tcpclientmain01.cpp
+ * @brief Contains the main function to start a TcpClient01 application.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <QCoreApplication>

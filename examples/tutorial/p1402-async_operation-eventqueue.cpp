@@ -1,9 +1,9 @@
 /**
- *  Filename: p1402-async_operation-eventqueue.cpp
- *  Description:
+ * @file p1402-async_operation-eventqueue.cpp
+ * @brief
+ * Starts an asynchronous operation that will be completed from the main() function running the event queue.
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
- *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <functional>
@@ -16,34 +16,53 @@
 
 using namespace corolib;
 
-std::function<void(int)> operation;        // Will be initialized in start_op
+// TODO: use local variable in start_operation_impl
+std::function<void(int)> eventHandler;        // Will be initialized in start_operation_impl
 
 EventQueue eventQueue;
 
-void start_op(async_operation<int>* op)
+/**
+ * @brief start_operation_impl simulates starting an asynchronous operation and
+ * initializing an event handler that will be called when that asynchronous operation completes.
+ *
+ * Starting the asynchronous operation is omitted in this implementation.
+ * start_operation_impl initializes eventHandler with a lambda that will
+ * be called on completion of the asynchronous operation.
+ * start_operation_impl then places the lambda in the eventQueue.
+ *
+ * start_operation_impl is called from coroutine5 in p1400.cpp to start the asynchronous operation.
+ *
+ * In this example the main function will complete the operation by running the event queue.
+ *
+ * @param op is a pointer to an async_operation<int> object.
+ */
+void start_operation_impl(async_operation<int>* op)
 {
-    print(PRI1, "start_op()\n");
+    print(PRI1, "start_operation_impl()\n");
 
-    operation = [op](int i)
+    // The asynchronous operation is normally started here, passing the eventHandler as one of its arguments.
+
+    eventHandler = [op](int i)
     {
-        print(PRI1, "start_op()\n");
+        print(PRI1, "eventHandler()\n");
 
         if (op)
         {
-            print(PRI1, "start_op(): op->set_result(%d)\n", i);
+            print(PRI1, "eventHandler(): op->set_result(%d)\n", i);
             op->set_result(i);
             op->completed();
         }
         else
         {
             // This can occur when the async_operation_base has gone out of scope.
-            print(PRI1, "start_op() : Warning: op == nullptr\n");
+            print(PRI1, "eventHandler() : Warning: op == nullptr\n");
         }
     };
     
-    eventQueue.push(operation);
+    eventQueue.push(eventHandler);
 }
 
+// Uses coroutine1 implemented in p1400.cpp
 async_task<int> coroutine1();
 
 int main()

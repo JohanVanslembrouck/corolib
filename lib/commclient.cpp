@@ -4,7 +4,7 @@
  * Implements the client side of an application. CommClient inherits the functionality
  * of CommCore and just adds a connect operation to it.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <boost/asio/buffer.hpp>

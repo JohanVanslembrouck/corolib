@@ -1,8 +1,15 @@
 /**
- * @file
+ * @file protocolmessage.h
  * @brief
+ * Contains the definition of a ProtocolMessage that can be sent over a serial line connection.
+ * At the wire level, the byte stream of a ProtocolMessage starts with a STX symbol
+ * and ends with an ETX symbol. The ETX symbol is optionally preceded by a CRC or checksum.
+ * The DEL (delimiter) is used to delimit (indicate) occurrences of STX, ETX or itself
+ * in the byte stream.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * This class does not use coroutine functionality.
+ *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #ifndef __PROTOCOLMESSAGE
@@ -12,9 +19,9 @@
 #include <QDebug>
 #include <QByteArray>
 
-const char STX = 0xff;
-const char ETX = 0xfe;
-const char DEL = 0xfd;
+const char STX = 0xff;		// STX = Start of Text
+const char ETX = 0xfe;		// ETX = End of Text
+const char DEL = 0xfd;		// DEL = Delimiter
 
 const char STX_STUFF = 0x02;
 const char ETX_STUFF = 0x01;
@@ -33,6 +40,11 @@ enum MessageCheck
     USE_CRC
 };
 
+/**
+ * @class ProtocolMessage
+ * @brief
+ *
+ */
 class ProtocolMessage
 {
 public:

@@ -1,9 +1,8 @@
 /**
- *  Filename: buf+msg.h
- *  Description:
+ * @file buf+msg.h
+ * @brief
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
- *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _BUF_MSG_H_
@@ -14,7 +13,6 @@ struct Buffer {
     int length() { return 55; }
     char* buffer() { return 0; }
 };
-
 
 struct Msg {
     Msg(int i = 0) {}

@@ -1,8 +1,9 @@
 /**
- * @file
- * @brief
+ * @file tcpclient01.cpp
+ * @brief 
+ * Implementation of the first TCP client appliation.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include "tcpclient01.h"
@@ -365,23 +366,24 @@ async_operation<QByteArray> TcpClient01::start_reading()
     int index = get_free_index();
     print(PRI2, "%p: TcpClient01::start_reading(): index = %d\n", this, index);
     async_operation<QByteArray> ret{ this, index };
-    start_read(index);
+    start_reading_impl(index);
     return ret;
 }
 
 /**
- * @brief TcpClient01::start_read
+ * @brief TcpClient01::start_reading_impl uses Qt's connect to associate
+ * the TcpClient01::responseReceivedSig signal emitted by itself
+ * with a lambda used as slot functor.
+ * The lambda uses Qt's disconnect to break the association with the signal at the end of its invocation.
  * @param idx
  */
-void TcpClient01::start_read(const int idx)
+void TcpClient01::start_reading_impl(const int idx)
 {
-    print(PRI2, "%p: TcpClient01::start_read(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
+    print(PRI2, "%p: TcpClient01::start_reading_impl(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
 
     m_connections[idx] = connect(this, &TcpClient01::responseReceivedSig,
         [this, idx](QByteArray msg)
         {
-            //qDebug() << msg.length() << ":" << msg;
-
             async_operation_base* om_async_operation = m_async_operations[idx];
             async_operation<QByteArray>* om_async_operation_t =
                 dynamic_cast<async_operation<QByteArray>*>(om_async_operation);
@@ -394,12 +396,12 @@ void TcpClient01::start_read(const int idx)
             else
             {
                 // This can occur when the async_operation_base has gone out of scope.
-                print(PRI2, "%p: TcpClient01::start_read(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
+                print(PRI2, "%p: TcpClient01::start_reading_impl(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
             }
 
             if (!disconnect(m_connections[idx]))
             {
-                print(PRI1, "%p: TcpClient01::start_read(): idx = %d, Warning: disconnect failed\n", this, idx);
+                print(PRI1, "%p: TcpClient01::start_reading_impl(): idx = %d, Warning: disconnect failed\n", this, idx);
             }
         }
     );
@@ -433,7 +435,7 @@ async_task<int> TcpClient01::measurementLoop0()
  */
 async_task<int> TcpClient01::measurementLoop1()
 {
-    //qDebug() << Q_FUNC_INFO;
+    qInfo() << Q_FUNC_INFO;
     std::chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
     for (int i = 0; i < configuration.m_numberTransactions; i++)
     {

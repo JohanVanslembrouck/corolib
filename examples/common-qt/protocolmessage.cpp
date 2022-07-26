@@ -1,8 +1,11 @@
 /**
- * @file
+ * @file protocolmessage.cpp
  * @brief
+ * Contains the implementation of a ProtocolMessage.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * This class does not use coroutine functionality.
+ *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <QtEndian>
@@ -12,8 +15,6 @@
 
 /**
  * Section to determine the endianness of the computer - begin
- *
- *
  *
  */
 

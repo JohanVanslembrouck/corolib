@@ -1,11 +1,11 @@
 /** 
- *  Filename: p1010-thread.cpp
- *  Description: 
- *
- *  Tested with Visual Studio 2019.
- *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
- *
+ * @file p1010-thread.cpp
+ * @brief 
+ * Example with 5 coroutines.
+ * coroutineI (I = 1..4) co_awaits coroutineI+1.
+ * See description of coroutine5 for more information on this leaf coroutine that reverses the control flow.
+ * 
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <corolib/print.h>
@@ -14,12 +14,12 @@
 using namespace corolib;
 
 /**
- * coroutine5() starts a thread and then co_wait's a coroutine object
+ * @brief coroutine5() starts a thread and then co_waits a coroutine object
  * created at its beginning.
  * The thread starts a timer and resumes coroutine5() when the timer expires.
  * This implementation uses implementation details from async_task<T> and
- * is therefore more a hack.
- * See p0422.cpp for a cleaner solution, but uses an extra coroutine type.
+ * is therefore more a hack than a real solution.
+ * @return async_task<int>
  */
 async_task<int> coroutine5()
 {

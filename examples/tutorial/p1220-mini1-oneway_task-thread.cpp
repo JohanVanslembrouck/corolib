@@ -1,11 +1,20 @@
 /**
- *  Filename: p1210-mini1-oneway_task-thread.cpp
- *  Description:
- * 
- *  Tested with Visual Studio 2019.
+ * @brief p1210-mini1-oneway_task-thread.cpp
+ * @brief
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * Uses a dedicated awaitable type (mini1).
+ * A thread launched by coroutine6 calls set_and_resume() on a mini1 object after a delay of 1 second.
+ * This call resumes the coroutine that co_waits the mini1 object, which is coroutine6 itself.
  *
+ * In contrast to all other examples, coroutine3 returns a oneway_task object
+ * instead of an async_task<int> object.
+ * Therefore, coroutine2 cannot co_await coroutine3.
+ * 1) Instead, coroutine2 waits for 10 seconds before it cancels the execution of coroutine3
+ * and the coroutines called from coroutine3.
+ * 2) Alternatively, coroutine2 can co_wait an auto_reset_event object that it passes to coroutine3
+ * coroutine3 will resume coroutine2 using this auto_reset_event object.
+ *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <corolib/print.h>
@@ -46,6 +55,16 @@ async_task<int> coroutine5()
     co_return v+1;
 }
 
+/**
+ * @brief coroutine4 uses a loop where it co_waits coroutine5.
+ * coroutine4 leaves the loop before the maximum number of 30 iterations
+ * if the value of cancel parameter changes from false to true.
+ * coroutine2 will change this value after 10 seconds.
+ * If not, coroutine4 will leave the loop after 30 iterations and 30 seconds.
+ * @param cancel is a bool that allows another coroutine or function to exit
+ * the for loop before the maximum number of iterations.
+ * @return async_task<int>
+ */
 async_task<int> coroutine4(bool& cancel)
 {
     int v = 0;

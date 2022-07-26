@@ -14,14 +14,14 @@ The following classes are related:
   Objects of this class will be co_awaited in coroutines created with class async_task or one_task, see next points.
   The class is derived from class async_operation_base.
   This class has a pointer to class CommService described below. 
-* template<typename TYPE> struct async_task (file async_task.h) implements both operator co_await() and a promise_type. 
+* template<typename TYPE> class async_task (file async_task.h) implements both operator co_await() and a promise_type. 
   Its name refers to the coroutine type 'task' in C#.
   This type allows defining coroutines, i.e. functions that use co_await and co_return in their implementation and have async_task as return type.
   promise_type::initial_suspend returns suspend_never, while promise_type::final_suspend returns suspend_always.
-* struct oneway_task (file one_task.h) defines a promise_type but does not implement operator co_await().
+* class oneway_task (file one_task.h) defines a promise_type but does not implement operator co_await().
   It can be used to define coroutines that cannot be awaited upon.
   Both promise_type::initial_suspend and promise_type::final_suspend return suspend_never.
-* struct auto_reset_event (file auto_reset_event.h) implements operator co_await() but it does not define a promise_type.
+* class auto_reset_event (file auto_reset_event.h) implements operator co_await() but it does not define a promise_type.
   It could be considered a stripped-down version of class async_operation.
   This class can be used as a return type of a normal C++ (member) function.
   The returned object is then co_awaited in a coroutine. 
@@ -51,18 +51,18 @@ The following classes use the Boost library:
   The communication with the connected client is then performed using a CommCore object.
 
 The following classes are related and deal with the completion of one or all operations.
-- template<typename TYPE> struct wait_all (file wait_all_awaitable.h) implements operator co_await.
+- template<typename TYPE> class wait_all (file wait_all_awaitable.h) implements operator co_await.
   Its contructor is passed a list of operations that all have to be completed before the coroutine will resume.
   All operations receive a pointer to the wait_all_counter data member (see next point).
   Each operation calls the wait_all_counter's completed() function when it completes.
-- struct wait_all_counter (file wait_all_counter.h) is used as data member in wait_all.
+- class wait_all_counter (file wait_all_counter.h) is used as data member in wait_all.
   It implements a counter that is decremented each time its completed() function is called.
   When the counter reaches zero, the coroutine is resumed.
-- template<typename TYPE> struct wait_any (file wait_any_awaitable.h) implements operator co_await.
+- template<typename TYPE> class wait_any (file wait_any_awaitable.h) implements operator co_await.
   Its contructor is passed a list of operations; one of the operations has to be completed before the coroutine will resume.
   Each operation receives a pointer to a dedicated wait_any_one object (see next point).
   Each operation calls the wait_all_counter's completed() function when it completes.
-- struct wait_any_one (file wait_any_one.h) is used as a data member in wait_any 
+- class wait_any_one (file wait_any_one.h) is used as a data member in wait_any 
   (more in particular for a data member with type std::vector<wait_any_one*>).
   When an operation calls the completed() function on its wait_any_one object, the coroutine is resumed.
   

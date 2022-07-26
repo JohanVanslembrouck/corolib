@@ -1,9 +1,9 @@
 /**
- *  Filename: eventqueue.h
- *  Description:
+ * @file eventqueue.h
+ * @brief
+ * See the event queue description in tutorial/eventqueue.h
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
- *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _EVENTQUEUE_H_

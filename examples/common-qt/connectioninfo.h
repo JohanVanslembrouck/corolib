@@ -1,8 +1,8 @@
 /**
- * @file
- * @brief
+ * @file connectioninfo.h
+ * @brief Contains information of a TCP connection.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #ifndef CONNECTIONINFO_H

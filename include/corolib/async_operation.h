@@ -2,12 +2,14 @@
  * @file async_operation.h
  * @brief
  * async_operation<TYPE> is used as the return types of asynchronous (I/O) operations 
- * (see commcore.h, commclient.h and commserver.h).
- * async_operation<TYPE> can be co_awaited upon.
- * The TYPE in async_operation<TYPE> corresponds to the real return type of the operation.
- * async_operation<void> should be used for operations that return void.
+ * (see commcore.h, commclient.h and commserver.h in case of Boost ASIO).
+ * async_operation<TYPE> defines operator co_await (so it can be co_awaited upon from a coroutine)
+ * but it does not define a promise_type (so it can not be used as a return type of a coroutine).
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * The TYPE in async_operation<TYPE> corresponds to the real return type of the operation.
+ * async_operation<void> must be used for operations that return void.
+ *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 #ifndef _ASYNC_OPERATION_H_
 #define _ASYNC_OPERATION_H_
@@ -45,12 +47,20 @@ namespace corolib
             return m_ready;
         }
 
+        /**
+         * @brief called from the constructors and destructor of wait_all
+         *
+         */
         void setCounter(wait_all_counter* ctr)
         {
             print(PRI2, "%p: void async_operation_base::setCounter(%p)\n", this, ctr);
             m_ctr = ctr;
         }
 
+        /**
+		 * @brief called from the constructors and destructor of wait_any
+         *
+         */
         void setWaitAny(wait_any_one* waitany)
         {
             print(PRI2, "%p: void async_operation_base::setWaitAny(%p)\n", this, waitany);

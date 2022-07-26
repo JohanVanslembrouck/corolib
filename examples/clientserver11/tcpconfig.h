@@ -1,8 +1,9 @@
 /**
- * @file
+ * @file tcpconfig.h
  * @brief
- *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * Defines a struct with configuration information used by TCP client and server applications.
+ * 
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #ifndef TCPCONFIG_H

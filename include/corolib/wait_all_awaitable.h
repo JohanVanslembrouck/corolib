@@ -1,16 +1,17 @@
 /**
- * @file wait_all_awaiable.h
+ * @file wait_all_awaitable.h
  * @brief
- * wait_all waits for all async_operation objects passed to it in its constructor
+ * wait_all waits for all async_operation or async_task objects passed to it in its constructor
  * to complete.
- * wait_all passes the same wait_all_counter object to every async_operation.
- * When an async_operation completes, it decrements the counter in the wait_all_counter object.
- * When that counter reaches 0, the coroutines co_awaiting the wait_all object
- * will be resumed.
- * TODO1: verify instantiation of wait_all with an apppropriate type.
- * TODO2: implement other ways to pass the async_operation objects.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * wait_all passes its m_counter data member object to every async_operation or async_task object.
+ * When an async_operation or async_task completes, it decrements the counter in the m_counter object.
+ * When that counter reaches 0, the coroutines co_awaiting the wait_all object will be resumed.
+ *
+ * TODO1: verify instantiation of wait_all with an appropriate type using C++20 concepts.
+ * TODO2: implement other ways to pass the async_operation or async_task objects.
+ *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _WAIT_ALL_AWAITABLE
@@ -24,16 +25,22 @@
 
 namespace corolib
 {
-    // TYPE must be an async_operation or an async_operation_t<TYPE2>
+    // TYPE must be an async_operation or an async_task
     template<typename TYPE>
-    struct wait_all
+    class wait_all
     {
+    public:
+	    /**
+         * @brief constructor that takes an initializer list and
+		 * populates the internal vector m_elements with its elements.
+         */
         wait_all(std::initializer_list<TYPE*> async_ops)
             : m_counter(0)
         {
             print(PRI2, "%p: wait_all::wait_all(std::initializer_list<TYPE*> async_ops)\n", this);
             for (TYPE* async_op : async_ops)
             {
+                // Only place the object in m_elements if it has not yet been completed.
                 if (!async_op->is_ready())
                 {
                     async_op->setCounter(&m_counter);
@@ -43,13 +50,18 @@ namespace corolib
             }
         }
 
+        /**
+         * @brief constructor that takes a pointer to a C-style array of objects and its size
+		 * and that populates the internal vector m_elements with its elements.
+         */
         wait_all(TYPE* async_ops, int size)
             : m_counter(0)
         {
             print(PRI2, "%p: wait_all::wait_all(TYPE* async_ops, int size)\n", this);
             for (int i = 0; i < size; i++)
             {
-                if (async_ops[i].is_ready())
+                // Only place the object in m_elements if it has not yet been completed.
+                if (!async_ops[i].is_ready())
                 {
                     async_ops[i].setCounter(&m_counter);
                     m_elements.push_back(&async_ops[i]);

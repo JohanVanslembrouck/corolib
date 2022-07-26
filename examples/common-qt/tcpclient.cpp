@@ -1,8 +1,9 @@
 /**
- * @file
- * @brief
+ * @file tcpclient.cpp
+ * @brief Implementation of a TCP client class.
+ * Does not use coroutines.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include "tcpclient.h"

@@ -1,15 +1,19 @@
 /**
- * @file p1100-auto_reset_event.cpp
+ * @file p1105-auto_reset_event.cpp
  * @brief
  * Example with two coroutines coroutine1 and coroutine2 and 
  * awaitable type auto_reset_event from corolib.
  *
+ * This example is a variant of p1100-auto_reset_event.cpp.
  * coroutine2 co_awaits a global auto_reset_event object are1.
  * Because the object is not yet ready at this point, 
- * coroutine2 suspends and returns control to coroutine1, which will suspend on its turn and return control to main.
- * The main function will then "resume" are1, so that coroutine2 and coroutine1 are resumed and 
- * run until their co_return statement.
- * Finally, main() will get and print the result.
+ * coroutine2 suspends and returns control to coroutine1.
+ * coroutine1 (instead of main) will resume coroutine2 via are1.
+ * To be able to do this, coroutine1 cannot use co_await directly on coroutine2,
+ * but it has to save the return value of coroutine2 in a local variable.
+ * 
+ * This a an example of the caller (coroutine1) of a coroutine (coroutine2)
+ * that resumes the coroutine it has first called.
  * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
@@ -33,7 +37,14 @@ async_task<int> coroutine2()
 async_task<int> coroutine1()
 {
     print(PRI1, "coroutine1(): int v = co_await coroutine2();\n");
-    int v = co_await coroutine2();
+    async_task<int> at = coroutine2();
+
+    print(PRI1, "coroutine1(): are1.resume();\n");
+    are1.resume();
+	
+	print(PRI1, "coroutine1(): int v = co_await at;\n");
+	int v = co_await at;
+	
     print(PRI1, "coroutine1(): co_return v+1 = %d;\n", v+1);
     co_return v+1;
 }
@@ -44,10 +55,7 @@ int main()
 
     print(PRI1, "main(): async_task<int> a = coroutine1();\n");
     async_task<int> a = coroutine1();
-	
-    print(PRI1, "main(): are1.resume();\n");
-    are1.resume();
-	
+
     print(PRI1, "main(): int v = a.get_result();\n");
     int v = a.get_result();
     print(PRI1, "main(): v = %d\n", v);

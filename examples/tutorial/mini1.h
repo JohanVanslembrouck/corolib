@@ -1,13 +1,14 @@
 /**
- *  Filename: mini1.h
- *  Description:
+ * @file mini1.h
+ * @brief
+ * Defines a simple awaitable.
  *
- *  Compared with mini0.h:
- *  - can return a value
- *  - has an additional set_and_resume member function
+ * Compared with mini0.h:
+ * - mini1 is a template type
+ * - mini1 returns a value
+ * - mini1 has an additional set_and_resume member function
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
- *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _MINI1_H_
@@ -18,6 +19,13 @@
 
 using namespace corolib;
 
+/**
+ * @brief struct mini1 defines a simple awaitable type with three member functions:
+ * 1) function resume() resumes the coroutine that co_awaits a mini0 object.
+ * 2) function set_and_resume() first sets the return value before it resumes the 
+ *    coroutine that co_awaits a mini0 object.
+ * 2) operator co_await allows a coroutine to co_await a mini0 object.
+ */
 template<typename T>
 struct mini1
 {

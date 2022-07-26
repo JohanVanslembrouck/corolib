@@ -2,7 +2,7 @@
  * @file async_operation.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <stdio.h>
@@ -93,7 +93,7 @@ namespace corolib
     /**
      * @brief async_operation_base::operator =
      * @param s
-     * @return
+     * @return async_operation_base
      */
     async_operation_base& async_operation_base::operator = (async_operation_base&& s) noexcept
     {

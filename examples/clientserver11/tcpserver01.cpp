@@ -1,8 +1,9 @@
 /**
  * @file tcpserver01.cpp
  * @brief
- *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * Implementation of the first TCP server application.
+ * 
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <QThread>
@@ -44,8 +45,8 @@ void TcpServer01::configureTCP()
  * @brief TcpServer01::start
  * called from main() after having created a TcpServer01 object
  *
- * Note:
- *      server.listen(QHostAddress::LocalHost, port);
+ * @note
+ * server.listen(QHostAddress::LocalHost, port);
  * accepts only connections from clients using "localhost" or "127.0.0.1",
  * not even if the IP address is the same as that of the computer.
  *
@@ -102,10 +103,11 @@ void TcpServer01::acceptError(QAbstractSocket::SocketError socketError)
     qInfo() << "acceptError: " << socketError;
 }
 
-
 /**
- * @brief TcpServer01::readyReadTcp
- * @param data
+ * @brief TcpServer01::readyReadTcp receives messages sent by a client application
+ * and sends the same message nrRepetitions times as response to the client.
+ * @param socket is the socket on which data has arrived
+ * @param data is a byte array with the (partial) content of one or more messages
  */
 void TcpServer01::readyReadTcp(QTcpSocket* sock, QByteArray& data)
 {
@@ -114,8 +116,10 @@ void TcpServer01::readyReadTcp(QTcpSocket* sock, QByteArray& data)
 
     int length = data.length();
     int index = 0;
+    // Compose one or more messages from the received byte array.
     while (m_message.composeMessage(data, length, index))
     {
+        // A complete message is received. Check its content first.
         if (m_message.checkMessage())
         {
             // At the moment do not take the result into account.
@@ -127,9 +131,12 @@ void TcpServer01::readyReadTcp(QTcpSocket* sock, QByteArray& data)
 
         QByteArray content = m_message.content();
         qInfo() << "TCPIP: " << content;
+        // The second byte in the message indicates the number of responses
+        // the client application expects:
         int nrRepetitions = content[1];
         for (int i = 0; i < nrRepetitions; i++)
         {
+            // Send each response after a delay
             QThread::msleep(configuration.m_delayBeforeReply);
             m_tcpServer.sendMessage(sock, content);
         }

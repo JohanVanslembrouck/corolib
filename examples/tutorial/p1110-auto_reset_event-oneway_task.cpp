@@ -1,20 +1,17 @@
 /**
- *  Filename: p1110-auto_reset_event-oneway_task.cpp
- *  Description:
+ * @file p1110-auto_reset_event-oneway_task.cpp
+ * @brief
+ * Example with 6 coroutines.
+ * coroutineI (I = 1..6) co_awaits coroutineI+1.
  *
- *        Uses a dedicated coroutine type (auto_reset_event).
+ * coroutine5 starts coroutine6 twice. 
+ * Both instances proceed independently when "someone" resumes the auto_reset_event object passed as the second argument.
+ * Each coroutine6 instance has to be resumed twice before coroutine6 will resume 
+ * the auto_reset_event passed in its third argument.
+ * The main() function is responsible for resuming both instances of coroutine6 twice.
+ * The order in which this happens is not important.
  *
- *        coroutine5 starts coroutine6 twice. Both instances proceed independently 
- *        if "someone" resumes the auto_reset_event passed as their first argument.
- *        Each coroutine6 instance has to be resumed twice before it will resume 
- *        its second argument (passed by and co_awaited by coroutine5).
- *        The main() function is responsible for resuming both instances of coroutine6 twice.
- *        The order in which this happens is not important.
- *
- *  Tested with Visual Studio 2019.
- *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
- *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <corolib/print.h>
@@ -65,7 +62,8 @@ async_task<int> coroutine4()
     co_return v+1;
 }
 
-async_task<int> coroutine3() {
+async_task<int> coroutine3()
+{
     print(PRI1, "coroutine3(): async_task<int> a4 = coroutine4();\n");
     async_task<int> a4 = coroutine4();
     print(PRI1, "coroutine3(): int v = co_await a4;\n");

@@ -2,7 +2,7 @@
  * @file reqresptypes.h
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 #ifndef _REQRESPTYPES_H_
 #define _REQRESPTYPES_H_

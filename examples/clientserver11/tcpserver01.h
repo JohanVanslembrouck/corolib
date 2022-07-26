@@ -1,8 +1,11 @@
 /**
- * @file
+ * @file tcpserver01.h
  * @brief
+ * First TCP server application.
+ * It uses a TcpServer data member for communication with client applications.
+ * It does not use coroutine functionality.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #ifndef TCPSERVER01_H

@@ -2,7 +2,7 @@
  * @file timer01.h
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #ifndef TIMER01_H
@@ -27,7 +27,7 @@ public:
 
 protected:
 	async_operation<void> start_timer(steady_timer& timer, int ms);
-	void start_tmr(const int idx, steady_timer& tmr, int ms);
+	void start_timer_impl(const int idx, steady_timer& tmr, int ms);
 
 	async_task<int> mainTask();
 	async_task<int> timerTask01();

@@ -1,11 +1,8 @@
 /**
- *  Filename: p1446-async_operation-immediate.cpp
- *  Description:
+ * @file p1446-async_operation-immediate.cpp
+ * @brief
  *
- *  Tested with Visual Studio 2019.
- *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
- *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <corolib/print.h>
@@ -18,6 +15,7 @@ using namespace corolib;
 Class01 object01(USE_IMMEDIATE_COMPLETION);
 Class01 object02(USE_IMMEDIATE_COMPLETION);
 
+// Uses coroutine1 implemented in p1440.cpp
 async_task<int> coroutine1();
 
 int main()

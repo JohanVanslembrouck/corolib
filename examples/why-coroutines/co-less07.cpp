@@ -1,11 +1,9 @@
 /**
- *  Filename: co-less07.cpp
- *  Description:
+ * @file co-less07.cpp
+ * @brief
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
- *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
-
 
 #include <stdio.h>
 
@@ -93,7 +91,7 @@ int main() {
                             [](int out11, int out12, int ret1) { remoteObject3.callback(out11, out12, ret1); });
         });
     connect(event2, []() { remoteObject3.sendc_op1(in11, in12,
-        [](int out11, int out12, int ret1) { remoteObject3.callback(out11, out12, ret1); });
+                            [](int out11, int out12, int ret1) { remoteObject3.callback(out11, out12, ret1); });
         });
     eventQueue.run();
     return 0;

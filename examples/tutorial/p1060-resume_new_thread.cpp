@@ -1,11 +1,12 @@
 /** 
- *  Filename: p1060-resume_new_thread.cpp
- *  Description: 
+ * @file p1060-resume_new_thread.cpp
+ * @brief
+ * Example with 5 coroutines.
+ * coroutineI (I = 1..4) co_awaits coroutineI+1.
+ * coroutine5 co_awaits a resume_new_thread object that reverses the conrol flow.
+ * See the description of resume_new_thread for more information.
  *
- *  Tested with Visual Studio 2019.
- *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
- *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <corolib/print.h>
@@ -13,12 +14,17 @@
 
 using namespace corolib;
 
+/**
+ * @brief struct resume_new_thread is a variant of resume_same_thread in p1050-resume_same_thread.cpp.
+ * await_ready() always returns true; consequently await_suspend() will never be called.
+ *
+ */
 struct resume_new_thread
 {
     bool await_ready() noexcept
     {
         print(PRI1, "resume_new_thread::await_ready()\n");
-        return false;
+        return true;
     }
 
     void await_suspend(std::coroutine_handle<> handle) noexcept {
@@ -59,7 +65,8 @@ async_task<int> coroutine4()
     co_return v+1;
 }
 
-async_task<int> coroutine3() {
+async_task<int> coroutine3()
+{
     print(PRI1, "coroutine3(): async_task<int> a1 = coroutine4();\n");
     async_task<int> a1 = coroutine4();
     print(PRI1, "coroutine3(): int v1 = co_await a1;\n");
@@ -96,7 +103,7 @@ async_task<int> coroutine1()
 }
 
 /**
- * Because main() cannot be a coroutine (it cannot return a coroutine type),
+ * @brief Because main() cannot be a coroutine (it cannot return a coroutine type),
  * it cannot use co_await. Instead it calls get_result() on the coroutine object
  * returned from coroutine1().
  */

@@ -5,7 +5,9 @@
  * in combination with Boost ASIO to implement a client application.
  * This example uses 1 CommClient object.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * See README.md for further information.
+ *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <string>
@@ -35,16 +37,41 @@ public:
 		print(PRI1, "ClientApp::ClientApp(...)\n");
 	}
 
-	std::string getHeader(std::string str) {
-		while (str.size()) {
+    /**
+     * @brief getHeader retrieves the header identifying the operation from a string.
+     * The header is the substring preceding the first : in the string.
+     * @param str is the string to retrieve the header for,
+     * @return the header found in the string or the empty string if not present
+     */
+	std::string getHeader(std::string str)
+	{
+		while (str.size())
+		{
 			int index = str.find(':');
-			if (index != std::string::npos) {
+			if (index != std::string::npos)
+			{
 				return (str.substr(0, index));
 			}
 		}
 		return "";
 	}
 
+    /**
+     * @brief performAction first writes "GOAL\n" onto the connection to the server.
+     * It then start reading the response and it also starts a timer.
+     * Depending on the timer length, the timer may expire first or the response may arrive first.
+     * performAction uses a wait_any to distinguish between both cases.
+     * 1) The response arrives first. performAction inspects the response:
+	 *     a) If the response string starts with "FBK", the server will send new responses.
+	 *        performAction starts reading again to receive the next response.
+	 *     b) If the response string starts with "RES", the server will not send any new responses.
+	 *        performAction cancels the running timer and it leaves the loop.
+     * 2) The timer expires first. performAction sends a STOP request to the server
+     * and it starts timer of 500 ms. It leaves the loop.
+     *
+     * @param the timeout to use
+     * @return async_task<int> with value 0
+     */
 	async_task<int> performAction(int timeout)
 	{
 		// Prepare the GOAL request
@@ -137,6 +164,16 @@ public:
 		co_return 0;
 	}
 	
+    /**
+     * @brief mainflow repeats the following actions 10 times:
+     * 1) it connects to the server
+     * 2) it calls performAction (see above) to perform the interaction with the server
+     * and co_waits its completion.
+     * 3) it starts a timer of 100 ms
+     * 4) it closes the connection
+     *
+     * @return async_task<int> with return value 0
+     */
 	async_task<int> mainflow()
 	{
 		print(PRI1, "mainflow: begin\n");

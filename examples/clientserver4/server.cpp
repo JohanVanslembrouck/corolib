@@ -4,7 +4,9 @@
  * This example illustrates the use of coroutines
  * in combination with Boost ASIO to implement a server application.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com)
+ * See README.md for further information.
+ *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
  
 #include <boost/asio/signal_set.hpp>
@@ -32,14 +34,17 @@ public:
 	}
 
 	/**
-	 * @brief Handles the interaction with one client
+	 * @brief one_client the interaction with one client. It performs the following steps:
 	 * 1) Reads the request from the client
-	 * 2) Starts an asynchronous timer to simulate a long calculation
+	 * 2) Starts an asynchronous timer of 1000 ms to simulate a long calculation
 	 * 3) Starts reading a possible second request to cancel the first one.
-	 * 4) Waits for either 
-	 *	  a) timer to expire: write the reply to the client
+	 * 4) Enters a loop where it waits for either 
+	 *	  a) the timer to expire: one_client writes the reply to the client
+	 *       one_client uses a counter to distinguish between two replies:
+	 *       if the counter > 0, it sends a "FBK" reply, decrements the timer and restarts the timer
+	 *		 if the counter == 0, it sens a "RES" reply and leaves the loop
 	 *    b) a second request to cancel the action started after the first request
-	 * 5) close the connection
+	 * 5) Closes the connection
 	 */
 	oneway_task one_client(spCommCore commClient)
 	{
@@ -145,6 +150,14 @@ public:
 		co_return;
 	}
 
+    /**
+     * @brief mainflow implements a potentially eternal loop.
+     * mainflow creates a client object and then starts accepting a connection from a new client.
+     * When a client connects, mainflow starts communicating with that client by calling one_client.
+     * It does not await the completeion of that communication, but it immediately creates a new client object
+     * and starts waiting for another client to connect.
+     * @return async_task<int> with value 0
+     */
 	async_task<int> mainflow()
 	{
 		int counter = 0;

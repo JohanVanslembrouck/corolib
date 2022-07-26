@@ -1,9 +1,8 @@
 /**
- *  Filename: variables.h
- *  Description:
+ * @file variables.h
+ * @brief
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
- *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _VARIABES_H_

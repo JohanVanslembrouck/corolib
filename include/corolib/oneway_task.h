@@ -4,8 +4,9 @@
  * Implements in essence only a promise_type whose initial_suspend() and final_suspend()
  * both return a suspend_never object.
  * A oneway_task object cannot be co_awaited for.
- *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * Based upon oneway_task in cppcoro/include/cppcoro/async_scope.hpp.
+ * 
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 #ifndef _ONEWAY_TASK_H_
 #define _ONEWAY_TASK_H_
@@ -15,8 +16,10 @@
 
 namespace corolib
 {
-    struct oneway_task
+    class oneway_task
     {
+    public:
+	
         oneway_task()
         {
             print(PRI2, "%p: oneway_task::oneway_task()\n", this);

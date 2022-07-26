@@ -1,9 +1,9 @@
 /**
- *  Filename: mini0.h
- *  Description:
- *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
- *
+ * @file mini0.h
+ * @brief
+ * Defines a simple awaitable.
+ * 
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _MINI0_H_
@@ -14,6 +14,11 @@
 
 using namespace corolib;
 
+/**
+ * @brief struct mini0 defines a simple awaitable type with two member functions:
+ * 1) function resume() resumes the coroutine that co_awaits a mini0 object.
+ * 2) operator co_await allows a coroutine to co_await a mini0 object.
+ */
 struct mini0
 {
     std::coroutine_handle<> m_awaiting;

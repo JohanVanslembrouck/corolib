@@ -1,11 +1,9 @@
 /**
- *  Filename: co-full01.cpp
- *  Description:
+ * @file co-full01.cpp
+ * @brief
  *
- *  Tested with Visual Studio 2019.
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
- *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <corolib/print.h>

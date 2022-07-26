@@ -1,12 +1,16 @@
 p1000.exe
+p1001-recursive.exe
 p1002-no-coroutines.exe
 p1010-thread.exe
+p1011-thread-recursive.exe
 p1050-resume_same_thread.exe
 p1052-resume_same_thread.exe
 p1054-resume_same_thread.exe
 p1060-resume_new_thread.exe
+p1062-resume_new_thread.exe
 p1064-resume_new_thread.exe
 p1100-auto_reset_event.exe
+p1105-auto_reset_event.exe
 p1110-auto_reset_event-oneway_task.exe
 p1120-auto_reset_event-thread.exe
 p1200-mini0.exe

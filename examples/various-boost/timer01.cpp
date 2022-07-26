@@ -2,7 +2,7 @@
  * @file timer01.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include "timer01.h"
@@ -21,18 +21,29 @@ void Timer01::start()
     mainTask();
 }
 
+/**
+ * @brief Timer01::start_timer
+ * @param timer
+ * @param ms
+ */
 async_operation<void> Timer01::start_timer(steady_timer& timer, int ms)
 {
     int index = get_free_index();
     print(PRI1, "%p: CommCore::start_timer(timer, %d): index = %d\n", this, ms, index);
     async_operation<void> ret{ this, index };
-    start_tmr(index, timer, ms);
+    start_timer_impl(index, timer, ms);
     return ret;
 }
 
-void Timer01::start_tmr(const int idx, steady_timer& tmr, int ms)
+/**
+ * @brief Timer01::start_timer_impl
+ * @param idx
+ * @param tmr
+ * @param ms
+ */
+void Timer01::start_timer_impl(const int idx, steady_timer& tmr, int ms)
 {
-    print(PRI1, "%p: Timer01::start_tmr()\n", this);
+    print(PRI1, "%p: Timer01::start_timer_impl()\n", this);
 
     tmr.expires_after(std::chrono::milliseconds(ms));
 

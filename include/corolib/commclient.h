@@ -3,8 +3,9 @@
  * @brief
  * Implements the client side of an application. CommClient inherits the functionality
  * of CommCore and just adds a connect operation to it.
+ * Uses Boost ASIO for communication.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _COMMCLIENT_H_

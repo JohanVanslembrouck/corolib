@@ -7,7 +7,7 @@
  * of messages that will or will not be printed depending on the priority variable
  * defined in the application.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _PRINT_H_

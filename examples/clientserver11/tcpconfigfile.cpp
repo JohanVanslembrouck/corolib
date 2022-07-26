@@ -1,8 +1,8 @@
 /**
- * @file
- * @brief
+ * @file tcpconfigfile.cpp
+ * @brief Contains code to read a file with information to configure a TCP client or server application.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <QFile>

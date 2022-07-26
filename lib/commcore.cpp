@@ -4,7 +4,7 @@
  * Contains operations that are common to the client and server side:
  * read, write, start timers, closing, etc.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
  
 #include <boost/asio/buffer.hpp>
@@ -32,9 +32,11 @@ CommCore::CommCore(boost::asio::io_context& io_context)
     print(PRI2, "%p: CommCore::CommCore()\n", this);
 }
 
-// This function terminates all the actors to shut down the connection. It
-// may be called by the user of the CommCore class, or by the class itself in
-// response to graceful termination or an unrecoverable error.
+/**
+ * @brief CommCore::stop terminates all the actors to shut down the connection.
+ * It may be called by the user of the CommCore class, or by the class itself in
+ * response to graceful termination or an unrecoverable error.
+ */
 void CommCore::stop()
 {
     print(PRI2, "%p: CommCore::stop()\n", this);

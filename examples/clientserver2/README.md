@@ -9,7 +9,7 @@ After building, launch the applications in the following order:
 * 'cs2-server' or 'cs2-server2
 * 'cs2-client1' (one or more instances) or 'cs2-client1a' (one or more instances)
 
-In contrast with client1.cpp the implementation of performAction in client1.cpp uses a loop.
+In contrast with client1.cpp the implementation of performAction in client1a.cpp uses a loop.
 The behavior should be identical.
 
 The client1 application initiates an action on the server by writing the string "START".

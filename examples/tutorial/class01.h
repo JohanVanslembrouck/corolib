@@ -1,9 +1,9 @@
 /**
- *  Filename: class01.h
- *  Description:
+ * @file class01.h
+ * @brief
+ * Defines a class with (the simulation of) one asynchronous operation.
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
- *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
  
 #ifndef _CLASS01_H_
@@ -38,10 +38,10 @@ public:
     
     async_operation<int> start_operation();
     
-    std::function<void(int)> operation;
+    std::function<void(int)> eventHandler;
 
 protected:
-    void start_op(const int idx);
+    void start_operation_impl(const int idx);
 
 private:
     UseMode    m_useMode;

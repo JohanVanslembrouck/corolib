@@ -1,8 +1,9 @@
 /**
- * @file
+ * @file tcpclient02.cpp
  * @brief
+ * Implementation of the second TCP client application
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <chrono>
@@ -505,7 +506,13 @@ void TcpClient02::stateChanged(QAbstractSocket::SocketState socketState)
 // =================
 
 /**
- * @brief TcpClient02::measurementLoop0
+ * @brief TcpClient02::measurementLoop0 prepares a message,
+ * sends this message to the first server,
+ * starts reading the response
+ * and co_awaits the response.
+ * It repeats these actions configuration.m_numberTransactions times.
+ * @note It is not a good idea to start reading after sending the message.
+ * The response may have arrived before the completion function was registered.
  * @return
  */
 async_task<int> TcpClient02::measurementLoop0()
@@ -537,7 +544,16 @@ async_task<int> TcpClient02::measurementLoop0()
 }
 
 /**
- * @brief TcpClient02::measurementLoop1
+ * @brief TcpClient02::measurementLoop1 prepares a first message,
+ * sends this message to the first server,
+ * prepares a second message,
+ * sends this message again to the first server,
+ * starts reading the response on the first message,
+ * co_awaits the response,
+ * starts reading the response on the second message
+ * and co_awaits the response.
+ * @note It is not a good idea to start reading after sending the message.
+ * The response may have arrived before the completion function was registered.
  * @return
  */
 async_task<int> TcpClient02::measurementLoop1()
@@ -572,6 +588,8 @@ async_task<int> TcpClient02::measurementLoop1()
 
 /**
  * @brief TcpClient02::measurementLoop2
+ * @note It is not a good idea to start reading after sending the message.
+ * The response may have arrived before the completion function was registered.
  * @return
  */
 async_task<int> TcpClient02::measurementLoop2()
@@ -604,6 +622,8 @@ async_task<int> TcpClient02::measurementLoop2()
 
 /**
  * @brief TcpClient02::measurementLoop10
+ * @note It is not a good idea to start reading after sending the message.
+ * The response may have arrived before the completion function was registered.
  * @return
  */
 async_task<int> TcpClient02::measurementLoop10()
@@ -633,8 +653,8 @@ async_task<int> TcpClient02::measurementLoop10()
 
 /**
  * @brief TcpClient02::measurementLoop11
- * It is not a good idea to start reading after sending the message.
- * The reply may have arrived before the completion function was registered.
+ * @note It is not a good idea to start reading after sending the message.
+ * The response may have arrived before the completion function was registered.
  * @return
  */
 async_task<int> TcpClient02::measurementLoop11()
@@ -665,7 +685,16 @@ async_task<int> TcpClient02::measurementLoop11()
 }
 
 /**
- * @brief TcpClient02::measurementLoop12
+ * @brief TcpClient02::measurementLoop12 prepares two messages,
+ * starts reading the response from the first server, 
+ * sends the first message to the first server,
+ * co_awaits the response from the first server,
+ * starts reading the response from the second server, 
+ * sends the second message to the second server
+ * and co_awaits the response from the second server.
+ * It repeats these actions configuration.m_numberTransactions times.
+ * @note By start reading the response before the message has been sent,
+ * the completion handler is surely in place at the moment the response arrives.
  * @return
  */
 async_task<int> TcpClient02::measurementLoop12()
@@ -695,7 +724,8 @@ async_task<int> TcpClient02::measurementLoop12()
 }
 
 /**
- * @brief TcpClient02::measurementLoop13
+ * @brief TcpClient02::measurementLoop13 is a variant of measurementLoop12
+ * with re-ordering of some statements.
  * @return
  */
 async_task<int> TcpClient02::measurementLoop13()
@@ -726,7 +756,9 @@ async_task<int> TcpClient02::measurementLoop13()
 }
 
 /**
- * @brief TcpClient02::measurementLoop14
+ * @brief TcpClient02::measurementLoop14 is a variant of measurementLoop13.
+ * measurementLoop14 first sends a message to the two servers before it starts reading
+ * the responses.
  * @return
  */
 async_task<int> TcpClient02::measurementLoop14()
@@ -822,7 +854,9 @@ async_task<int> TcpClient02::measurementLoop16()
 }
 
 /**
- * @brief TcpClient02::measurementLoop20
+ * @brief TcpClient02::measurementLoop20 (and the following functions) use a double for loop.
+ * The outer loop iterates over a number of message lengths to be generated, 
+ * the inner loop sends a message of a given length a number of times to the server and reads the response of the server.
  * @return
  */
 async_task<int> TcpClient02::measurementLoop20()

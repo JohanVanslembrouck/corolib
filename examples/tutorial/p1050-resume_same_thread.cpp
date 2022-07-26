@@ -1,12 +1,14 @@
 /** 
- *  Filename: p1050-resume_same_thread.cpp
- *  Description:
+ * @file p1050-resume_same_thread.cpp
+ * @brief
+ * Example with 5 coroutines.
+ * coroutineI (I = 1..4) co_awaits coroutineI+1.
+ * coroutine5 co_awaits a resume_same_thread object that reverses the conrol flow.
+ * See the description of resume_same_thread for more information.
  *
+ * In this example the coroutines are not suspended/resumed, but simply return.
  *
- *  Tested with Visual Studio 2019.
- *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com, johan.vanslembrouck@gmail.com)
- *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <corolib/print.h>
@@ -14,6 +16,15 @@
 
 using namespace corolib;
 
+/**
+ * @brief struct resume_same_thread is a simple awaitable type.
+ * When a coroutine calls operator co_await on a resume_same_thread object, await_ready() is called first.
+ * await_ready() returns true, so await_resume() is called immediately afterwards
+ * to return the result (void in this case) to the coroutine.
+ * await_suspend() will never be called because await_ready() always returns true.
+ *
+ * The coroutine calling operator co_await on a resume_same_thread object will not be suspended/resumed.
+ */
 struct resume_same_thread
 {
     bool await_ready() noexcept
@@ -33,7 +44,8 @@ struct resume_same_thread
     }
 };
 
-async_task<int> coroutine5() {
+async_task<int> coroutine5()
+{
     print(PRI1, "coroutine5(): co_await resume_same_thread\n");
     co_await resume_same_thread();
     int v = 1;

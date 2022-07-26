@@ -1,11 +1,9 @@
 /**
- *  Filename: p1460-async_operation.cpp
- *  Description:
+ * @file p1460-async_operation.cpp
+ * @brief
  *
- *  Tested with Visual Studio 2019.
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
- *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <corolib/print.h>
@@ -18,6 +16,7 @@ using namespace corolib;
 Class02 object01;
 Class02 object02;
 
+// Uses coroutine1 implemented in p1460.cpp
 async_task<int> coroutine1();
 
 int main()
@@ -33,13 +32,13 @@ int main()
 
     for (int i = 0; i < 12; i++)
     {
-        print(PRI1, "main(): before object01.operation[%d](10);\n", i);
-        object01.operation[i](10);
-        print(PRI1, "main(): after object01.operation[%d](10);\n", i);
+        print(PRI1, "main(): before object01.eventHandler[%d](10);\n", i);
+        object01.eventHandler[i](10);
+        print(PRI1, "main(): after object01.eventHandler[%d](10);\n", i);
 
-        print(PRI1, "main(): before object02.operation[%d](10);\n", i);
-        object02.operation[i](10);
-        print(PRI1, "main(): after object02.operation[%d](10);\n", i);
+        print(PRI1, "main(): before object02.eventHandler[%d](10);\n", i);
+        object02.eventHandler[i](10);
+        print(PRI1, "main(): after object02.eventHandler[%d](10);\n", i);
 
         print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));

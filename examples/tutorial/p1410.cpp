@@ -1,9 +1,12 @@
 /**
- *  Filename: p1410.cpp
- *  Description:
+ * @file p1410.cpp
+ * @brief
+ * Example with 5 coroutines.
+ * coroutineI (I = 1..4) co_awaits coroutineI+1.
+ * coroutine3 calls coroutine4 twice.
+ * coroutine5 starts an asynchronous operation on object01 and awaits its completion.
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
- *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <corolib/print.h>
