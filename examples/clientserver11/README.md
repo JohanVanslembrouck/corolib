@@ -5,15 +5,25 @@ Build them using Qt Creator or qmake.
 
 After building, launch the applications in the following order:
 
-* 'tcpserver01.exe'
-* 'tcpclient01.exe' or 'tcpclient02.exe'
+* tcpserver01.exe, tcpclient01.exe, or
+* tcpserver02a.bat, tcpserver02b.bat, tcpclient02.exe
 
-The three applications have a companion configuration file (tcpserver01.cfg, tcpclient01.cfg and tcpclient02.cfg) that allow selecting several run-time options.
-Copy the configuration files to the build folder (if different from this folder). Copy also Qt5Core.dll and Qt5Network.dll (or Qt5Cored.dll and Qt5Networkd.dll for the debug version) to the build folder.
+The applications have companion configuration files (tcpserver01.cfg, tcpclient01.cfg, tcpserver02a.cfg, tcpserver02b.cfg and tcpclient02.cfg) 
+that allow selecting several run-time options.
+The two .bat files start tcpserver02.exe with a different configuration. tcpclient02.exe expects two running tcpserver02 servers.
+Copy the .cfg and the .bat files to the corresponding build folders (if different from this folder). 
+Copy also Qt5Core.dll and Qt5Network.dll (or Qt5Cored.dll and Qt5Networkd.dll for the debug version) to the build folder.
+
+The applications are usually built in separate directories. We assume four release build directories:
+* the tcpserver01 build directory contains tcpserver01.exe and requires the following additional files: tcpserver01.cfg, Qt5Core.dll, Qt5Network.dll
+* the tcpclient01 build directory contains tcpclient01.exe and requires the following additional files: tcpclient01.cfg, Qt5Core.dll, Qt5Network.dll
+* the tcpserver02 build directory contains tcpserver02.exe and requires the following additional files: tcpserver02a.cfg, tcpserver02b.cfg, tcpserver02a.bat, tcpserver02b.bat, Qt5Core.dll, Qt5Network.dll
+* the tcpclient02 build directory contains tcpclient02.exe and requires the following additional files: tcpclient02.cfg, Qt5Core.dll, Qt5Network.dll
 
 The major difference between tcplient01 and tcpclient02 is that the latter has 2 TcpClient objects that communicate with the server, while the former has only 1 TcpClient object.
 Because of this, the tcpclient01 application can handle the results of its sole client object in the application itself, in its start_reading() function.
-The tcpclient02 application, on the other hand, has to make a stricter distinction and uses the start_reading() function of its TcpClientCo(routine) objects. The tcpclient02 application also implements many more tests than tcpclient01.
+The tcpclient02 application, on the other hand, has to make a stricter distinction and uses the start_reading() function of its TcpClientCo(routine) objects. 
+The tcpclient02 application also implements many more tests than tcpclient01.
 
 The tcpserver01 application does not use coroutines. Both client applications can be configured to use (or not use) coroutines, see variable useCoroutines in their .cfg files.
 
