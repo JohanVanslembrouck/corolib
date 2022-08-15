@@ -13,7 +13,7 @@
 #include <iostream>
 #include <iomanip>      // setprecision
 
-#include <corolib/wait_all_awaitable.h>
+#include <corolib/when_all.h>
 
 using namespace std;
 

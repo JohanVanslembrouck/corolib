@@ -32,8 +32,8 @@ HEADERS += \
         ../../include/corolib/async_task.h \
         ../../include/corolib/commservice.h \
         ../../include/corolib/print.h \
-        ../../include/corolib/wait_all_counter.h \
-        ../../include/corolib/wait_any.h \
+        ../../include/corolib/when_all_counter.h \
+        ../../include/corolib/when_any.h \
         ../common-qt/tcpclientco.h \
         tcpconfig.h \
         tcpconfigfile.h \

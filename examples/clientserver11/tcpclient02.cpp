@@ -13,7 +13,7 @@
 #include "tcpclient02.h"
 #include "tcpconfig.h"
 
-#include <corolib/wait_all_awaitable.h>
+#include <corolib/when_all.h>
 using namespace std;
 
 static int nr_message_lengths = 10;

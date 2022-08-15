@@ -43,7 +43,7 @@ In this way main_one_client gets feedback on the invoked operation and can (if a
 
 cs3-server5 (server5.cpp) is a variant of cs3-server4 (server4.cpp).
 It allows coroutine mainflow_one_client to follow the progress of coroutine read_client_request by passing it a struct process_info_t.
-In contrast to server4.cpp, server5.cpp does not use wait_any_awaitable.
+In contrast to server4.cpp, server5.cpp does not use when_any.
 Therefore, it does not have to save the return value of the dispatcher.registerFunctor calls.
 
 cs3-server6 (server6.cpp) is based on cs3-server4 (server4.cpp).

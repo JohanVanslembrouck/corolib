@@ -17,8 +17,8 @@
 #include <coroutine>
 #include "print.h"
 #include "commservice.h"
-#include "wait_all_counter.h"
-#include "wait_any_one.h"
+#include "when_all_counter.h"
+#include "when_any_one.h"
 
 namespace corolib
 {

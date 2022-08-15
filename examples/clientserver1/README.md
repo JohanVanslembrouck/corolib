@@ -35,7 +35,7 @@ client1b.cpp uses instead
 I normally use the first style in all other code examples, for the following reasons:
 * It shows the return type of the operation (can be used for "educational" purposes).
 * It allows the coroutine to perform some tasks after the asynchronous operation has been started but before its result is needed and therefore has to be co_awaited upon.
-* It allows to start several asynchronous operations one after the other and co_await their results afterwards, either one by one or using a wait_all_awaitable or a wait_any_awaitable object.
+* It allows to start several asynchronous operations one after the other and co_await their results afterwards, either one by one or using a when_all or a when_any object.
 
 If none of these reasons apply, the second style saves some typing and leads to more concise code.
 

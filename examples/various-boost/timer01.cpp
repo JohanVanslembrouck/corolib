@@ -7,7 +7,7 @@
 
 #include "timer01.h"
 
-#include <corolib/wait_all_awaitable.h>
+#include <corolib/when_all.h>
 
 Timer01::Timer01(
     boost::asio::io_context& ioContext)

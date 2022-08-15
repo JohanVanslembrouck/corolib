@@ -13,8 +13,8 @@
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
-#ifndef _WAIT_ALL_COUNTER_H_
-#define _WAIT_ALL_COUNTER_H_
+#ifndef _WHEN_ALL_COUNTER_H_
+#define _WHEN_ALL_COUNTER_H_
 
 #include <coroutine>
 #include "print.h"

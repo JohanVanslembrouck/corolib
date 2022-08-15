@@ -6,8 +6,8 @@
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
-#ifndef _WAIT_ANY_ONE_H_
-#define _WAIT_ANY_ONE_H_
+#ifndef _WHEN_ANY_ONE_H_
+#define _WHEN_ANY_ONE_H_
 
 #include <coroutine>
 #include "print.h"

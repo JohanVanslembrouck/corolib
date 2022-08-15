@@ -16,13 +16,13 @@
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
-#ifndef _WAIT_ANY_AWAITABLE_
-#define _WAIT_ANY_AWAITABLE_
+#ifndef _WHEN_ANY_AWAITABLE_
+#define _WHEN_ANY_AWAITABLE_
 
 #include <vector>
 
 #include "print.h"
-#include "wait_any_one.h"
+#include "when_any_one.h"
 #include "async_operation.h"
 
 namespace corolib

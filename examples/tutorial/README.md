@@ -141,10 +141,10 @@ The following describes implementation of the examples per group.
 
 * p142X.cpp use two instances of Class01.
   An operation is started asynchronously on each object of this class.
-  The completion of both operations is awaited by wait_all_awaitable.
+  The completion of both operations is awaited by when_all.
 
 * p143X.cpp define two leaf coroutines, coroutine5a and coroutine5b, that are started from coroutine4.
-  The completion of both coroutines is awaited by wait_all_awaitable.
+  The completion of both coroutines is awaited by when_all.
 
 * p144X.cpp is based on p143X.cpp.
   The two leaf coroutines, coroutine5a and coroutine5b,

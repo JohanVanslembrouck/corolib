@@ -20,5 +20,5 @@ The client preforms N actions and it waits for 5 or 20 seconds (alternatingly) f
 In the case the client waits only 5 seconds (action not yet complete), the client sends a stop request to the action server to terminate the action.
 In the case of 20 seconds, the action will have completed, the client stops the timer and it does not send a stop request.
 
-cs4-server2 is a variant of cs4-server: waiting for the write action to finish is done using the wait_any_awaitable object that is used 
+cs4-server2 is a variant of cs4-server: waiting for the write action to finish is done using the when_any object that is used 
 to wait for the timer to expire or for the read action to complete.

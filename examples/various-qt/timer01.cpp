@@ -8,7 +8,7 @@
 #include <QThread>
 #include <QDebug>
 
-#include <corolib/wait_all_awaitable.h>
+#include <corolib/when_all.h>
 
 #include "timer01.h"
 
