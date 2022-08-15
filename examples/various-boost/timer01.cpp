@@ -254,8 +254,8 @@ async_task<int> Timer01::mainTask()
     async_task<int> t2 = timerTask02();
     async_task<int> t3 = timerTask03();
 
-    print(PRI1, "--- mainTask: wait_all<async_task<int>> wa({ &t1, &t2, &t3 });\n");
-    wait_all<async_task<int>> wa({ &t1, &t2, &t3 });
+    print(PRI1, "--- mainTask: when_all<async_task<int>> wa({ &t1, &t2, &t3 });\n");
+    when_all<async_task<int>> wa({ &t1, &t2, &t3 });
     print(PRI1, "--- mainTask: co_await wa;\n");
     co_await wa;
 

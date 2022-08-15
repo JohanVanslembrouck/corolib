@@ -110,8 +110,8 @@ namespace corolib
         m_index = s.m_index;
 
         // The following 2 tests allow an async_operation that takes part in
-        // a wait_all or wait_any to be re-assigned.
-        // This avoids disposing the original wait_all or wait_any
+        // a when_all or when_any to be re-assigned.
+        // This avoids disposing the original when_all or when_any
         // and constructing a new one.
 
         if (m_ctr != nullptr && s.m_ctr == nullptr)

@@ -76,8 +76,8 @@ public:
 		// c) the write action to complete
 		// whichever occurs first.
 
-		print(PRI1, "one_client: wait_any<async_operation_base> war( { &st, &sr2, &sw } ) ;\n");
-		wait_any<async_operation_base> war({ &st, &sr2, &sw });
+		print(PRI1, "one_client: when_any<async_operation_base> war( { &st, &sr2, &sw } ) ;\n");
+		when_any<async_operation_base> war({ &st, &sr2, &sw });
 
 		int nrOfFeedbacks = 10;
 		bool done = false;

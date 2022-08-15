@@ -7,7 +7,7 @@
  * This application is a variant of server4.cpp.
  * It allows coroutine mainflow_one_client to follow the progress
  * of coroutine read_client_request by passing it a struct process_info_t.
- * In contrast to server4.cpp, server5.cpp does not use wait_any.
+ * In contrast to server4.cpp, server5.cpp does not use when_any.
  * Therefore, it does not have to save the return value of the dispatcher.registerFunctor calls.
  * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)

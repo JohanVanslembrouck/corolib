@@ -129,7 +129,7 @@ async_task<int> mainflowOneClient(CommClient& c1, int instance, int counter)
  * and then closes the connections.
  * mainflow0 performs the previous the previous actions 40 times.
  *
- * The code can be shorter using wait_all instead of using 3 co_await statements.
+ * The code can be shorter using when_all instead of using 3 co_await statements.
  * This will be illustrated in other examples.
  * 
  * @param c1 is the first client

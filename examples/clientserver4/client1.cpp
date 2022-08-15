@@ -60,7 +60,7 @@ public:
      * @brief performAction first writes "GOAL\n" onto the connection to the server.
      * It then start reading the response and it also starts a timer.
      * Depending on the timer length, the timer may expire first or the response may arrive first.
-     * performAction uses a wait_any to distinguish between both cases.
+     * performAction uses a when_any to distinguish between both cases.
      * 1) The response arrives first. performAction inspects the response:
 	 *     a) If the response string starts with "FBK", the server will send new responses.
 	 *        performAction starts reading again to receive the next response.
@@ -92,8 +92,8 @@ public:
 		print(PRI1, "performAction: async_operation<void> st = start_timer(client_timer, timeout);\n");
 		async_operation<void> st = start_timer(client_timer, timeout);
 
-		print(PRI1, "performAction: wait_any<async_operation_base> war( { &sr, &st } ) ;\n");
-		wait_any<async_operation_base> war({ &sr, &st });
+		print(PRI1, "performAction: when_any<async_operation_base> war( { &sr, &st } ) ;\n");
+		when_any<async_operation_base> war({ &sr, &st });
 
 		int counter = 0;
 		bool done = false;

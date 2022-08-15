@@ -72,8 +72,8 @@ public:
 		// b) the action to be cancelled by the client
 		// whichever occurs first.
 
-		print(PRI1, "one_client: wait_any<async_operation_base> war( { &st, &sr2 } ) ;\n");
-		wait_any<async_operation_base> war({ &st, &sr2 });
+		print(PRI1, "one_client: when_any<async_operation_base> war( { &st, &sr2 } ) ;\n");
+		when_any<async_operation_base> war({ &st, &sr2 });
 
 		int nrOfFeedbacks = 10;
 		bool done = false;

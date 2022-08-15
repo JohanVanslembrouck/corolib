@@ -88,20 +88,20 @@ namespace corolib
         }
 
         /**
-         * @brief called from the constructors and destructor of wait_all
+         * @brief called from the constructors and destructor of when_all
          *
          */
-        void setCounter(wait_all_counter* ctr)
+        void setCounter(when_all_counter* ctr)
         {
             print(PRI2, "%p: void m_async_task::setCounter(%p)\n", this, ctr);
             m_coro.promise().m_ctr = ctr;
         }
 
         /**
-		 * @brief called from the constructors and destructor of wait_any
+		 * @brief called from the constructors and destructor of when_any
          *
          */
-        void setWaitAny(wait_any_one* waitany)
+        void setWaitAny(when_any_one* waitany)
         {
             print(PRI2, "%p: void m_async_task::setWaitAny(%p)\n", this, waitany);
             m_coro.promise().m_waitany = waitany;
@@ -228,8 +228,8 @@ namespace corolib
             bool m_ready;
             Semaphore m_sema;
             bool m_wait_for_signal;
-            wait_all_counter* m_ctr;
-            wait_any_one* m_waitany;
+            when_all_counter* m_ctr;
+            when_any_one* m_waitany;
             std::coroutine_handle<> m_awaiting;
         };
 
@@ -296,13 +296,13 @@ namespace corolib
             return m_coro.promise().m_ready;
         }
 
-        void setCounter(wait_all_counter* ctr)
+        void setCounter(when_all_counter* ctr)
         {
             print(PRI2, "%p: void m_async_task::setCounter(%p)\n", this, ctr);
             m_coro.promise().m_ctr = ctr;
         }
 
-        void setWaitAny(wait_any_one* waitany)
+        void setWaitAny(when_any_one* waitany)
         {
             print(PRI2, "%p: void m_async_task::setWaitAny(%p)\n", this, waitany);
             m_coro.promise().m_waitany = waitany;
@@ -424,8 +424,8 @@ namespace corolib
             bool m_ready;
             Semaphore m_sema;
             bool m_wait_for_signal;
-            wait_all_counter* m_ctr;
-            wait_any_one* m_waitany;
+            when_all_counter* m_ctr;
+            when_any_one* m_waitany;
             std::coroutine_handle<> m_awaiting;
         };
 

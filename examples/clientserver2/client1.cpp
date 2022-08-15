@@ -64,14 +64,14 @@ public:
      * @brief performAction first writes "START\n" onto the connection to the server.
      * It then start reading the response and it also starts a timer.
      * Depending on the timer length, the timer may expire first or the response may arrive first.
-     * performAction uses a wait_any to distinguish between both cases.
+     * performAction uses a when_any to distinguish between both cases.
      * 1) The response arrives first. performAction cancels the timer and it writes 
      * an acknowledgement to the server. The interaction is considered as done.
      * 2) The timer expires first. performAction sends a cancel request to the server
      * and it restarts the timer.
      *
      * However, the original response may still arrive: the interaction is not done yet.
-     * If not done, performAction uses wait_any again.
+     * If not done, performAction uses when_any again.
      * There are again two possibilities:
      * 1) The response arrives first. performAction stops the timer.
      * 2) The timer expires first. There is nothing to be done.
@@ -99,8 +99,8 @@ public:
         print(PRI1, "performAction: async_operation<void> st = start_timer(client_timer, timeout);\n");
         async_operation<void> st = start_timer(client_timer, timeout);
 
-        print(PRI1, "performAction: wait_any<async_operation_base> war( { &sr, &st } ) ;\n");
-        wait_any<async_operation_base> war( { &sr, &st } );
+        print(PRI1, "performAction: when_any<async_operation_base> war( { &sr, &st } ) ;\n");
+        when_any<async_operation_base> war( { &sr, &st } );
         print(PRI1, "performAction: int i = co_await war;\n");
         int i = co_await war;
         

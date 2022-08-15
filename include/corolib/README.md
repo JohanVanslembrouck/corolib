@@ -2,7 +2,7 @@
 
 The library has two parts:
 * Files async_operation.h, async_task.h, auto_reset_event.h, commservice.h, oneway_task.h, print.h, semaphore.h, 
-wait_all_awaitable.h, wait_all_counter.h, wait_any_one.h and wait_any_awaitable.h are independent of Boost and are also used by the Qt examples.
+wait_all_awaitable.h, when_all_counter.h, when_any_one.h and wait_any_awaitable.h are independent of Boost and are also used by the Qt examples.
 * Files commclient.h, commcore.h and commserver.h use boost/asio and are only used by the Boost examples.
 Folder lib contains the source (.cpp) files for the header files (.h) in include/corolib.
 
@@ -51,20 +51,20 @@ The following classes use the Boost library:
   The communication with the connected client is then performed using a CommCore object.
 
 The following classes are related and deal with the completion of one or all operations.
-- template<typename TYPE> class wait_all (file wait_all_awaitable.h) implements operator co_await.
+- template<typename TYPE> class when_all (file wait_all_awaitable.h) implements operator co_await.
   Its contructor is passed a list of operations that all have to be completed before the coroutine will resume.
-  All operations receive a pointer to the wait_all_counter data member (see next point).
-  Each operation calls the wait_all_counter's completed() function when it completes.
-- class wait_all_counter (file wait_all_counter.h) is used as data member in wait_all.
+  All operations receive a pointer to the when_all_counter data member (see next point).
+  Each operation calls the when_all_counter's completed() function when it completes.
+- class when_all_counter (file when_all_counter.h) is used as data member in when_all.
   It implements a counter that is decremented each time its completed() function is called.
   When the counter reaches zero, the coroutine is resumed.
-- template<typename TYPE> class wait_any (file wait_any_awaitable.h) implements operator co_await.
+- template<typename TYPE> class when_any (file wait_any_awaitable.h) implements operator co_await.
   Its contructor is passed a list of operations; one of the operations has to be completed before the coroutine will resume.
-  Each operation receives a pointer to a dedicated wait_any_one object (see next point).
-  Each operation calls the wait_all_counter's completed() function when it completes.
-- class wait_any_one (file wait_any_one.h) is used as a data member in wait_any 
-  (more in particular for a data member with type std::vector<wait_any_one*>).
-  When an operation calls the completed() function on its wait_any_one object, the coroutine is resumed.
+  Each operation receives a pointer to a dedicated when_any_one object (see next point).
+  Each operation calls the when_all_counter's completed() function when it completes.
+- class when_any_one (file when_any_one.h) is used as a data member in when_any 
+  (more in particular for a data member with type std::vector<when_any_one*>).
+  When an operation calls the completed() function on its when_any_one object, the coroutine is resumed.
   
 Other:
 - class Semaphore (file semaphore.h) is the implementation of a semaphore using std::mutex and std::condition_variable.

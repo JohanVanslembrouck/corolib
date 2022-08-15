@@ -48,20 +48,20 @@ namespace corolib
         }
 
         /**
-         * @brief called from the constructors and destructor of wait_all
+         * @brief called from the constructors and destructor of when_all
          *
          */
-        void setCounter(wait_all_counter* ctr)
+        void setCounter(when_all_counter* ctr)
         {
             print(PRI2, "%p: void async_operation_base::setCounter(%p)\n", this, ctr);
             m_ctr = ctr;
         }
 
         /**
-		 * @brief called from the constructors and destructor of wait_any
+		 * @brief called from the constructors and destructor of when_any
          *
          */
-        void setWaitAny(wait_any_one* waitany)
+        void setWaitAny(when_any_one* waitany)
         {
             print(PRI2, "%p: void async_operation_base::setWaitAny(%p)\n", this, waitany);
             m_waitany = waitany;
@@ -93,8 +93,8 @@ namespace corolib
         bool m_ready;
         bool m_autoreset;
         int m_index;
-        wait_all_counter* m_ctr;
-        wait_any_one* m_waitany;
+        when_all_counter* m_ctr;
+        when_any_one* m_waitany;
     };
 
     template<typename TYPE>
@@ -140,7 +140,7 @@ namespace corolib
          * It can be used as an alternative to co_await and after co_await was called:
          * the operation has to be completed because otherwise the value of m_result
          * ïs still the one initialized in the constructor.
-         * The function is usually called after using co_await wait_all or co_await wait_any,
+         * The function is usually called after using co_await when_all or co_await when_any,
          * because these objects cannot return the result of one or all of
          * their contained asynchronous operations.
          * @return
