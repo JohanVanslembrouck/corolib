@@ -1,5 +1,5 @@
 /**
- * @file wait_all_awaitable.h
+ * @file when_all.h
  * @brief
  * when_all waits for all async_operation or async_task objects passed to it in its constructor
  * to complete.
