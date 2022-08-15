@@ -1,5 +1,5 @@
 /**
- * @file wait_any_one.h
+ * @file when_any_one.h
  * @brief
  * Auxiliary class used in the implementation of when_any, async_operation and async_task.
  *
