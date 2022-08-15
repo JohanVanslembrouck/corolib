@@ -1,5 +1,5 @@
 /**
- * @file wait_any_awaitable.h
+ * @file when_any.h
  * @brief
  * when_any waits for any of the async_operation or async_task objects passed to it in its constructor
  * to complete. These objects are placed in a vector m_elements.
