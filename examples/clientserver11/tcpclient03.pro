@@ -13,11 +13,11 @@ QMAKE_CXXFLAGS += /await:strict
 SOURCES += \
         tcpconfig.cpp \
         tcpconfigfile.cpp \
-        tcpclient02.cpp \
-        tcpclientmain02.cpp \
+        tcpclient03.cpp \
+        tcpclientmain03.cpp \
         ../common-qt/crc.cpp \
         ../common-qt/protocolmessage.cpp \
-        ../common-qt/tcpclientco.cpp \
+        ../common-qt/tcpclientco1.cpp \
         ../common-qt/tcpclient.cpp \
         ../../lib/print.cpp \
         ../../lib/async_operation.cpp \
@@ -36,12 +36,12 @@ HEADERS += \
         ../../include/corolib/when_any.h \
         tcpconfig.h \
         tcpconfigfile.h \
-        tcpclient02.h \
+        tcpclient03.h \
         ../common-qt/connectioninfo.h \
         ../common-qt/crc.h \
         ../common-qt/protocolmessage.h \
-        ../common-qt/tcpclientco.h \
-        ../common-qt/tcpclient.h \
+        ../common-qt/tcpclientco1.h \
+        ../common-qt/tcpclient.h
 
 INCLUDEPATH += \
     ../common-qt \
