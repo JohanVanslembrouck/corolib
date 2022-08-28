@@ -19,11 +19,16 @@ The applications are usually built in separate directories. We assume four relea
 * the tcpclient01 build directory contains tcpclient01.exe and requires the following additional files: tcpclient01.cfg, Qt5Core.dll, Qt5Network.dll
 * the tcpserver02 build directory contains tcpserver02.exe and requires the following additional files: tcpserver02a.cfg, tcpserver02b.cfg, tcpserver02a.bat, tcpserver02b.bat, Qt5Core.dll, Qt5Network.dll
 * the tcpclient02 build directory contains tcpclient02.exe and requires the following additional files: tcpclient02.cfg, Qt5Core.dll, Qt5Network.dll
+* the tcpclient03 build directory contains tcpclient03.exe and requires the following additional files: tcpclient03.cfg, Qt5Core.dll, Qt5Network.dll
 
 The major difference between tcplient01 and tcpclient02 is that the latter has 2 TcpClient objects that communicate with the server, while the former has only 1 TcpClient object.
 Because of this, the tcpclient01 application can handle the results of its sole client object in the application itself, in its start_reading() function.
 The tcpclient02 application, on the other hand, has to make a stricter distinction and uses the start_reading() function of its TcpClientCo(routine) objects. 
 The tcpclient02 application also implements many more tests than tcpclient01.
+
+The tcpclient03 application is mainly a copy-and-paste of the tcpclient02 application, but it uses two TcpClientCo1 objects instead of two TcpClientCo objects.
+The TcpClientCo1 class reduces making connections between signals and slots to a minimum. TcpClientCo1 reuses an existing connection instead of always
+making a connection between a signal and a slot and disconnecting it afterwards.
 
 The tcpserver01 application does not use coroutines. Both client applications can be configured to use (or not use) coroutines, see variable useCoroutines in their .cfg files.
 
