@@ -115,11 +115,11 @@ void RemoteObjectImpl::start_rs(int idx)
 RemoteObjectImpl remoteObjImpl;
 
 struct RemoteObject2 {
-    async_task<op1_ret_t> op1(int in11, int in12) {
+    async_task<Msg> op1(Msg msg) {
         Buffer buf;
-        op1_ret_t res{ 1, 2, 3 };
+        Msg res;
         printf("RemoteObject2::op1()\n");
-        // Marshall in11 and in12 into buf
+        // Marshall msg into buf
         for (int offset = 0; offset < buf.length(); offset += segment_length) {
             printf("RemoteObject2::op1(): calling write_segment: offset = %d\n", offset);
             co_await remoteObjImpl.start_write_segment(buf.buffer(), offset);
@@ -130,7 +130,7 @@ struct RemoteObject2 {
             printf("RemoteObject2::op1(): calling read_segment: offset = %d\n", offset);
             completed = co_await remoteObjImpl.start_read_segment(buf2.buffer(), offset, segment_length);
         }
-        // Unmarshall out11, out12 and ret1 from buf2
+        // Unmarshall Msg from buf2
         co_return res;
     }
 };
@@ -150,8 +150,8 @@ public:
             Msg msg(i);
             for (int j = 0; j < nr_msgs_to_send; j++) {
                 printf("Class03::function1(): i = %d, j = %d, counter = %d\n", i, j, counter++);
-                async_task<op1_ret_t> op1 = remoteObject2a.op1(in11, in12);
-                op1_ret_t res = co_await op1;
+                async_task<Msg> op1 = remoteObject2a.op1(msg);
+                Msg res = co_await op1;
             }
         }
         elapsed_time = get_current_time() - start_time;

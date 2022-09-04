@@ -41,23 +41,23 @@ public:
         int index = get_free_index();
         print(PRI1, "%p: RemoteObj1::start_op1(): index = %d\n", this, index);
         async_operation<int> ret{ this, index };
-        start_op1a(index, msg);
+        start_op1_impl(index, msg);
         return ret;
     }
 
     lambda3 operation;
 
 protected:
-    void start_op1a(const int idx, Msg msg);
+    void start_op1_impl(const int idx, Msg msg);
 };
 
-void RemoteObj1::start_op1a(const int idx, Msg msg)
+void RemoteObj1::start_op1_impl(const int idx, Msg msg)
 {
-    print(PRI1, "%p: RemoteObj1::start_op1a(%d)\n", this, idx);
+    print(PRI1, "%p: RemoteObj1::start_op1_impl(%d)\n", this, idx);
 
     operation = [this, idx]()
     {
-        print(PRI1, "%p: RemoteObj1::start_op1a(%d)\n", this, idx);
+        print(PRI1, "%p: RemoteObj1::start_op1_impl(%d)\n", this, idx);
 
         async_operation_base* om_async_operation = m_async_operations[idx];
         async_operation<int>* om_async_operation_t =
@@ -65,14 +65,14 @@ void RemoteObj1::start_op1a(const int idx, Msg msg)
 
         if (om_async_operation_t)
         {
-            print(PRI1, "%p: RemoteObj1::start_op1a(%d): om_async_operation_t->set_result()\n", this, idx);
+            print(PRI1, "%p: RemoteObj1::start_op1_impl(%d): om_async_operation_t->set_result()\n", this, idx);
             om_async_operation_t->set_result(1);
             om_async_operation_t->completed();
         }
         else
         {
             // This can occur when the async_operation_base has gone out of scope.
-            print(PRI1, "%p: RemoteObj1::start_op1a(%d): Warning: om_async_operation_t == nullptr\n", this, idx);
+            print(PRI1, "%p: RemoteObj1::start_op1_impl(%d): Warning: om_async_operation_t == nullptr\n", this, idx);
         }
     };
 
