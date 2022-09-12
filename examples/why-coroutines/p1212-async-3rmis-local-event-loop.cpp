@@ -1,5 +1,5 @@
 /**
- * @file co-less02.cpp
+ * @file p1212-async-3rmis-local-event-loop.cpp
  * @brief
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
@@ -13,15 +13,15 @@
 
 class RemoteObject1 {
 public:
-    void sendc_op1(int in11, int in12, lambda1 l ) {
+    void sendc_op1(int in11, int in12, lambda_3int_t l ) {
         printf("RemoteObject1::sendc_op1(%d, %d, l)\n", in11, in12);
         eventQueue.push([l]() { l(1, 2, 3); });
     }
-    void sendc_op2(int in11, int in12, lambda2 l) {
+    void sendc_op2(int in11, int in12, lambda_2int_t l) {
         printf("RemoteObject1::sendc_op2(%d, %d, l)\n", in11, in12);
         eventQueue.push([l]() { l(1, 2); });
     }
-    void sendc_op3(int in11, lambda1 l) {
+    void sendc_op3(int in11, lambda_3int_t l) {
         printf("RemoteObject1::op3(%d, l)\n", in11);
         eventQueue.push([l]() { l(1, 2, 3); });
     }
@@ -79,7 +79,7 @@ Class02 class02;
 int main() {
     printf("main2();\n");
     connect(event1, []() { class02.function1(); });
-    connect(event2, []() { class02.function1(); });
+    //connect(event2, []() { class02.function1(); });
     eventQueue.run();
     return 0;
 }

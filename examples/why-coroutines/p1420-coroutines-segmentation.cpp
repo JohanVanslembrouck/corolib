@@ -1,5 +1,5 @@
 /**
- * @file co-full03.cpp
+ * @file p1420-coroutines-segmentation.cpp
  * @brief
  *
  *
@@ -53,7 +53,7 @@ public:
         return ret;
     }
 
-    lambda3 operation;
+    lambda_void_t operation;
 
 protected:
     void start_ws(int idx);
@@ -163,7 +163,7 @@ Class03 class03;
 int main() {
     printf("main();\n");
     connect(event1, []() { class03.coroutine1(); });
-  //connect(event2, []() { class03.coroutine1(); });
+    //connect(event2, []() { class03.coroutine1(); });
     eventQueue.run();
     return 0;
 }

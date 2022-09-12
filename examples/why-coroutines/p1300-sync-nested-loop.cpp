@@ -1,5 +1,5 @@
 /**
- * @file co-less04.cpp
+ * @file p1300-sync-nested-loop.cpp
  * @brief
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
@@ -51,7 +51,7 @@ Class04 class04;
 int main() {
     printf("main();\n");
     connect(event1, []() { class04.function1(); });
-    connect(event2, []() { class04.function1(); });
+    //connect(event2, []() { class04.function1(); });
     eventQueue.run();
     return 0;
 }

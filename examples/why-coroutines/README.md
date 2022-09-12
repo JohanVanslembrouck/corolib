@@ -3,8 +3,6 @@
 This directory contains various examples that explain the advantage of C++ coroutines 
 for writing (distributed) applications.
 
-I will consider two types of programs: programs not using coroutines, named co-lessXX.cpp, and
-programs using coroutines, called co-fullXX.cpp.
 
 First I discuss the advantages and disadvantages the original program and of variants of that program that do not use coroutines.
 Then I show how we can stay close to the natural style of the first coroutine-less program while solving
@@ -13,12 +11,44 @@ the disadvantages of this program and its variants using coroutines, while tryin
 No real remote method invocations (RMIs) are used in the examples.
 Instead, the delay that may result of the invocation is simulated by means of a timer.
 
-## Case 1: program with if-then-else
+## Case 1: program with 1 RMI
+
+### p1000-sync-1rmi.cpp
+
+To be completed.
+
+### p1010-async-1rmi.cpp
+
+To be completed.
+
+### p1020-coroutines-1rmi.cpp
+
+To be completed.
+
+## Case 2: program with callstack and 1 RMI
+
+### p1100-sync-callstack-1rmi.cpp
+
+To be completed.
+
+### p1110-async-callstack-1rmi.cpp
+
+To be completed.
+
+### p1112-async-callstack-1rmi-queue-cs.cpp
+
+To be completed.
+
+### p1120-coroutines-callstack-1rmi.cpp
+
+To be completed.
+
+## Case 3: program with if-then-else and 3 RMIs
 
 Function with 3 remote method invocations (RMIs) and an if-then-else. Depending on the result of the first RMI,
 we enter the if-then or else case, where another remote method is invoked.
 
-### co-less01.cpp
+### p1200-sync-3rmis.cpp
 
 The original code looks as follows:
 
@@ -67,7 +97,7 @@ int main() {
 ```
 The name "connect" has been inspired by the connect mechanism used by Qt to connect signals to slots.
 
-### co-less01th.cpp
+### p1202-sync+thread-3rmis.cpp
 
 It is possible to make the program reactive by running every function on its own thread.
 The implementation of function1 does not have to be changed. This can be done as follows:
@@ -93,9 +123,63 @@ Disadvantages:
 Mutexes and atomic access may have to be used.
 This approach may lead to sporadic errors (Heigenbugs) that are difficult to reproduce and to correct.
 
-### co-less02.cpp
 
-This example is an intermediate step towards co-less03.cpp.
+### p1210-async-3rmis.cpp
+
+```c++
+struct Class03 {
+    void function1() {
+        printf("Class03::function1()\n");
+        remoteObj1.sendc_op1(in11, in12, 
+            [this](int out1, int out2, int ret1) { this->function1a(out1, out2, ret1); });
+        // 1a Do stuff that doesn't need the result of the RMI
+    }
+
+    void function1a(int out11, int out12, int ret1) {
+        printf("Class03::function1a(%d, %d, %d)\n", out11, out12, ret1);
+        // 1b Do stuff that needs the result of the RMI
+        if (ret1 == val1) {
+            remoteObj2.sendc_op2(in21, in22,
+                [this](int out1, int ret1){ this->function1b(out1, ret1); });
+            // 2a Do stuff that doesn't need the result of the RMI
+        }
+        else {
+            remoteObj3.sendc_op3(in31, 
+                [this](int out1, int out2, int ret1) { this->function1c(out1, out2, ret1); });
+            // 3a Do stuff that doesn't need the result of the RMI
+        }
+    }
+
+    void function1b(int out21, int ret2) {
+        printf("Class03::function1b()\n");
+        // 2b Do stuff that needs the result of the RMI
+    }
+
+    void function1c(int out31, int out32, int ret3) {
+        printf("Class03::function1c()\n");
+        // 3b Do stuff that needs the result of the RMI
+    }
+
+    void function2() {
+        printf("Class03::function2()\n");
+    }
+};
+```
+
+Advantages:
+
+* Program can respond to other inputs after the request to the server has been sent.
+
+Disadvantages:
+
+* Original function and its control flow is split into a number of functions (in this example four).
+* Unnatural style
+* May be diffiult to distinguish "primary" functions (attached to input to the programs) from
+"secondary" fuunctions that are attached to the response to a remote method invocation.
+
+
+### p1212-async-3rmis-local-event-loop.cpp
+
 This example uses a local event loop that is placed close after the invocation of an asychronous variant
 of the original two-way in-out RMI.
 
@@ -155,61 +239,8 @@ Disadvantages:
 * Use of lambda expressions at the application level makes the code more difficult to read.
 * Longer complicated application level code.
 
-### co-less03.cpp
 
-
-```c++
-struct Class03 {
-    void function1() {
-        printf("Class03::function1()\n");
-        remoteObj1.sendc_op1(in11, in12, 
-            [this](int out1, int out2, int ret1) { this->function1a(out1, out2, ret1); });
-        // 1a Do stuff that doesn't need the result of the RMI
-    }
-
-    void function1a(int out11, int out12, int ret1) {
-        printf("Class03::function1a(%d, %d, %d)\n", out11, out12, ret1);
-        // 1b Do stuff that needs the result of the RMI
-        if (ret1 == val1) {
-            remoteObj2.sendc_op2(in21, in22,
-                [this](int out1, int ret1){ this->function1b(out1, ret1); });
-            // 2a Do stuff that doesn't need the result of the RMI
-        }
-        else {
-            remoteObj3.sendc_op3(in31, 
-                [this](int out1, int out2, int ret1) { this->function1c(out1, out2, ret1); });
-            // 3a Do stuff that doesn't need the result of the RMI
-        }
-    }
-
-    void function1b(int out21, int ret2) {
-        printf("Class03::function1b()\n");
-        // 2b Do stuff that needs the result of the RMI
-    }
-
-    void function1c(int out31, int out32, int ret3) {
-        printf("Class03::function1c()\n");
-        // 3b Do stuff that needs the result of the RMI
-    }
-
-    void function2() {
-        printf("Class03::function2()\n");
-    }
-};
-```
-
-Advantages:
-
-* Program can respond to other inputs after the request to the server has been sent.
-
-Disadvantages:
-
-* Original function and its control flow is split into a number of functions (in this example four).
-* Unnatural style
-* May be diffiult to distinguish "primary" functions (attached to input to the programs) from
-"secondary" fuunctions that are attached to the response to a remote method invocation.
-
-### co-full01.cpp
+### p1220-coroutines-3rmis.cpp
 
 
 ```c++
@@ -241,7 +272,7 @@ public:
 
 Advantages:
 
-* Natural style, very close to the original program (in this case co-less01.cpp).
+* Natural style, very close to the original program (in this case p1200-sync-3rmis.cpp).
 * Program can respond to other inputs while the response of the remote server has not arrived.
 * Program can do some work that does not need response of the remote method invocation.
 
@@ -251,9 +282,9 @@ Disadvantages;
 * Rather some infrastructure code needed to implement the coroutine alternative.
 
 
-## Case 2: program with nested for loop
+## Case 4: program with nested for loop
 
-### co-less04.cpp
+### p1300-sync-nested-loop.cpp
 
 
 ```c++
@@ -286,7 +317,7 @@ Disadvantages
 
 * Program is not reactive.
 
-### co-less05.cpp
+### p1310-async-nested-loop.cpp
 
 
 ```c++
@@ -339,7 +370,7 @@ Disadvantages:
 
 * Artificial code: Especially it is difficult to recognize and write the nested iteration.
 
-### co-full02.cpp
+### p1320-coroutines-nested-loop.cpp
 
 
 ```c++
@@ -374,12 +405,12 @@ Disadvantages:
 
 * TBC
 
-## Case 3: Adding two loops at the infrastructure level
+## Case 5: Segmentation: adding two loops at the infrastructure level
 
 The request and response to and from the remote server cannot be transmitted in a single packet.
 Instead, it has to be split into small packets that each have to acknowledged before the next packet can be sent.
 
-### co-less06.cpp
+### p1400-sync-segmentation.cpp
 
 
 ```c++
@@ -405,7 +436,7 @@ struct RemoteObject2 {
 ```
 
 
-## co-less07.cpp
+## p1410-async-segmentation.cpp
 
 
 ```c++
@@ -460,13 +491,7 @@ struct RemoteObject3 {
 ```
 
 
-
-## co-less08.cpp
-
-Not yet implemented.
-
-
-## co-full03.cpp
+## p1420-coroutines-segmentation.cpp
 
 
 ```c++
@@ -496,4 +521,3 @@ struct RemoteObject2 {
 
 Using coroutines we can stay close to the natural synchronous coding style of a program, 
 while making the program reactive again.
-

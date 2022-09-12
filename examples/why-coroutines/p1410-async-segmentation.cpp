@@ -1,5 +1,5 @@
 /**
- * @file co-less07.cpp
+ * @file p1410-async-segmentation.cpp
  * @brief
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
@@ -17,16 +17,16 @@ public:
     void write_segment(char* p, int offset) {
         printf("RemoteObjectImpl::write_segment(p, offset = %d)\n", offset);
     }
-    void sendc_write_segment(char* p, int offset, lambda3 l) {
-        eventQueue.push(l);
+    void sendc_write_segment(char* p, int offset, lambda_void_t lambda) {
+        eventQueue.push(lambda);
     }
 
     bool read_segment(char* p, int offset, int segment_length) {
         printf("RemoteObjectImpl::read_segment(p, offset = %d, segment_length = %d)\n", offset, segment_length);
         return (offset > segment_length);
     }
-    void sendc_read_segment(char* p, int offset, int segment_length, lambda3 l) {
-        eventQueue.push(l);
+    void sendc_read_segment(char* p, int offset, int segment_length, lambda_void_t lambda) {
+        eventQueue.push(lambda);
     }
 };
 
@@ -39,9 +39,9 @@ struct RemoteObject3 {
     Buffer buf;
     bool completed = false;
     Buffer buf2;
-    lambda1 l;
+    lambda_3int_t l;
 
-    void sendc_op1(int in11, int in12, lambda1 op1cb) {
+    void sendc_op1(int in11, int in12, lambda_3int_t op1cb) {
         printf("RemoteObject3::sendc_op1(): calling write_segment\n");
         l = op1cb;
         // Marshall in11 and in12 into buf
@@ -90,9 +90,11 @@ int main() {
     connect(event1, []() { remoteObject3.sendc_op1(in11, in12,
                             [](int out11, int out12, int ret1) { remoteObject3.callback(out11, out12, ret1); });
         });
+    /*
     connect(event2, []() { remoteObject3.sendc_op1(in11, in12,
                             [](int out11, int out12, int ret1) { remoteObject3.callback(out11, out12, ret1); });
         });
+    */
     eventQueue.run();
     return 0;
 }

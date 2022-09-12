@@ -1,5 +1,5 @@
 /**
- * @file co-less05.cpp
+ * @file p1310-async-nested-loop.cpp
  * @brief
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
@@ -14,9 +14,9 @@
 
 class RemoteObject1 {
 public:
-    void sendc_op1(Msg& msg, lambda3 l) {
-        printf("RemoteObject1::sendc_op1(msg, l)\n");
-        eventQueue.push(l);
+    void sendc_op1(Msg& msg, lambda_void_t lambda) {
+        printf("RemoteObject1::sendc_op1(msg, lambda)\n");
+        eventQueue.push(lambda);
     }
 };
 
@@ -25,7 +25,7 @@ RemoteObject1 remoteObj1;
 // -----------------------------------------------------------------------------
 
 struct Class05 {
-    int i, j = 0;
+    int i = 0, j = 0;
     Msg msg;
     int counter = 0;
 
@@ -69,7 +69,7 @@ Class05 class05;
 int main() {
     printf("main();\n");
     connect(event1, []() { class05.function1(); });
-  //connect(event2, []() { class05.function1(); });
+    //connect(event2, []() { class05.function1(); });
     eventQueue.run();
     return 0;
 }

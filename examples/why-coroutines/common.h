@@ -12,11 +12,12 @@
 
 #include "eventqueue.h"
 
-typedef std::function<void(int, int, int)> lambda1;
-typedef std::function<void(int, int)> lambda2;
-typedef std::function<void(void)> lambda3;
+typedef std::function<void(int, int, int)>  lambda_3int_t;
+typedef std::function<void(int, int)>       lambda_2int_t;
+typedef std::function<void(int)>            lambda_1int_t;
+typedef std::function<void(void)>           lambda_void_t;
 
-void connect(int i, lambda3 l)
+void connect(int i, lambda_void_t l)
 {
     printf("connect(%d, l) - begin\n", i);
     eventQueue.push([l]() { l();  });

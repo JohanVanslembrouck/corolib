@@ -1,5 +1,5 @@
 /**
- * @file co-full02.cpp
+ * @file p1320-coroutines-nested-loop.cpp
  * @brief
  *
  *
@@ -45,7 +45,7 @@ public:
         return ret;
     }
 
-    lambda3 operation;
+    lambda_void_t operation;
 
 protected:
     void start_op1_impl(const int idx, Msg msg);
@@ -109,7 +109,7 @@ Class02 class02;
 int main() {
     printf("main();\n");
     connect(event1, []() { class02.coroutine1(); });
-    connect(event2, []() { class02.coroutine1(); });
+    //connect(event2, []() { class02.coroutine1(); });
     eventQueue.run();
     return 0;
 }

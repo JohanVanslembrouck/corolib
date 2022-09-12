@@ -1,5 +1,5 @@
 /**
- * @file co-less01.cpp
+ * @file p1200-sync-3rmis.cpp
  * @brief
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
@@ -62,7 +62,7 @@ Class01 class01;
 int main() {
     printf("main();\n");
     connect(event1, []() { class01.function1(); });
-    connect(event2, []() { class01.function1(); });
+    //connect(event2, []() { class01.function1(); });
     eventQueue.run();
     return 0;
 }

@@ -1,5 +1,5 @@
 /**
- * @file co-less06.cpp
+ * @file p1400-sync-segmentation.cpp
  * @brief
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
@@ -17,7 +17,7 @@ public:
     void write_segment(char* p, int offset) {
         printf("RemoteObjectImpl::write_segment(p, offset = %d)\n", offset);
     }
-    void sendc_write_segment(char* p, int offset, lambda3 l) {
+    void sendc_write_segment(char* p, int offset, lambda_void_t l) {
         eventQueue.push(l);
     }
 
@@ -25,7 +25,7 @@ public:
         printf("RemoteObjectImpl::read_segment(p, offset = %d, segment_length = %d)\n", offset, segment_length);
         return (offset > segment_length);
     }
-    void sendc_read_segment(char* p, int offset, int segment_length, lambda3 l) {
+    void sendc_read_segment(char* p, int offset, int segment_length, lambda_void_t l) {
         eventQueue.push(l);
     }
 };
@@ -57,7 +57,7 @@ RemoteObject2 remoteObject2;
 int main() {
     printf("main();\n");
     connect(event1, []() { remoteObject2.op1(in11, in12, out11, out12); });
-    connect(event2, []() { remoteObject2.op1(in11, in12, out11, out12); });
+    //connect(event2, []() { remoteObject2.op1(in11, in12, out11, out12); });
     eventQueue.run();
     return 0;
 }

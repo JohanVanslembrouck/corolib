@@ -16,6 +16,8 @@ int val1 = 0;
 int ret2 = 2, in21 = 21, in22 = 22, out21 = 21;
 int ret3 = 3, in31 = 31, out31 = 31, out32 = 32;
 
+int out1 = 0;
+
 int max_msg_length = 5;
 int nr_msgs_to_send = 10;
 
