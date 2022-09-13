@@ -31,11 +31,11 @@ RemoteObject1 remoteObj1;
 
 class Layer01 {
 public:
-    int function1(int in11, int& out11, int& out12)
+    int function1(int in1, int& out11, int& out12)
     {
         printf("Layer01::function1(): part 1\n");
-        int ret1 = remoteObj1.op1(in11, in12, out11, out12);
-        printf("Layer01::function1(): out11 = %d, out12 = %d, ret1 = %d\n", out11, out11, ret1);
+        int ret1 = remoteObj1.op1(in1, in1, out11, out12);
+        printf("Layer01::function1(): out11 = %d, out12 = %d, ret1 = %d\n", out11, out12, ret1);
         printf("Layer01::function1(): part 2\n");
         return ret1;
     }
@@ -86,7 +86,7 @@ Layer03 layer03;
 int main() {
     printf("main();\n");
     connect(event1, []() { layer03.function1(2); });
-    //connect(event2, []() { layer03.function1(3); });
+    connect(event2, []() { layer03.function1(3); });
     eventQueue.run();
     return 0;
 }

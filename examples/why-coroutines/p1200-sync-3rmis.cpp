@@ -43,14 +43,14 @@ RemoteObject1 remoteObj3;
 struct Class01 {
     void function1() {
         printf("Class01::function1()\n");
-        ret1 = remoteObj1.op1(in11, in12, out11, out12);
+        int ret1 = remoteObj1.op1(gin11, gin12, gout11, gout12);
         // 1 Do stuff
-        if (ret1 == val1) {
-            ret2 = remoteObj2.op2(in21, in22, out21);
+        if (ret1 == gval1) {
+            int ret2 = remoteObj2.op2(gin21, gin22, gout21);
             // 2 Do stuff
         }
         else {
-            ret3 = remoteObj3.op3(in31, out31, out32);
+            int ret3 = remoteObj3.op3(gin31, gout31, gout32);
             // 3 Do stuff
         }
     }
@@ -62,7 +62,7 @@ Class01 class01;
 int main() {
     printf("main();\n");
     connect(event1, []() { class01.function1(); });
-    //connect(event2, []() { class01.function1(); });
+    connect(event2, []() { class01.function1(); });
     eventQueue.run();
     return 0;
 }

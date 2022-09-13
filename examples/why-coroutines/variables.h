@@ -1,6 +1,7 @@
 /**
  * @file variables.h
- * @brief
+ * @brief Global variables to be used by all examples.
+ * Avoids declaring and initializing variables in every individual file.
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
@@ -11,12 +12,10 @@
 int event1 = 1;
 int event2 = 2;
 
-int ret1 = 1, in11 = 11, in12 = 12, out11 = 11, out12 = 12;
-int val1 = 0;
-int ret2 = 2, in21 = 21, in22 = 22, out21 = 21;
-int ret3 = 3, in31 = 31, out31 = 31, out32 = 32;
-
-int out1 = 0;
+int gret1 = 1, gin11 = 11, gin12 = 12, gout11 = 11, gout12 = 12;
+int gval1 = 0;
+int gret2 = 2, gin21 = 21, gin22 = 22, gout21 = 21;
+int gret3 = 3, gin31 = 31, gout31 = 31, gout32 = 32;
 
 int max_msg_length = 5;
 int nr_msgs_to_send = 10;

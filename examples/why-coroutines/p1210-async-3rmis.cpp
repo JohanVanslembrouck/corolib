@@ -35,50 +35,50 @@ RemoteObject1 remoteObj3;
 
 // -----------------------------------------------------------------------------
 
-struct Class03 {
+struct Class01 {
     void function1() {
-        printf("Class03::function1()\n");
-        remoteObj1.sendc_op1(in11, in12, 
+        printf("Class01::function1()\n");
+        remoteObj1.sendc_op1(gin11, gin12, 
             [this](int out1, int out2, int ret1) { this->function1a(out1, out2, ret1); });
         // 1a Do stuff that doesn't need the result of the RMI
     }
 
     void function1a(int out11, int out12, int ret1) {
-        printf("Class03::function1a(%d, %d, %d)\n", out11, out12, ret1);
+        printf("Class01::function1a(%d, %d, %d)\n", out11, out12, ret1);
         // 1b Do stuff that needs the result of the RMI
-        if (ret1 == val1) {
-            remoteObj2.sendc_op2(in21, in22,
+        if (ret1 == gval1) {
+            remoteObj2.sendc_op2(gin21, gin22,
                 [this](int out1, int ret1){ this->function1b(out1, ret1); });
             // 2a Do stuff that doesn't need the result of the RMI
         }
         else {
-            remoteObj3.sendc_op3(in31, 
+            remoteObj3.sendc_op3(gin31, 
                 [this](int out1, int out2, int ret1) { this->function1c(out1, out2, ret1); });
             // 3a Do stuff that doesn't need the result of the RMI
         }
     }
 
     void function1b(int out21, int ret2) {
-        printf("Class03::function1b()\n");
+        printf("Class01::function1b()\n");
         // 2b Do stuff that needs the result of the RMI
     }
 
     void function1c(int out31, int out32, int ret3) {
-        printf("Class03::function1c()\n");
+        printf("Class01::function1c()\n");
         // 3b Do stuff that needs the result of the RMI
     }
 
     void function2() {
-        printf("Class03::function2()\n");
+        printf("Class01::function2()\n");
     }
 };
 
-Class03 class03;
+Class01 class01;
 
 int main() {
     printf("main();\n");
-    connect(event1, []() { class03.function1(); });
-    //connect(event2, []() { class03.function1(); });
+    connect(event1, []() { class01.function1(); });
+    connect(event2, []() { class01.function1(); });
     eventQueue.run();
     return 0;
 }

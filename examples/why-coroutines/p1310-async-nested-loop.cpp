@@ -24,22 +24,22 @@ RemoteObject1 remoteObj1;
 
 // -----------------------------------------------------------------------------
 
-struct Class05 {
+struct Class01 {
     int i = 0, j = 0;
     Msg msg;
     int counter = 0;
 
     void function1() {
-        printf("Class05::function1(): counter = %d\n", counter);
+        printf("Class01::function1(): counter = %d\n", counter);
         start_time = get_current_time();
         msg = Msg(0);
         remoteObj1.sendc_op1(msg, [this]() { this->function1a(); });
     }
 
     void function1a() {
-        printf("Class05::function1a(): counter = %d\n", counter);
+        printf("Class01::function1a(): counter = %d\n", counter);
         if (j < nr_msgs_to_send) {
-            printf("Class05::function1a(): i = %d, j = %d, counter = %d\n", i, j, counter);
+            printf("Class01::function1a(): i = %d, j = %d, counter = %d\n", i, j, counter);
             remoteObj1.sendc_op1(msg, [this]() { this->function1a(); });
             j++;
             counter++;
@@ -49,7 +49,7 @@ struct Class05 {
             i++;
             if (i < max_msg_length) {
                 msg = Msg(i);
-                printf("Class05::function1a(): i = %d, j = %d, counter = %d\n", i, j, counter);
+                printf("Class01::function1a(): i = %d, j = %d, counter = %d\n", i, j, counter);
                 remoteObj1.sendc_op1(msg, [this]() { this->function1a(); });
                 j++;
                 counter++;
@@ -60,16 +60,16 @@ struct Class05 {
     }
 
     void function2() {
-        printf("Class05::function2()\n");
+        printf("Class01::function2()\n");
     }
 };
 
-Class05 class05;
+Class01 class01;
 
 int main() {
     printf("main();\n");
-    connect(event1, []() { class05.function1(); });
-    //connect(event2, []() { class05.function1(); });
+    connect(event1, []() { class01.function1(); });
+    connect(event2, []() { class01.function1(); });
     eventQueue.run();
     return 0;
 }

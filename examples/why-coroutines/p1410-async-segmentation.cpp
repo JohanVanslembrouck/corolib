@@ -39,11 +39,11 @@ struct RemoteObject3 {
     Buffer buf;
     bool completed = false;
     Buffer buf2;
-    lambda_3int_t l;
+    lambda_3int_t lambda;
 
     void sendc_op1(int in11, int in12, lambda_3int_t op1cb) {
         printf("RemoteObject3::sendc_op1(): calling write_segment\n");
-        l = op1cb;
+        lambda = op1cb;
         // Marshall in11 and in12 into buf
         remoteObjImpl.sendc_write_segment(buf.buffer(), offset,
             [this]() { this->op1a(); });
@@ -74,7 +74,7 @@ struct RemoteObject3 {
         }
         else {
             // Unmarshall out11, out12 and ret1 from buf2
-            l(out11, out12, ret1);
+            lambda(gout11, gout12, gret1);
         }
     }
 
@@ -87,14 +87,12 @@ RemoteObject3 remoteObject3;
 
 int main() {
     printf("main();\n");
-    connect(event1, []() { remoteObject3.sendc_op1(in11, in12,
+    connect(event1, []() { remoteObject3.sendc_op1(gin11, gin12,
                             [](int out11, int out12, int ret1) { remoteObject3.callback(out11, out12, ret1); });
         });
-    /*
-    connect(event2, []() { remoteObject3.sendc_op1(in11, in12,
+    connect(event2, []() { remoteObject3.sendc_op1(gin11, gin12,
                             [](int out11, int out12, int ret1) { remoteObject3.callback(out11, out12, ret1); });
         });
-    */
     eventQueue.run();
     return 0;
 }

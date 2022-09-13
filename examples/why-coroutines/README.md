@@ -3,10 +3,11 @@
 This directory contains various examples that explain the advantage of C++ coroutines 
 for writing (distributed) applications.
 
+Consider a program name p1XYZ-purpose-of-the-program.cpp:
 
-First I discuss the advantages and disadvantages the original program and of variants of that program that do not use coroutines.
-Then I show how we can stay close to the natural style of the first coroutine-less program while solving
-the disadvantages of this program and its variants using coroutines, while trying to avoid or limit disadvantages.
+* X stands for programs with the same functionality for the same value of X
+* Y = 0 is used for the synchronous version, Y = 1 is used for the asynchronous version and Y = 2 is used for the coroutine version
+* Z = 0 is used for the base version. Variants are numbered 2, 4, etc.
 
 No real remote method invocations (RMIs) are used in the examples.
 Instead, the delay that may result of the invocation is simulated by means of a timer.
@@ -56,19 +57,20 @@ The original code looks as follows:
 struct Class01 {
     void function1() {
         printf("Class01::function1()\n");
-        ret1 = remoteObj1.op1(in11, in12, out11, out12);
+        int ret1 = remoteObj1.op1(gin11, gin12, gout11, gout12);
         // 1 Do stuff
-        if (ret1 == val1) {
-            ret2 = remoteObj2.op2(in21, in22, out21);
+        if (ret1 == gval1) {
+            int ret2 = remoteObj2.op2(gin21, gin22, gout21);
             // 2 Do stuff
         }
         else {
-            ret3 = remoteObj3.op3(in31, out31, out32);
+            int ret3 = remoteObj3.op3(gin31, gout31, gout32);
             // 3 Do stuff
         }
     }
     void function2() { }
 };
+
 ```
 
 The method invocations look as local method invocations, but they can be remote method invocations as well.
@@ -127,41 +129,41 @@ This approach may lead to sporadic errors (Heigenbugs) that are difficult to rep
 ### p1210-async-3rmis.cpp
 
 ```c++
-struct Class03 {
+struct Class01 {
     void function1() {
-        printf("Class03::function1()\n");
-        remoteObj1.sendc_op1(in11, in12, 
+        printf("Class01::function1()\n");
+        remoteObj1.sendc_op1(gin11, gin12, 
             [this](int out1, int out2, int ret1) { this->function1a(out1, out2, ret1); });
         // 1a Do stuff that doesn't need the result of the RMI
     }
 
     void function1a(int out11, int out12, int ret1) {
-        printf("Class03::function1a(%d, %d, %d)\n", out11, out12, ret1);
+        printf("Class01::function1a(%d, %d, %d)\n", out11, out12, ret1);
         // 1b Do stuff that needs the result of the RMI
-        if (ret1 == val1) {
-            remoteObj2.sendc_op2(in21, in22,
+        if (ret1 == gval1) {
+            remoteObj2.sendc_op2(gin21, gin22,
                 [this](int out1, int ret1){ this->function1b(out1, ret1); });
             // 2a Do stuff that doesn't need the result of the RMI
         }
         else {
-            remoteObj3.sendc_op3(in31, 
+            remoteObj3.sendc_op3(gin31, 
                 [this](int out1, int out2, int ret1) { this->function1c(out1, out2, ret1); });
             // 3a Do stuff that doesn't need the result of the RMI
         }
     }
 
     void function1b(int out21, int ret2) {
-        printf("Class03::function1b()\n");
+        printf("Class01::function1b()\n");
         // 2b Do stuff that needs the result of the RMI
     }
 
     void function1c(int out31, int out32, int ret3) {
-        printf("Class03::function1c()\n");
+        printf("Class01::function1c()\n");
         // 3b Do stuff that needs the result of the RMI
     }
 
     void function2() {
-        printf("Class03::function2()\n");
+        printf("Class01::function2()\n");
     }
 };
 ```
@@ -186,23 +188,23 @@ of the original two-way in-out RMI.
 The local event loop can only handle the czllback function passed to the asynchronous function.
 
 ```c++
-struct Class02 {
+struct Class01 {
     void function1() {
-        printf("ClassA2::function1()\n");
-        remoteObj1.sendc_op1(in11, in12,
+        printf("Class01::function1()\n");
+        remoteObj1.sendc_op1(gin11, gin12,
             [this](int out1, int out2, int ret1) { this->callback1(out1, out2, ret1); });
         // 1a Do some stuff that doesn't need the result of the RMI
         eventQueue.run();
         // 1b Do stuff that needs the result of the RMI
-        if (ret1 == val1) {
-            remoteObj2.sendc_op2(in21, in22, 
+        if (gret1 == gval1) {
+            remoteObj2.sendc_op2(gin21, gin22, 
                 [this](int out1, int ret1) { this->callback2(out1, ret1); });
             // 2a Do some stuff that doesn't need the result of the RMI
             eventQueue.run();
             // 2b Do stuff that needs the result of the RMI
         }
         else {
-            remoteObj3.sendc_op3(in31, 
+            remoteObj3.sendc_op3(gin31, 
                 [this](int out1, int out2, int ret1) { this->callback3(out1, out2, ret1); });
             // 3a Do some stuff that doesn't need the result of the RMI
             eventQueue.run();
@@ -211,19 +213,20 @@ struct Class02 {
     }
 
     void callback1(int out11, int out12, int ret1) { 
-        printf("ClassA2::callback1(%d, %d, %d)\n", out11, out12, ret1);
-        // copy to local variables 
+        printf("Class01::callback1(%d, %d, %d)\n", out11, out12, ret1);
+        // copy to local variables
+        gret1 = ret1;
     }
     void callback2(int out21, int ret2) { 
-        printf("ClassA2::callback2(%d, %d)\n", out21, ret2);
+        printf("Class01::callback2(%d, %d)\n", out21, ret2);
         // copy to local variables
     }
     void callback3(int out31, int out32, int ret3) {
-        printf("ClassA2::callback3(%d, %d, %d)\n", out31, out32, ret3);
+        printf("Class01::callback3(%d, %d, %d)\n", out31, out32, ret3);
         // copy to local variables
     }
     void function2() { 
-        printf("ClassA2::function2()\n");
+        printf("Class01::function2()\n");
     }
 };
 ```
@@ -244,29 +247,41 @@ Disadvantages:
 
 
 ```c++
-class Class01
+struct Class01
 {
-public:
-    async_task<void> coroutine1()
-    {
-        printf("Class01::coroutine1()\n");
-        async_operation<op1_ret_t> op1 = remoteObj1.start_op1(in11, in12);
-        // 1a Do some stuff that doesn't need the result of the RMI
-        co_await op1;
-        // 1b Do stuff that needs the result of the RMI
-        if (ret1 == val1) {
-            async_operation<op2_ret_t> op2 = remoteObj2.start_op2(in21, in22);
-            // 2a Do some stuff that doesn't need the result of the RMI
-            co_await op2;
-            // 2b Do stuff that needs the result of the RMI
-        }
-        else {
-            async_operation<op1_ret_t> op3 = remoteObj3.start_op3(in31);
-            // 3a Do some stuff that doesn't need the result of the RMI
-            co_await op3;
-            // 3b Do stuff that needs the result of the RMI
-        }
-    }
+	async_task<void> coroutine1()
+	{
+		int ret1 = co_await remoteObj1.op1(gin11, gin12, gout11, gout12);
+		// 1 Do stuff
+		if (ret1 == gval1) {
+			int ret2 = co_await remoteObj2.op2(gin21, gin22, gout21);
+			// 2 Do stuff
+		}
+		else {
+			int ret3 = co_await remoteObj3.op3(gin31, gout31, gout32);
+			// 3 Do stuff
+		}
+	}
+	
+	async_task<void> coroutine1a()
+	{
+		async_task<int> op1 = remoteObj1.op1(gin11, gin12, gout11, gout12);
+		// 1a Do some stuff that doesn't need the result of the RMI
+		int ret1 = co_await op1;
+		// 1b Do stuff that needs the result of the RMI
+		if (ret1 == gval1) {
+			async_task<int> op2 = remoteObj2.op2(gin21, gin22, gout21);
+			// 2a Do some stuff that doesn't need the result of the RMI
+			int ret2 = co_await op2;
+			// 2b Do stuff that needs the result of the RMI
+		}
+		else {
+			async_task<int> op3 = remoteObj3.op3(gin31, gout31, gout32);
+			// 3a Do some stuff that doesn't need the result of the RMI
+			int ret3 = co_await op3;
+			// 3b Do stuff that needs the result of the RMI
+		}
+	}
 };
 ```
 
@@ -288,23 +303,23 @@ Disadvantages;
 
 
 ```c++
-struct Class04 {
+struct Class01 {
     void function1() {
         int counter = 0;
-        printf("Class04::function1()\n");
+        printf("Class01::function1()\n");
         start_time = get_current_time();
         for (int i = 0; i < max_msg_length; i++) {
             printf("Class04::function1(): i = %d\n", i);
             Msg msg(i);
             for (int j = 0; j < nr_msgs_to_send; j++) {
                 printf("Class04::function1(): i = %d, j = %d, counter = %d\n", i, j, counter++);
-                ret1 = remoteObj1.op1(msg);
+                int ret1 = remoteObj1.op1(msg);
             }
         }
         elapsed_time = get_current_time() - start_time;
     }
     void function2() { 
-        printf("Class04::function2()\n");
+        printf("Class01::function2()\n");
     }
 };
 ```
@@ -321,22 +336,22 @@ Disadvantages
 
 
 ```c++
-struct Class05 {
-    int i, j = 0;
+struct Class01 {
+    int i = 0, j = 0;
     Msg msg;
     int counter = 0;
 
     void function1() {
-        printf("Class05::function1(): counter = %d\n", counter);
+        printf("Class01::function1(): counter = %d\n", counter);
         start_time = get_current_time();
         msg = Msg(0);
         remoteObj1.sendc_op1(msg, [this]() { this->function1a(); });
     }
 
     void function1a() {
-        printf("Class05::function1a(): counter = %d\n", counter);
+        printf("Class01::function1a(): counter = %d\n", counter);
         if (j < nr_msgs_to_send) {
-            printf("Class05::function1a(): i = %d, j = %d, counter = %d\n", i, j, counter);
+            printf("Class01::function1a(): i = %d, j = %d, counter = %d\n", i, j, counter);
             remoteObj1.sendc_op1(msg, [this]() { this->function1a(); });
             j++;
             counter++;
@@ -346,7 +361,7 @@ struct Class05 {
             i++;
             if (i < max_msg_length) {
                 msg = Msg(i);
-                printf("Class05::function1a(): i = %d, j = %d, counter = %d\n", i, j, counter);
+                printf("Class01::function1a(): i = %d, j = %d, counter = %d\n", i, j, counter);
                 remoteObj1.sendc_op1(msg, [this]() { this->function1a(); });
                 j++;
                 counter++;
@@ -357,7 +372,7 @@ struct Class05 {
     }
 
     void function2() {
-        printf("Class05::function2()\n");
+        printf("Class01::function2()\n");
     }
 };
 ```
@@ -374,16 +389,15 @@ Disadvantages:
 
 
 ```c++
-class Class02
+struct Class01
 {
-public:
     async_task<void> coroutine1()
     {
         int counter = 0;
-        printf("Class02::function1()\n");
+        printf("Class01::function1()\n");
         start_time = get_current_time();
         for (int i = 0; i < max_msg_length; i++) {
-            printf("Class02::function1(): i = %d\n", i);
+            printf("Class01::function1(): i = %d\n", i);
             Msg msg(i);
             for (int j = 0; j < nr_msgs_to_send; j++) {
                 printf("Class02::function1(): i = %d, j = %d, counter = %d\n", i, j, counter++);
@@ -430,7 +444,7 @@ struct RemoteObject2 {
             completed = remoteObjImpl.read_segment(buf2.buffer(), offset, segment_length);
         }
         // Unmarshall out11, out12 and ret1 from buf2
-        return ret1;
+        return gret1;
     }
 };
 ```
@@ -445,11 +459,11 @@ struct RemoteObject3 {
     Buffer buf;
     bool completed = false;
     Buffer buf2;
-    lambda1 l;
+    lambda_3int_t lambda;
 
-    void sendc_op1(int in11, int in12, lambda1 op1cb) {
+    void sendc_op1(int in11, int in12, lambda_3int_t op1cb) {
         printf("RemoteObject3::sendc_op1(): calling write_segment\n");
-        l = op1cb;
+        lambda = op1cb;
         // Marshall in11 and in12 into buf
         remoteObjImpl.sendc_write_segment(buf.buffer(), offset,
             [this]() { this->op1a(); });
@@ -480,7 +494,7 @@ struct RemoteObject3 {
         }
         else {
             // Unmarshall out11, out12 and ret1 from buf2
-            l(out11, out12, ret1);
+            lambda(gout11, gout12, gret1);
         }
     }
 
@@ -496,11 +510,11 @@ struct RemoteObject3 {
 
 ```c++
 struct RemoteObject2 {
-    async_task<op1_ret_t> op1(int in11, int in12) {
+    async_task<Msg> op1(Msg msg) {
         Buffer buf;
-        op1_ret_t res{ 1, 2, 3 };
+        Msg res;
         printf("RemoteObject2::op1()\n");
-        // Marshall in11 and in12 into buf
+        // Marshall msg into buf
         for (int offset = 0; offset < buf.length(); offset += segment_length) {
             printf("RemoteObject2::op1(): calling write_segment: offset = %d\n", offset);
             co_await remoteObjImpl.start_write_segment(buf.buffer(), offset);
@@ -511,7 +525,7 @@ struct RemoteObject2 {
             printf("RemoteObject2::op1(): calling read_segment: offset = %d\n", offset);
             completed = co_await remoteObjImpl.start_read_segment(buf2.buffer(), offset, segment_length);
         }
-        // Unmarshall out11, out12 and ret1 from buf2
+        // Unmarshall Msg from buf2
         co_return res;
     }
 };

@@ -6,7 +6,7 @@
  */
 
 #include <stdio.h>
-#include <queue>
+#include <stack>
 
 #include "common.h"
 #include "variables.h"
@@ -23,36 +23,15 @@ typedef std::function<void(CallStack&)>                 lambda_cs_t;
 
 using namespace std;
 
-// Source: https://www.geeksforgeeks.org/implement-a-stack-using-single-queue/
-// 
-// Adapted for void*
-// User defined stack that uses a queue
 class CallStack
 {
-    queue<void*>q;
+    stack<void*> q;
 public:
 
     void push(void* val)
     {
         printf("Callstack::push(): ptr = %p\n", val);
-        //  Get previous size of queue
-        int s = q.size();
-
-        // Push current element
         q.push(val);
-
-        // Pop (or Dequeue) all previous
-        // elements and put them after current
-        // element
-        for (int i = 0; i < s; i++)
-        {
-            // this will add front element into
-            // rear of queue
-            q.push(q.front());
-
-            // this will delete front element
-            q.pop();
-        }
     }
 
     void pop()
@@ -65,14 +44,14 @@ public:
 
     void* top()
     {
-        return (q.empty()) ? nullptr : q.front();
+        return (q.empty()) ? nullptr : q.top();
     }
 
     void* top_pop()
     {
-        void* ptr = (q.empty()) ? nullptr : q.front();
+        void* ptr = (q.empty()) ? nullptr : q.top();
         q.pop();
-        printf("Callstack::top():  ptr = %p\n", ptr);
+        printf("Callstack::top_pop():  ptr = %p\n", ptr);
         return ptr;
     }
 
@@ -81,6 +60,7 @@ public:
         return (q.empty());
     }
 };
+
 
 // -------------------------------------------------
 
@@ -117,7 +97,7 @@ public:
                 this->function1_cb(callstack, out1, out12, ret1);
             });
         callstack.push(op);
-        remoteObj1.sendc_op1(callstack, in11, in12);
+        remoteObj1.sendc_op1(callstack, in1, in1);
     }
 
     void function1_cb(CallStack& callstack, int out11, int out12, int ret1) 
@@ -201,7 +181,7 @@ Layer03 layer03;
 int main() {
     printf("main();\n");
     connect(event1, []() { layer03.function1(2); });
-    //connect(event2, []() { layer03.function1(3); });
+    connect(event2, []() { layer03.function1(3); });
     eventQueue.run();
     return 0;
 }

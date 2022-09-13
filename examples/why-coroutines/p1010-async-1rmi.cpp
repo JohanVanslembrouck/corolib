@@ -28,7 +28,7 @@ RemoteObject1 remoteObj1;
 struct Class01 {
     void function1() {
         printf("Class03::function1(): part 1\n");
-        remoteObj1.sendc_op1(in11, in12, 
+        remoteObj1.sendc_op1(gin11, gin12, 
             [this](int out1, int out2, int ret1) { 
                 this->function1_cb(out1, out2, ret1); 
             });
@@ -47,7 +47,7 @@ Class01 class01;
 int main() {
     printf("main();\n");
     connect(event1, []() { class01.function1(); });
-    //connect(event2, []() { class01.function1(); });
+    connect(event2, []() { class01.function1(); });
     eventQueue.run();
     return 0;
 }

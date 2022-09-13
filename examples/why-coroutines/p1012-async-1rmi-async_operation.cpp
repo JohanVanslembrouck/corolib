@@ -78,7 +78,6 @@ void RemoteObj1::start_op1_impl(lambda_void_t cb, const int idx, int in11, int i
     eventQueue.push([this]() { this->operation1(1, 2, 3); });
 }
 
-
 // -------------------------------------------------
 
 struct Class01 {

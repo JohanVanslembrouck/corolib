@@ -14,7 +14,6 @@
 #include <corolib/print.h>
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
-#include <corolib/when_all.h>
 
 using namespace corolib;
 
@@ -62,27 +61,33 @@ protected:
 
 void RemoteObjectImpl::start_ws(int idx)
 {
-    operation = [this, idx]()
-    {
-        print(PRI1, "%p: RemoteObjectImpl::start_ws(%d)\n", this, idx);
-
-        async_operation_base* om_async_operation = m_async_operations[idx];
-        async_operation<void>* om_async_operation_t =
-            dynamic_cast<async_operation<void>*>(om_async_operation);
-
-        if (om_async_operation_t)
+    lambda_void_t* operation = new lambda_void_t(
+        [this, idx]()
         {
-            print(PRI1, "%p: RemoteObjectImpl::start_ws(%d): om_async_operation_t->set_result()\n", this, idx);
-            om_async_operation_t->completed();
-        }
-        else
-        {
-            // This can occur when the async_operation_base has gone out of scope.
-            print(PRI1, "%p: RemoteObjectImpl::start_ws(%d): Warning: om_async_operation_t == nullptr\n", this, idx);
-        }
-    };
+            print(PRI1, "%p: RemoteObjectImpl::start_ws(%d)\n", this, idx);
 
-    eventQueue.push(operation);
+            async_operation_base* om_async_operation = m_async_operations[idx];
+            async_operation<void>* om_async_operation_t =
+                dynamic_cast<async_operation<void>*>(om_async_operation);
+
+            if (om_async_operation_t)
+            {
+                print(PRI1, "%p: RemoteObjectImpl::start_ws(%d): om_async_operation_t->set_result()\n", this, idx);
+                om_async_operation_t->completed();
+            }
+            else
+            {
+                // This can occur when the async_operation_base has gone out of scope.
+                print(PRI1, "%p: RemoteObjectImpl::start_ws(%d): Warning: om_async_operation_t == nullptr\n", this, idx);
+            }
+        });
+
+    eventQueue.push(
+        [operation]()
+        {
+            (*operation)();
+            delete operation;
+        });
 }
 
 void RemoteObjectImpl::start_rs(int idx)
@@ -137,13 +142,12 @@ struct RemoteObject2 {
 
 RemoteObject2 remoteObject2a;
 
-class Class03
+struct Class01
 {
-public:
     async_task<void> coroutine1()
     {
         int counter = 0;
-        printf("Class03::function1()\n");
+        printf("Class01::function1()\n");
         start_time = get_current_time();
         for (int i = 0; i < max_msg_length; i++) {
             printf("Class03::function1(): i = %d\n", i);
@@ -158,12 +162,12 @@ public:
     }
 };
 
-Class03 class03;
+Class01 class01;
 
 int main() {
     printf("main();\n");
-    connect(event1, []() { class03.coroutine1(); });
-    //connect(event2, []() { class03.coroutine1(); });
+    connect(event1, []() { class01.coroutine1(); });
+    connect(event2, []() { class01.coroutine1(); });
     eventQueue.run();
     return 0;
 }

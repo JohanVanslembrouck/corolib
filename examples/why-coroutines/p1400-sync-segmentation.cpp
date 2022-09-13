@@ -48,7 +48,7 @@ struct RemoteObject2 {
             completed = remoteObjImpl.read_segment(buf2.buffer(), offset, segment_length);
         }
         // Unmarshall out11, out12 and ret1 from buf2
-        return ret1;
+        return gret1;
     }
 };
 
@@ -56,8 +56,8 @@ RemoteObject2 remoteObject2;
 
 int main() {
     printf("main();\n");
-    connect(event1, []() { remoteObject2.op1(in11, in12, out11, out12); });
-    //connect(event2, []() { remoteObject2.op1(in11, in12, out11, out12); });
+    connect(event1, []() { remoteObject2.op1(gin11, gin12, gout11, gout12); });
+    connect(event2, []() { remoteObject2.op1(gin11, gin12, gout11, gout12); });
     eventQueue.run();
     return 0;
 }
