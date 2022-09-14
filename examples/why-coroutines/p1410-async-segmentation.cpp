@@ -32,8 +32,6 @@ public:
 
 RemoteObjectImpl remoteObjImpl;
 
-// -----------------------------------------------------------------------------
-
 struct RemoteObject3 {
     int offset = 0;
     Buffer buf;

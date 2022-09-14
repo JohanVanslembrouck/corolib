@@ -11,8 +11,6 @@
 #include "variables.h"
 #include "eventqueue.h"
 
-// -------------------------------------------------
-
 class RemoteObject1 {
 public:
     void sendc_op1(int in11, int in12, lambda_3int_t lambda) {
@@ -22,8 +20,6 @@ public:
 };
 
 RemoteObject1 remoteObj1;
-
-// -------------------------------------------------
 
 struct Class01 {
     void function1() {
@@ -41,8 +37,6 @@ struct Class01 {
 };
 
 Class01 class01;
-
-// -------------------------------------------------
 
 int main() {
     printf("main();\n");

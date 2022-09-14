@@ -26,6 +26,8 @@ add_executable(p1210-async-3rmis p1210-async-3rmis.cpp)
 add_executable(p1212-async-3rmis-local-event-loop p1212-async-3rmis-local-event-loop.cpp)
 add_executable(p1220-coroutines-3rmis p1220-coroutines-3rmis.cpp)
 target_link_libraries(p1220-coroutines-3rmis corolib)
+add_executable(p1222-coroutines-3rmis-generichandler p1222-coroutines-3rmis-generichandler.cpp)
+target_link_libraries(p1222-coroutines-3rmis-generichandler corolib)
 
 add_executable(p1300-sync-nested-loop p1300-sync-nested-loop.cpp)
 add_executable(p1310-async-nested-loop p1310-async-nested-loop.cpp)

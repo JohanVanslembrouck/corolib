@@ -78,8 +78,6 @@ void RemoteObj1::start_op1_impl(lambda_void_t cb, const int idx, int in11, int i
     eventQueue.push([this]() { this->operation1(1, 2, 3); });
 }
 
-// -------------------------------------------------
-
 struct Class01 {
     void function1() {
         printf("Class01::function1(): part 1\n");
@@ -96,8 +94,6 @@ struct Class01 {
 };
 
 Class01 class01;
-
-// -------------------------------------------------
 
 int main() {
     printf("main();\n");

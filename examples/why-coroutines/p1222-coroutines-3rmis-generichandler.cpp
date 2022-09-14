@@ -1,6 +1,6 @@
 /**
- * @file p1220-coroutines-3rmis.cpp
- * @brief
+ * @file p1222-coroutines-3rmis-generichandler.cpp
+ * @brief Variant of p1220 using a generic version of the completion handler.
  *
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
@@ -73,6 +73,28 @@ public:
         return ret;
     }
 
+    template<class TYPE>
+    void genericCompletionHandler(int idx, TYPE in)
+    {
+        print(PRI1, "%p: RemoteObj1::genericCompletionHandler(%d)\n", this, idx);
+
+        async_operation_base* om_async_operation = m_async_operations[idx];
+        async_operation<TYPE>* om_async_operation_t =
+            dynamic_cast<async_operation<TYPE>*>(om_async_operation);
+
+        if (om_async_operation_t)
+        {
+            print(PRI1, "%p: RemoteObj1::genericCompletionHandler(%d): om_async_operation_t->set_result()\n", this, idx);
+            om_async_operation_t->set_result(in);
+            om_async_operation_t->completed();
+        }
+        else
+        {
+            // This can occur when the async_operation_base has gone out of scope.
+            print(PRI1, "%p: RemoteObj1::genericCompletionHandler(%d): Warning: om_async_operation_t == nullptr\n", this, idx);
+        }
+    }
+
 protected:
     // Implementation functions
     void start_op1_impl(const int idx, int in11, int in12);
@@ -84,33 +106,15 @@ void RemoteObj1::start_op1_impl(const int idx, int in11, int in12)
 {
     print(PRI1, "%p: RemoteObj1::start_op1_impl(%d)\n", this, idx);
 
-    lambda_3int_t* operation1 = new lambda_3int_t(
-        [this, idx](int out11, int out12, int ret1)
+    lambda_op1_ret_t* operation1 = new lambda_op1_ret_t(
+        [this, idx](op1_ret_t in)
         {
-            print(PRI1, "%p: RemoteObj1::start_op1_impl(%d)\n", this, idx);
-
-            async_operation_base* om_async_operation = m_async_operations[idx];
-            async_operation<op1_ret_t>* om_async_operation_t =
-                dynamic_cast<async_operation<op1_ret_t>*>(om_async_operation);
-
-            if (om_async_operation_t)
-            {
-                print(PRI1, "%p: RemoteObj1::start_op1_impl(%d): om_async_operation_t->set_result()\n", this, idx);
-                op1_ret_t op1_ret = { out11, out12, ret1 };
-                om_async_operation_t->set_result(op1_ret);
-                om_async_operation_t->completed();
-            }
-            else
-            {
-                // This can occur when the async_operation_base has gone out of scope.
-                print(PRI1, "%p: RemoteObj1::start_op1_impl(%d): Warning: om_async_operation_t == nullptr\n", this, idx);
-            }
+            genericCompletionHandler<op1_ret_t>(idx, in);
         });
-    
     eventQueue.push(
-        [operation1]() 
-        { 
-            (*operation1)(1, 2, 3); 
+        [operation1]()
+        {
+            (*operation1)({ 1, 2, 3 });
             delete operation1;
         });
 }
@@ -119,33 +123,16 @@ void RemoteObj1::start_op2_impl(const int idx, int in11, int in12)
 {
     print(PRI1, "%p: RemoteObj1::start_op2_impl(%d)\n", this, idx);
 
-    lambda_2int_t* operation2 = new lambda_2int_t(
-        [this, idx](int out21, int ret2)
+    lambda_op2_ret_t* operation2 = new lambda_op2_ret_t(
+        [this, idx](op2_ret_t in)
         {
-            print(PRI1, "%p: RemoteObj1::start_op2_impl(%d)\n", this, idx);
-
-            async_operation_base* om_async_operation = m_async_operations[idx];
-            async_operation<op2_ret_t>* om_async_operation_t =
-                dynamic_cast<async_operation<op2_ret_t>*>(om_async_operation);
-
-            if (om_async_operation_t)
-            {
-                print(PRI1, "%p: RemoteObj1::start_op2_impl(%d): om_async_operation_t->set_result()\n", this, idx);
-                op2_ret_t op2_ret = { out21, ret2 };
-                om_async_operation_t->set_result(op2_ret);
-                om_async_operation_t->completed();
-            }
-            else
-            {
-                // This can occur when the async_operation_base has gone out of scope.
-                print(PRI1, "%p: RemoteObj1::start_op2_impl(%d): Warning: om_async_operation_t == nullptr\n", this, idx);
-            }
+            genericCompletionHandler(idx, in);
         });
-    
+
     eventQueue.push(
         [operation2]() 
         { 
-            (*operation2)(2, 3); 
+            (*operation2)({ 2, 3 });
             delete operation2;
         });
 }
@@ -153,34 +140,17 @@ void RemoteObj1::start_op2_impl(const int idx, int in11, int in12)
 void RemoteObj1::start_op3_impl(const int idx, int in11)
 {
     print(PRI1, "%p: RemoteObj1::start_op3_impl(%d)\n", this, idx);
-
-    lambda_3int_t* operation3 = new lambda_3int_t(
-        [this, idx](int out31, int out32, int ret3)
+#
+    lambda_op1_ret_t* operation3 = new lambda_op1_ret_t(
+        [this, idx](op1_ret_t in)
         {
-            print(PRI1, "%p: RemoteObj1::start_op3_impl(%d)\n", this, idx);
-
-            async_operation_base* om_async_operation = m_async_operations[idx];
-            async_operation<op1_ret_t>* om_async_operation_t =
-                dynamic_cast<async_operation<op1_ret_t>*>(om_async_operation);
-
-            if (om_async_operation_t)
-            {
-                print(PRI1, "%p: RemoteObj1::start_op3_impl(%d): om_async_operation_t->set_result()\n", this, idx);
-                op1_ret_t op1_ret = { out31, out32, ret3 };
-                om_async_operation_t->set_result(op1_ret);
-                om_async_operation_t->completed();
-            }
-            else
-            {
-                // This can occur when the async_operation_base has gone out of scope.
-                print(PRI1, "%p: RemoteObj1::start_op3_impl(%d): Warning: om_async_operation_t == nullptr\n", this, idx);
-            }
+            genericCompletionHandler(idx, in);
         });
     
     eventQueue.push(
         [operation3]()
         {
-            (*operation3)(1, 2, 3); 
+            (*operation3)({ 1, 2, 3 });
             delete operation3;
         });
 }

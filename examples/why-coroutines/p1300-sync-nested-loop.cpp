@@ -24,8 +24,6 @@ public:
 
 RemoteObject1 remoteObj1;
 
-// -----------------------------------------------------------------------------
-
 struct Class01 {
     void function1() {
         int counter = 0;

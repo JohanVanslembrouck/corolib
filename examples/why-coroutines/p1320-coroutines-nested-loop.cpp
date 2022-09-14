@@ -17,21 +17,6 @@
 
 using namespace corolib;
 
-struct op1_ret_t
-{
-    int out1;
-    int out2;
-    int ret;
-};
-
-struct op2_ret_t
-{
-    int out1;
-    int ret;
-};
-
-// -----------------------------------------------------------------------------
-
 class RemoteObj1 : public CommService
 {
 public:  
@@ -83,8 +68,6 @@ void RemoteObj1::start_op1_impl(const int idx, Msg msg)
 }
 
 RemoteObj1 remoteObj1;
-
-// -----------------------------------------------------------------------------
 
 struct Class01
 {

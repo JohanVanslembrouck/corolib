@@ -12,8 +12,6 @@
 #include "variables.h"
 #include "eventqueue.h"
 
-// -------------------------------------------------
-
 class CallStack;
 
 typedef std::function<void(CallStack&, int, int, int)>  lambda_cs_3int_t;
@@ -61,9 +59,6 @@ public:
     }
 };
 
-
-// -------------------------------------------------
-
 class RemoteObject1
 {
 public:
@@ -81,8 +76,6 @@ public:
 };
 
 RemoteObject1 remoteObj1;
-
-// -------------------------------------------------
 
 class Layer01
 {
@@ -114,8 +107,6 @@ public:
 
 Layer01 layer01;
 
-// -------------------------------------------------
-
 class Layer02
 {
 public:    
@@ -146,8 +137,6 @@ public:
 
 Layer02 layer02;
 
-// -------------------------------------------------
-
 class Layer03
 {
 public:
@@ -175,8 +164,6 @@ private:
 };
 
 Layer03 layer03;
-
-// -------------------------------------------------
 
 int main() {
     printf("main();\n");

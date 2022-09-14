@@ -10,6 +10,7 @@ p1202-sync+thread-3rmis.exe
 p1210-async-3rmis.exe
 p1212-async-3rmis-local-event-loop.exe
 p1220-coroutines-3rmis.exe
+p1220-coroutines-3rmis-generichandler.exe
 p1300-sync-nested-loop.exe
 p1310-async-nested-loop.exe
 p1320-coroutines-nested-loop.exe

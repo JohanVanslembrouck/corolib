@@ -11,8 +11,6 @@
 #include "variables.h"
 #include "eventqueue.h"
 
-// -------------------------------------------------
-
 class RemoteObject1
 {
 public:
@@ -24,8 +22,6 @@ public:
 };
 
 RemoteObject1 remoteObj1;
-
-// -------------------------------------------------
 
 class Layer01
 {
@@ -55,8 +51,6 @@ private:
 
 Layer01 layer01;
 
-// -------------------------------------------------
-
 class Layer02
 {
 public:
@@ -85,8 +79,6 @@ private:
 
 Layer02 layer02;
 
-// -------------------------------------------------
-
 class Layer03
 {
 public:
@@ -109,8 +101,6 @@ public:
 };
 
 Layer03 layer03;
-
-// -------------------------------------------------
 
 int main() {
     printf("main();\n");

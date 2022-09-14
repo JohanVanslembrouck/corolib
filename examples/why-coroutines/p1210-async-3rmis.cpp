@@ -33,8 +33,6 @@ RemoteObject1 remoteObj1;
 RemoteObject1 remoteObj2;
 RemoteObject1 remoteObj3;
 
-// -----------------------------------------------------------------------------
-
 struct Class01 {
     void function1() {
         printf("Class01::function1()\n");

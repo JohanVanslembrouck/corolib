@@ -11,8 +11,6 @@
 #include "variables.h"
 #include "eventqueue.h"
 
-// -------------------------------------------------
-
 class RemoteObject1 {
 public:
     int op1(int in11, int in12, int& out11, int& out12) {
@@ -27,8 +25,6 @@ public:
 
 RemoteObject1 remoteObj1;
 
-// -------------------------------------------------
-
 struct Class01 {
     int function1() {
         printf("Class01::function1(): part 1\n");
@@ -40,8 +36,6 @@ struct Class01 {
 };
 
 Class01 class01;
-
-// -------------------------------------------------
 
 int main() {
     printf("main();\n");

@@ -17,23 +17,6 @@
 
 using namespace corolib;
 
-// -------------------------------------------------
-
-struct op1_ret_t
-{
-    int out1;
-    int out2;
-    int ret;
-};
-
-struct op2_ret_t
-{
-    int out1;
-    int ret;
-};
-
-// -------------------------------------------------
-
 class RemoteObj1 : public CommService
 {
 public:
@@ -102,8 +85,6 @@ void RemoteObj1::start_op1_impl(const int idx, int in11, int in12)
 
 RemoteObj1 remoteObj1;
 
-// -------------------------------------------------
-
 class Layer01
 {
 public:
@@ -118,8 +99,6 @@ public:
 };
 
 Layer01 layer01;
-
-// -------------------------------------------------
 
 class Layer02
 {
@@ -138,8 +117,6 @@ private:
 
 Layer02 layer02;
 
-// -------------------------------------------------
-
 class Layer03
 {
 public:
@@ -156,8 +133,6 @@ private:
 };
 
 Layer03 layer03;
-
-// -------------------------------------------------
 
 int main()
 {

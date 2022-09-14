@@ -22,8 +22,6 @@ public:
 
 RemoteObject1 remoteObj1;
 
-// -----------------------------------------------------------------------------
-
 struct Class01 {
     int i = 0, j = 0;
     Msg msg;

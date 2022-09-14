@@ -6,8 +6,8 @@
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
-#ifndef _VARIABES_H_
-#define _VARIABES_H_
+#ifndef _VARIABLES_H_
+#define _VARIABLES_H_
 
 int event1 = 1;
 int event2 = 2;

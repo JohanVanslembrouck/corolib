@@ -12,8 +12,6 @@
 #include "variables.h"
 #include "eventqueue.h"
 
-// -----------------------------------------------------------------------------
-
 class RemoteObject1 {
 public:
     int op1(int in11, int in12, int& out11, int& out12) {
@@ -38,8 +36,6 @@ public:
 RemoteObject1 remoteObj1;
 RemoteObject1 remoteObj2;
 RemoteObject1 remoteObj3;
-
-// -----------------------------------------------------------------------------
 
 struct Class01 {
     void function1() {

@@ -17,21 +17,6 @@
 
 using namespace corolib;
 
-struct op1_ret_t
-{
-    int out1;
-    int out2;
-    int ret;
-};
-
-struct op2_ret_t
-{
-    int out1;
-    int ret;
-};
-
-// -----------------------------------------------------------------------------
-
 class RemoteObjectImpl : public CommService {
 public:
     async_operation<void> start_write_segment(char* p, int offset)
