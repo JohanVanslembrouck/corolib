@@ -33,7 +33,8 @@ public:
         printf("Layer01::function1(): part 1\n");
         m_lambda = lambda;
         remoteObj1.sendc_op1(in1, in1, 
-            [this](int out1, int out2, int ret1) { 
+            [this](int out1, int out2, int ret1)
+            { 
                 this->function1_cb(out1, out2, ret1); 
             });
     }

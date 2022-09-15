@@ -95,6 +95,25 @@ public:
         }
     }
 
+    // Lower level functions
+    void sendc_op1(int in11, int in12, lambda_op1_ret_t lambda)
+    {
+        printf("RemoteObject1::sendc_op1(%d, %d, l)\n", in11, in12);
+        eventQueue.push([lambda]() { lambda({ 1, 2, 3 }); });
+    }
+
+    void sendc_op2(int in11, int in12, lambda_op2_ret_t lambda)
+    {
+        printf("RemoteObject1::sendc_op2(%d, %d, l)\n", in11, in12);
+        eventQueue.push([lambda]() { lambda({ 1, 2 }); });
+    }
+
+    void sendc_op3(int in11, lambda_op1_ret_t lambda)
+    {
+        printf("RemoteObject1::sendc_op3(%d, l)\n", in11);
+        eventQueue.push([lambda]() { lambda({ 1, 2, 3 }); });
+    }
+
 protected:
     // Implementation functions
     void start_op1_impl(const int idx, int in11, int in12);
@@ -106,16 +125,10 @@ void RemoteObj1::start_op1_impl(const int idx, int in11, int in12)
 {
     print(PRI1, "%p: RemoteObj1::start_op1_impl(%d)\n", this, idx);
 
-    lambda_op1_ret_t* operation1 = new lambda_op1_ret_t(
+    sendc_op1(in11, in12,
         [this, idx](op1_ret_t in)
         {
             genericCompletionHandler<op1_ret_t>(idx, in);
-        });
-    eventQueue.push(
-        [operation1]()
-        {
-            (*operation1)({ 1, 2, 3 });
-            delete operation1;
         });
 }
 
@@ -123,35 +136,21 @@ void RemoteObj1::start_op2_impl(const int idx, int in11, int in12)
 {
     print(PRI1, "%p: RemoteObj1::start_op2_impl(%d)\n", this, idx);
 
-    lambda_op2_ret_t* operation2 = new lambda_op2_ret_t(
+    sendc_op2(in11, in12,
         [this, idx](op2_ret_t in)
         {
-            genericCompletionHandler(idx, in);
-        });
-
-    eventQueue.push(
-        [operation2]() 
-        { 
-            (*operation2)({ 2, 3 });
-            delete operation2;
+            genericCompletionHandler<op2_ret_t>(idx, in);
         });
 }
 
 void RemoteObj1::start_op3_impl(const int idx, int in11)
 {
     print(PRI1, "%p: RemoteObj1::start_op3_impl(%d)\n", this, idx);
-#
-    lambda_op1_ret_t* operation3 = new lambda_op1_ret_t(
+
+    sendc_op3(in11,
         [this, idx](op1_ret_t in)
         {
-            genericCompletionHandler(idx, in);
-        });
-    
-    eventQueue.push(
-        [operation3]()
-        {
-            (*operation3)({ 1, 2, 3 });
-            delete operation3;
+            genericCompletionHandler<op1_ret_t>(idx, in);
         });
 }
 

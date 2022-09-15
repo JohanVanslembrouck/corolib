@@ -40,7 +40,12 @@ public:
         return ret;
     }
 
-    lambda_3int_t operation1;
+    // Lower level function
+    void sendc_op1(int in11, int in12, lambda_3int_t lambda)
+    {
+        printf("RemoteObject1::sendc_op1(%d, %d, lambda)\n", in11, in12);
+        eventQueue.push([lambda]() { lambda(1, 2, 3); });
+    }
 
 protected:
     // Implementation function
@@ -51,7 +56,7 @@ void RemoteObj1::start_op1_impl(const int idx, int in11, int in12)
 {
     print(PRI1, "%p: RemoteObj1::start_op1_impl(%d)\n", this, idx);
 
-    lambda_3int_t* operation1 = new lambda_3int_t(
+    sendc_op1(in11, in12, 
         [this, idx](int out11, int out12, int ret1)
         {
             print(PRI1, "%p: RemoteObj1::start_op1_impl(%d)\n", this, idx);
@@ -72,14 +77,6 @@ void RemoteObj1::start_op1_impl(const int idx, int in11, int in12)
                 // This can occur when the async_operation_base has gone out of scope.
                 print(PRI1, "%p: RemoteObj1::start_op1_impl(%d): Warning: om_async_operation_t == nullptr\n", this, idx);
             }
-        });
-    
-    // Because we do not have anyone else to produce the completion event, we do it ourselves
-    eventQueue.push(
-        [operation1]()
-        {
-            (*operation1)(1, 2, 3);
-            delete operation1;
         });
 }
 

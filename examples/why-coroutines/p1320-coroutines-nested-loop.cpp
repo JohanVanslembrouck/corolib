@@ -29,15 +29,22 @@ public:
         return ret;
     }
 
+    // Lower level function
+    void sendc_op1(Msg& msg, lambda_void_t lambda)
+    {
+        printf("RemoteObject1::sendc_op1(msg, lambda)\n");
+        eventQueue.push(lambda);
+    }
+
 protected:
-    void start_op1_impl(const int idx, Msg msg);
+    void start_op1_impl(const int idx, Msg& msg);
 };
 
-void RemoteObj1::start_op1_impl(const int idx, Msg msg)
+void RemoteObj1::start_op1_impl(const int idx, Msg& msg)
 {
     print(PRI1, "%p: RemoteObj1::start_op1_impl(%d)\n", this, idx);
 
-    lambda_void_t* operation = new lambda_void_t(
+    sendc_op1(msg, 
         [this, idx]()
         {
             print(PRI1, "%p: RemoteObj1::start_op1_impl(%d)\n", this, idx);
@@ -58,21 +65,13 @@ void RemoteObj1::start_op1_impl(const int idx, Msg msg)
                 print(PRI1, "%p: RemoteObj1::start_op1_impl(%d): Warning: om_async_operation_t == nullptr\n", this, idx);
             }
         });
-
-    eventQueue.push(
-        [operation]()
-        {
-            (*operation)();
-            delete operation;
-        });
 }
 
 RemoteObj1 remoteObj1;
 
 struct Class01
 {
-    async_task<void> coroutine1()
-    {
+    async_task<void> coroutine1() {
         int counter = 0;
         printf("Class01::function1()\n");
         start_time = get_current_time();

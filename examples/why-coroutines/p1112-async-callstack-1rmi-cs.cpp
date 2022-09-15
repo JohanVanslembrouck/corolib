@@ -67,7 +67,8 @@ public:
         printf("RemoteObject1::sendc_op1(callstack %d, %d)\n", in11, in12);
         lambda_cs_3int_t* op = static_cast<lambda_cs_3int_t*>(callstack.top_pop());
         eventQueue.push(
-            [op, &callstack]() { 
+            [op, &callstack]()
+            { 
                 (*op)(callstack, 1, 2, 3);
                 printf("RemoteObject1::sendc_op1(): delete %p\n", op);
                 delete op; 
@@ -86,7 +87,8 @@ public:
     {
         printf("Layer01::function1(): part 1\n");
         lambda_cs_3int_t* op = new lambda_cs_3int_t(
-            [this](CallStack& callstack, int out1, int out12, int ret1) {
+            [this](CallStack& callstack, int out1, int out12, int ret1)
+            {
                 this->function1_cb(callstack, out1, out12, ret1);
             });
         callstack.push(op);
@@ -116,7 +118,8 @@ public:
     {
         printf("Layer02::function1(): part 1\n");
         lambda_cs_2int_t* op = new lambda_cs_2int_t(
-            [this](CallStack& callstack, int out1, int ret1) {
+            [this](CallStack& callstack, int out1, int ret1)
+            {
                 this->function1_cb(callstack, out1, ret1);
             });
         callstack.push(op);
@@ -146,7 +149,8 @@ public:
     {
         printf("Layer03::function1(): part 1\n");
         lambda_cs_1int_t* p = new lambda_cs_1int_t(
-            [this](CallStack& callstack, int ret1) {
+            [this](CallStack& callstack, int ret1)
+            {
                 this->function1_cb(callstack, ret1);
             });
         m_callstack.push(p);

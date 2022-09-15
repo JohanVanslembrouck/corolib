@@ -56,6 +56,7 @@ public:
         start_op1_impl(index, in11, in12);
         return ret;
     }
+
     async_operation<op2_ret_t> start_op2(int in21, int in22)
     {
         int index = get_free_index();
@@ -64,6 +65,7 @@ public:
         start_op2_impl(index, in21, in22);
         return ret;
     }
+
     async_operation<op1_ret_t> start_op3(int in31)
     {
         int index = get_free_index();
@@ -71,6 +73,25 @@ public:
         async_operation<op1_ret_t> ret{ this, index };
         start_op3_impl(index, in31);
         return ret;
+    }
+
+    // Lower level functions
+    void sendc_op1(int in11, int in12, lambda_3int_t lambda)
+    {
+        printf("RemoteObject1::sendc_op1(%d, %d, l)\n", in11, in12);
+        eventQueue.push([lambda]() { lambda(1, 2, 3); });
+    }
+
+    void sendc_op2(int in11, int in12, lambda_2int_t lambda)
+    {
+        printf("RemoteObject1::sendc_op2(%d, %d, l)\n", in11, in12);
+        eventQueue.push([lambda]() { lambda(1, 2); });
+    }
+
+    void sendc_op3(int in11, lambda_3int_t lambda)
+    {
+        printf("RemoteObject1::sendc_op3(%d, l)\n", in11);
+        eventQueue.push([lambda]() { lambda(1, 2, 3); });
     }
 
 protected:
@@ -84,7 +105,7 @@ void RemoteObj1::start_op1_impl(const int idx, int in11, int in12)
 {
     print(PRI1, "%p: RemoteObj1::start_op1_impl(%d)\n", this, idx);
 
-    lambda_3int_t* operation1 = new lambda_3int_t(
+    sendc_op1(in11, in12, 
         [this, idx](int out11, int out12, int ret1)
         {
             print(PRI1, "%p: RemoteObj1::start_op1_impl(%d)\n", this, idx);
@@ -105,21 +126,14 @@ void RemoteObj1::start_op1_impl(const int idx, int in11, int in12)
                 // This can occur when the async_operation_base has gone out of scope.
                 print(PRI1, "%p: RemoteObj1::start_op1_impl(%d): Warning: om_async_operation_t == nullptr\n", this, idx);
             }
-        });
-    
-    eventQueue.push(
-        [operation1]() 
-        { 
-            (*operation1)(1, 2, 3); 
-            delete operation1;
-        });
+         });
 }
 
 void RemoteObj1::start_op2_impl(const int idx, int in11, int in12)
 {
     print(PRI1, "%p: RemoteObj1::start_op2_impl(%d)\n", this, idx);
 
-    lambda_2int_t* operation2 = new lambda_2int_t(
+    sendc_op2(in11, in12, 
         [this, idx](int out21, int ret2)
         {
             print(PRI1, "%p: RemoteObj1::start_op2_impl(%d)\n", this, idx);
@@ -141,20 +155,13 @@ void RemoteObj1::start_op2_impl(const int idx, int in11, int in12)
                 print(PRI1, "%p: RemoteObj1::start_op2_impl(%d): Warning: om_async_operation_t == nullptr\n", this, idx);
             }
         });
-    
-    eventQueue.push(
-        [operation2]() 
-        { 
-            (*operation2)(2, 3); 
-            delete operation2;
-        });
 }
 
 void RemoteObj1::start_op3_impl(const int idx, int in11)
 {
     print(PRI1, "%p: RemoteObj1::start_op3_impl(%d)\n", this, idx);
 
-    lambda_3int_t* operation3 = new lambda_3int_t(
+    sendc_op3(in11, 
         [this, idx](int out31, int out32, int ret3)
         {
             print(PRI1, "%p: RemoteObj1::start_op3_impl(%d)\n", this, idx);
@@ -175,13 +182,6 @@ void RemoteObj1::start_op3_impl(const int idx, int in11)
                 // This can occur when the async_operation_base has gone out of scope.
                 print(PRI1, "%p: RemoteObj1::start_op3_impl(%d): Warning: om_async_operation_t == nullptr\n", this, idx);
             }
-        });
-    
-    eventQueue.push(
-        [operation3]()
-        {
-            (*operation3)(1, 2, 3); 
-            delete operation3;
         });
 }
 
