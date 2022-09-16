@@ -4,8 +4,10 @@ project (tutorial)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 	set(CMAKE_CXX_FLAGS "/await:strict /EHsc /D _WIN32_WINNT=0x0601")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    set(CMAKE_CXX_FLAGS "-Wall -std=c++20 -fcoroutines")
 else()
-	set(CMAKE_CXX_FLAGS "-Wall")
+	message("Unsupported compiler")
 endif()
 
 include_directories(../../include)
@@ -47,6 +49,8 @@ target_link_libraries(p1120-auto_reset_event-thread corolib)
 
 add_executable(p1200-mini0 p1200-mini0.cpp)
 target_link_libraries(p1200-mini0 corolib)
+add_executable(p1202-mini0 p1202-mini0.cpp)
+target_link_libraries(p1202-mini0 corolib)
 add_executable(p1210-mini1-thread p1210-mini1-thread.cpp)
 target_link_libraries(p1210-mini1-thread corolib)
 add_executable(p1220-mini1-oneway_task-thread p1220-mini1-oneway_task-thread.cpp)
@@ -146,3 +150,5 @@ add_executable(p1474-async_operation-thread p1474-async_operation-thread.cpp cla
 target_link_libraries(p1474-async_operation-thread corolib)
 add_executable(p1476-async_operation-immediate p1476-async_operation-immediate.cpp class02.cpp p1470.cpp)
 target_link_libraries(p1476-async_operation-immediate corolib)
+
+add_executable(p2000 p2000.cpp)
