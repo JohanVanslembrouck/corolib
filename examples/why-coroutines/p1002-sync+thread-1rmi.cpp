@@ -1,5 +1,5 @@
 /**
- * @file p1202-sync+thread-3rmis.cpp
+ * @file p1002-sync+thread-1rmi.cpp
  * @brief
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
@@ -12,30 +12,21 @@
 #include "variables.h"
 #include "eventqueue.h"
 
-#include "p1200.h"
+#include "p1000.h"
 
 RemoteObject1 remoteObj1;
-RemoteObject1 remoteObj2;
-RemoteObject1 remoteObj3;
 
 class Class01
 {
 public:
-    void function1()
-    {
-        printf("Class01::function1()\n");
+    int function1()
+	{
+        printf("Class01::function1(): part 1\n");
         int ret1 = remoteObj1.op1(gin11, gin12, gout11, gout12);
-        // 1 Do stuff
-        if (ret1 == gval1) {
-            int ret2 = remoteObj2.op2(gin21, gin22, gout21);
-            // 2 Do stuff
-        }
-        else {
-            int ret3 = remoteObj3.op3(gin31, gout31, gout32);
-            // 3 Do stuff
-        }
+        printf("Class01::function1(): gout11 = %d, gout12 = %d, ret1 = %d\n", gout11, gout12, ret1);
+        printf("Class01::function1(): part 2\n");
+        return ret1;
     }
-    void function2() { }
 };
 
 Class01 class01;

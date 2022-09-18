@@ -11,22 +11,15 @@
 #include "variables.h"
 #include "eventqueue.h"
 
-class RemoteObject1 {
-public:
-    int op1(int in11, int in12, int& out11, int& out12) {
-        printf("RemoteObject1::op1(%d, %d, %d, %d)\n", in11, in12, out11, out12);
-        // Just sleep a while to simulate waiting for the response
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        out11 = 1;
-        out12 = 2;
-        return 3; 
-    }
-};
+#include "p1000.h"
 
 RemoteObject1 remoteObj1;
 
-struct Class01 {
-    int function1() {
+class Class01
+{
+public:
+    int function1()
+	{
         printf("Class01::function1(): part 1\n");
         int ret1 = remoteObj1.op1(gin11, gin12, gout11, gout12);
         printf("Class01::function1(): gout11 = %d, gout12 = %d, ret1 = %d\n", gout11, gout12, ret1);
@@ -37,7 +30,8 @@ struct Class01 {
 
 Class01 class01;
 
-int main() {
+int main()
+{
     printf("main();\n");
     connect(event1, []() { class01.function1(); });
     connect(event2, []() { class01.function1(); });

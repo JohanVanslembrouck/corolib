@@ -17,9 +17,17 @@
 
 using namespace corolib;
 
-class RemoteObj1 : public CommService
+#include "p1000.h"
+
+RemoteObject1 remoteObj1;
+
+class RemoteObject1Co : public CommService
 {
 public:
+    RemoteObject1Co(RemoteObject1& remoteObject)
+        : m_remoteObject(remoteObject)
+    {}
+    
     // User API
     async_task<int> op1(int in11, int in12, int& out11, int& out12)
     {
@@ -35,31 +43,26 @@ public:
     {
         int index = get_free_index();
         print(PRI1, "%p: RemoteObj1::start_op1(): index = %d\n", this, index);
-        async_operation<op1_ret_t> ret{ this, index };
         start_op1_impl(index, in11, in12);
-        return ret;
-    }
-
-    // Lower level function
-    void sendc_op1(int in11, int in12, lambda_3int_t lambda)
-    {
-        printf("RemoteObject1::sendc_op1(%d, %d, lambda)\n", in11, in12);
-        eventQueue.push([lambda]() { lambda(1, 2, 3); });
+        return { this, index };
     }
 
 protected:
     // Implementation function
     void start_op1_impl(const int idx, int in11, int in12);
+    
+private:
+    RemoteObject1 m_remoteObject;
 };
 
-void RemoteObj1::start_op1_impl(const int idx, int in11, int in12)
+void RemoteObject1Co::start_op1_impl(const int idx, int in11, int in12)
 {
-    print(PRI1, "%p: RemoteObj1::start_op1_impl(%d)\n", this, idx);
+    print(PRI1, "%p: RemoteObject1Co::start_op1_impl(%d)\n", this, idx);
 
-    sendc_op1(in11, in12, 
-        [this, idx](int out11, int out12, int ret1)
+    m_remoteObject.sendc_op1(in11, in12, 
+        [this, idx](int out11, int out12, int ret1) 
         {
-            print(PRI1, "%p: RemoteObj1::start_op1_impl(%d)\n", this, idx);
+            print(PRI1, "%p: RemoteObject1Co::start_op1_impl(%d)\n", this, idx);
 
             async_operation_base* om_async_operation = m_async_operations[idx];
             async_operation<op1_ret_t>* om_async_operation_t =
@@ -67,7 +70,7 @@ void RemoteObj1::start_op1_impl(const int idx, int in11, int in12)
 
             if (om_async_operation_t)
             {
-                print(PRI1, "%p: RemoteObj1::start_op1_impl(%d): om_async_operation_t->set_result()\n", this, idx);
+                print(PRI1, "%p: RemoteObject1Co::start_op1_impl(%d): om_async_operation_t->set_result()\n", this, idx);
                 op1_ret_t op1_ret = { out11, out12, ret1 };
                 om_async_operation_t->set_result(op1_ret);
                 om_async_operation_t->completed();
@@ -75,12 +78,12 @@ void RemoteObj1::start_op1_impl(const int idx, int in11, int in12)
             else
             {
                 // This can occur when the async_operation_base has gone out of scope.
-                print(PRI1, "%p: RemoteObj1::start_op1_impl(%d): Warning: om_async_operation_t == nullptr\n", this, idx);
+                print(PRI1, "%p: RemoteObject1Co::start_op1_impl(%d): Warning: om_async_operation_t == nullptr\n", this, idx);
             }
         });
 }
 
-RemoteObj1 remoteObj1;
+RemoteObject1Co remoteObj1co{ remoteObj1 };
 
 class Layer01
 {
@@ -88,7 +91,7 @@ public:
     async_task<int> coroutine1(int in1, int& out11, int& out12)
     {
         printf("Layer01::coroutine1(): part 1\n");
-        int ret1 = co_await remoteObj1.op1(in1, in1, out11, out12);
+        int ret1 = co_await remoteObj1co.op1(in1, in1, out11, out12);
         printf("Layer01::coroutine1(): out11 = %d, out12 = %d, ret1 = %d\n", out11, out12, ret1);
         printf("Layer01::coroutine1(): part 2\n");
         co_return ret1;

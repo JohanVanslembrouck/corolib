@@ -11,15 +11,7 @@
 #include "variables.h"
 #include "eventqueue.h"
 
-class RemoteObject1
-{
-public:
-    void sendc_op1(int in11, int in12, lambda_3int_t lambda)
-    {
-        printf("RemoteObject1::sendc_op1(%d, %d, lambda)\n", in11, in12);
-        eventQueue.push([lambda]() { lambda(1, 2, 3); });
-    }
-};
+#include "p1000.h"
 
 RemoteObject1 remoteObj1;
 

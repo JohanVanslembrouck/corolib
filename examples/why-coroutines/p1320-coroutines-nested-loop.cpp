@@ -15,39 +15,42 @@
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
 
+#include "p1300.h"
+
+RemoteObject1 remoteObj1;
+
 using namespace corolib;
 
-class RemoteObj1 : public CommService
+class RemoteObject1Co : public CommService
 {
-public:  
+public:
+    RemoteObject1Co(RemoteObject1& remoteObject)
+        : m_remoteObject(remoteObject)
+    {}
+    
     async_operation<int> start_op1(Msg msg)
     {
         int index = get_free_index();
-        print(PRI1, "%p: RemoteObj1::start_op1(): index = %d\n", this, index);
-        async_operation<int> ret{ this, index };
+        print(PRI1, "%p: RemoteObject1Co::start_op1(): index = %d\n", this, index);
         start_op1_impl(index, msg);
-        return ret;
-    }
-
-    // Lower level function
-    void sendc_op1(Msg& msg, lambda_void_t lambda)
-    {
-        printf("RemoteObject1::sendc_op1(msg, lambda)\n");
-        eventQueue.push(lambda);
+        return { this, index };
     }
 
 protected:
     void start_op1_impl(const int idx, Msg& msg);
+
+private:
+    RemoteObject1 m_remoteObject;
 };
 
-void RemoteObj1::start_op1_impl(const int idx, Msg& msg)
+void RemoteObject1Co::start_op1_impl(const int idx, Msg& msg)
 {
-    print(PRI1, "%p: RemoteObj1::start_op1_impl(%d)\n", this, idx);
+    print(PRI1, "%p: RemoteObject1Co::start_op1_impl(%d)\n", this, idx);
 
-    sendc_op1(msg, 
+    m_remoteObject.sendc_op1(msg, 
         [this, idx]()
         {
-            print(PRI1, "%p: RemoteObj1::start_op1_impl(%d)\n", this, idx);
+            print(PRI1, "%p: RemoteObject1Co::start_op1_impl(%d)\n", this, idx);
 
             async_operation_base* om_async_operation = m_async_operations[idx];
             async_operation<int>* om_async_operation_t =
@@ -55,7 +58,7 @@ void RemoteObj1::start_op1_impl(const int idx, Msg& msg)
 
             if (om_async_operation_t)
             {
-                print(PRI1, "%p: RemoteObj1::start_op1_impl(%d): om_async_operation_t->set_result()\n", this, idx);
+                print(PRI1, "%p: RemoteObject1Co::start_op1_impl(%d): om_async_operation_t->set_result()\n", this, idx);
                 om_async_operation_t->set_result(1);
                 om_async_operation_t->completed();
             }
@@ -67,20 +70,24 @@ void RemoteObj1::start_op1_impl(const int idx, Msg& msg)
         });
 }
 
-RemoteObj1 remoteObj1;
+RemoteObject1Co remoteObj1co{remoteObj1};
 
-struct Class01
+class Class01
 {
-    async_task<void> coroutine1() {
+public:
+    async_task<void> coroutine1()
+    {
         int counter = 0;
-        printf("Class01::function1()\n");
+        printf("Class01::coroutine1()\n");
         start_time = get_current_time();
-        for (int i = 0; i < max_msg_length; i++) {
-            printf("Class01::function1(): i = %d\n", i);
+        for (int i = 0; i < MAX_MSG_LENGTH; i++)
+        {
+            printf("Class01::coroutine1(): i = %d\n", i);
             Msg msg(i);
-            for (int j = 0; j < nr_msgs_to_send; j++) {
-                printf("Class02::function1(): i = %d, j = %d, counter = %d\n", i, j, counter++);
-                async_operation<int> op1 = remoteObj1.start_op1(msg);
+            for (int j = 0; j < NR_MSGS_TO_SEND; j++)
+            {
+                printf("Class02::coroutine1(): i = %d, j = %d, counter = %d\n", i, j, counter++);
+                async_operation<int> op1 = remoteObj1co.start_op1(msg);
                 int i = co_await op1;
             }
         }
@@ -90,10 +97,11 @@ struct Class01
 
 Class01 class01;
 
-int main() {
+int main()
+{
     printf("main();\n");
     connect(event1, []() { class01.coroutine1(); });
-    connect(event2, []() { class01.coroutine1(); });
+    //connect(event2, []() { class01.coroutine1(); });
     eventQueue.run();
     return 0;
 }

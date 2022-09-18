@@ -12,81 +12,145 @@
 #include "eventqueue.h"
 #include "buf+msg.h"
 
-class RemoteObjectImpl {
-public:
-    void sendc_write_segment(char* p, int offset, lambda_void_t lambda)
-    {
-        eventQueue.push(lambda);
-    }
+#include "p1400.h"
 
-    void sendc_read_segment(char* p, int offset, int segment_length, lambda_void_t lambda)
-    {
-        eventQueue.push(lambda);
-    }
-};
+using lambda_msg_t = typename std::function<void(Msg)>;
 
 RemoteObjectImpl remoteObjImpl;
 
-struct RemoteObject1 {
-    int offset = 0;
-    Buffer buf;
-    bool completed = false;
-    Buffer buf2;
-    lambda_3int_t lambda;
-
-    void sendc_op1(int in11, int in12, lambda_3int_t op1cb) {
+class RemoteObject1
+{
+public:
+    void init()
+    {
+        offset = 0;
+        completed = false;
+    }
+    
+    void sendc_op1(Msg msg, lambda_msg_t op1_cb)
+    {
         printf("RemoteObject1::sendc_op1(): calling write_segment\n");
-        lambda = op1cb;
-        // Marshall in11 and in12 into buf
-        remoteObjImpl.sendc_write_segment(buf.buffer(), offset,
-            [this]() { this->op1a(); });
+        lambda = op1_cb;
+        
+        // Write part
+        // Marshall msg into writebuffer
+        // (code not present)
+        // Write the first segment
+        int buflength = writebuffer.length();
+        int bytestowrite = (buflength - offset) > SEGMENT_LENGTH ? SEGMENT_LENGTH : buflength - offset;
+        remoteObjImpl.sendc_write_segment(writebuffer.buffer(), offset, bytestowrite,
+                                            [this]() { this->handle_write_segment(); });
+        offset += SEGMENT_LENGTH;
     }
 
-    void op1a() {
-        printf("RemoteObject1::op1a()\n");
-        if (offset < buf.length()) {
-            printf("RemoteObject1::op1a(): calling sendc_write_segment\n");
-            remoteObjImpl.sendc_write_segment(buf.buffer(), offset, 
-                [this]() { this->op1a(); });
-            offset += segment_length;
+    void handle_write_segment()
+    {
+        printf("RemoteObject1::handle_write_segment()\n");
+        int buflength = writebuffer.length();
+        if (offset < buflength) {
+            printf("RemoteObject1::handle_write_segment(): calling sendc_write_segment\n");
+            int bytestowrite = (buflength - offset) > SEGMENT_LENGTH ? SEGMENT_LENGTH : buflength - offset;
+            remoteObjImpl.sendc_write_segment(writebuffer.buffer(), offset, bytestowrite,
+                                                [this]() { this->handle_write_segment(); });
+            offset += SEGMENT_LENGTH;
         }
         else {
+            // Read part
             offset = 0;
-            printf("RemoteObject1::op1a(): calling sendc_read_segment\n");
-            remoteObjImpl.sendc_read_segment(buf2.buffer(), offset, segment_length, 
-                                                            [this]() { this->op1b(); });
+            remoteObjImpl.init();
+            printf("RemoteObject1::handle_write_segment(): calling sendc_read_segment\n");
+            remoteObjImpl.sendc_read_segment(readbuffer.buffer(), offset, SEGMENT_LENGTH, 
+                                                            [this](bool res) { this->handle_read_segment(res); });
+            offset += SEGMENT_LENGTH;
         }
     }
 
-    void op1b() {
-        printf("RemoteObject1::sendc_op1b(): calling sendc_read_segment\n");
-        if (offset < segment_length) {
-            remoteObjImpl.sendc_read_segment(buf2.buffer(), offset, segment_length, 
-                                                            [this]() { this->op1b(); });
-            offset += segment_length;
+    void handle_read_segment(bool complete)
+    {
+        Msg msg;
+        if (!complete) {
+            printf("RemoteObject1::handle_read_segment(): calling sendc_read_segment\n");
+            remoteObjImpl.sendc_read_segment(readbuffer.buffer(), offset, SEGMENT_LENGTH, 
+                                                            [this](bool res) { this->handle_read_segment(res); });
+            offset += SEGMENT_LENGTH;
         }
         else {
-            // Unmarshall out11, out12 and ret1 from buf2
-            lambda(gout11, gout12, gret1);
+            // Unmarshall msg from buf
+            // (code not present)
+            // Invoke the lambda passing the result
+            lambda(msg);
         }
     }
 
-    void callback(int out11, int out12, int ret1) {
-        printf("RemoteObject1::callback()\n");
-    }
+private:
+    int offset = 0;
+    Buffer writebuffer;
+    bool completed = false;
+    Buffer readbuffer;
+    lambda_msg_t lambda;
 };
 
-RemoteObject1 remoteObject1;
+RemoteObject1 remoteObj1;
 
-int main() {
+class Class01
+{
+public:
+    void function1()
+    {
+		counter = 0;
+        printf("Class01::function1(): counter = %d\n", counter);
+        i = j = 0;
+        
+        start_time = get_current_time();
+        msg = Msg(0);
+        remoteObj1.init();
+        remoteObj1.sendc_op1(msg, [this](Msg msg) { this->function1a(msg); });
+    }
+
+    void function1a(Msg msgout)
+    {
+        // Do something with msgout
+        printf("Class01::function1a(Msg): counter = %d\n", counter);
+        if (j < NR_MSGS_TO_SEND) {
+            remoteObj1.init();
+            printf("Class01::function1a(): i = %d, j = %d, counter = %d\n", i, j, counter);
+            remoteObj1.sendc_op1(msg, [this](Msg msg) { this->function1a(msg); });
+            j++;
+            counter++;
+        }
+        else {
+            // End of inner loop
+            j = 0;
+            i++;
+            if (i < MAX_MSG_LENGTH) {
+                msg = Msg(i);
+                remoteObj1.init();
+                printf("Class01::function1a(): i = %d, j = %d, counter = %d\n", i, j, counter);
+                remoteObj1.sendc_op1(msg, [this](Msg msg) { this->function1a(msg); });
+                j++;
+                counter++;
+            }
+            else {
+                // End of inner and outer loop
+                elapsed_time = get_current_time() - start_time;
+            }
+        }
+    }
+    
+private:
+    int i, j;
+    Msg msg;
+    int counter;
+};
+
+Class01 class01;
+Msg gmsg1;
+
+int main()
+{
     printf("main();\n");
-    connect(event1, []() { remoteObject1.sendc_op1(gin11, gin12,
-                            [](int out11, int out12, int ret1) { remoteObject1.callback(out11, out12, ret1); });
-        });
-    connect(event2, []() { remoteObject1.sendc_op1(gin11, gin12,
-                            [](int out11, int out12, int ret1) { remoteObject1.callback(out11, out12, ret1); });
-        });
+    connect(event1, []() { class01.function1(); });
+    //connect(event1, []() { remoteObj1.sendc_op1(gmsg1, [](Msg msg) { printf("received message\n"); }); });
     eventQueue.run();
     return 0;
 }
-

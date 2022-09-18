@@ -11,17 +11,7 @@
 #include "variables.h"
 #include "eventqueue.h"
 
-class RemoteObject1 {
-public:
-    int op1(int in11, int in12, int& out11, int& out12)
-    {
-        printf("RemoteObject1::op1(%d, %d, %d, %d)\n", in11, in12, out11, out12);
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        out11 = 1;
-        out12 = 2;
-        return 3; 
-    }
-};
+#include "p1000.h"
 
 RemoteObject1 remoteObj1;
 

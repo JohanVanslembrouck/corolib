@@ -12,43 +12,39 @@
 #include "eventqueue.h"
 #include "buf+msg.h"
 
-class RemoteObject1 {
-public:
-    int op1(Msg& msg) {
-        printf("RemoteObject1::op1(msg)\n");
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        return 0;
-    }
-};
+#include "p1300.h"
 
 RemoteObject1 remoteObj1;
 
-struct Class01 {
-    void function1() {
+class Class01
+{
+public:
+    void function1()
+    {
         int counter = 0;
         printf("Class01::function1()\n");
         start_time = get_current_time();
-        for (int i = 0; i < max_msg_length; i++) {
+        for (int i = 0; i < MAX_MSG_LENGTH; i++)
+        {
             printf("Class04::function1(): i = %d\n", i);
             Msg msg(i);
-            for (int j = 0; j < nr_msgs_to_send; j++) {
+            for (int j = 0; j < NR_MSGS_TO_SEND; j++)
+            {
                 printf("Class04::function1(): i = %d, j = %d, counter = %d\n", i, j, counter++);
                 int ret1 = remoteObj1.op1(msg);
             }
         }
         elapsed_time = get_current_time() - start_time;
     }
-    void function2() { 
-        printf("Class01::function2()\n");
-    }
 };
 
 Class01 class01;
 
-int main() {
+int main()
+{
     printf("main();\n");
     connect(event1, []() { class01.function1(); });
-    connect(event2, []() { class01.function1(); });
+    //connect(event2, []() { class01.function1(); });
     eventQueue.run();
     return 0;
 }

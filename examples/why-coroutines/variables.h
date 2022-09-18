@@ -17,9 +17,4 @@ int gval1 = 0;
 int gret2 = 2, gin21 = 21, gin22 = 22, gout21 = 21;
 int gret3 = 3, gin31 = 31, gout31 = 31, gout32 = 32;
 
-int max_msg_length = 5;
-int nr_msgs_to_send = 10;
-
-int segment_length = 10;
-
 #endif

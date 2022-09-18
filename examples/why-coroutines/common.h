@@ -15,6 +15,7 @@
 using lambda_3int_t = typename std::function<void(int, int, int)>;
 using lambda_2int_t = typename std::function<void(int, int)>;
 using lambda_1int_t = typename std::function<void(int)>;
+using lambda_bool_t = typename std::function<void(bool)>;
 using lambda_void_t = typename std::function<void(void)>;
 
 struct op1_ret_t

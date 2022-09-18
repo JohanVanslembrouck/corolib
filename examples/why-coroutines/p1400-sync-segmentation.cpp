@@ -12,62 +12,68 @@
 #include "eventqueue.h"
 #include "buf+msg.h"
 
-class RemoteObjectImpl {
-public:
-    void write_segment(char* p, int offset)
-    {
-        printf("RemoteObjectImpl::write_segment(p, offset = %d)\n", offset);
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
-
-    bool read_segment(char* p, int offset, int segment_length)
-    {
-        printf("RemoteObjectImpl::read_segment(p, offset = %d, segment_length = %d)\n", offset, segment_length);
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        return (offset > segment_length);
-    }
-};
+#include "p1400.h"
 
 RemoteObjectImpl remoteObjImpl;
 
-struct RemoteObject1
+class RemoteObject1
 {
+public:
     Msg op1(Msg msg)
     {
-        Buffer buf;
-        Msg res;
+        // Write part
+        Buffer writebuffer;
         printf("RemoteObject1::op1()\n");
-        // Marshall msg into buf
-        for (int offset = 0; offset < buf.length(); offset += segment_length) {
+        // Marshall msg into the buffer
+        // (code not present)
+        // Write the buffer in segments of size SEGMENT_LENGTH (onto the remote object)
+        // until the whole buffer has been written (offset >= writebuffer.length())
+        int buflength = writebuffer.length();
+        for (int offset = 0; offset < buflength; offset += SEGMENT_LENGTH)
+        {
+            int bytestowrite = (buflength - offset) > SEGMENT_LENGTH ? SEGMENT_LENGTH : buflength - offset;
             printf("RemoteObject1::op1(): calling write_segment: offset = %d\n", offset);
-            remoteObjImpl.write_segment(buf.buffer(), offset);
+            remoteObjImpl.write_segment(writebuffer.buffer(), offset, bytestowrite);
         }
+        
+        // Read part
         bool completed = false;
-        Buffer buf2;
-        for (int offset = 0; !completed; offset += segment_length) {
+        Buffer readbuffer;
+        Msg res;
+        remoteObjImpl.init();
+        // Read the buffer in segments of size SEGMENT_LENGTH
+        // until read_segment reports that the read is complete.
+        for (int offset = 0; !completed; offset += SEGMENT_LENGTH)
+        {
             printf("RemoteObject1::op1(): calling read_segment: offset = %d\n", offset);
-            completed = remoteObjImpl.read_segment(buf2.buffer(), offset, segment_length);
+            completed = remoteObjImpl.read_segment(readbuffer.buffer(), offset, SEGMENT_LENGTH);
         }
-        // Unmarshall Msg from buf2
+        // Unmarshall Msg from readbuffer
+        // (code not present)
+        // return the msg to the caller
         return res;
     }
 };
 
-RemoteObject1 remoteObject1;
+RemoteObject1 remoteObj1;
 
-struct Class01
+class Class01
 {
+public:
     void function1()
     {
         int counter = 0;
         printf("Class01::function1()\n");
         start_time = get_current_time();
-        for (int i = 0; i < max_msg_length; i++) {
+        for (int i = 0; i < MAX_MSG_LENGTH; i++)
+        {
             printf("Class01::function1(): i = %d\n", i);
             Msg msg(i);
-            for (int j = 0; j < nr_msgs_to_send; j++) {
+            for (int j = 0; j < NR_MSGS_TO_SEND; j++)
+            {
                 printf("Class01::function1(): i = %d, j = %d, counter = %d\n", i, j, counter++);
-                Msg res = remoteObject1.op1(msg);
+                Msg res = remoteObj1.op1(msg);
+                // Do something with msg
             }
         }
         elapsed_time = get_current_time() - start_time;
@@ -78,8 +84,6 @@ Class01 class01;
 
 int main() {
     printf("main();\n");
-    //connect(event1, []() { remoteObject1.op1(gin11, gin12, gout11, gout12); });
-    //connect(event2, []() { remoteObject1.op1(gin11, gin12, gout11, gout12); });
     connect(event1, []() { class01.function1(); });
     //connect(event2, []() { class01.function1(); });
     eventQueue.run();

@@ -11,33 +11,17 @@
 #include "variables.h"
 #include "eventqueue.h"
 
-class RemoteObject1 {
-public:
-    int op1(int in11, int in12, int& out11, int& out12) {
-        printf("RemoteObject1::op1(%d, %d, %d, %d)\n", in11, in12, out11, out12);
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        return 0; 
-    }
-
-    int op2(int in21, int in22, int& out21) {
-        printf("RemoteObject1::op2(%d, %d, %d)\n", in21, in22, out21);
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        return 0;
-    }
-  
-    int op3(int in31, int& out31, int& out32) {
-        printf("RemoteObject1::op3(%d, %d, %d)\n", in31, out31, out32);
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        return 0;
-    }
-};
+#include "p1200.h"
 
 RemoteObject1 remoteObj1;
 RemoteObject1 remoteObj2;
 RemoteObject1 remoteObj3;
 
-struct Class01 {
-    void function1() {
+class Class01
+{
+public:
+    void function1()
+    {
         printf("Class01::function1()\n");
         int ret1 = remoteObj1.op1(gin11, gin12, gout11, gout12);
         // 1 Do stuff
@@ -55,7 +39,8 @@ struct Class01 {
 
 Class01 class01;
 
-int main() {
+int main()
+{
     printf("main();\n");
     connect(event1, []() { class01.function1(); });
     connect(event2, []() { class01.function1(); });

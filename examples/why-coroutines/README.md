@@ -14,40 +14,131 @@ Instead, the delay that may result of the invocation is simulated by means of a 
 
 ## Case 1: program with 1 RMI
 
+This section compares three variants of a function or coroutine with 1 RMI in its middle, between a part 1 and a part 2.
+
 ### p1000-sync-1rmi.cpp
 
-To be completed.
+```c++
+class Class01
+{
+public:
+    int function1()
+	{
+        printf("Class01::function1(): part 1\n");
+        int ret1 = remoteObj1.op1(gin11, gin12, gout11, gout12);
+        printf("Class01::function1(): gout11 = %d, gout12 = %d, ret1 = %d\n", gout11, gout12, ret1);
+        printf("Class01::function1(): part 2\n");
+        return ret1;
+    }
+};
+```
+
+The following code shows how function1 is called when the program receives event1 or event2.
+Normally a different function will be "connected" to every event.
+
+```c++
+int main() {
+    printf("main();\n");
+    connect(event1, []() { class01.function1(); });
+    connect(event2, []() { class01.function1(); });
+    eventQueue.run();
+    return 0;
+}
+```
+
+The name "connect" has been inspired by the connect mechanism used by Qt to connect signals to slots.
+
+### p1002-sync+thread-1rmi.cpp
+
+It is possible to make the program reactive by running every function on its own thread.
+The implementation of function1 does not have to be changed. This can be done as follows:
+
+```c++
+int main() {
+    printf("main();\n");
+    connect(event1, []() { std::thread th(&Class01::function1, &class01); th.join(); });
+    connect(event2, []() { std::thread th(&Class01::function1, &class01); th.join(); });
+    eventQueue.run();
+    return 0;
+}
+```
+```c++
+```
 
 ### p1010-async-1rmi.cpp
 
-To be completed.
+```c++
+class Class01
+{
+public:
+    void function1()
+	{
+        printf("Class03::function1(): part 1\n");
+        remoteObj1.sendc_op1(gin11, gin12, 
+            [this](int out1, int out2, int ret1)
+			{ 
+                this->function1_cb(out1, out2, ret1);
+            });
+    }
+
+    void function1_cb(int out11, int out12, int ret1)
+	{
+        printf("Class03::function1_cb(out11 = %d, out12 = %d, ret1 = %d)\n", out11, out12, ret1);
+        printf("Class03::function1_cb(): part 2\n");
+    }
+};
+```
+
 
 ### p1020-coroutines-1rmi.cpp
 
-To be completed.
+```c++
+class Class01
+{
+public:
+    async_task<int> coroutine1()
+	{
+        printf("Class01::coroutine1() - part 1\n");
+        int ret1 = co_await remoteObj1co.op1(gin11, gin12, gout11, gout12);
+        printf("Class01::coroutine1(): gout11 = %d, gout12 = %d, ret1 = %d\n", gout11, gout12, ret1);
+        printf("Class01::coroutine1() - part 2\n");
+		co_return ret1;
+    }
+};
+```
+
 
 ## Case 2: program with callstack and 1 RMI
 
+
 ### p1100-sync-callstack-1rmi.cpp
 
-To be completed.
+```c++
+
+```
 
 ### p1110-async-callstack-1rmi.cpp
 
-To be completed.
+```c++
+
+```
 
 ### p1112-async-callstack-1rmi-queue-cs.cpp
 
-To be completed.
+```c++
+
+```
 
 ### p1120-coroutines-callstack-1rmi.cpp
 
-To be completed.
+```c++
+
+```
 
 ## Case 3: program with if-then-else and 3 RMIs
 
-Function with 3 remote method invocations (RMIs) and an if-then-else. Depending on the result of the first RMI,
-we enter the if-then or else case, where another remote method is invoked.
+Function with 3 RMIs and an if-then-else. Depending on the result of the first RMI,
+we enter the if-then or the else case, where another remote method is invoked.
 
 ### p1200-sync-3rmis.cpp
 
@@ -70,34 +161,8 @@ struct Class01 {
     }
     void function2() { }
 };
-
 ```
 
-The method invocations look as local method invocations, but they can be remote method invocations as well.
-The code for this remote invocation can be completely generated from an interface definition, e.g. written using CORBA's IDL.
-
-Advantages:
-
-* Natural coding style, same style as if all function calls (method invocations) are local.
-
-Disadvantages:
-
-* Program is not reactive: during a remote method invocation the calling function is blocked and the program cannot respond to other inputs:
-This extends to the call of function1(): the program cannot react to other inputs while function1() is called.
-
-The following code shows how function1 is called when the program receives event1 or event2.
-Normally a different function will be "connected" to every event.
-
-```c++
-int main() {
-    printf("main();\n");
-    connect(event1, []() { class01.function1(); });
-    connect(event2, []() { class01.function1(); });
-    eventQueue.run();
-    return 0;
-}
-```
-The name "connect" has been inspired by the connect mechanism used by Qt to connect signals to slots.
 
 ### p1202-sync+thread-3rmis.cpp
 
@@ -113,17 +178,6 @@ int main() {
     return 0;
 }
 ```
-
-Advantages:
-
-* Program is reactive again, with only minimal changes.
-
-Disadvantages:
-
-* Overhead of thread creation (stack, scheduling).
-* If functions share variables, then race conditions are possible. 
-Mutexes and atomic access may have to be used.
-This approach may lead to sporadic errors (Heigenbugs) that are difficult to reproduce and to correct.
 
 
 ### p1210-async-3rmis.cpp
@@ -168,24 +222,13 @@ struct Class01 {
 };
 ```
 
-Advantages:
-
-* Program can respond to other inputs after the request to the server has been sent.
-
-Disadvantages:
-
-* Original function and its control flow is split into a number of functions (in this example four).
-* Unnatural style
-* May be diffiult to distinguish "primary" functions (attached to input to the programs) from
-"secondary" fuunctions that are attached to the response to a remote method invocation.
-
 
 ### p1212-async-3rmis-local-event-loop.cpp
 
 This example uses a local event loop that is placed close after the invocation of an asychronous variant
 of the original two-way in-out RMI.
 
-The local event loop can only handle the czllback function passed to the asynchronous function.
+The local event loop can only handle the callback function passed to the asynchronous function.
 
 ```c++
 struct Class01 {
@@ -231,17 +274,6 @@ struct Class01 {
 };
 ```
 
-Advantages:
-
-* After having sent a request to the remote server, the program can proceed with some tasks that
-do not need the result of the remote method invocation. This can save some time, although usually the gain will be rather low.
-
-Disadvantages:
-
-* Still not possible to handle other events while being in the function1 call.
-* Use of lambda expressions at the application level makes the code more difficult to read.
-* Longer complicated application level code.
-
 
 ### p1220-coroutines-3rmis.cpp
 
@@ -285,16 +317,6 @@ struct Class01
 };
 ```
 
-Advantages:
-
-* Natural style, very close to the original program (in this case p1200-sync-3rmis.cpp).
-* Program can respond to other inputs while the response of the remote server has not arrived.
-* Program can do some work that does not need response of the remote method invocation.
-
-Disadvantages;
-
-* All output arguments and the return value have to be packed into a structure that will be returned by co_await.
-* Rather some infrastructure code needed to implement the coroutine alternative.
 
 
 ## Case 4: program with nested for loop
@@ -377,13 +399,6 @@ struct Class01 {
 };
 ```
 
-Advantages:
-
-* TBC
-
-Disadvantages:
-
-* Artificial code: Especially it is difficult to recognize and write the nested iteration.
 
 ### p1320-coroutines-nested-loop.cpp
 
@@ -410,14 +425,6 @@ struct Class01
 };
 ```
 
-Advantages:
-
-* Natural style.
-* Program is reactive.
-
-Disadvantages:
-
-* TBC
 
 ## Case 5: Segmentation: adding two loops at the infrastructure level
 
@@ -449,8 +456,7 @@ struct RemoteObject2 {
 };
 ```
 
-
-## p1410-async-segmentation.cpp
+### p1410-async-segmentation.cpp
 
 
 ```c++
@@ -505,8 +511,7 @@ struct RemoteObject3 {
 ```
 
 
-## p1420-coroutines-segmentation.cpp
-
+### p1420-coroutines-segmentation.cpp
 
 ```c++
 struct RemoteObject2 {
@@ -530,6 +535,77 @@ struct RemoteObject2 {
     }
 };
 ```
+
+## Comparison
+
+In this section contains a comparison of the advantages and disadvantages of the different styles explored above.
+
+### Synchronous style
+
+Advantages:
+
+* Natural coding style, same style as if all function calls (method invocations) are local.
+
+Disadvantages:
+
+* Program is not reactive: during a RMI the calling function is blocked and the program cannot respond to other inputs:
+This extends to all functions in the call tree: the program cannot react to other inputs during the RMI.
+
+### Synchronous style with threads
+
+Advantages:
+
+* Program is reactive again, with only minimal changes.
+
+Disadvantages:
+
+* Overhead of thread creation (stack, scheduling).
+* If functions share variables, trace conditions are possible. 
+Mutexes and atomic access may have to be used.
+This approach may lead to sporadic errors (Heigenbugs) that are difficult to reproduce and to correct.
+
+
+### Asynchronous style
+
+Advantages:
+
+* Program can respond to other inputs after the request to the server has been sent.
+
+Disadvantages:
+
+* Original function and its control flow is split into two or more functions, depending on the number of RMIs: there is one additional function per RMI.
+This additional function handles the response of an RMI and may start other RMIs. All functions need to have a name.
+* Unnatural style
+* Artificial code for complex programs: e.g. it is difficult to recognize and write the nested iteration.
+* May be diffiult to distinguish "primary" functions (attached to input to the program) from
+  "secondary" fuunctions that are attached to the response to RMI.
+
+
+### Asynchronous style with local event loop
+
+Advantages:
+
+* After having sent a request to the remote server, the program can proceed with some tasks that
+do not need the result of the remote method invocation. This can save some time, although usually the gain will be rather low.
+
+Disadvantages:
+
+* Still not possible to handle other events while being in the function1 call.
+* Use of lambda expressions at the application level makes the code more difficult to read.
+* Longer complicated application level code.
+
+### Coroutines
+
+Advantages:
+
+* Natural style, very close to the original program (in this case p1000-sync-1rmi.cpp).
+* Program can respond to other inputs while the response of the remote server has not arrived.
+* Program can do some work that does not need response of the remote method invocation.
+
+Disadvantages;
+
+* Some infrastructure code is needed to implement the coroutine alternative.
+
 
 ## Conclusions
 

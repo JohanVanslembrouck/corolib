@@ -12,6 +12,7 @@ endif()
 include_directories(../../include)
 
 add_executable(p1000-sync-1rmi p1000-sync-1rmi.cpp)
+add_executable(p1002-sync+thread-1rmi p1002-sync+thread-1rmi.cpp)
 add_executable(p1010-async-1rmi p1010-async-1rmi.cpp)
 add_executable(p1020-coroutines-1rmi p1020-coroutines-1rmi.cpp)
 target_link_libraries(p1020-coroutines-1rmi corolib)
