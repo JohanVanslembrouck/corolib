@@ -110,14 +110,14 @@ void RemoteObjectImplCo::start_read_segment_impl(int idx, char* p, int offset, i
 
 RemoteObjectImplCo remoteObjImplco{remoteObjImpl};
 
-class RemoteObject1
+class RemoteObject1Co
 {
 public:
     async_task<Msg> op1(Msg msg)
     {
         // Write part
         Buffer writebuffer;
-        printf("RemoteObject1::op1()\n");
+        printf("RemoteObject1Co::op1()\n");
         // Marshall msg into the buffer
         // (code not present)
         // Write the buffer in segments of size SEGMENT_LENGTH (onto the remote object)
@@ -126,7 +126,7 @@ public:
         for (int offset = 0; offset < buflength; offset += SEGMENT_LENGTH)
         {
             int bytestowrite = (buflength - offset) > SEGMENT_LENGTH ? SEGMENT_LENGTH : buflength - offset;
-            printf("RemoteObject1::op1(): calling write_segment: offset = %d\n", offset);
+            printf("RemoteObject1Co::op1(): calling write_segment: offset = %d\n", offset);
             co_await remoteObjImplco.start_write_segment(writebuffer.buffer(), offset, bytestowrite);
         }
         
@@ -139,7 +139,7 @@ public:
         // until start_read_segment reports that the read is complete.
         for (int offset = 0; !completed; offset += SEGMENT_LENGTH)
         {
-            printf("RemoteObject1::op1(): calling read_segment: offset = %d\n", offset);
+            printf("RemoteObject1Co::op1(): calling read_segment: offset = %d\n", offset);
             completed = co_await remoteObjImplco.start_read_segment(readbuffer.buffer(), offset, SEGMENT_LENGTH);
         }
         // Unmarshall Msg from readbuffer
@@ -149,7 +149,7 @@ public:
     }
 };
 
-RemoteObject1 remoteObj1;
+RemoteObject1Co remoteObj1co;
 
 class Class01
 {
@@ -166,7 +166,7 @@ public:
             for (int j = 0; j < NR_MSGS_TO_SEND; j++)
             {
                 printf("Class01::coroutine1(): i = %d, j = %d, counter = %d\n", i, j, counter++);
-                async_task<Msg> op1 = remoteObj1.op1(msg);
+                async_task<Msg> op1 = remoteObj1co.op1(msg);
                 Msg res = co_await op1;
                 // Do something with msg
             }

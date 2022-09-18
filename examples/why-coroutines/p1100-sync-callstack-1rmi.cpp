@@ -15,7 +15,8 @@
 
 RemoteObject1 remoteObj1;
 
-class Layer01 {
+class Layer01
+{
 public:
     int function1(int in1, int& out11, int& out12)
     {

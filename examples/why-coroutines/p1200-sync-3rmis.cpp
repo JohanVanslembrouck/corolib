@@ -34,7 +34,6 @@ public:
             // 3 Do stuff
         }
     }
-    void function2() { }
 };
 
 Class01 class01;
