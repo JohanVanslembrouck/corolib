@@ -38,21 +38,16 @@ public:
 Because of the synchronous RMI, it may take a while before the RMI returns.
 During that time, the program cannot handle other events.
 
-The following code shows how function1 is called when the program receives event1 or event2.
-Normally a different function will be "connected" to every event.
-
 ```c++
 int main()
 {
     printf("main();\n");
-    connect(event1, []() { class01.function1(); });
-    connect(event2, []() { class01.function1(); });
+    eventQueue.push([]() { class01.function1(); });
+    eventQueue.push([]() { class01.function1(); });
     eventQueue.run();
     return 0;
 }
 ```
-
-The name "connect" has been inspired by the connect mechanism used by Qt to connect signals to slots.
 
 ### p1002-sync+thread-1rmi.cpp
 
@@ -63,8 +58,8 @@ The implementation of function1 does not have to be changed. This can be accompl
 int main()
 {
     printf("main();\n");
-    connect(event1, []() { std::thread th(&Class01::function1, &class01); th.join(); });
-    connect(event2, []() { std::thread th(&Class01::function1, &class01); th.join(); });
+    eventQueue.push([]() { std::thread th(&Class01::function1, &class01); th.join(); });
+    eventQueue.push([]() { std::thread th(&Class01::function1, &class01); th.join(); });
     eventQueue.run();
     return 0;
 }
@@ -476,8 +471,8 @@ The implementation of function1 does not have to be changed. This can be done as
 int main()
 {
     printf("main();\n");
-    connect(event1, []() { std::thread th(&Class01::function1, &class01); th.join(); });
-    connect(event2, []() { std::thread th(&Class01::function1, &class01); th.join(); });
+    eventQueue.push([]() { std::thread th(&Class01::function1, &class01); th.join(); });
+    eventQueue.push([]() { std::thread th(&Class01::function1, &class01); th.join(); });
     eventQueue.run();
     return 0;
 }
@@ -563,7 +558,6 @@ public:
     }
 };
 ```
-
 
 ### p1212-async-3rmis-local-event-loop.cpp
 

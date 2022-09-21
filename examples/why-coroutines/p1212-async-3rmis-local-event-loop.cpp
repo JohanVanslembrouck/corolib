@@ -70,8 +70,8 @@ Class01 class01;
 
 int main() {
     printf("main2();\n");
-    connect(event1, []() { class01.function1(); });
-    connect(event2, []() { class01.function1(); });
+    eventQueue.push([]() { class01.function1(); });
+    eventQueue.push([]() { class01.function1(); });
     eventQueue.run();
     return 0;
 }

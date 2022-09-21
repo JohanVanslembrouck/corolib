@@ -149,8 +149,8 @@ Msg gmsg1;
 int main()
 {
     printf("main();\n");
-    connect(event1, []() { class01.function1(); });
-    //connect(event1, []() { remoteObj1.sendc_op1(gmsg1, [](Msg msg) { printf("received message\n"); }); });
+    eventQueue.push([]() { class01.function1(); });
+    //eventQueue.push([]() { remoteObj1.sendc_op1(gmsg1, [](Msg msg) { printf("received message\n"); }););
     eventQueue.run();
     return 0;
 }

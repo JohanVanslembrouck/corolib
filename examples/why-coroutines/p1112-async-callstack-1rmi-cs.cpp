@@ -153,8 +153,8 @@ public:
             {
                 this->function1_cb(callstack, ret1);
             });
-        m_callstack.push(p);
-        layer02.function1(m_callstack, in1);
+        m_callstack1.push(p);
+        layer02.function1(m_callstack1, in1);
     }
 
     void function1_cb(CallStack&, int ret1)
@@ -163,16 +163,35 @@ public:
         printf("Layer03::function1_cb(): part 2\n");
     }
     
+    void function2(int in1)
+    {
+        printf("Layer03::function2(): part 1\n");
+        lambda_cs_1int_t* p = new lambda_cs_1int_t(
+            [this](CallStack& callstack, int ret1)
+            {
+                this->function2_cb(callstack, ret1);
+            });
+        m_callstack2.push(p);
+        layer02.function1(m_callstack2, in1);
+    }
+
+    void function2_cb(CallStack&, int ret1)
+    {
+        printf("Layer03::function2_cb(%d)\n", ret1);
+        printf("Layer03::function2_cb(): part 2\n");
+    }
+
 private:
-    CallStack m_callstack;
+    CallStack m_callstack1;
+    CallStack m_callstack2;
 };
 
 Layer03 layer03;
 
 int main() {
     printf("main();\n");
-    connect(event1, []() { layer03.function1(2); });
-    connect(event2, []() { layer03.function1(3); });
+    eventQueue.push([]() { layer03.function1(2); });
+    eventQueue.push([]() { layer03.function2(3); });
     eventQueue.run();
     return 0;
 }

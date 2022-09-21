@@ -1,7 +1,9 @@
 /**
- * @file p1020-coroutines-1rmi.cpp
+ * @file p1122-coroutines-callstack-1rmi.cpp
  * @brief
- *
+ * Variant of p1120. References to lower layer objects are passed via the constructor.
+ * All objects can be and are declared after all class definitions.
+ * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
@@ -14,11 +16,9 @@
 #include "eventqueue.h"
 #include "buf+msg.h"
 
-#include "p1000.h"
-
-RemoteObject1 remoteObj1;
-
 using namespace corolib;
+
+#include "p1000.h"
 
 class RemoteObject1Co : public CommService
 {
@@ -28,15 +28,6 @@ public:
     {}
     
     // User API
-    /**
-     * @brief op1 has same parameter list as op1 in class RemoteObject1
-     * but returns async_task<int> instead of int
-     * @param in11
-     * @param in12
-     * @param out12
-     * @param out12
-     * @return async_task<int>
-     */
     async_task<int> op1(int in11, int in12, int& out11, int& out12)
     {
         async_operation<op1_ret_t> op1 = start_op1(in11, in12);
@@ -47,13 +38,6 @@ public:
     }
     
     // Start-up function
-    /**
-     * @brief auxiliary function for op1, but also accessible to the user.
-     * The output parameters and return value are still "packed" in an op1_ret_t object. 
-     * @param in11
-     * @param in12
-     * @return async_operation<op1_ret_t>
-     */
     async_operation<op1_ret_t> start_op1(int in11, int in12)
     {
         int index = get_free_index();
@@ -65,9 +49,9 @@ public:
 protected:
     // Implementation function
     void start_op1_impl(const int idx, int in11, int in12);
-
+    
 private:
-    RemoteObject1 m_remoteObject;
+    RemoteObject1& m_remoteObject;
 };
 
 void RemoteObject1Co::start_op1_impl(const int idx, int in11, int in12)
@@ -98,63 +82,88 @@ void RemoteObject1Co::start_op1_impl(const int idx, int in11, int in12)
         });
 }
 
-RemoteObject1Co remoteObj1co{remoteObj1};
-
-class Class01a
+class Layer01
 {
 public:
-    async_task<int> coroutine1()
+    Layer01(RemoteObject1Co& remoteObj1co)
+        : m_remoteObj1co(remoteObj1co)
+    {}
+
+    async_task<int> coroutine1(int in1, int& out11, int& out12)
     {
-        printf("Class01a::coroutine1() - part 1\n");
-        op1_ret_t ret = co_await remoteObj1co.start_op1(gin11, gin12);
-        printf("Class01a::coroutine1(): ret.out1 = %d, ret.out2 = %d, ret.ret = %d\n", ret.out1, ret.out2, ret.ret);
-        printf("Class01a::coroutine1() - part 2\n");
-        co_return ret.ret;
+        printf("Layer01::coroutine1(): part 1\n");
+        int ret1 = co_await m_remoteObj1co.op1(in1, in1, out11, out12);
+        printf("Layer01::coroutine1(): out11 = %d, out12 = %d, ret1 = %d\n", out11, out12, ret1);
+        printf("Layer01::coroutine1(): part 2\n");
+        co_return ret1;
     }
-    
-    async_task<int> coroutine1a()
-    {
-        printf("Class01a::coroutine1a() - part 1\n");
-        async_operation<op1_ret_t> op1 = remoteObj1co.start_op1(gin11, gin12);
-        op1_ret_t ret = co_await op1;
-        printf("Class01a::coroutine1a(): ret.out1 = %d, ret.outé = %d, ret.ret = %d\n", ret.out1, ret.out2, ret.ret);
-        printf("Class01a::coroutine1a() - part 2\n");
-        co_return ret.ret;
-    }
+
+private:
+    RemoteObject1Co& m_remoteObj1co;
 };
 
-Class01a class1a;
-
-class Class01
+class Layer02
 {
 public:
-    async_task<int> coroutine1()
+    Layer02(Layer01& layer01)
+        : m_layer01(layer01)
+    {}
+
+    async_task<int> coroutine1(int in1, int& out1)
     {
-        printf("Class01::coroutine1() - part 1\n");
-        int ret1 = co_await remoteObj1co.op1(gin11, gin12, gout11, gout12);
-        printf("Class01::coroutine1(): gout11 = %d, gout12 = %d, ret1 = %d\n", gout11, gout12, ret1);
-        printf("Class01::coroutine1() - part 2\n");
+        printf("Layer02::coroutine1(): part 1\n");
+        int ret1 = co_await m_layer01.coroutine1(in1, out1, out2);
+        printf("Layer02::coroutine1(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
+        printf("Layer02::coroutine1(): part 2\n");
         co_return ret1;
     }
-    
-    async_task<int> coroutine1a()
-    {
-        printf("Class01::coroutine1a() - part 1\n");
-        async_task<int> op1 = remoteObj1co.op1(gin11, gin12, gout11, gout12);
-        int ret1 = co_await op1;
-        printf("Class01::coroutine1a(): gout11 = %d, gout12 = %d, ret1 = %d\n", gout11, gout12, ret1);
-        printf("Class01::coroutine1a() - part 2\n");
-        co_return ret1;
-    }
+
+private:
+    Layer01& m_layer01;
+    int    out2{0};
 };
 
-Class01 class01;
+class Layer03
+{
+public:
+    Layer03(Layer02& layer02)
+        : m_layer02(layer02)
+    {}
+
+    async_task<int> coroutine1(int in1)
+    {
+        printf("Layer03::coroutine1(): part 1\n");
+        int ret1 = co_await m_layer02.coroutine1(in1, out1);
+        printf("Layer03::coroutine1(): out1 = %d, ret1 = %d\n", out1, ret1);
+        printf("Layer03::coroutine1(): part 2\n");
+        co_return ret1;
+    }
+
+    async_task<int> coroutine2(int in1)
+    {
+        printf("Layer03::coroutine2(): part 1\n");
+        int ret1 = co_await m_layer02.coroutine1(in1, out1);
+        printf("Layer03::coroutine2(): out1 = %d, ret1 = %d\n", out1, ret1);
+        printf("Layer03::coroutine2(): part 2\n");
+        co_return ret1;
+    }
+
+private:
+    Layer02& m_layer02;
+    int    out1{0};
+};
+
+RemoteObject1 remoteObj1;
+RemoteObject1Co remoteObj1co{ remoteObj1 };
+Layer01 layer01{ remoteObj1co };
+Layer02 layer02{ layer01 };
+Layer03 layer03{ layer02 };
 
 int main()
 {
     printf("main();\n");
-    eventQueue.push([]() { class01.coroutine1(); });
-    eventQueue.push([]() { class01.coroutine1a(); });
+    eventQueue.push([]() { layer03.coroutine1(2); });
+    eventQueue.push([]() { layer03.coroutine2(3); });
     eventQueue.run();
     return 0;
 }

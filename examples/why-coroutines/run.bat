@@ -6,6 +6,9 @@ p1100-sync-callstack-1rmi.exe
 p1110-async-callstack-1rmi.exe
 p1112-async-callstack-1rmi-cs.exe
 p1120-coroutines-callstack-1rmi.exe
+p1122-coroutines-callstack-1rmi.exe
+p1124-coroutines-callstack-1rmi.exe
+p1126-coroutines-callstack-1rmi.exe
 p1200-sync-3rmis.exe
 p1202-sync+thread-3rmis.exe
 p1210-async-3rmis.exe

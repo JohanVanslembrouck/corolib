@@ -43,8 +43,8 @@ Class01 class01;
 int main()
 {
     printf("main();\n");
-    connect(event1, []() { std::thread th(&Class01::function1, &class01); th.join(); });
-    connect(event2, []() { std::thread th(&Class01::function1, &class01); th.join(); });
+    eventQueue.push([]() { std::thread th(&Class01::function1, &class01); th.join(); });
+    eventQueue.push([]() { std::thread th(&Class01::function1, &class01); th.join(); });
     eventQueue.run();
     return 0;
 }

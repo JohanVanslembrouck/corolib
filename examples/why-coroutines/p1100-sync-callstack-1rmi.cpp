@@ -58,6 +58,15 @@ public:
         printf("Layer03::function1(): part 2\n");
         return ret1;
     }
+
+    int function2(int in1)
+    {
+        printf("Layer03::function2(): part 1\n");
+        int ret1 = layer02.function1(in1, out1);
+        printf("Layer03::function2(): out1 = %d, ret1 = %d\n", out1, ret1);
+        printf("Layer03::function2(): part 2\n");
+        return ret1;
+    }
 private:
     int    out1{0};
 };
@@ -66,8 +75,8 @@ Layer03 layer03;
 
 int main() {
     printf("main();\n");
-    connect(event1, []() { layer03.function1(2); });
-    connect(event2, []() { layer03.function1(3); });
+    eventQueue.push([]() { layer03.function1(2); });
+    eventQueue.push([]() { layer03.function2(3); });
     eventQueue.run();
     return 0;
 }

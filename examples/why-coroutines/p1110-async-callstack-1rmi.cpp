@@ -91,14 +91,30 @@ public:
         printf("Layer03::function1_cb(%d)\n", ret1);
         printf("Layer03::function1_cb(): part 2\n");
     }
+
+
+    void function2(int in1)
+    {
+        printf("Layer03::function2(): part 1\n");
+        layer02.function1(in1,
+            [this](int ret1) {
+                this->function2_cb(ret1);
+            });
+    }
+
+    void function2_cb(int ret1)
+    {
+        printf("Layer03::function2_cb(%d)\n", ret1);
+        printf("Layer03::function2_cb(): part 2\n");
+    }
 };
 
 Layer03 layer03;
 
 int main() {
     printf("main();\n");
-    connect(event1, []() { layer03.function1(2); });
-    connect(event2, []() { layer03.function1(3); });
+    eventQueue.push([]() { layer03.function1(2); });
+    eventQueue.push([]() { layer03.function2(3); });
     eventQueue.run();
     return 0;
 }

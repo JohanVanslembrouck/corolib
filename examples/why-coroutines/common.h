@@ -34,13 +34,6 @@ struct op2_ret_t
 using lambda_op1_ret_t = typename std::function<void(op1_ret_t)>;
 using lambda_op2_ret_t = typename std::function<void(op2_ret_t)>;
 
-void connect(int i, lambda_void_t l)
-{
-    printf("connect(%d, l) - begin\n", i);
-    eventQueue.push([l]() { l();  });
-    printf("connect(%d, l) - end\n", i);
-}
-
 int start_time;
 int get_current_time() { return 0; }
 int elapsed_time;

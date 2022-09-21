@@ -180,8 +180,8 @@ Class01 class01;
 int main()
 {
     printf("main();\n");
-    connect(event1, []() { class01.coroutine1(); });
-    //connect(event2, []() { class01.coroutine1(); });
+    eventQueue.push([]() { class01.coroutine1(); });
+    //eventQueue.push([]() { class01.coroutine1(); });
     eventQueue.run();
     return 0;
 }
