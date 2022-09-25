@@ -6,7 +6,7 @@
  *
  *  Tested with Visual Studio 2019.
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com)
+ *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <functional>
@@ -16,81 +16,9 @@
 
 #include <stdarg.h>
 
-//--------------------------------------------------------------
-
-const int PRI1 = 0x01;
-const int PRI2 = 0x02;
-const int PRI3 = 0x04;
-const int PRI4 = 0x08;
-
-uint64_t threadids[128];
-
-int get_thread_number(uint64_t id)
-{
-    for (int i = 0; i < 128; i++)
-    {
-        if (threadids[i] == id)
-            return i;
-        if (threadids[i] == 0) {
-            threadids[i] = id;
-            return i;
-        }
-    }
-    return -1;
-}
-
-int get_thread_number64(uint64_t id)
-{
-    for (int i = 0; i < 128; i++)
-    {
-        if (threadids[i] == id)
-            return i;
-        if (threadids[i] == 0) {
-            threadids[i] = id;
-            return i;
-        }
-    }
-    return -1;
-}
-
-int get_thread_number32(uint32_t id)
-{
-    for (int i = 0; i < 128; i++)
-    {
-        if (threadids[i] == id)
-            return i;
-        if (threadids[i] == 0) {
-            threadids[i] = id;
-            return i;
-        }
-    }
-    return -1;
-}
-
-uint64_t get_thread_id()
-{
-    auto id = std::this_thread::get_id();
-    uint64_t* ptr = (uint64_t*)&id;
-    return (uint64_t)(*ptr);
-}
-
 const int priority = 0x01;
 
-void print(int pri, const char* fmt, ...)
-{
-    va_list arg;
-    char msg[256];
-
-    va_start(arg, fmt);
-    int n = vsprintf_s(msg, fmt, arg);
-    va_end(arg);
-
-    int threadid = (sizeof(std::thread::id) == sizeof(uint32_t)) ?
-        get_thread_number32((uint32_t)get_thread_id()) :
-        get_thread_number64(get_thread_id());
-    if (priority & pri)
-        fprintf(stderr, "%02d: %s", threadid, msg);
-}
+#include "print.h"
 
 //--------------------------------------------------------------
 //--------------------------------------------------------------
@@ -102,7 +30,7 @@ void print(int pri, const char* fmt, ...)
 
 #include <algorithm>
 #include <cassert>
-#include <experimental/coroutine>
+#include <coroutine>
 
 template<typename T>
 class recursive_generator
@@ -131,13 +59,13 @@ public:
             return recursive_generator<T>{ *this };
         }
 
-        std::experimental::suspend_always initial_suspend() noexcept
+        std::suspend_always initial_suspend() noexcept
         {
             print(PRI2, "recursive_generator::promise_type::initial_suspend()\n");
             return {};
         }
 
-        std::experimental::suspend_always final_suspend() noexcept
+        std::suspend_always final_suspend() noexcept
         {
             print(PRI2, "recursive_generator::promise_type::final_suspend()\n");
             return {};
@@ -154,14 +82,14 @@ public:
             print(PRI2, "return_void()\n");
         }
 
-        std::experimental::suspend_always yield_value(T& value) noexcept
+        std::suspend_always yield_value(T& value) noexcept
         {
             print(PRI2, "recursive_generator::promise_type::yield_value(T& value)\n");
             m_value = std::addressof(value);
             return {};
         }
 
-        std::experimental::suspend_always yield_value(T&& value) noexcept
+        std::suspend_always yield_value(T&& value) noexcept
         {
             print(PRI2, "recursive_generator::promise_type::yield_value(T&& value)\n");
             m_value = std::addressof(value);
@@ -192,9 +120,9 @@ public:
                     return this->m_childPromise == nullptr;
                 }
 
-                void await_suspend(std::experimental::coroutine_handle<promise_type>) noexcept
+                void await_suspend(std::coroutine_handle<promise_type>) noexcept
                 {
-                    print(PRI2, "awaitable::await_suspend(std::experimental::coroutine_handle<promise_type>)\n");
+                    print(PRI2, "awaitable::await_suspend(std::coroutine_handle<promise_type>)\n");
                 }
 
                 void await_resume()
@@ -230,12 +158,12 @@ public:
 
         // Don't allow any use of 'co_await' inside the recursive_generator coroutine.
         template<typename U>
-        std::experimental::suspend_never await_transform(U&& value) = delete;
+        std::suspend_never await_transform(U&& value) = delete;
 
         void destroy() noexcept
         {
             print(PRI2, "recursive_generator::promise_type::destroy()\n");
-            std::experimental::coroutine_handle<promise_type>::from_promise(*this).destroy();
+            std::coroutine_handle<promise_type>::from_promise(*this).destroy();
         }
 
         void throw_if_exception()
@@ -250,7 +178,7 @@ public:
         bool is_complete() noexcept
         {
             print(PRI2, "recursive_generator::promise_type::is_complete()\n");
-            return std::experimental::coroutine_handle<promise_type>::from_promise(*this).done();
+            return std::coroutine_handle<promise_type>::from_promise(*this).done();
         }
 
         T& value() noexcept
@@ -281,7 +209,7 @@ public:
         void resume() noexcept
         {
             print(PRI2, "recursive_generator::promise_type::resume()\n");
-            std::experimental::coroutine_handle<promise_type>::from_promise(*this).resume();
+            std::coroutine_handle<promise_type>::from_promise(*this).resume();
         }
 
         std::add_pointer_t<T> m_value;

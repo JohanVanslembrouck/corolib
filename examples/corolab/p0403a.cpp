@@ -5,92 +5,23 @@
  *
  *  Tested with Visual Studio 2019.
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com)
+ *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  *
  */
 
-#include <experimental/coroutine>
+#include <coroutine>
 
 using namespace std;
 
-// -----------------------------------------------------------------
-
-/**
- * A tailored print function that first prints a logical thread id (0, 1, 2, ...)
- * before printing the original message.
- *
- */
-
-#include <thread>
-#include <string>
-#include <stdio.h>
-#include <stdarg.h>
-
-const int PRI1 = 0x01;
-const int PRI2 = 0x02;
-const int PRI3 = 0x04;
-const int PRI4 = 0x08;
-
-uint64_t threadids[128];
-
-int get_thread_number64(uint64_t id)
-{
-    for (int i = 0; i < 128; i++)
-    {
-        if (threadids[i] == id)
-            return i;
-        if (threadids[i] == 0) {
-            threadids[i] = id;
-            return i;
-        }
-    }
-    return -1;
-}
-
-int get_thread_number32(uint32_t id)
-{
-    for (int i = 0; i < 128; i++)
-    {
-        if (threadids[i] == id)
-            return i;
-        if (threadids[i] == 0) {
-            threadids[i] = id;
-            return i;
-        }
-    }
-    return -1;
-}
-
-uint64_t get_thread_id()
-{
-    auto id = std::this_thread::get_id();
-    uint64_t* ptr = (uint64_t*)&id;
-    return (uint64_t)(*ptr);
-}
-
 const int priority = 0x01;
 
-void print(int pri, const char* fmt, ...)
-{
-    va_list arg;
-    char msg[256];
-
-    va_start(arg, fmt);
-    int n = vsprintf_s(msg, fmt, arg);
-    va_end(arg);
-
-    int threadid = (sizeof(std::thread::id) == sizeof(uint32_t)) ?
-        get_thread_number32((uint32_t)get_thread_id()) :
-        get_thread_number64(get_thread_id());
-    if (priority & pri)
-        fprintf(stderr, "%02d: %s", threadid, msg);
-}
+#include "print.h"
 
 // -----------------------------------------------------------------
 
 struct auto_reset_event {
 
-    std::experimental::coroutine_handle<> m_awaiting;
+    std::coroutine_handle<> m_awaiting;
 
     auto_reset_event()
         : m_awaiting(nullptr)
@@ -130,7 +61,7 @@ struct auto_reset_event {
             bool await_ready() {
                 return m_are.m_ready;
             }
-            void await_suspend(std::experimental::coroutine_handle<> awaiting) {
+            void await_suspend(std::coroutine_handle<> awaiting) {
                 m_are.m_awaiting = awaiting;
             }
             void await_resume() {
@@ -153,7 +84,7 @@ template <typename T>
 struct awaitable
 {
     struct promise_type;
-    using coro_handle = std::experimental::coroutine_handle<promise_type>;
+    using coro_handle = std::coroutine_handle<promise_type>;
 
     awaitable(coro_handle coroutine)
         : m_coroutine(coroutine) {
@@ -194,7 +125,7 @@ struct awaitable
             bool await_ready() noexcept {
                 return m_awaitable.m_coroutine.promise().m_ready;
             }
-            void await_suspend(std::experimental::coroutine_handle<> awaiting) noexcept {
+            void await_suspend(std::coroutine_handle<> awaiting) noexcept {
                 m_awaitable.m_coroutine.promise().m_awaiting = awaiting;
             }
             T await_resume() noexcept {
@@ -208,12 +139,12 @@ struct awaitable
     // defined in template<typename T> struct awaitable
     struct promise_type
     {
-        using coro_handle = std::experimental::coroutine_handle<promise_type>;
+        using coro_handle = std::coroutine_handle<promise_type>;
 
         promise_type() : m_ready(false), m_awaiting(nullptr) { }
         auto get_return_object() { return coro_handle::from_promise(*this); }
-        auto initial_suspend() { return std::experimental::suspend_never{}; }
-        auto final_suspend() noexcept { return std::experimental::suspend_always{}; }
+        auto initial_suspend() { return std::suspend_never{}; }
+        auto final_suspend() noexcept { return std::suspend_always{}; }
         void unhandled_exception() { std::terminate(); }
         void return_value(T v) { 
             m_value = v;
@@ -223,7 +154,7 @@ struct awaitable
         
         T m_value;
         bool m_ready;
-        std::experimental::coroutine_handle<> m_awaiting;
+        std::coroutine_handle<> m_awaiting;
     };
 
     coro_handle m_coroutine = nullptr;
@@ -310,7 +241,7 @@ awaitable<int> coroutine1_compiled2()
             suspend_coroutine
             // await_suspend returns void
             try {
-                using handle_t = std::experimental::coroutine_handle<awaitable<int>::promise_type>;
+                using handle_t = std::coroutine_handle<awaitable<int>::promise_type>;
                 awaiter.await_suspend(handle_t::from_promise(__context->_promise));
                 return_to_the_caller_or_resumer(__return)
             }
@@ -353,7 +284,7 @@ awaitable<int> coroutine1_compiled2a()
             suspend_coroutine
                 // await_suspend returns void
                 try {
-                using handle_t = std::experimental::coroutine_handle<awaitable<int>::promise_type>;
+                using handle_t = std::coroutine_handle<awaitable<int>::promise_type>;
                 awaiter.await_suspend(handle_t::from_promise(__context->_promise));
                 return_to_the_caller_or_resumer(__return)
             }

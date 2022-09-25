@@ -4,7 +4,7 @@
  *
  *  Tested with Visual Studio 2019.
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com)
+ *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  *  Based upon:
  */
 
@@ -16,86 +16,9 @@
 
 #include <stdarg.h>
 
-//--------------------------------------------------------------
-
-const int PRI1 = 0x01;
-const int PRI2 = 0x02;
-const int PRI3 = 0x04;
-const int PRI4 = 0x08;
-
-uint64_t threadids[128];
-
-int get_thread_number(uint64_t id)
-{
-    for (int i = 0; i < 128; i++)
-    {
-        if (threadids[i] == id)
-            return i;
-        if (threadids[i] == 0) {
-            threadids[i] = id;
-            return i;
-        }
-    }
-    return -1;
-}
-
-int get_thread_number64(uint64_t id)
-{
-    for (int i = 0; i < 128; i++)
-    {
-        if (threadids[i] == id)
-            return i;
-        if (threadids[i] == 0) {
-            threadids[i] = id;
-            return i;
-        }
-    }
-    return -1;
-}
-
-int get_thread_number32(uint32_t id)
-{
-    for (int i = 0; i < 128; i++)
-    {
-        if (threadids[i] == id)
-            return i;
-        if (threadids[i] == 0) {
-            threadids[i] = id;
-            return i;
-        }
-    }
-    return -1;
-}
-
-uint64_t get_thread_id()
-{
-    auto id = std::this_thread::get_id();
-    uint64_t* ptr = (uint64_t*)&id;
-    return (uint64_t)(*ptr);
-}
-
 const int priority = 0x01;
 
-void print()
-{
-    fprintf(stderr, "\n");
-}
-
-void print(int pri, const char* fmt, ...)
-{
-    va_list arg;
-    char msg[256];
-
-    va_start(arg, fmt);
-    int n = vsprintf_s(msg, fmt, arg);
-    va_end(arg);
-
-    int threadid = (sizeof(std::thread::id) == sizeof(uint32_t)) ?
-        get_thread_number32((uint32_t)get_thread_id()) :
-        get_thread_number64(get_thread_id());
-    if (priority & pri)
-        fprintf(stderr, "%02d: %s", threadid, msg);
-}
+#include "print.h"
 
 //--------------------------------------------------------------
 //--------------------------------------------------------------
@@ -105,7 +28,7 @@ void print(int pri, const char* fmt, ...)
 // Licenced under MIT license. See LICENSE.txt for details.
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <experimental/coroutine>
+#include <coroutine>
 
 template<typename T>
 class async_generator_iterator;
@@ -131,7 +54,7 @@ public:
     async_generator_promise_base(const async_generator_promise_base& other) = delete;
     async_generator_promise_base& operator=(const async_generator_promise_base& other) = delete;
 
-    std::experimental::suspend_always initial_suspend() const noexcept
+    std::suspend_always initial_suspend() const noexcept
     {
         print(PRI2, "async_generator_promise_base::initial_suspend()\n");
         return {};
@@ -242,7 +165,7 @@ private:
 
     std::exception_ptr m_exception;
 
-    std::experimental::coroutine_handle<> m_consumerCoroutine;
+    std::coroutine_handle<> m_consumerCoroutine;
 
 protected:
     void* m_currentValue;
@@ -268,7 +191,7 @@ public:
         return m_initialState == state::value_not_ready_consumer_suspended;
     }
 
-    bool await_suspend(std::experimental::coroutine_handle<> producer) noexcept;
+    bool await_suspend(std::coroutine_handle<> producer) noexcept;
 
     void await_resume() noexcept {
         print(PRI2, "async_generator_yield_operation::await_resume()\n");
@@ -322,9 +245,9 @@ inline async_generator_yield_operation async_generator_promise_base::internal_yi
 }
 
 inline bool async_generator_yield_operation::await_suspend(
-    std::experimental::coroutine_handle<> producer) noexcept
+    std::coroutine_handle<> producer) noexcept
 {
-    print(PRI2, "async_generator_yield_operation::await_suspend(std::experimental::coroutine_handle<> producer)\n");
+    print(PRI2, "async_generator_yield_operation::await_suspend(std::coroutine_handle<> producer)\n");
 
     state currentState = m_initialState;
     if (currentState == state::value_not_ready_consumer_active)
@@ -413,7 +336,7 @@ protected:
 
     async_generator_advance_operation(
         async_generator_promise_base& promise,
-        std::experimental::coroutine_handle<> producerCoroutine) noexcept
+        std::coroutine_handle<> producerCoroutine) noexcept
         : m_promise(std::addressof(promise))
         , m_producerCoroutine(producerCoroutine)
     {
@@ -443,9 +366,9 @@ public:
         return m_initialState == state::value_ready_producer_suspended;
     }
 
-    bool await_suspend(std::experimental::coroutine_handle<> consumerCoroutine) noexcept
+    bool await_suspend(std::coroutine_handle<> consumerCoroutine) noexcept
     {
-        print(PRI2, "async_generator_advance_operation::await_suspend(std::experimental::coroutine_handle<> consumerCoroutine)\n");
+        print(PRI2, "async_generator_advance_operation::await_suspend(std::coroutine_handle<> consumerCoroutine)\n");
         m_promise->m_consumerCoroutine = consumerCoroutine;
 
         auto currentState = m_initialState;
@@ -494,7 +417,7 @@ public:
 
 protected:
     async_generator_promise_base* m_promise;
-    std::experimental::coroutine_handle<> m_producerCoroutine;
+    std::coroutine_handle<> m_producerCoroutine;
 
 private:
     state m_initialState;
@@ -582,7 +505,7 @@ template<typename T>
 class async_generator_iterator final
 {
     using promise_type = async_generator_promise<T>;
-    using handle_type = std::experimental::coroutine_handle<promise_type>;
+    using handle_type = std::coroutine_handle<promise_type>;
 
 public:
     using iterator_category = std::input_iterator_tag;
@@ -657,7 +580,7 @@ template<typename T>
 class async_generator_begin_operation final : public async_generator_advance_operation
 {
     using promise_type = async_generator_promise<T>;
-    using handle_type = std::experimental::coroutine_handle<promise_type>;
+    using handle_type = std::coroutine_handle<promise_type>;
 
 public:
     async_generator_begin_operation(std::nullptr_t) noexcept
@@ -715,7 +638,7 @@ public:
     }
 
     explicit async_generator(promise_type& promise) noexcept
-        : m_coroutine(std::experimental::coroutine_handle<promise_type>::from_promise(promise))
+        : m_coroutine(std::coroutine_handle<promise_type>::from_promise(promise))
     {
         print(PRI2, "async_generator::async_generator(promise_type& promise)\n");
     }
@@ -775,7 +698,7 @@ public:
     }
 
 private:
-    std::experimental::coroutine_handle<promise_type> m_coroutine;
+    std::coroutine_handle<promise_type> m_coroutine;
 };
 
 //--------------------------------------------------------------
@@ -800,7 +723,7 @@ template<typename T>
 struct sync {
     struct promise_type;
     friend struct promise_type;
-    using handle_type = std::experimental::coroutine_handle<promise_type>;
+    using handle_type = std::coroutine_handle<promise_type>;
 
     sync(const sync& s) = delete;
 
@@ -837,8 +760,8 @@ struct sync {
         return false;
     }
 
-    void await_suspend(std::experimental::coroutine_handle<> awaiting) {
-        print(PRI2, "sync::await_suspend(std::experimental::coroutine_handle<> awaiting)\n");
+    void await_suspend(std::coroutine_handle<> awaiting) {
+        print(PRI2, "sync::await_suspend(std::coroutine_handle<> awaiting)\n");
         this->coro.promise().m_awaiting = awaiting;
     }
 
@@ -878,12 +801,12 @@ struct sync {
 
         auto initial_suspend() {
             print(PRI2, "sync::promise_type::initial_suspend()\n");
-            return std::experimental::suspend_never{};
+            return std::suspend_never{};
         }
 
         auto final_suspend() noexcept {
             print(PRI2, "sync::promise_type::final_suspend()\n");
-            return std::experimental::suspend_always{};
+            return std::suspend_always{};
         }
 
         void unhandled_exception() {
@@ -894,7 +817,7 @@ struct sync {
     private:
         T value;
         bool set;
-        std::experimental::coroutine_handle<> m_awaiting;
+        std::coroutine_handle<> m_awaiting;
     };
 
     sync(handle_type h)

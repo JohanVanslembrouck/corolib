@@ -30,10 +30,14 @@ p0403d.exe
 p0403dt.exe
 # crashes: Norton complains
 #p0406.exe
+p0414.exe
+p0416.exe
+p0418.exe
 p0420.exe
 p0422.exe
 p0424.exe
 p0426.exe
+
 p0435.exe
 p0440.exe
 p0460.exe

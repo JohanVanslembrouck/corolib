@@ -8,7 +8,7 @@
  *
  *  Tested with Visual Studio 2019 and g++ 4.8.5 on Linux.
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com)
+ *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  *  Based upon:
  */
 

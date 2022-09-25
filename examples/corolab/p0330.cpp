@@ -4,7 +4,7 @@
  *
  *  Tested with Visual Studio 2019.
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com)
+ *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  *  Based upon: https://github.com/kirkshoop/await
  */
 
@@ -21,83 +21,9 @@
 
 #include <stdarg.h>
 
- //--------------------------------------------------------------
-
-const int PRI1 = 0x01;
-const int PRI2 = 0x02;
-const int PRI3 = 0x04;
-const int PRI4 = 0x08;
-
-uint64_t threadids[128];
-
-int get_thread_number(uint64_t id)
-{
-    for (int i = 0; i < 128; i++)
-    {
-        if (threadids[i] == id)
-            return i;
-        if (threadids[i] == 0) {
-            threadids[i] = id;
-            return i;
-        }
-    }
-    return -1;
-}
-
-
-int get_thread_number64(uint64_t id)
-{
-    for (int i = 0; i < 128; i++)
-    {
-        if (threadids[i] == id)
-            return i;
-        if (threadids[i] == 0) {
-            threadids[i] = id;
-            return i;
-        }
-    }
-    return -1;
-}
-
-int get_thread_number32(uint32_t id)
-{
-    for (int i = 0; i < 128; i++)
-    {
-        if (threadids[i] == id)
-            return i;
-        if (threadids[i] == 0) {
-            threadids[i] = id;
-            return i;
-        }
-    }
-    return -1;
-}
-
-uint64_t get_thread_id()
-{
-    auto id = std::this_thread::get_id();
-    uint64_t* ptr = (uint64_t*)&id;
-    return (uint64_t)(*ptr);
-}
-
-
 const int priority = 0x0F;
 
-void print(int pri, const char* fmt, ...)
-{
-    va_list arg;
-    char msg[256];
-
-    va_start(arg, fmt);
-    int n = vsprintf_s(msg, fmt, arg);
-    va_end(arg);
-
-    int threadid = (sizeof(std::thread::id) == sizeof(uint32_t)) ?
-        get_thread_number32((uint32_t)get_thread_id()) :
-        get_thread_number64(get_thread_id());
-    if (priority & pri)
-        fprintf(stderr, "%02d: %s", threadid, msg);
-}
+#include "print.h"
 
 //--------------------------------------------------------------
 
@@ -105,11 +31,10 @@ using namespace std::chrono;
 using clk = system_clock;
 using namespace std::chrono_literals;
 
-#include <experimental/resumable>
-#include <experimental/generator>
+#include <coroutine>
+#include <generator>
 
 using namespace std;
-using namespace std::experimental;
 
 #include <windows.h>
 #include <threadpoolapiset.h>

@@ -4,7 +4,7 @@
  *
  *  Tested with Visual Studio 2019.
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com)
+ *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  *  Based upon: https://blog.panicsoftware.com/category/evolution/coroutines/  
  */
 
@@ -14,59 +14,19 @@
 #include <thread>
 #include <string>
 
-//--------------------------------------------------------------
-
-uint64_t threadids[128];
-
-int get_thread_number(uint64_t id)
-{
-    for (int i = 0; i < 128; i++)
-    {
-        if (threadids[i] == id)
-            return i;
-        if (threadids[i] == 0) {
-            threadids[i] = id;
-            return i;
-        }
-    }
-    return -1;
-}
-
-uint64_t get_thread_id()
-{
-    //static_assert(sizeof(std::thread::id) == sizeof(uint64_t), 
-    //    "this function only works if size of thead::id is equal to the size of uint_64");
-    auto id = std::this_thread::get_id();
-    uint64_t* ptr = (uint64_t*)& id;
-    return (*ptr);
-}
-
-void print(const char* fmt, ...)
-{
-    va_list arg;
-    va_start(arg, fmt);
-
-    time_t time0;
-    time(&time0);
-
-    int threadid = get_thread_number(get_thread_id());
-    fprintf(stderr, "%02d: ", threadid);
-
-    vfprintf(stderr, fmt, arg);
-    va_end(arg);
-}
+#include "print0.h"
 
 //--------------------------------------------------------------
 
 #include <assert.h>
-#include <experimental/coroutine>
+#include <coroutine>
 
 class resumable {
 
 public:
     struct promise_type;
 
-    using coro_handle = std::experimental::coroutine_handle<promise_type>;
+    using coro_handle = std::coroutine_handle<promise_type>;
 
     resumable(coro_handle handle) : 
         handle_(handle) 
@@ -107,7 +67,7 @@ public:
 
     struct promise_type {
 
-        using coro_handle = std::experimental::coroutine_handle<promise_type>;
+        using coro_handle = std::coroutine_handle<promise_type>;
 
         promise_type() {
             print("resumable::promise_type::promise_type()\n");
@@ -120,12 +80,12 @@ public:
 
         auto initial_suspend() { 
             print("resumable::promise_type::initial_suspend()\n");
-            return std::experimental::suspend_always();
+            return std::suspend_always();
         }
         
-        auto final_suspend() { 
+        auto final_suspend() noexcept {
             print("resumable::promise_type::final_suspend()\n");
-            return std::experimental::suspend_always();
+            return std::suspend_always();
         }
 
         static resumable get_return_object_on_allocation_failure() {
@@ -198,7 +158,7 @@ struct suspend_always {
         return false;
     }
 
-    void await_suspend(std::experimental::coroutine_handle<>) noexcept {
+    void await_suspend(std::coroutine_handle<>) noexcept {
         print("suspend_always::await_suspend(...)\n");
     }
 
@@ -216,8 +176,8 @@ resumable foo() {
     // 00 : resumable::resumable(coro_handle handle)
 
     print("Hello\n");
-    //co_await std::experimental::suspend_always();
-    co_await suspend_always();
+    //co_await std::suspend_always();
+    co_await std::suspend_always();
     // 00 : suspend_always::await_ready()
     // 00 : suspend_always::await_suspend(...)
     print("Coroutine\n");

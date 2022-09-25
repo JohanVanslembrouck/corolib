@@ -5,13 +5,19 @@
  *
  *  Tested with Visual Studio 2019.
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com)
+ *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  *
  */
 
-#include <experimental/coroutine>
+#include <coroutine>
 
 using namespace std;
+
+const int priority = 0x01;
+
+#include "print.h"
+
+#if 0
 
 // -----------------------------------------------------------------
 
@@ -86,11 +92,13 @@ void print(int pri, const char* fmt, ...)
         fprintf(stderr, "%02d: %s", threadid, msg);
 }
 
+#endif
+
 // -----------------------------------------------------------------
 
 struct auto_reset_event {
 
-    std::experimental::coroutine_handle<> m_awaiting;
+    std::coroutine_handle<> m_awaiting;
 
     auto_reset_event()
         : m_awaiting(nullptr)
@@ -130,7 +138,7 @@ struct auto_reset_event {
             bool await_ready() {
                 return m_are.m_ready;
             }
-            void await_suspend(std::experimental::coroutine_handle<> awaiting) {
+            void await_suspend(std::coroutine_handle<> awaiting) {
                 m_are.m_awaiting = awaiting;
             }
             void await_resume() {
@@ -153,7 +161,7 @@ template <typename T>
 struct awaitable
 {
     struct promise_type;
-    using coro_handle = std::experimental::coroutine_handle<promise_type>;
+    using coro_handle = std::coroutine_handle<promise_type>;
 
     awaitable(coro_handle coroutine)
         : m_coroutine(coroutine) {
@@ -194,7 +202,7 @@ struct awaitable
             bool await_ready() noexcept {
                 return m_awaitable.m_coroutine.promise().m_ready; 
             }
-            void await_suspend(std::experimental::coroutine_handle<> awaiting) noexcept {
+            void await_suspend(std::coroutine_handle<> awaiting) noexcept {
                 m_awaitable.m_coroutine.resume();
                 awaiting.resume();
             }
@@ -209,12 +217,12 @@ struct awaitable
     // defined in template<typename T> struct awaitable
     struct promise_type
     {
-        using coro_handle = std::experimental::coroutine_handle<promise_type>;
+        using coro_handle = std::coroutine_handle<promise_type>;
 
         promise_type() : m_value(0), m_ready(false), m_awaiting(nullptr) { }
         auto get_return_object() { return coro_handle::from_promise(*this); }
-        auto initial_suspend() { return std::experimental::suspend_never{}; }
-        auto final_suspend() noexcept { return std::experimental::suspend_always{}; }
+        auto initial_suspend() { return std::suspend_never{}; }
+        auto final_suspend() noexcept { return std::suspend_always{}; }
         void unhandled_exception() { std::terminate(); }
         void return_value(int v) {
             m_value = v;
@@ -224,7 +232,7 @@ struct awaitable
 
         T m_value;
         bool m_ready;
-        std::experimental::coroutine_handle<> m_awaiting;
+        std::coroutine_handle<> m_awaiting;
     };
 
     coro_handle m_coroutine = nullptr;
@@ -292,7 +300,7 @@ awaitable<int> coroutine1_compiled()
             suspend_coroutine
             // await_suspend returns void
             try {
-                using handle_t = std::experimental::coroutine_handle<awaitable<int>::promise_type>;
+                using handle_t = std::coroutine_handle<awaitable<int>::promise_type>;
                 awaiter.await_suspend(handle_t::from_promise(__context->_promise));
                 return_to_the_caller_or_resumer(__return)
             }

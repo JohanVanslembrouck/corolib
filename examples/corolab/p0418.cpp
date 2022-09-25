@@ -1,13 +1,13 @@
 /** 
- *  Filename: p0420.cpp
+ *  Filename: p0418.cpp
  *  Description: 
  *        Illustrates the use of co_await.
  *
- *        Shows the use of an eager coroutine tyoe, i.e. a coroutine type
- *        that starts executing and only suspends when it encounters 
- *        a co_await or co_return statement.
- *        The coroutine is resumed from the coroutine or function it called.
- *        To make this possible, 
+ *      Shows the use of an eager coroutine tyoe, i.e. a coroutine type
+ *      that starts executing and only suspends when it encounters 
+ *      a co_await or co_return statement.
+ *      The coroutine is resumed from the coroutine or function it called.
+ *      To make this possible, 
  *            void await_suspend(std::coroutine_handle<> awaiting)
  *        stores the coroutine handle of the current coroutine in
  *        in the promise of the called coroutine.
@@ -155,7 +155,7 @@ struct eager {
             if (m_awaiting) {
                 print("%p: eager::promise_type::return_value(T v): before m_awaiting.resume();\n", this);
                 m_awaiting.resume();
-                print("%p: eager::promise_type::return_value(T v): after m_awaiting.resume();\n", this);
+                print("%p: eager::promise_type::return_value(T v): after m_awaiting.resume();\n\n", this);
             }
             if (m_wait_for_signal) {
                 print("%p: eager::promise_type::return_value(T v): before m_sema.signal();\n", this);
@@ -196,43 +196,36 @@ struct eager {
 };
 
 //--------------------------------------------------------------
-/**
- * coroutine5() starts a thread and then co_wait's a coroutine object
- * created at its beginning.
- * The thread starts a timer and resumes coroutine5() when the timer expires.
- * This implementation uses implementation details from eager<T> and
- * is therefore more a hack.
- * See p0422.cpp for a cleaner solution, but uses an extra coroutine type.
- */
+
+struct resume_new_thread {
+    bool await_ready() noexcept {
+        print("resume_new_thread ::await_ready()\n");
+        return false;
+    }
+
+    void await_suspend(std::coroutine_handle<> handle) noexcept {
+        print("resume_new_thread ::await_suspend(...)\n");
+        std::thread(
+            [handle] {
+                print("std::thread: before handle.resume();\n");
+                handle.resume();
+                print("std::thread: after handle.resume();\n\n");
+            }
+        ).detach();
+        //std::thread(handle).detach();
+    }
+
+    void await_resume() noexcept {
+        print("resume_new_thread ::await_resume()\n");
+    }
+};
+
+//--------------------------------------------------------------
 
 eager<int> coroutine5() {
-    print("coroutine5()\n");
-    
-#if 1
-    // If this section is compiled out,
-    // then the behavior of the program is the same as if
-    // "ordinary" functions were used.
-    
-    eager<int>::promise_type p;
-    p.initial_suspend();    // without this statement, m_eager.coro.done() in await_ready() returns 1 instead of 0
-    eager<int> a = p.get_return_object();
-
-    std::thread thread1([&]() {
-        print("thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-
-        fprintf(stderr, "\n");
-        print("thread1: p.set_return_value(42);\n");
-        p.return_value(42);
-        p.final_suspend();
-        });
-    thread1.detach();
-
-    print("coroutine5(): int si = co_await a;\n");
-    int v = co_await a;
-#else
+    print("coroutine5(): resume_new_thread\n");
+    co_await resume_new_thread();
     int v = 42;
-#endif
     print("coroutine5(): co_return %d;\n", v+1);
     co_return v+1;
 }
@@ -252,8 +245,7 @@ eager<int> coroutine3() {
     print("coroutine3(): int v = co_await a1;\n");
     int v1 = co_await a1;
 
-    fprintf(stderr, "\n");
-    print("coroutine3(): eager<int> a2 = coroutine4();\n");
+    print(); print("coroutine3(): eager<int> a2 = coroutine4();\n");
     eager<int> a2 = coroutine4();
     print("coroutine3(): int v = co_await a2;\n");
     int v2 = co_await a2;

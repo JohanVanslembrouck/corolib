@@ -11,7 +11,7 @@
  *
  *  Tested with Visual Studio 2019.
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com)
+ *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  *
  */
 
@@ -20,47 +20,9 @@
 #include <time.h>
 #include <string>
 #include <thread>
-#include <experimental/resumable>
+#include <coroutine>
 
-uint64_t threadids[128];
-
-int get_thread_number(uint64_t id)
-{
-    for (int i = 0; i < 128; i++)
-    {
-        if (threadids[i] == id)
-            return i;
-        if (threadids[i] == 0) {
-            threadids[i] = id;
-            return i;
-        }
-    }
-    return -1;
-}
-
-uint64_t get_thread_id()
-{
-    //static_assert(sizeof(std::thread::id) == sizeof(uint64_t), 
-    //    "this function only works if size of thead::id is equal to the size of uint_64");
-    auto id = std::this_thread::get_id();
-    uint64_t* ptr = (uint64_t*)& id;
-    return (*ptr);
-}
-
-void print(const char* fmt, ...)
-{
-    va_list arg;
-    va_start(arg, fmt);
-
-    time_t time0;
-    time(&time0);
-    
-    int threadid = get_thread_number(get_thread_id());
-    fprintf(stderr, "%02d: ", threadid);
-
-    vfprintf(stderr, fmt, arg);
-    va_end(arg);
-}
+#include "print0.h"
 
 #include <atomic>
 
@@ -104,7 +66,7 @@ public:
                 return m_event.is_set();
             }
 
-            bool await_suspend(std::experimental::coroutine_handle<> awaiter)
+            bool await_suspend(std::coroutine_handle<> awaiter)
             {
                 m_event.m_awaiter = awaiter;
 
@@ -135,7 +97,7 @@ private:
     };
 
     std::atomic<state> m_state;
-    std::experimental::coroutine_handle<> m_awaiter;
+    std::coroutine_handle<> m_awaiter;
 };
 
 template<typename T>
@@ -143,7 +105,7 @@ struct lazy {
 
     struct promise_type;
     friend struct promise_type;
-    using handle_type = std::experimental::coroutine_handle<promise_type>;
+    using handle_type = std::coroutine_handle<promise_type>;
 
     lazy(const lazy& s) = delete;
 
@@ -187,7 +149,7 @@ struct lazy {
         return ready;
     }
 
-    void await_suspend(std::experimental::coroutine_handle<> awaiting) {
+    void await_suspend(std::coroutine_handle<> awaiting) {
         print("lazy::await_suspend(...): coro.resume();\n");
         //coro.promise().m_awaiting = awaiting;
         coro.resume();
@@ -228,12 +190,12 @@ struct lazy {
 
         auto initial_suspend() {
             print("lazy::promise_type::initial_suspend()\n");
-            return std::experimental::suspend_always{};
+            return std::suspend_always{};
         }
 
-        auto final_suspend() {
+        auto final_suspend() noexcept {
             print("lazy::promise_type::final_suspend()\n");
-            return std::experimental::suspend_always{};
+            return std::suspend_always{};
         }
 
         void unhandled_exception() {
@@ -244,7 +206,7 @@ struct lazy {
     private:
         T value;
         bool set;
-        std::experimental::coroutine_handle<> m_awaiting;
+        std::coroutine_handle<> m_awaiting;
     };
 
     lazy(handle_type h)

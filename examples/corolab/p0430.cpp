@@ -11,7 +11,7 @@
  *
  *  Tested with Visual Studio 2019.
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com)
+ *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  *
  */
  
@@ -20,100 +20,10 @@
 #include <time.h>
 #include <string>
 #include <thread>
-#include <experimental/resumable>
+#include <coroutine>
 
-// -------------------------------------------------------------
-
-/**
- * A tailored print function that first prints a logical thread id (0, 1, 2, ...)
- * before printing the original message.
- *
- */
- 
-uint64_t threadids[128];
-
-int get_thread_number64(uint64_t id)
-{
-    for (int i = 0; i < 128; i++)
-    {
-        if (threadids[i] == id)
-            return i;
-        if (threadids[i] == 0) {
-            threadids[i] = id;
-            return i;
-        }
-    }
-    return -1;
-}
-
-int get_thread_number32(uint32_t id)
-{
-    for (int i = 0; i < 128; i++)
-    {
-        if (threadids[i] == id)
-            return i;
-        if (threadids[i] == 0) {
-            threadids[i] = id;
-            return i;
-        }
-    }
-    return -1;
-}
-
-uint64_t get_thread_id()
-{
-    auto id = std::this_thread::get_id();
-    uint64_t* ptr = (uint64_t*)&id;
-    return (uint64_t) (*ptr);
-}
-
-void print(const char* fmt, ...)
-{
-    va_list arg;
-    char msg[256];
-
-    va_start(arg, fmt);
-    int n = vsprintf_s(msg, fmt, arg);
-    va_end(arg);
-
-    int threadid = (sizeof(std::thread::id) == sizeof(uint32_t)) ? 
-                        get_thread_number32((uint32_t)get_thread_id()) :
-                        get_thread_number64(get_thread_id());
-    fprintf(stderr, "%02d: %s", threadid, msg);
-}
-
-// -------------------------------------------------------------
-
-#include <mutex>
-#include <condition_variable>
-
-class CSemaphore
-{
-private:
-    std::mutex mutex_;
-    std::condition_variable condition_;
-    unsigned int count_;
-public:
-    CSemaphore() : count_() { }
-
-    void reset() {
-        std::unique_lock<std::mutex> lock(mutex_);
-        count_ = 0;
-    }
-
-    void signal() {
-        std::unique_lock<std::mutex> lock(mutex_);
-        ++count_;
-        condition_.notify_one();
-    }
-
-    void wait() {
-        std::unique_lock < std::mutex > lock(mutex_);
-        while (!count_)
-            condition_.wait(lock);
-        --count_;
-    }
-};
+#include "print0.h"
+#include "csemaphore.h"
 
 // -------------------------------------------------------------
 
@@ -122,7 +32,7 @@ struct lazy {
 
     struct promise_type;
     friend struct promise_type;
-    using handle_type = std::experimental::coroutine_handle<promise_type>;
+    using handle_type = std::coroutine_handle<promise_type>;
 
     lazy(const lazy& s) = delete;
 
@@ -166,7 +76,7 @@ struct lazy {
     }
 
 #if 0
-    void await_suspend(std::experimental::coroutine_handle<> awaiting) {
+    void await_suspend(std::coroutine_handle<> awaiting) {
         print("%p: lazy::await_suspend(...): coro.resume();\n", this);
         coro.resume();
         print("%p: lazy::await_suspend(...): awaiting.resume();\n", this);
@@ -174,7 +84,7 @@ struct lazy {
         print("%p: lazy::await_suspend(...): return;\n", this);
     }
 #else
-    std::experimental::coroutine_handle<> await_suspend(std::experimental::coroutine_handle<> awaiting) {
+    std::coroutine_handle<> await_suspend(std::coroutine_handle<> awaiting) {
         print("%p: lazy::await_suspend(...): coro.resume();\n", this);
         coro.resume();
         print("%p: lazy::await_suspend(...): return awaiting;\n", this);
@@ -213,12 +123,12 @@ struct lazy {
 
         auto initial_suspend() {
             print("%p: lazy::promise_type::initial_suspend()\n", this);
-            return std::experimental::suspend_always{};
+            return std::suspend_always{};
         }
 
         auto final_suspend() {
             print("%p: lazy::promise_type::final_suspend()\n", this);
-            return std::experimental::suspend_always{};
+            return std::suspend_always{};
         }
 
         void unhandled_exception() {
@@ -228,7 +138,7 @@ struct lazy {
 
     private:
         T m_value;
-        std::experimental::coroutine_handle<> m_awaiting;
+        std::coroutine_handle<> m_awaiting;
     };
 
     lazy(handle_type h)

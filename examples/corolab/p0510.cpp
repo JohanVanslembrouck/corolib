@@ -35,7 +35,7 @@
  *
  *  Tested with Visual Studio 2019.
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com)
+ *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  *  Based upon:
  *
  */
@@ -55,76 +55,11 @@
 #include <thread>
 #include <stdio.h>
 
-#include <experimental/resumable>
-
- //--------------------------------------------------------------
-
-/**
- * A tailored print function that first prints a logical thread id (0, 1, 2, ...)
- * before printing the original message.
- *
- */
-
-const int PRI1 = 0x01;
-const int PRI2 = 0x02;
-const int PRI3 = 0x04;
-const int PRI4 = 0x08;
-
-uint64_t threadids[128];
-
-int get_thread_number64(uint64_t id)
-{
-    for (int i = 0; i < 128; i++)
-    {
-        if (threadids[i] == id)
-            return i;
-        if (threadids[i] == 0) {
-            threadids[i] = id;
-            return i;
-        }
-    }
-    return -1;
-}
-
-int get_thread_number32(uint32_t id)
-{
-    for (int i = 0; i < 128; i++)
-    {
-        if (threadids[i] == id)
-            return i;
-        if (threadids[i] == 0) {
-            threadids[i] = id;
-            return i;
-        }
-    }
-    return -1;
-}
-
-uint64_t get_thread_id()
-{
-    auto id = std::this_thread::get_id();
-    uint64_t* ptr = (uint64_t*)&id;
-    return (uint64_t)(*ptr);
-}
+#include <coroutine>
 
 const int priority = 0x01;
 
-void print(int pri, const char* fmt, ...)
-{
-    va_list arg;
-    char msg[256];
-
-    va_start(arg, fmt);
-    int n = vsprintf_s(msg, fmt, arg);
-    va_end(arg);
-
-    if (priority & pri) {
-        int threadid = (sizeof(std::thread::id) == sizeof(uint32_t)) ?
-            get_thread_number32((uint32_t)get_thread_id()) :
-            get_thread_number64(get_thread_id());
-        fprintf(stderr, "%02d: %s", threadid, msg);
-    }
-}
+#include "print.h"
 
 //--------------------------------------------------------------
 
@@ -133,7 +68,7 @@ struct sync {
 
     struct promise_type;
     friend struct promise_type;
-    using handle_type = std::experimental::coroutine_handle<promise_type>;
+    using handle_type = std::coroutine_handle<promise_type>;
 
     sync(const sync& s) = delete;
 
@@ -193,12 +128,12 @@ struct sync {
 
         auto initial_suspend() {
             print(PRI1, "sync::promise_type::initial_suspend()\n");
-            return std::experimental::suspend_never{};
+            return std::suspend_never{};
         }
 
-        auto final_suspend() {
+        auto final_suspend() noexcept {
             print(PRI1, "sync::promise_type::final_suspend()\n");
-            return std::experimental::suspend_always{};
+            return std::suspend_always{};
         }
 
         void unhandled_exception() {
@@ -209,7 +144,7 @@ struct sync {
     private:
         T value;
         bool set;
-        std::experimental::coroutine_handle<> m_awaiting;
+        std::coroutine_handle<> m_awaiting;
     };
 
     sync(handle_type h)
@@ -279,10 +214,10 @@ private:
     unsigned long head_;
     unsigned long tail_;
 
-    std::experimental::coroutine_handle<> m_awaiting_prod;
+    std::coroutine_handle<> m_awaiting_prod;
     bool m_producer_waiting;
 
-    std::experimental::coroutine_handle<> m_awaiting_cons;
+    std::coroutine_handle<> m_awaiting_cons;
     bool m_consumer_waiting;
 
     int push_not_ready;
@@ -344,7 +279,7 @@ public:
         return !full;
     }
 
-    void await_suspend(std::experimental::coroutine_handle<> awaiting) {
+    void await_suspend(std::coroutine_handle<> awaiting) {
         print(PRI2, "TRxThreadQueueCor_push::await_suspend(...)\n");
         m_queue.m_awaiting_prod = awaiting;
         m_queue.m_producer_waiting = true;
@@ -405,7 +340,7 @@ public:
         return !empty;
     }
 
-    void await_suspend(std::experimental::coroutine_handle<> awaiting) {
+    void await_suspend(std::coroutine_handle<> awaiting) {
         print(PRI2, "TRxThreadQueueCor_pop::await_suspend(...)\n");
         m_queue.m_awaiting_cons = awaiting;
         m_queue.m_consumer_waiting = true;

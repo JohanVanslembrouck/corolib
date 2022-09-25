@@ -10,7 +10,7 @@
  *
  *  Tested with Visual Studio 2019.
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@altran.com)
+ *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  *  Based upon: https://kirit.com/How%20C%2B%2B%20coroutines%20work/Awaiting
  *
  */
@@ -21,111 +21,20 @@
 #include <string>
 #include <thread>
 
-//--------------------------------------------------------------
-
-#include <mutex>
-#include <condition_variable>
-
-using namespace std;
-
-class CSemaphore
-{
-private:
-    mutex mutex_;
-    condition_variable condition_;
-    unsigned int count_;
-public:
-    CSemaphore() : count_() { }
-    void reset() {
-        unique_lock<mutex> lock(mutex_);
-        count_ = 0;
-    }
-
-    void signal() {
-        unique_lock<mutex> lock(mutex_);
-        ++count_;
-        condition_.notify_one();
-    }
-
-    void wait() {
-        unique_lock<mutex> lock(mutex_);
-        while (!count_)
-            condition_.wait(lock);
-        --count_;
-    }
-};
-
-//--------------------------------------------------------------
-
-/**
- * A tailored print function that first prints a logical thread id (0, 1, 2, ...)
- * before printing the original message.
- *
- */
-
-uint64_t threadids[128];
-
-int get_thread_number64(uint64_t id)
-{
-    for (int i = 0; i < 128; i++)
-    {
-        if (threadids[i] == id)
-            return i;
-        if (threadids[i] == 0) {
-            threadids[i] = id;
-            return i;
-        }
-    }
-    return -1;
-}
-
-int get_thread_number32(uint32_t id)
-{
-    for (int i = 0; i < 128; i++)
-    {
-        if (threadids[i] == id)
-            return i;
-        if (threadids[i] == 0) {
-            threadids[i] = id;
-            return i;
-        }
-    }
-    return -1;
-}
-
-uint64_t get_thread_id()
-{
-    auto id = std::this_thread::get_id();
-    uint64_t* ptr = (uint64_t*)&id;
-    return (uint64_t)(*ptr);
-}
-
-void print(const char* fmt, ...)
-{
-    va_list arg;
-    char msg[256];
-
-    va_start(arg, fmt);
-    int n = vsprintf_s(msg, fmt, arg);
-    va_end(arg);
-
-    int threadid = (sizeof(std::thread::id) == sizeof(uint32_t)) ?
-        get_thread_number32((uint32_t)get_thread_id()) :
-        get_thread_number64(get_thread_id());
-    fprintf(stderr, "%02d: %s", threadid, msg);
-}
+#include "print0.h"
+#include "csemaphore.h"
 
 //--------------------------------------------------------------
 #if 1
 
-#include <experimental/resumable>
+#include <coroutine>
 
 template<typename T>
 struct sync {
 
     struct promise_type;
     friend struct promise_type;
-    using handle_type = std::experimental::coroutine_handle<promise_type>;
+    using handle_type = std::coroutine_handle<promise_type>;
 
     void* address() { return this; }
 
@@ -155,7 +64,7 @@ struct sync {
         return ready;
     }
 
-    void await_suspend(std::experimental::coroutine_handle<> awaiting) {
+    void await_suspend(std::coroutine_handle<> awaiting) {
         print("%p: sync::await_suspend(...): entry\n", this);
         this->m_awaitingCoroutine = awaiting;
 
@@ -197,12 +106,12 @@ struct sync {
 
         auto initial_suspend() {
             print("%p: sync::promise_type::initial_suspend()\n", this);
-            return std::experimental::suspend_never{};
+            return std::suspend_never{};
         }
 
-        auto final_suspend() {
+        auto final_suspend() noexcept {
             print("%p: sync::promise_type::final_suspend()\n", this);
-            return std::experimental::suspend_always{};
+            return std::suspend_always{};
         }
 
         void unhandled_exception() {
@@ -221,21 +130,21 @@ struct sync {
         T m_value;
     };
 
-    std::experimental::coroutine_handle<> m_awaitingCoroutine;
+    std::coroutine_handle<> m_awaitingCoroutine;
 
     handle_type coro;
 };
 
 #else
 
-#include <experimental/resumable>
+#include <coroutine>
 
 template<typename T>
 struct sync {
 
     struct promise_type;
     friend struct promise_type;
-    using handle_type = std::experimental::coroutine_handle<promise_type>;
+    using handle_type = std::coroutine_handle<promise_type>;
 
     void* address() { return this; }
 
@@ -267,7 +176,7 @@ struct sync {
         return ready;
     }
 
-    void await_suspend(std::experimental::coroutine_handle<> awaiting) {
+    void await_suspend(std::coroutine_handle<> awaiting) {
         print("%p: sync::await_suspend(...): entry\n", this);
         //print("%p: sync::await_suspend(...): awaiting.address() = %p: entry\n", this, awaiting.address());
         m_awaitingCoroutine = awaiting;
@@ -317,12 +226,12 @@ struct sync {
 
         auto initial_suspend() {
             print("%p: sync::promise_type::initial_suspend()\n", this);
-            return std::experimental::suspend_never{};
+            return std::suspend_never{};
         }
 
         auto final_suspend() {
             print("%p: sync::promise_type::final_suspend()\n", this);
-            return std::experimental::suspend_always{};
+            return std::suspend_always{};
         }
 
         void unhandled_exception() {
@@ -342,7 +251,7 @@ struct sync {
         T value;
     };
 
-    std::experimental::coroutine_handle<> m_awaitingCoroutine;
+    std::coroutine_handle<> m_awaitingCoroutine;
 
     handle_type coro;
 };
