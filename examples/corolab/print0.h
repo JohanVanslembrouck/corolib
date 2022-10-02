@@ -73,7 +73,7 @@ void print(const char* fmt, ...)
 #if defined(_WIN32)
     int n = vsprintf_s(msg, fmt, arg);
 #else
-    int n = vsprintf(msg, fmt, arg);
+    vsprintf(msg, fmt, arg);
 #endif
     va_end(arg);
 

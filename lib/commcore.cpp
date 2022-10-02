@@ -25,9 +25,9 @@ namespace corolib
 
 CommCore::CommCore(boost::asio::io_context& io_context)
     : m_socket(io_context)
+    , m_bytes(0)
     , m_deadline(io_context)
     , m_hearbeat_timer(io_context)
-    , m_bytes(0)
 {
     print(PRI2, "%p: CommCore::CommCore()\n", this);
 }

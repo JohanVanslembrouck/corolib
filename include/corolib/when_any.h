@@ -38,7 +38,6 @@ namespace corolib
         when_any(std::initializer_list<TYPE*> aws)
         {
             print(PRI2, "%p: when_any::when_any(std::initializer_list<TYPE*> aws)\n", this);
-            int i = 0;
             for (TYPE* a : aws)
             {
                 // Only place the object in m_elements if it has not yet been completed.
