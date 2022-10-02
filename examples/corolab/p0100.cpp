@@ -2,7 +2,7 @@
  *  Filename: p0100.cpp
  *  Description:
  *  Defines two coroutine types for coroutines that use co_return.
- *  Type 1: sync<T>: eager coroutine type: the coroutine starts executing upon entry.
+ *  Type 1: syncr<T>: eager coroutine type: the coroutine starts executing upon entry.
  *  Type 2: lazy<T>: lazy coroutine type: upon entry, it immediately returns control
  *                   to its calling function/coroutine that is responsible for resuming
  *                   the lazy coroutine.
@@ -31,67 +31,67 @@
  */
 
 template<typename T>
-struct sync {
+struct syncr {
     struct promise_type;
     friend struct promise_type;
 
     using handle_type = std::coroutine_handle<promise_type>;
 
-    sync(const sync&) = delete;
+    syncr(const syncr&) = delete;
 
-    sync(sync&& s)
+    syncr(syncr&& s)
         : coro(s.coro) {
-        print("sync::sync(sync&& s)\n");
+        print("syncr::syncr(syncr&& s)\n");
         s.coro = nullptr;
     }
 
-    ~sync() {
-        print("~sync::sync()\n");
+    ~syncr() {
+        print("~syncr::syncr()\n");
         if (coro) coro.destroy();
     }
 
-    sync& operator = (const sync&) = delete;
+    syncr& operator = (const syncr&) = delete;
 
-    sync& operator = (sync&& s) {
-        print("sync& sync::operator = (sync&& s)\n");
+    syncr& operator = (syncr&& s) {
+        print("syncr& syncr::operator = (syncr&& s)\n");
         coro = s.coro;
         s.coro = nullptr;
         return *this;
     }
     
     T get() {
-        print("T sync::get()\n");
+        print("T syncr::get()\n");
         return coro.promise().value;
     }
 
     struct promise_type {
-        friend struct sync;
+        friend struct syncr;
 
         promise_type() {
-            print("sync::promise_type::promise_type()\n");
+            print("syncr::promise_type::promise_type()\n");
         }
 
         ~promise_type() {
-            print("~sync::promise_type::promise_type()\n");
+            print("~syncr::promise_type::promise_type()\n");
         }
 
         auto get_return_object() {
-            print("auto sync::promise_type::get_return_object()\n");
-            return sync<T>{handle_type::from_promise(*this)};
+            print("auto syncr::promise_type::get_return_object()\n");
+            return syncr<T>{handle_type::from_promise(*this)};
         }
         
         void return_value(T v) {
-            print("auto sync::promise_type::return_value(T v)\n", v );
+            print("auto syncr::promise_type::return_value(T v)\n", v );
             value = v;
         }
 
         auto initial_suspend() {
-            print("auto sync::promise_type::initial_suspend()\n");
+            print("auto syncr::promise_type::initial_suspend()\n");
             return std::suspend_never{};
         }
             
         auto final_suspend() noexcept {
-            print("auto sync::promise_type::final_suspend()\n");
+            print("auto syncr::promise_type::final_suspend()\n");
             return std::suspend_always{};
         }
 
@@ -104,9 +104,9 @@ struct sync {
     };
 
 public:
-    sync(handle_type h)
+    syncr(handle_type h)
         : coro(h) {
-        print("sync::sync(handle_type h)\n");
+        print("syncr::syncr(handle_type h)\n");
     }
     
     handle_type coro;
@@ -202,16 +202,16 @@ public:
 /*
 The C++ compiler compiles
 
-sync<int> answer1() {
+syncr<int> answer1() {
     co_return 42;
 }
 
 into
 
-sync<int> answer1() {
-    sync<int>::promise_type p;
+syncr<int> answer1() {
+    syncr<int>::promise_type p;
     auto task = p.initial_suspend();
-    sync<int> ret = p.get_return_object();
+    syncr<int> ret = p.get_return_object();
     co_await task;
 
     //co_return 42;
@@ -221,43 +221,43 @@ final_suspend:
 }
 
 The numbers 1 till 4 show the control flow between
-the calling function test_sync() and the called coroutine answer1().
+the calling function test_syncr() and the called coroutine answer1().
 The numbers are followed with trace output.
 
-sync<T> behaves more or less as a normal function, except
+syncr<T> behaves more or less as a normal function, except
 that it "dies" later than a normal function, namely
 when it terminates after the final suspend point.
  */
 
-sync<int> answer1() {
+syncr<int> answer1() {
     // 2
-    // 00: sync::promise_type::promise_type()
-    // 00: auto sync::promise_type::initial_suspend()
-    // 00: auto sync::promise_type::get_return_object()
-    // 00: sync::sync(handle_type h)
+    // 00: syncr::promise_type::promise_type()
+    // 00: auto syncr::promise_type::initial_suspend()
+    // 00: auto syncr::promise_type::get_return_object()
+    // 00: syncr::syncr(handle_type h)
 
-    print("sync<int> answer1()\n");
+    print("syncr<int> answer1()\n");
     
     co_return 42;
     
-    // 00: auto sync::promise_type::return_value(T v)
-    // 00: auto sync::promise_type::final_suspend()
+    // 00: auto syncr::promise_type::return_value(T v)
+    // 00: auto syncr::promise_type::final_suspend()
     
     // 4
-    // 00: ~sync::promise_type::promise_type()
+    // 00: ~syncr::promise_type::promise_type()
 }
 
-void test_sync() {
+void test_syncr() {
     // 1
-    print("sync<int> a1 = answer1();\n");
-    sync<int> a1 = answer1();
+    print("syncr<int> a1 = answer1();\n");
+    syncr<int> a1 = answer1();
     
     // 3
     print("int v = a1.get();\n");
     int v = a1.get();
     print("The coroutine value is: %d\n", v);
     
-    // 00: ~sync::sync()
+    // 00: ~syncr::syncr()
 }
 
 // -----------------------------------------------------------------
@@ -303,8 +303,8 @@ void test_lazy() {
 // -----------------------------------------------------------------
 
 int main() {
-    print("test_sync();\n");
-    test_sync();
+    print("test_syncr();\n");
+    test_syncr();
     fprintf(stderr, "\n");
     print("test_lazy();\n");
     test_lazy();

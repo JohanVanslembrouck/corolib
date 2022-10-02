@@ -2,12 +2,12 @@
  *  Filename: p0110.cpp
  *  Description:
  *  Defines two coroutine types for coroutines that use co_return.
- *  Type 1: sync<T>: eager coroutine type: the coroutine starts executing upon entry.
+ *  Type 1: syncr<T>: eager coroutine type: the coroutine starts executing upon entry.
  *  Type 2: lazy<T>: lazy coroutine type: upon entry, it immediately returns control
  *                   to its calling function/coroutine that is responsible for resuming
  *                   the lazy coroutine.
  *  Same functionality as p0100.cpp, except that the functionality that is common
- *  between sync<int> and lazy<int> has been placed in the base class coreturn<T>.
+ *  between syncr<int> and lazy<int> has been placed in the base class coreturn<T>.
  *  Tested with Visual Studio 2019.
  *
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
@@ -102,22 +102,22 @@ protected:
 // -----------------------------------------------------------------
 
 template<typename T>
-struct sync : public coreturn<T> {
+struct syncr : public coreturn<T> {
     using coreturn<T>::coreturn;
     using handle_type = typename coreturn<T>::handle_type;
 
     T get() {
-        print("T sync::get()\n");
+        print("T syncr::get()\n");
         return coreturn<T>::get();
     }
 
     struct promise_type : public coreturn<T>::promise {
         auto get_return_object() {
-            print("auto sync::promise_type::get_return_object()\n");
-            return sync<T>{handle_type::from_promise(*this)};
+            print("auto syncr::promise_type::get_return_object()\n");
+            return syncr<T>{handle_type::from_promise(*this)};
         }
         auto initial_suspend() {
-            print("auto sync::promise_type::initial_suspend()\n");
+            print("auto syncr::promise_type::initial_suspend()\n");
             return std::suspend_never{};
         }
     };
@@ -150,8 +150,8 @@ struct lazy : public coreturn<T> {
 
 // -----------------------------------------------------------------
 
-sync<int> answer1() {
-    print("sync<int> answer1()\n");
+syncr<int> answer1() {
+    print("syncr<int> answer1()\n");
     co_return 42;
 }
 
@@ -162,7 +162,7 @@ lazy<int> answer2() {
 
 // -----------------------------------------------------------------
 
-void test_sync() {
+void test_syncr() {
     print("auto a1 = answer1();\n");
     auto a1 = answer1();
     print("auto v = a1.get();\n");
@@ -181,8 +181,8 @@ void test_lazy() {
 // -----------------------------------------------------------------
 
 int main() {
-    print("test_sync();\n");
-    test_sync();
+    print("test_syncr();\n");
+    test_syncr();
     fprintf(stderr, "\n");
     print("test_lazy();\n");
     test_lazy();

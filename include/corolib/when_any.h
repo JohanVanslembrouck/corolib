@@ -82,7 +82,7 @@ namespace corolib
         ~when_any()
         {
             print(PRI2, "%p: when_any::~when_any()\n", this);
-            for (int i = 0; i < m_wait_any.size(); i++)
+            for (std::size_t i = 0; i < m_wait_any.size(); i++)
             {
                 m_elements[i]->setWaitAny(nullptr);
                 delete m_wait_any[i];
@@ -108,7 +108,7 @@ namespace corolib
                 bool await_ready()
                 {
                     print(PRI2, "%p: when_any::await_ready()\n", this);
-                    for (int i = 0; i < m_sync.m_wait_any.size(); i++)
+                    for (std::size_t i = 0; i < m_sync.m_wait_any.size(); i++)
                     {
                         if (m_sync.m_wait_any[i]->get_completed())
                         {
@@ -133,7 +133,7 @@ namespace corolib
                 {
                     // Find out which one has completed
                     print(PRI2, "%p: when_any::await_resume()\n", this);
-                    for (int i = 0; i < m_sync.m_wait_any.size(); i++)
+                    for (std::size_t i = 0; i < m_sync.m_wait_any.size(); i++)
                     {
                         if (m_sync.m_wait_any[i]->get_and_reset_completed())
                         {

@@ -70,7 +70,11 @@ void print(const char* fmt, ...)
     char msg[256];
 
     va_start(arg, fmt);
+#if defined(_WIN32)
     int n = vsprintf_s(msg, fmt, arg);
+#else
+    int n = vsprintf(msg, fmt, arg);
+#endif
     va_end(arg);
 
     int threadid = (sizeof(std::thread::id) == sizeof(uint32_t)) ?

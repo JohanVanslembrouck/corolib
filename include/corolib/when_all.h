@@ -80,7 +80,7 @@ namespace corolib
         ~when_all()
         {
             print(PRI2, "%p: when_all::~when_all()\n", this);
-            for (int i = 0; i < m_elements.size(); i++)
+            for (std::size_t i = 0; i < m_elements.size(); i++)
             {
                 m_elements[i]->setCounter(nullptr);
             }

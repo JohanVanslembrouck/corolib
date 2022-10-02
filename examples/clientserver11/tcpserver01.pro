@@ -23,11 +23,11 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-        ../common-qt/connectioninfo.h \
         tcpconfig.h \
         tcpconfigfile.h \
         connectioninfo.h \
         tcpserver01.h \
+        ../common-qt/connectioninfo.h \
         ../common-qt/crc.h \
         ../common-qt/protocolmessage.h \
         ../common-qt/tcpserver.h

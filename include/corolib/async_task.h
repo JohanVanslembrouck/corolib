@@ -148,12 +148,12 @@ namespace corolib
             friend class async_task;
 
             promise_type()
-                : m_value{}
-                , m_awaiting(nullptr)
-                , m_ready(false)
-                , m_wait_for_signal(false)
+                : m_awaiting(nullptr)
                 , m_ctr(nullptr)
                 , m_waitany(nullptr)
+                , m_value{}
+                , m_ready(false)
+                , m_wait_for_signal(false)
             {
                 print(PRI2, "%p: async_task::promise_type::promise_type()\n", this);
             }
@@ -224,13 +224,13 @@ namespace corolib
             }
 
         private:
-            TYPE m_value;
-            bool m_ready;
+            std::coroutine_handle<> m_awaiting;
             Semaphore m_sema;
-            bool m_wait_for_signal;
             when_all_counter* m_ctr;
             when_any_one* m_waitany;
-            std::coroutine_handle<> m_awaiting;
+            TYPE m_value;
+            bool m_ready;
+            bool m_wait_for_signal;
         };
 
     private:
@@ -348,10 +348,10 @@ namespace corolib
 
             promise_type()
                 : m_awaiting(nullptr)
-                , m_ready(false)
-                , m_wait_for_signal(false)
                 , m_ctr(nullptr)
                 , m_waitany(nullptr)
+                , m_ready(false)
+                , m_wait_for_signal(false)
             {
                 print(PRI2, "%p: async_task::promise_type::promise_type()\n", this);
             }
@@ -421,12 +421,12 @@ namespace corolib
             }
 
         private:
-            bool m_ready;
+            std::coroutine_handle<> m_awaiting;
             Semaphore m_sema;
-            bool m_wait_for_signal;
             when_all_counter* m_ctr;
             when_any_one* m_waitany;
-            std::coroutine_handle<> m_awaiting;
+            bool m_ready;
+            bool m_wait_for_signal;
         };
 
     private:

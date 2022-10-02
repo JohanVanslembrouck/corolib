@@ -159,10 +159,10 @@ public:
 
     void printcontent();
 
-    template<typename T, unsigned long Q_SIZE>
+    template<typename T1, unsigned long Q_SIZE1>
     friend class TRxThreadQueueCor_pop;
 
-    template<typename T, unsigned long Q_SIZE>
+    template<typename T1, unsigned long Q_SIZE1>
     friend class TRxThreadQueueCor_push;
 
 private:

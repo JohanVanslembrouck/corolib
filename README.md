@@ -2,6 +2,70 @@
 
 A C++ coroutine library for writing asynchronous distributed applications.
 
+## Installation and building
+
+Copy or clone corolib.git to your computer.
+
+### Prerequisites
+
+For its communication corolib uses the Boost ASIO library or Qt (QTcpSocket, QTcpServer).
+I originally used Boost 1.70 (now Boost 1.79) and Qt 5.14.2, but many other versions will do.
+
+### Building on Windows 10
+
+I developed corolib with Visual Studio 2019 and Qt Creator 4.12.0 on a Windows 10 laptop.
+
+Building the Visual Studio projects makes use of the CMake support of Visual Studio:
+
+	File -> Open -> CMake...
+	
+and select the CMakeLists.txt in the top-level folder.
+
+In the CMakeLists.txt in the top-level folder, adapt the following variables to your own installation of the Boost library:
+
+	set(Boost_INCLUDE_DIR C:/local/boost/boost_1_79_0)
+	set(Boost_LIBRARY_DIR C:/local/boost/boost_1_79_0/stage/lib)
+
+The Qt examples are not built from the top-level CMakeLists.txt file,
+but have to be built from the .pro files in examples/clientserver11.
+
+### Building on Linux
+
+I have tested corolib on an Ubuntu MATE 22.04 installation. The g++ version is 11.2.0.
+(The g++ version should be >= 10 to have coroutine support.)
+
+You have to install cmake (if not yet done):
+
+	sudo apt install cmake
+
+and boost:
+
+	sudo apt-get update
+	sudo apt-get -y install libboost-dev
+
+The Boost include files are in
+
+	/usr/include/boost
+	
+On my machine, the Boost libraries (version 1.74.0) are located in
+
+	/usr/lib/x86_64-linux-gnu/
+
+I propose to build corolib as follows:
+
+	cd <path>/corolib
+	mkdir build
+	cd build
+	cmake ../
+	make
+
+Go to the examples/ subdirectories and start the executables. 
+(See README.md files in the corresponding source directories.)
+
+To install and configure qtcreator on Ubuntu 22.04, follow the instructions at
+https://askubuntu.com/questions/1404263/how-do-you-install-qt-on-ubuntu22-04
+	
+
 ## Why coroutines?
 
 Reason 1: Coroutines allow writing (distributed) applications using a natural synchronous style,
@@ -83,26 +147,6 @@ Therefore the object has to be declared explicitly.
 
 	The reader is referred again to reading/CORBA-AMI.md for more information on this approach.
 
-## Communication libraries and frameworks
-
-For its communication corolib uses the Boost ASIO library or Qt (QTcpSocket, QTcpServer).
-I originally used Boost 1.70 (now Boost 1.79) and Qt 5.14.2, but many other versions will do.
-
-I developed corolib with Visual Studio 2019 and Qt Creator 4.12.0 on a Windows 10 laptop.
-
-Building the Visual Studio projects makes use of the CMake support of Visual Studio:
-
-	File -> Open -> CMake...
-	
-and select the CMakeLists.txt in the top-level folder.
-
-In the CMakeLists.txt in the top-level folder, adapt the following variables to your own installation of the Boost library:
-
-	set(Boost_INCLUDE_DIR C:/local/boost/boost_1_79_0)
-	set(Boost_LIBRARY_DIR C:/local/boost/boost_1_79_0/stage/lib)
-	
-The Qt examples are not built from the top-level CMakeLists.txt file,
-but have to be built from the .pro files in examples/clientserver11.
 
 ## Organization of corolib
 
@@ -125,7 +169,8 @@ Two or more applications have to be started, e.g. a server application and one o
 (and other examples that may be added in the future).
 * Folder various-boost contains stand-alone applications that use Boost. At this moment it contains only a timer application.
 * Folder various-qt contains stand-alone applications that use Qt. Again, at this moment it contains only a timer application.
-* Folder contains various examples that explain the advantages of C++ coroutines for writing (distributed) applications.
+* Folder why-coroutines contains various examples that explain the advantages of C++ coroutines for writing (distributed) applications.
+* Folder corolab contains examples that do not use the corolib include files or libraries, but were the basis from where corolib has been "distilled."
 
 ## Comparison with other libraries
 

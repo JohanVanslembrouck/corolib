@@ -106,7 +106,7 @@ private:
 //--------------------------------------------------------------
 
 template<typename T>
-struct sync {
+struct syncr {
 
     struct promise_type;
     friend struct promise_type;
@@ -115,88 +115,88 @@ struct sync {
     void* address() { return this; }
 
     T get() {
-        print("%p: T sync::get()\n", this);
+        print("%p: T syncr::get()\n", this);
         if (!coro.done())
             coro.promise().m_sema.wait();
-        print("%p: T sync::get(): return coro.promise().m_value;\n", this);
+        print("%p: T syncr::get(): return coro.promise().m_value;\n", this);
         return coro.promise().m_value;
     }
     
     void wait() {
-        print("%p: T sync::wait(): coro.promise().m_sema.wait();\n", this);
+        print("%p: T syncr::wait(): coro.promise().m_sema.wait();\n", this);
         coro.promise().m_sema.wait();
-        print("%p: T sync::wait(): : return;\n", this);
+        print("%p: T syncr::wait(): : return;\n", this);
     }
 
-    sync(handle_type h)
+    syncr(handle_type h)
         : coro(h) {
-        print("%p: sync::sync(handle_type h)\n", this);
+        print("%p: syncr::syncr(handle_type h)\n", this);
     }
 
     bool await_ready() {
-        print("%p: sync::await_ready()\n", this);
+        print("%p: syncr::await_ready()\n", this);
         const auto ready = coro.done();
-        print("%p: sync::await_ready(): return %d\n", this, ready);
+        print("%p: syncr::await_ready(): return %d\n", this, ready);
         return ready;
     }
 
     void await_suspend(std::coroutine_handle<> awaiting) {
-        print("%p: sync::await_suspend(...): entry\n", this);
+        print("%p: syncr::await_suspend(...): entry\n", this);
         this->m_awaitingCoroutine = awaiting;
 
         std::thread thread1([=]() {
-            print("%p: sync::await_suspend(...): thread1: this->wait();\n", this);
+            print("%p: syncr::await_suspend(...): thread1: this->wait();\n", this);
             this->wait();
-            print("%p: sync::await_suspend(...): thread1: awaiting.resume();\n", this);
+            print("%p: syncr::await_suspend(...): thread1: awaiting.resume();\n", this);
             awaiting.resume();
-            print("%p: sync::await_suspend(...): thread1: return;\n", this);
+            print("%p: syncr::await_suspend(...): thread1: return;\n", this);
             });
         thread1.detach();
 
-        print("%p: sync::await_suspend(...): exit\n", this);
+        print("%p: syncr::await_suspend(...): exit\n", this);
     }
 
     T await_resume() {
-        print("%p: sync::await_resume(): auto r = get()\n", this);
+        print("%p: syncr::await_resume(): auto r = get()\n", this);
         T r = get();
-        print("%p: sync::await_resume(): return r;\n", this);
+        print("%p: syncr::await_resume(): return r;\n", this);
         return r;
     }
     
     struct promise_type {
-        friend struct sync;
+        friend struct syncr;
 
         promise_type()
             : m_value(0) {
-            print("%p: sync::promise_type::promise_type()\n", this);
+            print("%p: syncr::promise_type::promise_type()\n", this);
         }
 
         ~promise_type() {
-            print("%p: sync::promise::~promise()\n", this);
+            print("%p: syncr::promise::~promise()\n", this);
         }
 
         auto get_return_object() {
-            print("%p: sync::promise_type::get_return_object()\n", this);
-            return sync<T>(handle_type::from_promise(*this));
+            print("%p: syncr::promise_type::get_return_object()\n", this);
+            return syncr<T>(handle_type::from_promise(*this));
         }
 
         auto initial_suspend() {
-            print("%p: sync::promise_type::initial_suspend()\n", this);
+            print("%p: syncr::promise_type::initial_suspend()\n", this);
             return std::suspend_never{};
         }
         
         auto final_suspend() noexcept {
-            print("%p: sync::promise_type::final_suspend()\n", this);
+            print("%p: syncr::promise_type::final_suspend()\n", this);
             return std::suspend_always{};
         }
 
         void unhandled_exception() {
-            print("%p: sync::promise_type::unhandled_exception()\n", this);
+            print("%p: syncr::promise_type::unhandled_exception()\n", this);
             std::exit(1);
         }
 
         void return_value(T v) {
-            print("%p: void sync::promise_type::return_value(T V): m_sema.signal()\n", this);
+            print("%p: void syncr::promise_type::return_value(T V): m_sema.signal()\n", this);
             m_value = v;
             m_sema.signal();
         }
@@ -213,73 +213,73 @@ struct sync {
 
 //--------------------------------------------------------------
 
-sync<int> coroutine5() {
+syncr<int> coroutine5() {
     print("coroutine5(): 1\n");
     int i = 42;
 
-    single_consumer_event sync6;
-    std::thread thread1([&sync6]() {
+    single_consumer_event syncr6;
+    std::thread thread1([&syncr6]() {
         print("coroutine5(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        print("coroutine5(): thread1: sync6.set();\n");
-        sync6.set();
+        print("coroutine5(): thread1: syncr6.set();\n");
+        syncr6.set();
         print("coroutine5(): thread1: return;\n");
         });
     thread1.detach();
 
-    print("coroutine5(): co_await sync6;\n");
-    co_await sync6;
+    print("coroutine5(): co_await syncr6;\n");
+    co_await syncr6;
 
     print("coroutine5(): 4: co_return i;\n");
     co_return i;
 }
 
-sync<int> coroutine4() {
-    print("coroutine4(): 1: sync<int> sync5 = coroutine5();\n");
-    sync<int> sync5 = coroutine5();
-    print("coroutine4(): 2: int i = co_await sync5;\n");
-    int i = co_await sync5;
+syncr<int> coroutine4() {
+    print("coroutine4(): 1: syncr<int> syncr5 = coroutine5();\n");
+    syncr<int> syncr5 = coroutine5();
+    print("coroutine4(): 2: int i = co_await syncr5;\n");
+    int i = co_await syncr5;
     print("coroutine4(): 4: co_return i;\n");
     co_return i;
 }
 
-sync<int> coroutine3() {
-    print("coroutine3(): 1: sync<int> sync4 = coroutine4();\n");
-    sync<int> sync4 = coroutine4();
-    print("coroutine3(): 2: int i = co_await sync4;\n");
-    int i = co_await sync4;
+syncr<int> coroutine3() {
+    print("coroutine3(): 1: syncr<int> syncr4 = coroutine4();\n");
+    syncr<int> syncr4 = coroutine4();
+    print("coroutine3(): 2: int i = co_await syncr4;\n");
+    int i = co_await syncr4;
     print("coroutine3(): 4: co_return i;\n");
     co_return i;
 }
 
-sync<int> coroutine2() {
+syncr<int> coroutine2() {
     int i;
     for (int j = 0; j < 1; j++)
     {
-        print("coroutine2(): 1: sync<int> sync3 = coroutine3();\n");
-        sync<int> sync3 = coroutine3();
-        print("coroutine2(): 2: int i = co_await sync3;\n");
-        i = co_await sync3;
+        print("coroutine2(): 1: syncr<int> syncr3 = coroutine3();\n");
+        syncr<int> syncr3 = coroutine3();
+        print("coroutine2(): 2: int i = co_await syncr3;\n");
+        i = co_await syncr3;
         print("coroutine2(): 4: co_return i;\n");
     }
     co_return i;
 }
 
-sync<int> coroutine1() {
-    print("coroutine1(): 1: sync<int> sync2 = coroutine2();\n");
-    sync<int> sync2 = coroutine2();
-    print("coroutine1(): 2: int i = co_await sync2;\n");
-    int i = co_await sync2;
+syncr<int> coroutine1() {
+    print("coroutine1(): 1: syncr<int> syncr2 = coroutine2();\n");
+    syncr<int> syncr2 = coroutine2();
+    print("coroutine1(): 2: int i = co_await syncr2;\n");
+    int i = co_await syncr2;
     print("coroutine1(): 4: co_return i;\n");
     co_return i;
 }
 
 int main() {
-    print("main(): 1: sync<int> sync1 = coroutine1();\n");
-    sync<int> sync1 = coroutine1();
-    print("main(): 2: sync1.address() = %p\n", sync1.address());
-    print("main(): 4: int i = sync1.get();\n");
-    int i = sync1.get();
+    print("main(): 1: syncr<int> syncr1 = coroutine1();\n");
+    syncr<int> syncr1 = coroutine1();
+    print("main(): 2: syncr1.address() = %p\n", syncr1.address());
+    print("main(): 4: int i = syncr1.get();\n");
+    int i = syncr1.get();
     print("main(): 5: i = %d\n", i);
     return 0;
 }

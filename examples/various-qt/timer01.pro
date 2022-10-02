@@ -1,10 +1,16 @@
 QT -= gui
 QT += network
 
-CONFIG += c++11 console
+CONFIG += c++20 console
 CONFIG -= app_bundle
 
+win32 {
 QMAKE_CXXFLAGS += /await:strict
+}
+unix {
+QMAKE_CXXFLAGS += -fcoroutines
+}
+
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.

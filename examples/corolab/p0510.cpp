@@ -64,36 +64,36 @@ const int priority = 0x01;
 //--------------------------------------------------------------
 
 template<typename T>
-struct sync {
+struct syncr {
 
     struct promise_type;
     friend struct promise_type;
     using handle_type = std::coroutine_handle<promise_type>;
 
-    sync(const sync& s) = delete;
+    syncr(const syncr& s) = delete;
 
-    sync(sync&& s)
+    syncr(syncr&& s)
         : m_coroutine(s.m_coroutine) {
-        print(PRI1, "sync::sync(sync&& s)\n");
+        print(PRI1, "syncr::syncr(syncr&& s)\n");
         s.m_coroutine = nullptr;
     }
 
-    ~sync() {
-        print(PRI1, "sync::~sync()\n");
-        //if (m_coroutine) m_coroutine.destroy();    // can throw exception when sync goes out of scope. FFS
+    ~syncr() {
+        print(PRI1, "syncr::~syncr()\n");
+        //if (m_coroutine) m_coroutine.destroy();    // can throw exception when syncr goes out of scope. FFS
     }
 
-    sync& operator = (const sync&) = delete;
+    syncr& operator = (const syncr&) = delete;
 
-    sync& operator = (sync&& s) {
-        print(PRI1, "sync::sync = (sync&& s)\n");
+    syncr& operator = (syncr&& s) {
+        print(PRI1, "syncr::syncr = (syncr&& s)\n");
         m_coroutine = s.m_coroutine;
         s.m_coroutine = nullptr;
         return *this;
     }
 
     T get() {
-        print(PRI1, "sync::get()\n");
+        print(PRI1, "syncr::get()\n");
         while (!m_coroutine.promise().set)
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         return m_coroutine.promise().value;
@@ -101,43 +101,43 @@ struct sync {
 
     struct promise_type {
 
-        friend struct sync;
+        friend struct syncr;
 
         promise_type() : set(false) {
-            print(PRI1, "sync::promise_type::promise_type()\n");
+            print(PRI1, "syncr::promise_type::promise_type()\n");
         }
 
         ~promise_type() {
-            print(PRI1, "sync::promise_type::~promise_type()\n");
+            print(PRI1, "syncr::promise_type::~promise_type()\n");
         }
 
         auto return_value(T v) {
-            print(PRI1, "sync::promise_type::return_value(T v)\n");
+            print(PRI1, "syncr::promise_type::return_value(T v)\n");
             this->value = v;
             this->set = true;
             if (this->m_awaiting)
                 this->m_awaiting.resume();
             else
-                print(PRI1, "sync::promise_type::return_value(T v): this->m_awaiting == nullptr\n");
+                print(PRI1, "syncr::promise_type::return_value(T v): this->m_awaiting == nullptr\n");
         }
 
         auto get_return_object() {
-            print(PRI1, "sync::promise_type::get_return_object()\n");
-            return sync<T>{handle_type::from_promise(*this)};
+            print(PRI1, "syncr::promise_type::get_return_object()\n");
+            return syncr<T>{handle_type::from_promise(*this)};
         }
 
         auto initial_suspend() {
-            print(PRI1, "sync::promise_type::initial_suspend()\n");
+            print(PRI1, "syncr::promise_type::initial_suspend()\n");
             return std::suspend_never{};
         }
 
         auto final_suspend() noexcept {
-            print(PRI1, "sync::promise_type::final_suspend()\n");
+            print(PRI1, "syncr::promise_type::final_suspend()\n");
             return std::suspend_always{};
         }
 
         void unhandled_exception() {
-            print(PRI1, "sync::promise::promise_type()\n");
+            print(PRI1, "syncr::promise::promise_type()\n");
             std::exit(1);
         }
 
@@ -147,9 +147,9 @@ struct sync {
         std::coroutine_handle<> m_awaiting;
     };
 
-    sync(handle_type h)
+    syncr(handle_type h)
         : m_coroutine(h) {
-        print(PRI1, "sync::sync(handle_type h)\n");
+        print(PRI1, "syncr::syncr(handle_type h)\n");
     }
 
     handle_type m_coroutine;
@@ -203,10 +203,10 @@ public:
 
     void printcontent();
 
-    template<typename T, unsigned long Q_SIZE>
+    template<typename T1, unsigned long Q_SIZE1>
     friend class TRxThreadQueueCor_pop;
 
-    template<typename T, unsigned long Q_SIZE>
+    template<typename T1, unsigned long Q_SIZE1>
     friend class TRxThreadQueueCor_push;
 
 private:
@@ -402,7 +402,7 @@ static const auto CONSUMERS = 1;
 static const auto PRODUCERS = 1;
 
 template<typename T, unsigned long Q_SIZE>
-sync<int> prod_coroutine(TRxThreadQueueCor<T, Q_SIZE>& trxcor_q)
+syncr<int> prod_coroutine(TRxThreadQueueCor<T, Q_SIZE>& trxcor_q)
 {
     print(PRI1, "prod_coroutine: begin\n");
     for (int i = 0; i < Q_SIZE * 1000 + Q_SIZE / 2; i++)
@@ -420,7 +420,7 @@ template<typename T, unsigned long Q_SIZE>
 void prod_function(TRxThreadQueueCor<T, Q_SIZE>& trxcor_q)
 {
     print(PRI1, "prod_function 1\n");
-    sync<int> ii = prod_coroutine(trxcor_q);
+    syncr<int> ii = prod_coroutine(trxcor_q);
     print(PRI1, "prod_function 2\n");
     int i = ii.get();
     print(PRI1, "prod_function 3: i = %d\n", i);
@@ -429,7 +429,7 @@ void prod_function(TRxThreadQueueCor<T, Q_SIZE>& trxcor_q)
 //--------------------------------------------------------------
 
 template<typename T, unsigned long Q_SIZE>
-sync<int> cons_coroutine(TRxThreadQueueCor<T, Q_SIZE>& trxcor_q)
+syncr<int> cons_coroutine(TRxThreadQueueCor<T, Q_SIZE>& trxcor_q)
 {
     print(PRI1, "cons_coroutine: begin\n");
     T v = 0;
@@ -448,7 +448,7 @@ template<typename T, unsigned long Q_SIZE>
 void cons_function(TRxThreadQueueCor<T, Q_SIZE>& trxcor_q)
 {
     print(PRI1, "cons_function 1\n");
-    sync<int> ii = cons_coroutine(trxcor_q);
+    syncr<int> ii = cons_coroutine(trxcor_q);
     print(PRI1, "cons_function 2\n");
     int i = ii.get();
     print(PRI1, "cons_function 3: i = %d\n", i);
