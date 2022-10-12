@@ -17,23 +17,29 @@ public:
     {
         printf("RemoteObject1::op1(%d, %d, %d, %d)\n", in11, in12, out11, out12);
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        return 0; 
+        out11 = 1;
+        out12 = 2;
+        return 3;
     }
 
     int op2(int in21, int in22, int& out21)
     {
         printf("RemoteObject1::op2(%d, %d, %d)\n", in21, in22, out21);
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        return 0;
+        out21 = 1;
+        return 2;
     }
   
     int op3(int in31, int& out31, int& out32)
     {
         printf("RemoteObject1::op3(%d, %d, %d)\n", in31, out31, out32);
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        return 0;
+        out31 = 1;
+        out32 = 2;
+        return 3;
     }
     
+
     void sendc_op1(int in11, int in12, lambda_3int_t lambda)
     {
         printf("RemoteObject1::sendc_op1(%d, %d, l)\n", in11, in12);

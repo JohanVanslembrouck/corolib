@@ -47,3 +47,8 @@ add_executable(p1400-sync-segmentation p1400-sync-segmentation.cpp)
 add_executable(p1410-async-segmentation p1410-async-segmentation.cpp)
 add_executable(p1420-coroutines-segmentation p1420-coroutines-segmentation.cpp)
 target_link_libraries(p1420-coroutines-segmentation corolib)
+
+add_executable(p1500-sync-3-parallel-rmis p1500-sync-3-parallel-rmis.cpp)
+add_executable(p1510-async-3-parallel-rmis p1510-async-3-parallel-rmis.cpp)
+add_executable(p1520-coroutines-3-parallel-rmis p1520-coroutines-3-parallel-rmis.cpp)
+target_link_libraries(p1520-coroutines-3-parallel-rmis corolib)

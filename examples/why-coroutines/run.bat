@@ -21,3 +21,6 @@ p1320-coroutines-nested-loop.exe
 p1400-sync-segmentation.exe
 p1410-async-segmentation.exe
 p1420-coroutines-segmentation.exe
+p1500-sync-3-parallel-rmis.exe
+p1510-async-3-parallel-rmis.exe
+p1520-coroutines-3-parallel-rmis.exe
