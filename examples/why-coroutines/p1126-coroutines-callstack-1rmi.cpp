@@ -2,9 +2,9 @@
  * @file p1126-coroutines-callstack-1rmi.cpp
  * @brief
  * Variant of p1124 where each layer has a reference to a lower layer object (as in p1122 and p1124)
- * and to a higher layer object.
- * This allows going downwards the stack (higher layers to lower layers)
- * and upwards the stack (lower layers to higher layers) and in both directions.
+ * but also to a higher layer object.
+ * This allows going downwards the stack (higher layer objects call coroutines of lower layers)
+ * and upwards the stack (lower layer objects call coroutines of higher layers).
  * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
@@ -22,13 +22,22 @@ using namespace corolib;
 
 #include "p1000.h"
 
-RemoteObject1 remoteObj1;
-
 class Layer01;
 class Layer02;
 class Layer03;
 class RemoteObject1Co;
 
+/**
+ * Interfaces (base classes) section
+ *
+ */
+
+/**
+ * @brief Layer01 is the lowest level in the application stack
+ * Lower layer: RemoteObject1Co
+ * Upper layer: Layer02
+ *
+ */
 class Layer01
 {
 public:
@@ -37,14 +46,33 @@ public:
         , m_layer02(layer02)
     {}
 
-    virtual async_task<int> coroutine1(int in1, int& out11, int& out12) = 0;
-    virtual async_task<int> coroutine1u(int in1, int& out11, int& out12) = 0;
+    /**
+     * @brief "downstream" function: called from upper layer in the application stack
+     * @param in1
+     * @param out2
+     * @param out2
+     */
+    virtual async_task<int> coroutine1d(int in1, int& out1, int& out2) = 0;
+    
+    /**
+     * @brief "upstream" function: called from lower layer in the protocol stack
+     * @param in1
+     * @param out2
+     * @param out2
+     */
+    virtual async_task<int> coroutine1u(int in1, int& out1, int& out2) = 0;
 
 protected:
     RemoteObject1Co& m_remoteObj1co;
     Layer02& m_layer02;
 };
 
+/**
+ * @brief Layer02 is the middle layer in the application stack
+ * Lower layer: Layer01
+ * Upper layer: Layer03
+ *
+ */
 class Layer02
 {
 public:
@@ -53,7 +81,7 @@ public:
         , m_layer03(layer03)
     {}
 
-    virtual async_task<int> coroutine1(int in1, int& out1) = 0;
+    virtual async_task<int> coroutine1d(int in1, int& out1) = 0;
     virtual async_task<int> coroutine1u(int in1, int& out1) = 0;
 
 protected:
@@ -61,6 +89,12 @@ protected:
     Layer03& m_layer03;
 };
 
+/**
+ * @brief Layer03 is the upper layer in the application stack
+ * Lower layer: Layer02
+ * Upper layer: application (but not known by Layer03)
+ *
+ */
 class Layer03
 {
 public:
@@ -68,14 +102,17 @@ public:
         : m_layer02(layer02)
     {}
 
-    virtual async_task<int> coroutine1(int in1) = 0;
-    virtual async_task<int> coroutine1u(int in1, int& out11, int& out12) = 0;
+    virtual async_task<int> coroutine1d(int in1) = 0;
+    virtual async_task<int> coroutine1u(int in1, int& out1, int& out2) = 0;
 
 protected:
     Layer02& m_layer02;
 };
 
-
+/**
+ * @brief
+ *
+ */
 class RemoteObject1Co : public CommService
 {
 public:
@@ -85,21 +122,25 @@ public:
     {}
     
     // User API
-    async_task<int> op1(int in11, int in12, int& out11, int& out12)
+    // --------
+    
+    async_task<int> op1d(int in1, int in2, int& out1, int& out2)
     {
-        async_operation<op1_ret_t> op1 = start_op1(in11, in12);
+        async_operation<op1_ret_t> op1 = start_op1d(in1, in2);
         op1_ret_t res = co_await op1;
-        out11 = res.out1;
-        out12 = res.out2;
+        out1 = res.out1;
+        out2 = res.out2;
         co_return res.ret;
     }
     
-    // Start-up function
-    async_operation<op1_ret_t> start_op1(int in11, int in12)
+    // Start functions
+    // ---------------
+    
+    async_operation<op1_ret_t> start_op1d(int in11, int in12)
     {
         int index = get_free_index();
-        print(PRI1, "%p: RemoteObj1::start_op1(): index = %d\n", this, index);
-        start_op1_impl(index, in11, in12);
+        print(PRI1, "%p: RemoteObj1::start_op1d(): index = %d\n", this, index);
+        start_op1d_impl(index, in11, in12);
         return { this, index };
     }
 
@@ -113,14 +154,15 @@ public:
 
 protected:
     // Implementation function
-    void start_op1_impl(const int idx, int in11, int in12);
+    // -----------------------
+    void start_op1d_impl(const int idx, int in11, int in12);
     
 private:
     RemoteObject1 m_remoteObject;
     Layer01& m_layer01;
 };
 
-void RemoteObject1Co::start_op1_impl(const int idx, int in11, int in12)
+void RemoteObject1Co::start_op1d_impl(const int idx, int in11, int in12)
 {
     print(PRI1, "%p: RemoteObject1Co::start_op1_impl(%d)\n", this, idx);
 
@@ -148,7 +190,15 @@ void RemoteObject1Co::start_op1_impl(const int idx, int in11, int in12)
         });
 }
 
-
+/**
+ * Derived classes section
+ *
+ */
+ 
+/**
+ * @brief Layer1 derived class
+ *
+ */
 class Layer01d : public Layer01
 {
 public:
@@ -156,20 +206,20 @@ public:
         : Layer01(remoteObj1co, layer02)
     {}
 
-    async_task<int> coroutine1(int in1, int& out11, int& out12) override
+    async_task<int> coroutine1d(int in1, int& out1, int& out2) override
     {
-        printf("Layer01::coroutine1(): part 1\n");
-        int ret1 = co_await m_remoteObj1co.op1(in1, in1, out11, out12);
-        printf("Layer01::coroutine1(): out11 = %d, out12 = %d, ret1 = %d\n", out11, out12, ret1);
-        printf("Layer01::coroutine1(): part 2\n");
+        printf("Layer01::coroutine1d(): part 1\n");
+        int ret1 = co_await m_remoteObj1co.op1d(in1, in1, out1, out2);
+        printf("Layer01::coroutine1d(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
+        printf("Layer01::coroutine1d(): part 2\n");
         co_return ret1;
     }
 
-    async_task<int> coroutine1u(int in1, int& out11, int& out12) override
+    async_task<int> coroutine1u(int in1, int& out1, int& out2) override
     {
         printf("Layer01::coroutine1u(): part 1\n");
-        int ret1 = co_await m_layer02.coroutine1u(in1, out11);
-        printf("Layer01::coroutine1u(): out11 = %d, out12 = %d, ret1 = %d\n", out11, out12, ret1);
+        int ret1 = co_await m_layer02.coroutine1u(in1, out1);
+        printf("Layer01::coroutine1u(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
         printf("Layer01::coroutine1u(): part 2\n");
         co_return ret1;
     }
@@ -182,12 +232,12 @@ public:
         : Layer02(layer01, layer03)
     {}
 
-    async_task<int> coroutine1(int in1, int& out1) override
+    async_task<int> coroutine1d(int in1, int& out1) override
     {
-        printf("Layer02::coroutine1(): part 1\n");
-        int ret1 = co_await m_layer01.coroutine1(in1, out1, out2);
-        printf("Layer02::coroutine1(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
-        printf("Layer02::coroutine1(): part 2\n");
+        printf("Layer02::coroutine1d(): part 1\n");
+        int ret1 = co_await m_layer01.coroutine1d(in1, out1, out2);
+        printf("Layer02::coroutine1d(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
+        printf("Layer02::coroutine1d(): part 2\n");
         co_return ret1;
     }
 
@@ -211,29 +261,35 @@ public:
         : Layer03(layer02)
     {}
 
-    async_task<int> coroutine1(int in1) override
+    async_task<int> coroutine1d(int in1) override
     {
-        printf("Layer03::coroutine1(): part 1\n");
-        int ret1 = co_await m_layer02.coroutine1(in1, out1);
-        printf("Layer03::coroutine1(): out1 = %d, ret1 = %d\n", out1, ret1);
-        printf("Layer03::coroutine1(): part 2\n");
+        printf("Layer03::coroutine1d(): part 1\n");
+        int ret1 = co_await m_layer02.coroutine1d(in1, out1);
+        printf("Layer03::coroutine1d(): out1 = %d, ret1 = %d\n", out1, ret1);
+        printf("Layer03::coroutine1d(): part 2\n");
         co_return ret1;
     }
 
-    async_task<int> coroutine2(int in1)
+    // Not used so far
+    async_task<int> coroutine2d(int in1)
     {
-        printf("Layer03::coroutine2(): part 1\n");
-        int ret1 = co_await m_layer02.coroutine1(in1, out1);
-        printf("Layer03::coroutine2(): out1 = %d, ret1 = %d\n", out1, ret1);
-        printf("Layer03::coroutine2(): part 2\n");
+        printf("Layer03::coroutine2d(): part 1\n");
+        int ret1 = co_await m_layer02.coroutine1d(in1, out1);
+        printf("Layer03::coroutine2d(): out1 = %d, ret1 = %d\n", out1, ret1);
+        printf("Layer03::coroutine2d(): part 2\n");
         co_return ret1;
     }
 
-    async_task<int> coroutine1u(int in1, int& out11, int& out12) override
+    /**
+     * @brief upstream coroutine at the highest level: we invoke our own downstream coroutine
+     * that will go down the protocol stack
+     *
+     */
+    async_task<int> coroutine1u(int in1, int& out1, int& out2) override
     {
         printf("Layer03::coroutine1u(): part 1\n");
-        int ret1 = co_await coroutine1(in1);
-        printf("Layer03::coroutine1u(): out11 = %d, out12 = %d, ret1 = %d\n", out11, out12, ret1);
+        int ret1 = co_await coroutine1d(in1);
+        printf("Layer03::coroutine1u(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
         printf("Layer03::coroutine1u(): part 2\n");
         co_return ret1;
     }
@@ -242,19 +298,34 @@ private:
     int    out1{0};
 };
 
+/**
+ * Object declaration section
+ *
+ */
+ // Forward declaration of objects
 extern Layer01d layer01;
 extern Layer02d layer02;
 extern Layer03d layer03;
 
-RemoteObject1Co remoteObj1co{ remoteObj1, layer01 };
-Layer01d layer01{ remoteObj1co, layer02 };
-Layer02d layer02{ layer01, layer03 };
-Layer03d layer03{ layer02 };
+//                            lower layer    upper layer
+RemoteObject1 remoteObj1;
+RemoteObject1Co remoteObj1co{ remoteObj1,    layer01 };
+Layer01d layer01            { remoteObj1co,  layer02 };
+Layer02d layer02            { layer01,       layer03 };
+Layer03d layer03            { layer02                };
 
+EventQueue eventQueue;
+
+/**
+ * @brief main function
+ *
+ */
 int main()
 {
     printf("main();\n");
-    eventQueue.push([]() { layer03.coroutine1(2); });
+    // Downstream example
+    eventQueue.push([]() { layer03.coroutine1d(2); });
+    // Upstream example
     eventQueue.push([]() { remoteObj1co.start_op1u(3, 4); });
     eventQueue.run();
     return 0;

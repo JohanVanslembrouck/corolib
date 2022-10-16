@@ -26,14 +26,14 @@ public:
         remoteObj1.sendc_op1(gin11, gin12, 
             [this](int out1, int out2, int ret1) { this->function1a(0, out1, out2, ret1); });
         remoteObj2.sendc_op1(gin11, gin12, 
-            [this](int out1, int out2, int ret1) { this->function1a(1,  out1, out2, ret1); });
+            [this](int out1, int out2, int ret1) { this->function1a(1, out1, out2, ret1); });
         remoteObj3.sendc_op1(gin11, gin12, 
             [this](int out1, int out2, int ret1) { this->function1a(2, out1, out2, ret1); });
     }
 
-    void function1a(int index, int out11, int out12, int ret1)
+    void function1a(int index, int out1, int out2, int ret1)
     {
-        printf("Class01::function1a(%d, %d, %d)\n", out11, out12, ret1);
+        printf("Class01::function1a(%d, %d, %d)\n", out1, out2, ret1);
         callfinished[index] = true;
         result[index] = ret1;
         if (callfinished[0] && callfinished[1] && callfinished[2])
@@ -46,6 +46,8 @@ private:
 };
 
 Class01 class01;
+
+EventQueue eventQueue;
 
 int main()
 {

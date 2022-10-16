@@ -63,31 +63,7 @@ void Class02::start_operation1_impl(const int idx)
             print(PRI1, "Class02::eventHandler[%p, %d](%d): Warning: om_async_operation_t == nullptr\n", this, idx, i);
         }
     };
-#if 0
-    if (m_useMode == USE_NONE)
-    {
-        // Nothing to be done: eventHandler[idx] should be called "manually" by the application
-    }
-    else if (m_useMode == USE_EVENTQUEUE)
-    {
-        eventQueue.push(eventHandler[idx]);
-    }
-    else if (m_useMode == USE_THREAD)
-    {
-        std::thread thread1([this, idx]() {
-            print(PRI1, "Class02::start_operation1_impl(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-            print(PRI1, "Class02::start_operation1_impl(): thread1: this->eventHandler[idx](10);\n", idx);
-            this->eventHandler[idx](10);
-            print(PRI1, "Class02::start_operation1_impl(): thread1: return;\n");
-            });
-        thread1.detach();
-    }
-    else if (m_useMode == USE_IMMEDIATE_COMPLETION)
-    {
-        eventHandler[idx](10);
-    }
-#else
+
     switch (m_useMode)
     {
     case USE_NONE:
@@ -112,7 +88,6 @@ void Class02::start_operation1_impl(const int idx)
         eventHandler[idx](10);
         break;
     }
-#endif
 }
 
 async_operation<int> Class02::start_operation2(int bias)

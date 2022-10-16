@@ -34,8 +34,35 @@ struct op2_ret_t
 using lambda_op1_ret_t = typename std::function<void(op1_ret_t)>;
 using lambda_op2_ret_t = typename std::function<void(op2_ret_t)>;
 
-int start_time;
-int get_current_time() { return 0; }
-int elapsed_time;
+
+// There isn't an I/O system that will place the lambda in the event queue
+// when an I/O event arrives. Therefore we do it ourselves.
+
+extern EventQueue eventQueue;
+
+inline void registerCB(lambda_3int_t lambda)
+{
+    eventQueue.push([lambda]() { lambda(1, 2, 3); });
+}
+
+inline void registerCB(lambda_2int_t lambda)
+{
+    eventQueue.push([lambda]() { lambda(1, 2); });
+}
+
+inline void registerCB(lambda_void_t lambda)
+{
+    eventQueue.push(lambda);
+}
+
+inline void registerCB(lambda_op1_ret_t lambda)
+{
+    eventQueue.push([lambda]() { lambda({ 1, 2, 3 }); });
+}
+
+inline void registerCB(lambda_op2_ret_t lambda)
+{
+    eventQueue.push([lambda]() { lambda({1, 2 }); });
+}
 
 #endif

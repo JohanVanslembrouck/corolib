@@ -14,11 +14,14 @@
 
 #include "p1400.h"
 
-RemoteObjectImpl remoteObjImpl;
-
 class RemoteObject1
 {
 public:
+    RemoteObject1(RemoteObjectImpl& remoteObjImpl)
+		: m_remoteObjImpl(remoteObjImpl)
+	{
+	}
+
     Msg op1(Msg msg)
     {
         // Write part
@@ -33,29 +36,33 @@ public:
         {
             int bytestowrite = (buflength - offset) > SEGMENT_LENGTH ? SEGMENT_LENGTH : buflength - offset;
             printf("RemoteObject1::op1(): calling write_segment: offset = %d\n", offset);
-            remoteObjImpl.write_segment(writebuffer.buffer(), offset, bytestowrite);
+            m_remoteObjImpl.write_segment(writebuffer.buffer(), offset, bytestowrite);
         }
         
         // Read part
         bool completed = false;
         Buffer readbuffer;
         Msg res;
-        remoteObjImpl.init();
+        m_remoteObjImpl.init();
         // Read the buffer in segments of size SEGMENT_LENGTH
         // until read_segment reports that the read is complete.
         for (int offset = 0; !completed; offset += SEGMENT_LENGTH)
         {
             printf("RemoteObject1::op1(): calling read_segment: offset = %d\n", offset);
-            completed = remoteObjImpl.read_segment(readbuffer.buffer(), offset, SEGMENT_LENGTH);
+            completed = m_remoteObjImpl.read_segment(readbuffer.buffer(), offset, SEGMENT_LENGTH);
         }
         // Unmarshall Msg from readbuffer
         // (code not present)
         // return the msg to the caller
         return res;
     }
+protected:
+	RemoteObjectImpl& m_remoteObjImpl;
 };
 
-RemoteObject1 remoteObj1;
+
+RemoteObjectImpl remoteObjImpl;
+RemoteObject1 remoteObj1{remoteObjImpl};
 
 class Class01
 {
@@ -81,6 +88,8 @@ public:
 };
 
 Class01 class01;
+
+EventQueue eventQueue;
 
 int main() {
     printf("main();\n");

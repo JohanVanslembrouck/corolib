@@ -68,6 +68,8 @@ public:
 
 Class01 class01;
 
+EventQueue eventQueue;
+
 int main() {
     printf("main2();\n");
     eventQueue.push([]() { class01.function1(); });

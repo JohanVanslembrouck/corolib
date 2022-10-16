@@ -40,6 +40,4 @@ private:
     std::queue<std::function<void(void)>> q;
 };
 
-EventQueue eventQueue;
-
 #endif

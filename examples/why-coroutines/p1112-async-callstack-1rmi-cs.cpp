@@ -1,6 +1,17 @@
 /**
  * @file p1112-async-callstack-1rmi-cs.cpp
- * @brief
+ * @brief Asynchronous implementation of p1100-sync-callstack-1rmi.cpp.
+ * Fixes the problem described in p1110-async-callstack-1rmi.cpp.
+ *
+ * Instead of passing a lambda while calling a function at a lower layer,
+ * a higher layer passes a CallStack object to the lower layer.
+ * The highest layer creates a CallStack object for every asynchronous function 
+ * it calls on its lower layer.
+ * The CallStack object is also passed vhen returning from a lower layer to a higher layer,
+ *
+ * The CallStack contains a stack<void*> data member that stores a stack of lambdas.
+ * Different CallStack objects may thus store lambdas that correspond to a different callback
+ * function at a given layer.
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
@@ -21,6 +32,12 @@ typedef std::function<void(CallStack&)>                 lambda_cs_t;
 
 using namespace std;
 
+/**
+ * @brief Callstack allows building a stack of lambdas that is passed
+ * along the layers when one layer calls the function of the lower layer.
+ * When returning "up the call chain", every layer knows which lambda to use.
+ *
+ */
 class CallStack
 {
     stack<void*> q;
@@ -59,12 +76,13 @@ public:
     }
 };
 
+
 class RemoteObject1
 {
 public:
-    void sendc_op1(CallStack& callstack, int in11, int in12)
+    void sendc_op1(CallStack& callstack, int in1, int in2)
     {
-        printf("RemoteObject1::sendc_op1(callstack %d, %d)\n", in11, in12);
+        printf("RemoteObject1::sendc_op1(callstack %d, %d)\n", in1, in2);
         lambda_cs_3int_t* op = static_cast<lambda_cs_3int_t*>(callstack.top_pop());
         eventQueue.push(
             [op, &callstack]()
@@ -78,6 +96,12 @@ public:
 
 RemoteObject1 remoteObj1;
 
+/**
+ * @brief Layer01 is the lowest level in the application stack
+ * Lower layer: RemoteObject1
+ * Upper layer: Layer02 (but not known by Layer01)
+ *
+ */
 class Layer01
 {
 public:
@@ -87,21 +111,21 @@ public:
     {
         printf("Layer01::function1(): part 1\n");
         lambda_cs_3int_t* op = new lambda_cs_3int_t(
-            [this](CallStack& callstack, int out1, int out12, int ret1)
+            [this](CallStack& callstack, int out1, int out2, int ret1)
             {
-                this->function1_cb(callstack, out1, out12, ret1);
+                this->function1_cb(callstack, out1, out2, ret1);
             });
         callstack.push(op);
         remoteObj1.sendc_op1(callstack, in1, in1);
     }
 
-    void function1_cb(CallStack& callstack, int out11, int out12, int ret1) 
+    void function1_cb(CallStack& callstack, int out1, int out2, int ret1) 
     {
-        printf("Layer01::function1_cb(%d, %d, %d)\n", out11, out12, ret1);
+        printf("Layer01::function1_cb(%d, %d, %d)\n", out1, out2, ret1);
         printf("Layer01::function1_cb(): part 2\n");
         // call function1_cb of upper layer (Layer02)
         lambda_cs_2int_t* op = static_cast<lambda_cs_2int_t*>(callstack.top_pop());
-        (*op)(callstack, out11, ret1);
+        (*op)(callstack, out1, ret1);
         printf("Layer01::function1_cb(): part 2: delete %p\n", op);
         delete op;
     }
@@ -109,6 +133,11 @@ public:
 
 Layer01 layer01;
 
+/**
+ * @brief Layer02 is the middle layer in the application stack
+ * Lower layer: Layer01
+ * Upper layer: Layer03 (but not known by Layer02)
+ */
 class Layer02
 {
 public:    
@@ -126,9 +155,9 @@ public:
         layer01.function1(callstack, in1);
     }
 
-    void function1_cb(CallStack& callstack, int out11, int ret1)
+    void function1_cb(CallStack& callstack, int out1, int ret1)
     {
-        printf("Layer02::function1_cb(%d, %d)\n", out11, ret1);
+        printf("Layer02::function1_cb(%d, %d)\n", out1, ret1);
         printf("Layer02::function1_cb(): part 2\n");
         // call function1_cb of upper layer (Layer03)
         lambda_cs_1int_t* op = static_cast<lambda_cs_1int_t*>(callstack.top_pop());
@@ -140,6 +169,12 @@ public:
 
 Layer02 layer02;
 
+/**
+ * @brief Layer03 is the upper layer in the application stack
+ * Lower layer: Layer02
+ * Upper layer: application (but not known by Layer03)
+ *
+ */
 class Layer03
 {
 public:
@@ -187,6 +222,8 @@ private:
 };
 
 Layer03 layer03;
+
+EventQueue eventQueue;
 
 int main() {
     printf("main();\n");

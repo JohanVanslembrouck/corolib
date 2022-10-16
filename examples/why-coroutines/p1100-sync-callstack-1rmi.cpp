@@ -1,6 +1,8 @@
 /**
  * @file p1100-sync-callstack-1rmi.cpp
- * @brief
+ * @brief Implementation of a callstack with 3 application layers (Layer03, Layer02, Layer01).
+ * The application calls layer03.function1, which calls layer2.function2, which calls layer1.function1,
+ * which calls remoteOb1.op.
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
@@ -15,6 +17,12 @@
 
 RemoteObject1 remoteObj1;
 
+/**
+ * @brief Layer01 is the lowest level in the application stack
+ * Lower layer: RemoteObject1
+ * Upper layer: Layer02 (but not known by Layer01)
+ *
+ */
 class Layer01
 {
 public:
@@ -30,6 +38,12 @@ public:
 
 Layer01 layer01;
 
+/**
+ * @brief Layer02 is the middle layer in the application stack
+ * Lower layer: Layer01
+ * Upper layer: Layer03 (but not known by Layer02)
+ *
+ */
 class Layer02
 {
 public:
@@ -47,6 +61,12 @@ private:
 
 Layer02 layer02;
 
+/**
+ * @brief Layer03 is the upper layer in the application stack
+ * Lower layer: Layer02
+ * Upper layer: application (but not known by Layer03)
+ *
+ */
 class Layer03
 {
 public:
@@ -72,6 +92,8 @@ private:
 };
 
 Layer03 layer03;
+
+EventQueue eventQueue;
 
 int main() {
     printf("main();\n");

@@ -40,6 +40,8 @@ public:
 
 Class01 class01;
 
+EventQueue eventQueue;
+
 int main()
 {
     printf("main();\n");

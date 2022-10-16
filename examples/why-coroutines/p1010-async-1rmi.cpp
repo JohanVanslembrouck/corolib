@@ -15,6 +15,10 @@
 
 RemoteObject1 remoteObj1;
 
+/**
+ * @brief Asynchronous version of Class01 in p1000-sync-1rmi.cpp
+ *
+ */
 class Class01
 {
 public:
@@ -62,6 +66,8 @@ public:
 };
 
 Class01 class01;
+
+EventQueue eventQueue;
 
 int main()
 {

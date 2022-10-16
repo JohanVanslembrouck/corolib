@@ -662,7 +662,95 @@ struct Class01
 };
 ```
 
-## Case 4: program with nested for loop
+## Case 4: programa with 3 "parallel" RMIs
+
+An application may have to interact with several remote applications in parallel,
+e.g. to collect information from these applications and process that information afterwards.
+
+In the synchronous approach, the interactions with these remote applications has to performed
+in a sequential order. The total delay is the sum of the delay of the individual interactions (RMIs).
+It would be much better if these RMIs can run in parallel, especially of the remote applications
+run on different processors or cores.
+
+It is more efficient, of course, to start the remote operations one after the other and
+collect the responses when they come in. This is possible with the asynchronous approach
+and with coroutines. The total delay will be reduced to about the time of a single remote interaction.
+
+### p1500-sync-3-parallel-rmis.cpp
+
+The application class looks as follows:
+
+```c++
+class Class01
+{
+public:
+    void function1()
+    {
+        printf("Class01::function1()\n");
+        int ret1 = remoteObj1.op1(gin11, gin12, gout11, gout12);
+        int ret2 = remoteObj2.op1(gin11, gin12, gout11, gout12);
+        int ret3 = remoteObj3.op1(gin11, gin12, gout11, gout12);
+        int result = ret1 + ret2 + ret3;
+        printf("Class01::function1(): result = %d\n", result);
+    }
+};
+```
+
+### p1510-async-3-parallel-rmis.cpp
+
+The application class looks as follows:
+
+```c++
+class Class01
+{
+public:
+    void function1()
+    {
+        printf("Class01::function1()\n");
+        remoteObj1.sendc_op1(gin11, gin12, 
+            [this](int out1, int out2, int ret1) { this->function1a(0, out1, out2, ret1); });
+        remoteObj2.sendc_op1(gin11, gin12, 
+            [this](int out1, int out2, int ret1) { this->function1a(1, out1, out2, ret1); });
+        remoteObj3.sendc_op1(gin11, gin12, 
+            [this](int out1, int out2, int ret1) { this->function1a(2, out1, out2, ret1); });
+    }
+
+    void function1a(int index, int out11, int out12, int ret1)
+    {
+        printf("Class01::function1a(%d, %d, %d)\n", out11, out12, ret1);
+        callfinished[index] = true;
+        result[index] = ret1;
+        if (callfinished[0] && callfinished[1] && callfinished[2])
+            printf("Class01::function1a: result = %d\n", result[0] + result[1] + result[2]);
+    }
+    
+private:
+    bool callfinished[3]{ false, false, false };
+    int result[3]{ 0, 0, 0 };
+};
+```
+
+### p1520-coroutines-3-parallel-rmis.cpp
+
+The application class looks as follows:
+
+```c++
+class Class01
+{
+public:
+    async_task<void> coroutine1()
+    {
+        printf("Class01::coroutine1()\n");
+        async_task<int> op1 = remoteObj1co.op1(gin11, gin12, gout11, gout12);
+        async_task<int> op2 = remoteObj2co.op1(gin11, gin12, gout11, gout12);
+        async_task<int> op3 = remoteObj3co.op1(gin11, gin12, gout11, gout12);
+        co_await when_all<async_task<int>>({ &op1, &op2, &op3 });
+        printf("Class01::coroutine1(): result = %d\n", op1.get_result() +  op2.get_result() + op3.get_result());
+    }
+};
+```
+
+## Case 5: program with nested for loop
 
 In this section we consider a function with a nested for-loop (i.e. a for-loop inside another for-loop):
 * The outer for-loop iterates over message lengths from 0 to MAX_MSG_LENGTH.
@@ -774,7 +862,7 @@ public:
 };
 ```
 
-## Case 5: Segmentation: adding two loops at the infrastructure level
+## Case 6: Segmentation: adding two loops at the infrastructure level
 
 This section contains examples that expand on the Case 4 examples.
 

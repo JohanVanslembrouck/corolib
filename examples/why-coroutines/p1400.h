@@ -13,7 +13,7 @@
 #include <assert.h>
 
 #include "common.h"
-#include "variables.h"
+#include "buf+msg.h"
 
 class RemoteObjectImpl
 {
@@ -67,9 +67,7 @@ public:
         printf("RemoteObjectImpl::sendc_write_segment(p, offset = %d, bytestowrite = %d)\n", offset, bytestowrite);
         assert(bytestowrite <= SEGMENT_LENGTH);
         
-        // There isn't an I/O system that will place the lambda in the event queue
-        // when an I/O event arrives. Therefore we do it ourselves.
-        eventQueue.push(lambda);
+        registerCB(lambda);
     }
 
     /**

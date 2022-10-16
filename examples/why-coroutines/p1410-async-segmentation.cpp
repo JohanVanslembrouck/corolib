@@ -16,11 +16,14 @@
 
 using lambda_msg_t = typename std::function<void(Msg)>;
 
-RemoteObjectImpl remoteObjImpl;
-
 class RemoteObject1
 {
 public:
+    RemoteObject1(RemoteObjectImpl& remoteObjImpl)
+		: m_remoteObjImpl(remoteObjImpl)
+	{
+	}
+	
     void init()
     {
         offset = 0;
@@ -38,7 +41,7 @@ public:
         // Write the first segment
         int buflength = writebuffer.length();
         int bytestowrite = (buflength - offset) > SEGMENT_LENGTH ? SEGMENT_LENGTH : buflength - offset;
-        remoteObjImpl.sendc_write_segment(writebuffer.buffer(), offset, bytestowrite,
+        m_remoteObjImpl.sendc_write_segment(writebuffer.buffer(), offset, bytestowrite,
                                             [this]() { this->handle_write_segment(); });
         offset += SEGMENT_LENGTH;
     }
@@ -50,16 +53,16 @@ public:
         if (offset < buflength) {
             printf("RemoteObject1::handle_write_segment(): calling sendc_write_segment\n");
             int bytestowrite = (buflength - offset) > SEGMENT_LENGTH ? SEGMENT_LENGTH : buflength - offset;
-            remoteObjImpl.sendc_write_segment(writebuffer.buffer(), offset, bytestowrite,
+            m_remoteObjImpl.sendc_write_segment(writebuffer.buffer(), offset, bytestowrite,
                                                 [this]() { this->handle_write_segment(); });
             offset += SEGMENT_LENGTH;
         }
         else {
             // Read part
             offset = 0;
-            remoteObjImpl.init();
+            m_remoteObjImpl.init();
             printf("RemoteObject1::handle_write_segment(): calling sendc_read_segment\n");
-            remoteObjImpl.sendc_read_segment(readbuffer.buffer(), offset, SEGMENT_LENGTH, 
+            m_remoteObjImpl.sendc_read_segment(readbuffer.buffer(), offset, SEGMENT_LENGTH, 
                                                             [this](bool res) { this->handle_read_segment(res); });
             offset += SEGMENT_LENGTH;
         }
@@ -70,7 +73,7 @@ public:
         Msg msg;
         if (!complete) {
             printf("RemoteObject1::handle_read_segment(): calling sendc_read_segment\n");
-            remoteObjImpl.sendc_read_segment(readbuffer.buffer(), offset, SEGMENT_LENGTH, 
+            m_remoteObjImpl.sendc_read_segment(readbuffer.buffer(), offset, SEGMENT_LENGTH, 
                                                             [this](bool res) { this->handle_read_segment(res); });
             offset += SEGMENT_LENGTH;
         }
@@ -82,6 +85,9 @@ public:
         }
     }
 
+protected:
+	RemoteObjectImpl& m_remoteObjImpl;
+	
 private:
     int offset = 0;
     Buffer writebuffer;
@@ -90,7 +96,9 @@ private:
     lambda_msg_t lambda;
 };
 
-RemoteObject1 remoteObj1;
+
+RemoteObjectImpl remoteObjImpl;
+RemoteObject1 remoteObj1{remoteObjImpl};
 
 class Class01
 {
@@ -145,6 +153,8 @@ private:
 
 Class01 class01;
 Msg gmsg1;
+
+EventQueue eventQueue;
 
 int main()
 {

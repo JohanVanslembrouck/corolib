@@ -10,7 +10,6 @@
 
 #include "common.h"
 #include "variables.h"
-#include "eventqueue.h"
 
 #include "p1000.h"
 
@@ -24,7 +23,7 @@ class Class01
 {
 public:
     int function1()
-	{
+    {
         printf("Class01::function1(): part 1\n");
         int ret1 = remoteObj1.op1(gin11, gin12, gout11, gout12);
         printf("Class01::function1(): gout11 = %d, gout12 = %d, ret1 = %d\n", gout11, gout12, ret1);
@@ -35,13 +34,12 @@ public:
 
 Class01 class01;
 
-EventQueue eventQueue;
-
 int main()
 {
     printf("main();\n");
-    eventQueue.push([]() { std::thread th(&Class01::function1, &class01); th.join(); });
-    eventQueue.push([]() { std::thread th(&Class01::function1, &class01); th.join(); });
-    eventQueue.run();
+    std::thread th1(&Class01::function1, &class01);
+    std::thread th2(&Class01::function1, &class01);
+    th1.join();
+    th2.join();
     return 0;
 }
