@@ -58,7 +58,6 @@ void CommServer::start_accepting_impl(spCommCore commRWT, int idx)
         [this, idx](const boost::system::error_code& ec)
         {
             print(PRI2, "%p; CommServer::handle_accept(): idx = %d, entry\n", this, idx);
-            async_operation_base* om_async_operation = m_async_operations[idx];
 
             if (m_stop)
             {
@@ -70,8 +69,8 @@ void CommServer::start_accepting_impl(spCommCore commRWT, int idx)
             }
             else
             {
+                async_operation_base* om_async_operation = m_async_operations[idx];
                 print(PRI2, "%p: CommServer::handle_accept(...): idx = %d, om_async_operation = %p\n", this, idx, om_async_operation);
-                //assert(om_async_operation != nullptr);
                 if (om_async_operation)
                 {
                     print(PRI2, "%p: CommServer::handle_accept(...): idx = %d, before om_async_operation->completed();\n", this, idx);

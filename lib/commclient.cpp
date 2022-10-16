@@ -81,7 +81,6 @@ void CommClient::start_connecting_impl(const int idx)
             (void)result_endpoint;
 
             print(PRI2, "%p: CommClient::handle_connect(): idx = %d, entry\n", this, idx);
-            async_operation_base* om_async_operation = m_async_operations[idx];
 
             if (m_stopped)
                 return;
@@ -112,9 +111,9 @@ void CommClient::start_connecting_impl(const int idx)
             else
             {
                 print(PRI2, "%p: CommClient::handle_connect(): idx = %d, Connection successfully established\n", this, idx);
-                        
+                
+                async_operation_base* om_async_operation = m_async_operations[idx];
                 print(PRI2, "%p: CommClient::handle_connect(): idx = %d, om_async_operation = %p\n", this, idx, om_async_operation);
-                //assert(om_async_operation != nullptr);
                 if (om_async_operation)
                 {
                     om_async_operation->completed();

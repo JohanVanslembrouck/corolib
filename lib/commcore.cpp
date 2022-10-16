@@ -108,7 +108,6 @@ void CommCore::start_writing_impl(const int idx, const char* str, int size)
             (void)result_n;
 
             print(PRI2, "%p: CommCore::handle_write(): idx = %d, entry\n", this, idx);
-            async_operation_base* om_async_operation = m_async_operations[idx];
 
             if (m_stopped)
             {
@@ -118,6 +117,7 @@ void CommCore::start_writing_impl(const int idx, const char* str, int size)
 
             if (!error)
             {
+                async_operation_base* om_async_operation = m_async_operations[idx];
                 print(PRI2, "%p: CommCore::handle_write(): idx = %d, om_async_operation = %p\n", this, idx, om_async_operation);
                 if (om_async_operation)
                 {
@@ -155,10 +155,7 @@ void CommCore::start_reading_impl(const int idx, const char ch)
                     std::size_t bytes)
         {
             print(PRI2, "%p: CommCore::handle_read(): idx = %d, entry\n", this, idx);
-            async_operation_base* om_async_operation = m_async_operations[idx];
-            async_operation<std::string>* om_async_operation_t =
-                dynamic_cast<async_operation<std::string>*>(om_async_operation);
-
+           
             if (m_stopped)
             {
                 print(PRI2, "%p: CommCore::handle_read(): idx = %d, stopped\n", this, idx);
@@ -174,34 +171,26 @@ void CommCore::start_reading_impl(const int idx, const char ch)
                 m_read_buffer = m_input_buffer;
 
                 print(PRI3, "%p: CommCore::handle_read(): idx = %d, m_bytes = %d, m_read_buffer = %s\n", this, idx, m_bytes, m_read_buffer.c_str());
-
-                print(PRI2, "%p: CommCore::handle_read(): idx = %d, om_async_operation_t = %p\n", this, idx, om_async_operation_t);
-                if (om_async_operation_t)
-                {
-                    om_async_operation_t->set_result(m_read_buffer);
-                    om_async_operation_t->completed();
-                }
-                else
-                {
-                    // This can occur when the async_operation_base has gone out of scope.
-                    print(PRI1, "%p: CommCore::handle_read(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
-                }
             }
             else
             {
-                print(PRI1, "%p: CommCore::handle_read(): idx = %d, Error on read: %s\n", this, idx, error.message().c_str());
-                // Inform the application level on the error so it can take action.
-                if (om_async_operation_t)
-                {
-                    om_async_operation_t->set_result("EOF");
-                    om_async_operation_t->completed();
-                }
-                else
-                {
-                    // This can occur when the async_operation_base has gone out of scope.
-                    print(PRI1, "%p: CommCore::handle_read(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
-                }
+                m_read_buffer = "EOF";
             }
+
+            async_operation_base* om_async_operation = m_async_operations[idx];
+            async_operation<std::string>* om_async_operation_t =
+                dynamic_cast<async_operation<std::string>*>(om_async_operation);
+            if (om_async_operation_t)
+            {
+                om_async_operation_t->set_result(m_read_buffer);
+                om_async_operation_t->completed();
+            }
+            else
+            {
+                // This can occur when the async_operation_base has gone out of scope.
+                print(PRI1, "%p: CommCore::handle_read(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
+            }
+
             print(PRI2, "%p: CommCore::handle_read(): idx = %d, exit\n\n", this, idx);
         });
 }
@@ -216,8 +205,7 @@ void CommCore::start_timer_impl(const int idx, steady_timer& tmr, int ms)
         [this, idx](const boost::system::error_code& error)
         {
             print(PRI2, "%p: CommCore::handle_timer(): idx = %d, entry\n", this, idx);
-            async_operation_base* om_async_operation = m_async_operations[idx];
-
+            
             if (m_stopped)
             {
                 print(PRI2, "%p: CommCore::handle_timer(): idx = %d, stopped\n", idx);
@@ -226,6 +214,7 @@ void CommCore::start_timer_impl(const int idx, steady_timer& tmr, int ms)
 
             if (!error)
             {
+                async_operation_base* om_async_operation = m_async_operations[idx];
                 print(PRI2, "%p: CommCore::handle_timer(): idx = %d, om_async_operation = %p\n", this, idx, om_async_operation);
                 if (om_async_operation)
                 {
