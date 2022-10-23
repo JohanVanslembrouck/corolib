@@ -256,7 +256,7 @@ awaitable<int> coroutine1_compiled2()
 
         print(PRI1, "coroutine1(): co_return 42 + i;\n");
         //co_return 42 + i;
-        __context->_promise.return_value(42 + 1);
+        __context->_promise.return_value(42 + i);
         goto __final_suspend;
     }
     catch (...) {
@@ -299,7 +299,7 @@ awaitable<int> coroutine1_compiled2a()
 
         print(PRI1, "coroutine1(): co_return 42 + i;\n");
         //co_return 42 + i;
-        __context->_promise.return_value(42 + 1);
+        __context->_promise.return_value(42 + i);
         goto __final_suspend;
     }
     catch (...) {

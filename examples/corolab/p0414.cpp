@@ -137,8 +137,8 @@ struct eager {
         friend struct eager;
 
         promise_type() :
+            m_value{},
             m_awaiting(nullptr),
-            m_value(0),
             m_wait_for_signal(false) {
             print("%p: eager::promise_type::promise_type()\n", this);
         }
@@ -186,8 +186,8 @@ struct eager {
     private:
         T m_value;
         CSemaphore m_sema;
-        bool m_wait_for_signal;
         std::coroutine_handle<> m_awaiting;
+        bool m_wait_for_signal;
     };
 
     handle_type coro;

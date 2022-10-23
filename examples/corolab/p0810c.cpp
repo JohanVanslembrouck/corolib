@@ -192,6 +192,7 @@ struct oneway_task
 struct auto_reset_event {
 
     std::coroutine_handle<> m_awaiting;
+    bool m_ready;
 
     auto_reset_event()
         : m_awaiting(nullptr)
@@ -258,8 +259,6 @@ struct auto_reset_event {
 
         return awaiter{ *this };
     }
-
-    bool m_ready;
 };
 
 
@@ -374,8 +373,8 @@ struct eager {
         friend struct eager;
 
         promise_type() :
+            m_value{},
             m_awaiting(nullptr),
-            m_value(0),
             m_wait_for_signal(false) {
             print(PRI2, "%p: eager::promise_type::promise_type()\n", this);
         }
@@ -437,8 +436,8 @@ public:
     async_operation(CommService* s = nullptr, int index = 0)
         : m_service(s)
         , m_awaiting(nullptr)
-        , m_ready(false)
         , m_index(index)
+        , m_ready(false)
     {
         print(PRI2, "%p: async_operation::async_operation(CommService* s = %p)\n", this, s);
         if (m_service) {
@@ -461,8 +460,8 @@ public:
     async_operation(async_operation&& s)
         : m_service(s.m_service)
         , m_awaiting(s.m_awaiting)
-        , m_ready(s.m_ready)
         , m_index(s.m_index)
+        , m_ready(s.m_ready)
     {
         print(PRI2, "%p: async_operation::async_operation(async_operation&& s = %p)\n", this, &s);
 
@@ -475,7 +474,7 @@ public:
 
         s.m_service = nullptr;
         s.m_awaiting = nullptr;
-        //s.m_waiting_coroutine = false;
+        //s.m_index = -1;
         s.m_ready = false;
     }
 
@@ -486,8 +485,8 @@ public:
 
         m_service = s.m_service;
         m_awaiting = s.m_awaiting;
-        m_ready = s.m_ready;
         m_index = s.m_index;
+        m_ready = s.m_ready;
         // Tell the CommService we are at ]nother address after the move.
         m_service->m_async_operations[m_index] = this;
 
@@ -497,6 +496,7 @@ public:
 
         s.m_service = nullptr;
         s.m_awaiting = nullptr;
+        //s.m_index = -1;
         s.m_ready = false;
         return *this;
     }

@@ -671,8 +671,6 @@ async_task<int> mainflowWA(std::initializer_list<client*> clients)
     async_operation asyncsc[3];
     async_operation asyncsr[3];
 
-    int sz = clients.size();
-
     print("mainflow: begin\n");
     for (int i = 0; i < 3; i++)
     {

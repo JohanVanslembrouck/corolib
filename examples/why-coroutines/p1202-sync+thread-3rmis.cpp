@@ -28,10 +28,12 @@ public:
         // 1 Do stuff
         if (ret1 == gval1) {
             int ret2 = remoteObj2.op2(gin21, gin22, gout21);
+            (void)ret2;
             // 2 Do stuff
         }
         else {
             int ret3 = remoteObj3.op3(gin31, gout31, gout32);
+            (void)ret3;
             // 3 Do stuff
         }
     }

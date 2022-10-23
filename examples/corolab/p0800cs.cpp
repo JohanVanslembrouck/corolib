@@ -256,15 +256,15 @@ public:
 
     async_operation(async_operation&& s)
         : m_service(s.m_service)
+        , m_awaiting(s.m_awaiting)
         , m_ready(s.m_ready)
         , m_waiting_coroutine(s.m_waiting_coroutine)
-        , m_awaiting(s.m_awaiting)
     {
         print(PRI2, "%p: async_operation::async_operation(eager&& s)\n", this);
         s.m_service = nullptr;
+        s.m_awaiting = nullptr;
         s.m_ready = false;
         s.m_waiting_coroutine = false;
-        s.m_awaiting = nullptr;
     }
 
     async_operation& operator = (const async_operation&) = delete;
@@ -272,12 +272,12 @@ public:
     async_operation& operator = (async_operation&& s) {
         print(PRI2, "%p: async_operation::async_operation = (async_operation&& s)\n", this);
         m_service = s.m_service;
-        m_waiting_coroutine = s.m_waiting_coroutine;
         m_awaiting = s.m_awaiting;
-
+        m_waiting_coroutine = s.m_waiting_coroutine;
+       
         s.m_service = nullptr;
-        s.m_waiting_coroutine = false;
         s.m_awaiting = nullptr;
+        s.m_waiting_coroutine = false;
         return *this;
     }
 
@@ -328,8 +328,8 @@ public:
 private:
     CommService* m_service;
     std::coroutine_handle<> m_awaiting;
-    bool m_waiting_coroutine;
     bool m_ready;
+    bool m_waiting_coroutine;
 };
 
 // -----------------------------------------------------------------
