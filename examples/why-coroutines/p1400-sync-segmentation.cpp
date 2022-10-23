@@ -80,6 +80,7 @@ public:
             {
                 printf("Class01::function1(): i = %d, j = %d, counter = %d\n", i, j, counter++);
                 Msg res = remoteObj1.op1(msg);
+                (void)res;
                 // Do something with msg
             }
         }

@@ -189,6 +189,7 @@ struct Consumer : public Worker<Q> {
     {
         for (int i = 0; i < QUEUE_SIZE * 1000 + QUEUE_SIZE / 2; i++) {
             T v = Worker<Q>::q_->pop();
+            (void)v;
         }
     }
 };

@@ -177,7 +177,6 @@ public:
 	async_task<int> mainflow()
 	{
 		print(PRI1, "mainflow: begin\n");
-		int counter = 0;
 
 		for (int i = 0; i < 10; i++)
 		{

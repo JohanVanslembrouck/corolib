@@ -162,6 +162,7 @@ public:
         
         print(PRI1, "main_one_client: int i = co_await rcr;\n");
         int i = co_await rcr;
+        (void)i;
 
         print(PRI1, "mainflow_one_client: co_return;\n");
         co_return;

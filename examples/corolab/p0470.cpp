@@ -68,7 +68,7 @@ struct syncr {
         print("%p: syncr::await_suspend(...): entry\n", this);
         this->m_awaitingCoroutine = awaiting;
 
-        std::thread thread1([=]() {
+        std::thread thread1([=, this]() {
             print("%p: syncr::await_suspend(...): thread1: this->wait();\n", this);
             this->wait();
             print("%p: syncr::await_suspend(...): thread1: awaiting.resume();\n", this);

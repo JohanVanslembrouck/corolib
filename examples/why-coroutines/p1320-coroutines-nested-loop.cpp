@@ -39,6 +39,7 @@ public:
                 printf("Class02::coroutine1(): i = %d, j = %d, counter = %d\n", i, j, counter++);
                 async_operation<int> op1 = remoteObj1co.start_op1(msg);
                 int ret1 = co_await op1;
+                (void)ret1;
             }
         }
         elapsed_time = get_current_time() - start_time;

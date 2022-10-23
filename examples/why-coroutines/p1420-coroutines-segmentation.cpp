@@ -80,6 +80,7 @@ public:
                 printf("Class01::coroutine1(): i = %d, j = %d, counter = %d\n", i, j, counter++);
                 async_task<Msg> op1 = remoteObj1co.op1(msg);
                 Msg res = co_await op1;
+                (void)res;
                 // Do something with msg
             }
         }

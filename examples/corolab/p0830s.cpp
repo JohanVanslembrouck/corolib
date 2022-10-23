@@ -55,8 +55,8 @@ struct Clientx
     explicit Clientx(boost::asio::io_context& ioContext) :
         mReadBuffer{"Hello World\n"},
         mSendBuffer{},
-        mcounter(5),
-        mSocket{ioContext}
+        mSocket{ ioContext },
+        mcounter(5)
     {
         print("Clientx::Clientx()\n");
     }

@@ -78,6 +78,7 @@ struct async_task {
         friend struct async_task;
 
         promise_type() :
+            m_value{},
             m_awaiting(nullptr),
             m_ready(false),
             m_wait_for_signal(false),
@@ -91,7 +92,7 @@ struct async_task {
 
         auto return_value(T v) {
             print(PRI2, "%p: async_task::promise_type::return_value(T v): begin\n", this);
-            value = v;
+            m_value = v;
             m_ready = true;
             if (m_waiting_coroutine) {
                 print(PRI2, "%p: async_task::promise_type::return_value(T v): before m_awaiting.resume();\n", this);
@@ -127,11 +128,11 @@ struct async_task {
         }
 
     private:
-        T value;
-        bool m_ready;
+        T m_value;
         CSemaphore sema;
-        bool m_wait_for_signal;
         std::coroutine_handle<> m_awaiting;
+        bool m_ready;
+        bool m_wait_for_signal;
         bool m_waiting_coroutine;
     };
 
@@ -749,8 +750,6 @@ async_task<int> mainflowWA(std::initializer_list<client*> clients)
     async_operation asyncsc[3];
     async_operation asyncsw[3];
     async_operation asyncsr[3];
-
-    int sz = clients.size();
 
     print(PRI2, "mainflow: begin\n");
     for (int i = 0; i < 3; i++)

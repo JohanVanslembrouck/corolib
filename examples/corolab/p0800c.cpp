@@ -347,8 +347,6 @@ private:
 
     void start_write(const char* str, int size)
     {
-        static int counter = 0;
-
         print(PRI2, "%p: CommClient::start_write(): m_async_operation = %p\n", this, m_async_operation);
 
         if (stopped_)

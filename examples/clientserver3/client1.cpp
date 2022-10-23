@@ -184,22 +184,26 @@ public:
             async_task<Resp1> res1 = operation1(Req1{});
             print(PRI1, "mainflow: Resp1 resp1 = co_await res1\n");
             Resp1 resp1 = co_await res1;
+            (void)resp1;
 
             print(PRI1, "mainflow: async_task<Resp2> res2 = operation2(Req2{})\n");
             async_task<Resp2> res2 = operation2(Req2{});
             print(PRI1, "mainflow: Resp2 resp2 = co_await res2\n");
             Resp2 resp2 = co_await res2;
+            (void)resp2;
 
             print(PRI1, "mainflow: async_task<Resp3> res3 = operation3(Req3{})\n");
             async_task<Resp3> res3 = operation3(Req3{});
             print(PRI1, "mainflow: Resp3 resp3 = co_await res3\n");
             Resp3 resp3 = co_await res3;
+            (void)resp3;
 
             print(PRI1, "mainflow: async_task<Resp4> res4 = operation4(Req4{})\n");
             async_task<Resp4> res4 = operation4(Req4{});
             print(PRI1, "mainflow: Resp4 resp4 = co_await res4\n");
             Resp4 resp4 = co_await res4;
-            
+            (void)resp4;
+
             // Delaying
             steady_timer client_timer(ioContext);
             print(PRI1, "mainflow: async_operation<void> st = start_timer(1000);\n");

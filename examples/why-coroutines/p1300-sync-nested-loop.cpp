@@ -32,6 +32,7 @@ public:
             {
                 printf("Class04::function1(): i = %d, j = %d, counter = %d\n", i, j, counter++);
                 int ret1 = remoteObj1.op1(msg);
+                (void)ret1;
             }
         }
         elapsed_time = get_current_time() - start_time;
