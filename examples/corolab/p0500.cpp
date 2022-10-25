@@ -120,7 +120,7 @@ public:
         fprintf(stderr, "resume_consumer = %d\n", resume_consumer);
         fprintf(stderr, "resume_producer = %d\n", resume_producer);
 
-        for (int i = 0; i < Q_SIZE; i++)
+        for (unsigned long i = 0; i < Q_SIZE; i++)
         {
             fprintf(stderr, "%d ", ptr_array_[i]);
             if ((i + 1) % 8 == 0)

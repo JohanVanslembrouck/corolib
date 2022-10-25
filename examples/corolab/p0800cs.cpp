@@ -231,9 +231,9 @@ class async_operation {
 public:
     async_operation(CommService* s = nullptr, int index = 0)
         : m_service(s)
+        , m_awaiting(nullptr)
         , m_ready(false)
         , m_waiting_coroutine(false)
-        , m_awaiting(nullptr)
     {
         print(PRI2, "%p: async_operation::async_operation(CommService* s = %p)\n", this, s);
 

@@ -197,7 +197,7 @@ void TRxThreadQueueCor<T, Q_SIZE>::printcontent()
     fprintf(stderr, "pop_not_ready  = %d\n", pop_not_ready);
     fprintf(stderr, "resuming_pop   = %d\n", resuming_pop);
     fprintf(stderr, "pop_resumed    = %d\n", pop_resumed);
-    for (int i = 0; i < Q_SIZE; i++)
+    for (unsigned long i = 0; i < Q_SIZE; i++)
     {
         fprintf(stderr, "%d ", ptr_array_[i]);
         if ((i + 1) % 8 == 0)
@@ -376,6 +376,7 @@ oneway_task cons_coroutine(TRxThreadQueueCor<T, Q_SIZE>& trxcor_q, int nrIterati
         print(PRI2, "cons_coroutine: i = %d\n", i);
         TRxThreadQueueCor_pop<T, Q_SIZE> ss = trxcor_q.pop();
         T v = co_await ss;
+        (void)v;
     }
     print(PRI1, "cons_coroutine: end\n");
 }

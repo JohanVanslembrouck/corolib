@@ -35,7 +35,7 @@
 namespace
 {
 std::atomic_bool stop{false};
-
+#if 0
 std::size_t completionCondition(
         std::string& buffer,
         const boost::system::error_code& /*error*/, /// let's ignore
@@ -48,7 +48,7 @@ std::size_t completionCondition(
     }
     return buffer[bytes_transferred - 1] == '\n' ? 0 : 1;
 }
-
+#endif
 /// client session
 struct Clientx
 {

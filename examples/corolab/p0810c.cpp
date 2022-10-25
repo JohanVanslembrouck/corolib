@@ -421,9 +421,9 @@ struct eager {
 
     private:
         T m_value;
+        std::coroutine_handle<> m_awaiting;
         CSemaphore m_sema;
         bool m_wait_for_signal;
-        std::coroutine_handle<> m_awaiting;
     };
 
     handle_type coro;

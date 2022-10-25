@@ -241,7 +241,7 @@ void TRxThreadQueueCor<T, Q_SIZE>::printcontent()
     fprintf(stderr, "pop_not_ready  = %d\n", pop_not_ready);
     fprintf(stderr, "resuming_pop   = %d\n", resuming_pop);
     fprintf(stderr, "pop_resumed    = %d\n", pop_resumed);
-    for (int i = 0; i < Q_SIZE; i++)
+    for (unsigned long i = 0; i < Q_SIZE; i++)
     {
         fprintf(stderr, "%d ", ptr_array_[i]);
         if ((i + 1) % 8 == 0)
@@ -405,7 +405,7 @@ template<typename T, unsigned long Q_SIZE>
 syncr<int> prod_coroutine(TRxThreadQueueCor<T, Q_SIZE>& trxcor_q)
 {
     print(PRI1, "prod_coroutine: begin\n");
-    for (int i = 0; i < Q_SIZE * 1000 + Q_SIZE / 2; i++)
+    for (unsigned long i = 0; i < Q_SIZE * 1000 + Q_SIZE / 2; i++)
     {
         print(PRI2, "prod_coroutine: i = %d\n", i);
         //std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -433,7 +433,7 @@ syncr<int> cons_coroutine(TRxThreadQueueCor<T, Q_SIZE>& trxcor_q)
 {
     print(PRI1, "cons_coroutine: begin\n");
     T v = 0;
-    for (int i = 0; i < Q_SIZE * 1000 + Q_SIZE / 2; i++)
+    for (unsigned long i = 0; i < Q_SIZE * 1000 + Q_SIZE / 2; i++)
     {
         print(PRI2, "cons_coroutine: i = %d, v = %d\n", i, v);
         //std::this_thread::sleep_for(std::chrono::milliseconds(1));
