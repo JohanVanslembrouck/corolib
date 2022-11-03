@@ -38,8 +38,8 @@ CommClient::CommClient(boost::asio::io_context& io_context,
 void CommClient::start()
 {
     print(PRI2, "%p: CommClient::start()\n", this);
-    int index = get_free_index();
-    assert(m_async_operations[index] == nullptr);
+    int index = get_free_index_ts();
+    assert(m_async_operation_info[index].async_operation == nullptr);
     start_connecting_impl(index);
 
     // Start the deadline actor. You will note that we're not setting any
@@ -51,8 +51,8 @@ void CommClient::start()
 async_operation<void> CommClient::start_connecting()
 {
     print(PRI2, "%p: CommClient::start_connecting()\n", this);
-    int index = get_free_index();
-    async_operation<void> ret{ this, index };
+    int index = get_free_index_ts();
+    async_operation<void> ret{ this, index, true };
     start_connecting_impl(index);
     return ret;
 }
@@ -71,12 +71,14 @@ void CommClient::start_connecting_impl(const int idx)
     // Set a deadline for the connect operation.
     m_deadline.expires_after(std::chrono::seconds(5));
 
+    std::chrono::high_resolution_clock::time_point now = m_async_operation_info[idx].start;
+
     // Start the asynchronous connect operation.
     boost::asio::async_connect(
         m_socket,
         eps,
-        [this, idx](const boost::system::error_code& error,
-                    const tcp::endpoint& result_endpoint)
+        [this, idx, now](const boost::system::error_code& error,
+                         const tcp::endpoint& result_endpoint)
         {
             (void)result_endpoint;
 
@@ -111,18 +113,7 @@ void CommClient::start_connecting_impl(const int idx)
             else
             {
                 print(PRI2, "%p: CommClient::handle_connect(): idx = %d, Connection successfully established\n", this, idx);
-                
-                async_operation_base* om_async_operation = m_async_operations[idx];
-                print(PRI2, "%p: CommClient::handle_connect(): idx = %d, om_async_operation = %p\n", this, idx, om_async_operation);
-                if (om_async_operation)
-                {
-                    om_async_operation->completed();
-                }
-                else
-                {
-                    // This can occur when the async_operation_base has gone out of scope.
-                    print(PRI1, "%p: CommCore::handle_connect(): idx = %d, Warning: om_async_operation == nullptr\n", this, idx);
-                }
+                completionHandler_ts_v(idx, now);
             }
             print(PRI2, "%p: CommClient::handle_connect(): idx = %d, exit\n\n", this, idx);
         });

@@ -14,4 +14,5 @@ include_directories(../../include ${Boost_INCLUDE_DIR})
 
 link_directories(${Boost_LIBRARY_DIR})
 
-add_executable(timer01 timermain01.cpp timer01.cpp ../../lib/print.cpp ../../lib/async_operation.cpp)
+add_executable(timer01 timermain01.cpp timer01.cpp)
+target_link_libraries(timer01 corolib)

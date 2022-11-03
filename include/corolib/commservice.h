@@ -25,63 +25,142 @@
 #define _COMMSERVICE_H_
 
 #include <string>
+#include <chrono>
 #include <assert.h>
+
+#include "async_operation.h"
 
 namespace corolib
 {
     class async_operation_base;
+
+    struct async_operation_info {
+        async_operation_base* async_operation;
+        std::chrono::high_resolution_clock::time_point start;
+    };
 
     class CommService {
         friend class async_operation_base;
     public:
         virtual std::string get_result() { return "empty";  }
 
-#if 0
-        int get_free_index0()
-        {
-            m_index = (m_index + 1) & (NROPERATIONS - 1);
-            assert(m_async_operations[m_index] == nullptr);
-            return m_index;
-        }
-#endif
-
         /**
          * @brief get_free_index iterates over the array (used in a circular way)
-		 * for a maximum of NROPERATIONS / 2 until a free entry is found. 
-		 * We assume that half of the entries can be reserved for a longer time.
-		 * These entries have to be skipped.
+         * for a maximum of NROPERATIONS / 2 until a free entry is found. 
+         * We assume that half of the entries can be reserved for a longer time.
+         * These entries have to be skipped.
          * @return index to the first free index or -1 if none is founc
          */
-        int get_free_index()
+        int get_free_index();
+
+        int get_free_index_ts();
+
+        template<typename TYPE>
+        void completionHandler(int idx, TYPE in)
         {
-            for (int i = 0; i < NROPERATIONS / 2; i++)
+            print(PRI1, "%p: CommService::completionHandler(%d)\n", this, idx);
+
+            async_operation_base* om_async_operation = m_async_operations[idx];
+            async_operation<TYPE>* om_async_operation_t =
+                dynamic_cast<async_operation<TYPE>*>(om_async_operation);
+
+            if (om_async_operation_t)
             {
-                m_index = (m_index + 1) & (NROPERATIONS - 1);
-                if (m_async_operations[m_index] == nullptr)
+                print(PRI1, "%p: CommService::completionHandler(%d): om_async_operation_t->set_result(in)\n", this, idx);
+                om_async_operation_t->set_result(in);
+                print(PRI1, "%p: CommService::completionHandler(%d): om_async_operation_t->completed()\n", this, idx);
+                om_async_operation_t->completed();
+            }
+            else
+            {
+                // This can occur when the async_operation_base has gone out of scope.
+                print(PRI1, "%p: CommService::completionHandler(%d): Warning: om_async_operation_t == nullptr\n", this, idx);
+            }
+        }
+
+        void completionHandler_v(int idx)
+        {
+            print(PRI1, "%p: CommService::completionHandler(%d)\n", this, idx);
+
+            async_operation_base* om_async_operation = m_async_operations[idx];
+            if (om_async_operation)
+            {
+                print(PRI1, "%p: CommService::completionHandler(%d): om_async_operation->completed()\n", this, idx);
+                om_async_operation->completed();
+            }
+            else
+            {
+                // This can occur when the async_operation_base has gone out of scope.
+                print(PRI1, "%p: CommService::completionHandler(%d): Warning: om_async_operation_t == nullptr\n", this, idx);
+            }
+        }
+
+        template<typename TYPE>
+        void completionHandler_ts(const int idx, std::chrono::high_resolution_clock::time_point start_time, TYPE in)
+        {
+            print(PRI1, "%p: CommService::completionHandler_ts(%d)\n", this, idx);
+
+            async_operation_base* om_async_operation = m_async_operation_info[idx].async_operation;
+            async_operation<TYPE>* om_async_operation_t =
+                dynamic_cast<async_operation<TYPE>*>(om_async_operation);
+
+            if (om_async_operation_t)
+            {
+                if (m_async_operation_info[idx].start == start_time)
                 {
-                    // Found free entry
-                    return m_index;
+                    print(PRI1, "%p: CommService::completionHandler_ts(%d): om_async_operation_t->set_result(in)\n", this, idx);
+                    om_async_operation_t->set_result(in);
+                    print(PRI1, "%p: CommService::completionHandler_ts(%d): om_async_operation_t->completed()\n", this, idx);
+                    om_async_operation_t->completed();
+                }
+                else
+                {
+                    print(PRI1, "%p: CommService::completionHandler_ts(%d): Warning: entry already taken by other operation\n", this, idx);
                 }
             }
-            // No more free entries
-            assert(m_async_operations[m_index] == nullptr);
-            return -1;
+            else
+            {
+                // This can occur when the async_operation_base has gone out of scope.
+                print(PRI1, "%p: CommService::completionHandler_ts(%d): Warning: om_async_operation_t == nullptr\n", this, idx);
+            }
+        }
+
+        void completionHandler_ts_v(int idx, std::chrono::high_resolution_clock::time_point start_time)
+        {
+            print(PRI1, "%p: CommService::completionHandler_ts(%d)\n", this, idx);
+
+            async_operation_base* om_async_operation = m_async_operation_info[idx].async_operation;
+            if (om_async_operation)
+            {
+                if (m_async_operation_info[idx].start == start_time)
+                {
+                    print(PRI1, "%p: CommService::completionHandler_ts(%d): om_async_operation->completed()\n", this, idx);
+                    om_async_operation->completed();
+                }
+                else
+                {
+                    print(PRI1, "%p: CommService::completionHandler_ts(%d): Warning: entry already taken by other operation\n", this, idx);
+                }
+            }
+            else
+            {
+                // This can occur when the async_operation_base has gone out of scope.
+                print(PRI1, "%p: CommService::completionHandler_ts(%d): Warning: om_async_operation_t == nullptr\n", this, idx);
+            }
         }
 
     protected:
         static const int NROPERATIONS = 128;    // use 2^N (a power of 2)
 
-        CommService()
-            : m_index(-1)
-        {
-            for (int i = 0; i < NROPERATIONS; i++)
-                m_async_operations[i] = nullptr;
-        }
+        CommService();
 
-        virtual ~CommService() {}
+        virtual ~CommService();
 
         int m_index;
         async_operation_base* m_async_operations[NROPERATIONS];
+
+        int m_index_ts;
+        async_operation_info m_async_operation_info[NROPERATIONS];
     };
 }
 

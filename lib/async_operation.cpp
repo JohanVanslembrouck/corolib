@@ -12,6 +12,7 @@
 
 #include "corolib/async_operation.h"
 #include "corolib/print.h"
+#include "corolib/commservice.h"
 
 namespace corolib
 {
@@ -20,7 +21,7 @@ namespace corolib
      * @param s
      * @param index
      */
-    async_operation_base::async_operation_base(CommService* s, int index)
+    async_operation_base::async_operation_base(CommService* s, int index, bool timestamp)
         : m_service(s)
         , m_awaiting(nullptr)            // initialized in await_suspend()
         , m_ready(false)                // set to true in completed()
@@ -28,17 +29,33 @@ namespace corolib
         , m_index(index)
         , m_ctr(nullptr)
         , m_waitany(nullptr)
+        , m_timestamp(timestamp)
     {
         print(PRI2, "%p: async_operation_base::async_operation_base(CommService* s = %p, index = %d)\n", this, s, index);
         if (m_service)
         {
-            if (m_service->m_async_operations[m_index] == nullptr)
+            if (!m_timestamp)
             {
-                m_service->m_async_operations[m_index] = this;
+                if (m_service->m_async_operations[m_index] == nullptr)
+                {
+                    m_service->m_async_operations[m_index] = this;
+                }
+                else
+                {
+                    print(PRI1, "%p: async_operation_base::async_operation_base(): m_service->m_async_operations[%d] WRONGLY INITIALIZED!!!\n", this, m_index);
+                }
             }
             else
             {
-                print(PRI1, "%p: async_operation_base::async_operation_base(): m_service->m_async_operations[%d] WRONGLY INITIALIZED!!!\n", this, m_index);
+                if (m_service->m_async_operation_info[m_index].async_operation == nullptr)
+                {
+                    m_service->m_async_operation_info[m_index].async_operation = this;
+                    m_service->m_async_operation_info[m_index].start = std::chrono::high_resolution_clock::now();;
+                }
+                else
+                {
+                    print(PRI1, "%p: async_operation_base::async_operation_base(): m_service->m_async_operation_info[%d].async_operation WRONGLY INITIALIZED!!!\n", this, m_index);
+                }
             }
         }
     }
@@ -55,12 +72,16 @@ namespace corolib
         {
             if (m_service)
             {
-                m_service->m_async_operations[m_index] = nullptr;
+                if (!m_timestamp)
+                    m_service->m_async_operations[m_index] = nullptr;
+                else
+                    m_service->m_async_operation_info[m_index].async_operation = nullptr;
             }
         }
         m_index = -1;
         m_ctr = nullptr;
         m_waitany = nullptr;
+        m_timestamp = false;
     }
 
     /**
@@ -75,11 +96,15 @@ namespace corolib
         , m_index(s.m_index)
         , m_ctr(s.m_ctr)
         , m_waitany(s.m_waitany)
+        , m_timestamp(s.m_timestamp)
     {
         print(PRI2, "%p: async_operation_base::async_operation_base(async_operation_base&& s): s.m_index = %d\n", this, s.m_index);
 
         // Tell the CommService we are at another address after the move.
-        m_service->m_async_operations[m_index] = this;
+        if (!m_timestamp)
+            m_service->m_async_operations[m_index] = this;
+        else
+            m_service->m_async_operation_info[m_index].async_operation = this;
 
         s.m_service = nullptr;
         s.m_awaiting = nullptr;
@@ -88,6 +113,7 @@ namespace corolib
         s.m_index = -1;        // indicates move
         s.m_ctr = nullptr;
         s.m_waitany = nullptr;
+        s.m_timestamp = false;
     }
 
     /**
@@ -100,14 +126,17 @@ namespace corolib
         print(PRI2, "%p: async_operation_base::async_operation_base = (async_operation_base&& s): m_index = %d, s.m_index = %d\n", this, m_index, s.m_index);
 
         // Clean our entry at the original location, because we will move to another one.
-        if (m_service)
+        if (!m_timestamp)
             m_service->m_async_operations[m_index] = nullptr;
+        else
+            m_service->m_async_operation_info[m_index].async_operation = nullptr;
 
         m_service = s.m_service;
         m_awaiting = s.m_awaiting;
         m_ready = s.m_ready;
         m_autoreset = s.m_autoreset;
         m_index = s.m_index;
+        m_timestamp = s.m_timestamp;
 
         // The following 2 tests allow an async_operation that takes part in
         // a when_all or when_any to be re-assigned.
@@ -126,7 +155,12 @@ namespace corolib
 
         // Tell the CommService we are at another address after the move.
         if (m_service)
-            m_service->m_async_operations[m_index] = this;
+        {
+            if (!m_timestamp)
+                m_service->m_async_operations[m_index] = this;
+            else
+                m_service->m_async_operation_info[m_index].async_operation = this;
+        }
 
         s.m_service = nullptr;
         s.m_awaiting = nullptr;
@@ -135,6 +169,7 @@ namespace corolib
         s.m_index = -1;        // indicates move
         s.m_ctr = nullptr;
         s.m_waitany = nullptr;
+        s.m_timestamp = false;
 
         return *this;
     }

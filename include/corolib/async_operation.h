@@ -15,17 +15,19 @@
 #define _ASYNC_OPERATION_H_
 
 #include <coroutine>
+
 #include "print.h"
-#include "commservice.h"
 #include "when_all_counter.h"
 #include "when_any_one.h"
 
 namespace corolib
 {
+    class CommService;
+
     class async_operation_base
     {
     public:
-        async_operation_base(CommService* s = nullptr, int index = 0);
+        async_operation_base(CommService* s = nullptr, int index = 0, bool timestamp = false);
         virtual ~async_operation_base();
 		
         async_operation_base(const async_operation_base& s) = delete;
@@ -95,6 +97,7 @@ namespace corolib
         int m_index;
         when_all_counter* m_ctr;
         when_any_one* m_waitany;
+        bool m_timestamp;
     };
 
     template<typename TYPE>
@@ -109,12 +112,13 @@ namespace corolib
          * @param s
          * @param index
          */
-        async_operation(CommService* s = nullptr, int index = 0)
-            : async_operation_base(s, index)
+        async_operation(CommService* s = nullptr, int index = 0, bool timestamp = false)
+            : async_operation_base(s, index, timestamp)
             , m_result{}
         {
             print(PRI2, "%p: async_operation<TYPE>::async_operation()\n", this);
         }
+
 #if 0
         void set_result(std::string result)
         {
@@ -196,8 +200,8 @@ namespace corolib
     class async_operation<void> : public async_operation_base
     {
     public:
-        async_operation(CommService* s = nullptr, int index = 0)
-            : async_operation_base(s, index)
+        async_operation(CommService* s = nullptr, int index = 0, bool timestamp = false)
+            : async_operation_base(s, index, timestamp)
         {
             print(PRI2, "%p: async_operation<void>::async_operation()\n", this);
         }

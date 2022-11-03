@@ -25,6 +25,7 @@ SOURCES += \
         ../common-qt/tcpserver.cpp \
         ../../lib/print.cpp \
         ../../lib/async_operation.cpp \
+        ../../lib/commservice.cpp \
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

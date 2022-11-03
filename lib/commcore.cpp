@@ -49,36 +49,36 @@ void CommCore::stop()
 
 async_operation<void> CommCore::start_writing(const char* str, int size)
 {
-    int index = get_free_index();
+    int index = get_free_index_ts();
     print(PRI2, "%p: CommCore::start_writing(): index = %d\n", this, index);
-    async_operation<void> ret{ this, index };
+    async_operation<void> ret{ this, index, true };
     start_writing_impl(index, str, size);
     return ret;
 }
 
 async_operation<std::string> CommCore::start_reading(const char ch)
 {
-    int index = get_free_index();
+    int index = get_free_index_ts();
     print(PRI2, "%p: CommCore::start_reading(): index = %d\n", this, index);
-    async_operation<std::string> ret{ this, index };
+    async_operation<std::string> ret{ this, index, true };
     start_reading_impl(index, ch);
     return ret;
 }
 
 async_operation<void> CommCore::start_timer(steady_timer& timer, int ms)
 {
-    int index = get_free_index();
+    int index = get_free_index_ts();
     print(PRI2, "%p: CommCore::start_timer(timer, %d): index = %d\n", this, ms, index);
-    async_operation<void> ret{ this, index };
+    async_operation<void> ret{ this, index, true };
     start_timer_impl(index, timer, ms);
     return ret;
 }
 
 async_operation<void> CommCore::start_dummy()
 {
-    int index = get_free_index();
+    int index = get_free_index_ts();
     print(PRI2, "%p: CommCore::start_dummy(): index = %d\n", this, index);
-    async_operation<void> ret{ this, index };
+    async_operation<void> ret{ this, index, true };
     return ret;
 }
 
@@ -99,11 +99,13 @@ void CommCore::start_writing_impl(const int idx, const char* str, int size)
         return;
     }
 
+    std::chrono::high_resolution_clock::time_point now = m_async_operation_info[idx].start;
+
     boost::asio::async_write(
         m_socket,
         boost::asio::buffer(str, size),
-        [this, idx](const boost::system::error_code& error,
-                    std::size_t result_n)
+        [this, idx, now](const boost::system::error_code& error,
+                         std::size_t result_n)
         {
             (void)result_n;
 
@@ -117,17 +119,7 @@ void CommCore::start_writing_impl(const int idx, const char* str, int size)
 
             if (!error)
             {
-                async_operation_base* om_async_operation = m_async_operations[idx];
-                print(PRI2, "%p: CommCore::handle_write(): idx = %d, om_async_operation = %p\n", this, idx, om_async_operation);
-                if (om_async_operation)
-                {
-                    om_async_operation->completed();
-                }
-                else
-                {
-                    // This can occur when the async_operation_base has gone out of scope.
-                    print(PRI1, "%p: CommCore::handle_write(): idx = %d, Warning: om_async_operation == nullptr\n", this, idx);
-                }
+                completionHandler_ts_v(idx, now);
             }
             else
             {
@@ -148,11 +140,13 @@ void CommCore::start_reading_impl(const int idx, const char ch)
     // Set a deadline for the read operation.
     m_deadline.expires_after(std::chrono::seconds(10));
 
+    std::chrono::high_resolution_clock::time_point now = m_async_operation_info[idx].start;
+
     boost::asio::async_read_until(
         m_socket,
         boost::asio::dynamic_buffer(m_input_buffer), ch,
-        [this, idx](const boost::system::error_code& error,
-                    std::size_t bytes)
+        [this, idx, now](const boost::system::error_code& error,
+                         std::size_t bytes)
         {
             print(PRI2, "%p: CommCore::handle_read(): idx = %d, entry\n", this, idx);
            
@@ -176,21 +170,7 @@ void CommCore::start_reading_impl(const int idx, const char ch)
             {
                 m_read_buffer = "EOF";
             }
-
-            async_operation_base* om_async_operation = m_async_operations[idx];
-            async_operation<std::string>* om_async_operation_t =
-                dynamic_cast<async_operation<std::string>*>(om_async_operation);
-            if (om_async_operation_t)
-            {
-                om_async_operation_t->set_result(m_read_buffer);
-                om_async_operation_t->completed();
-            }
-            else
-            {
-                // This can occur when the async_operation_base has gone out of scope.
-                print(PRI1, "%p: CommCore::handle_read(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
-            }
-
+            completionHandler_ts<std::string>(idx, now, m_read_buffer);
             print(PRI2, "%p: CommCore::handle_read(): idx = %d, exit\n\n", this, idx);
         });
 }
@@ -201,8 +181,10 @@ void CommCore::start_timer_impl(const int idx, steady_timer& tmr, int ms)
 
     tmr.expires_after(std::chrono::milliseconds(ms));
 
+    std::chrono::high_resolution_clock::time_point now = m_async_operation_info[idx].start;
+
     tmr.async_wait(
-        [this, idx](const boost::system::error_code& error)
+        [this, idx, now](const boost::system::error_code& error)
         {
             print(PRI2, "%p: CommCore::handle_timer(): idx = %d, entry\n", this, idx);
             
@@ -214,17 +196,7 @@ void CommCore::start_timer_impl(const int idx, steady_timer& tmr, int ms)
 
             if (!error)
             {
-                async_operation_base* om_async_operation = m_async_operations[idx];
-                print(PRI2, "%p: CommCore::handle_timer(): idx = %d, om_async_operation = %p\n", this, idx, om_async_operation);
-                if (om_async_operation)
-                {
-                    om_async_operation->completed();
-                }
-                else
-                {
-                    // This can occur when the async_operation_base has gone out of scope.
-                    print(PRI1, "%p: CommCore::handle_timer(): idx = %d, Warning: om_async_operation == nullptr\n", this, idx);
-                }
+                completionHandler_ts_v(idx, now);
             }
             else
             {

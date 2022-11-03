@@ -8,7 +8,6 @@
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
-
 #include <boost/asio.hpp>
 
 #include <corolib/print.h>
@@ -36,8 +35,8 @@ CommServer::CommServer(
 async_operation<void> CommServer::start_accepting(spCommCore commRWT)
 {
     print(PRI2, "%p: CommServer::start_accepting()\n", this);
-    int index = get_free_index();
-    async_operation<void> ret{ this, index };
+    int index = get_free_index_ts();
+    async_operation<void> ret{ this, index, true };
     start_accepting_impl(commRWT, index);
     return ret;
 }
@@ -53,14 +52,17 @@ void CommServer::start_accepting_impl(spCommCore commRWT, int idx)
 {
     print(PRI2, "%p: CommServer::start_accepting_impl()\n", this);
 
+    std::chrono::high_resolution_clock::time_point now = m_async_operation_info[idx].start;
+
     m_acceptor.async_accept(
         commRWT->m_socket,
-        [this, idx](const boost::system::error_code& ec)
+        [this, idx, now](const boost::system::error_code& ec)
         {
             print(PRI2, "%p; CommServer::handle_accept(): idx = %d, entry\n", this, idx);
 
             if (m_stop)
             {
+                print(PRI2, "%p: CommServer::handle_accept(): idx = %d, stopped\n", this, idx);
                 return;
             }
             if (ec)
@@ -69,19 +71,7 @@ void CommServer::start_accepting_impl(spCommCore commRWT, int idx)
             }
             else
             {
-                async_operation_base* om_async_operation = m_async_operations[idx];
-                print(PRI2, "%p: CommServer::handle_accept(...): idx = %d, om_async_operation = %p\n", this, idx, om_async_operation);
-                if (om_async_operation)
-                {
-                    print(PRI2, "%p: CommServer::handle_accept(...): idx = %d, before om_async_operation->completed();\n", this, idx);
-                    om_async_operation->completed();
-                    print(PRI2, "%p: CommServer::handle_accept(...): idx = %d, after om_async_operation->completed();\n", this, idx);
-                }
-                else
-                {
-                    // This can occur when the async_operation_base has gone out of scope.
-                    print(PRI1, "%p: CommServer::handle_accept(): idx = %d, Warning: om_async_operation == nullptr\n", this, idx);
-                }
+                completionHandler_ts_v(idx, now);
             }
             print(PRI2, "%p: CommServer::handle_accept(): idx = %d, exit\n\n", this, idx);
         }
