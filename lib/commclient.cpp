@@ -39,6 +39,7 @@ void CommClient::start()
 {
     print(PRI2, "%p: CommClient::start()\n", this);
     int index = get_free_index_ts();
+    print(PRI2, "%p: CommClient::start(): index = %d\n", this, index);
     assert(m_async_operation_info[index].async_operation == nullptr);
     start_connecting_impl(index);
 
@@ -52,6 +53,7 @@ async_operation<void> CommClient::start_connecting()
 {
     print(PRI2, "%p: CommClient::start_connecting()\n", this);
     int index = get_free_index_ts();
+    print(PRI2, "%p: CommClient::start_connecting(): index = %d\n", this, index);
     async_operation<void> ret{ this, index, true };
     start_connecting_impl(index);
     return ret;

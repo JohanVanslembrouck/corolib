@@ -155,70 +155,69 @@ async_task<int> mainflowWA1(std::initializer_list<CommClient*> clients)
     std::string results[nrClients];
     std::string str[nrClients];
 
+    CommClient* _clients[nrClients];
+    int cntr = 0;
+    for (CommClient* cl : clients)
+        _clients[cntr++] = cl;
+
     int counter = 0;
     for (int i = 0; i < 40; i++)
     {
         print(PRI1, "mainflowWA1: %d ------------------------------------------------------------------\n", i);
 
-        int j;
-
         // Connecting
-        j = 0;
-        for (CommClient* cl : clients) {
-            print(PRI1, "mainflowWA1: asyncsc[%d] = cl->start_connecting();\n", j);
-            asyncsc[j++] = cl->start_connecting();
+        for (int j = 0; j < nrClients; j++) {
+            print(PRI1, "mainflowWA1: asyncsc[%d] = _clients[%d]->start_connecting();\n", j, j);
+            asyncsc[j] = _clients[j]->start_connecting();
         }
         
         print(PRI1, "mainflowWA1: when_any<async_operation<void>> wac(asyncsc, nrClients)\n");
         when_any<async_operation<void>> wac(asyncsc, nrClients);
-        for (int i = 0; i < nrClients; i++) {
+        for (int j = 0; j < nrClients; j++) {
             print(PRI1, "mainflowWA1: int r = co_await wac;\n");
             int r = co_await wac;
             print(PRI1, "mainflowWA1: wac %d completed\n", r);
         }
 
         // Writing
-        j = 0;
-        for (CommClient* cl : clients) {
-            print(PRI1, "mainflowWA1: asyncsw[%d] = cl->start_writing(...);\n", j);
+        for (int j = 0; j < nrClients; j++) {
             str[j] = "This is string ";
             str[j] += std::to_string(counter++);
             str[j] += " to echo\n";
-            asyncsw[j] = cl->start_writing(str[j].c_str(), str[j].length() + 1);
-            j++;
+            print(PRI1, "mainflowWA1: asyncsw[%d] = _clients[%d]->start_writing(...);\n", j, j);
+            asyncsw[j] = _clients[j]->start_writing(str[j].c_str(), str[j].length() + 1);
         }
         
         print(PRI1, "mainflowWA1: when_any<async_operation<void>> waw(asyncsw, 3)\n");
         when_any<async_operation<void>> waw(asyncsw, 3);
-        for (int i = 0; i < nrClients; i++) {
+        for (int j = 0; j < nrClients; j++) {
             print(PRI1, "mainflowWA1: int r = co_await waw;\n");
             int r = co_await waw;
             print(PRI1, "mainflowWA1: waw %d completed\n", r);
         }
         
         // Reading
-        j = 0;
-        for (CommClient* cl : clients) {
-            print(PRI1, "mainflowWA1: asyncsr[%d] = cl->start_reading();\n", j);
-            asyncsr[j++] = cl->start_reading();
+        for (int j = 0; j < nrClients; j++) {
+            print(PRI1, "mainflowWA1: asyncsr[%d] = _clients[j]->start_reading();\n", j);
+            asyncsr[j] = _clients[j]->start_reading();
         }
         
         print(PRI1, "mainflowWA1: when_any<async_operation<std::string>> war(asyncsr, 3)\n");
         when_any<async_operation<std::string>> war(asyncsr, nrClients);
-        for (int i = 0; i < nrClients; i++) {
+        for (int j = 0; j < nrClients; j++) {
             print(PRI1, "mainflowWA1: int r = co_await war;\n");
             int r = co_await war;
             print(PRI1, "mainflowWA1: war %d completed\n", r);
         }
         
-        for (int i = 0; i < nrClients; i++) {
-            print(PRI1, "asyncsr[%d].get_result() = %s", i, asyncsr[i].get_result().c_str());
+        for (int j = 0; j < nrClients; j++) {
+            print(PRI1, "asyncsr[%d].get_result() = %s", j, asyncsr[j].get_result().c_str());
         }
         
         // Closing
-        for (CommClient* cl : clients) {
-            print(PRI1, "mainflowWA1: cl->stop();\n");
-            cl->stop();
+        for (int j = 0; j < nrClients; j++) {
+            print(PRI1, "mainflowWA1: _clients[%d]->stop();\n", j);
+            _clients[j]->stop();
         }
 
         print(PRI1, "mainflowWA1: std::this_thread::sleep_for(std::chrono::seconds(1))\n");
@@ -242,6 +241,11 @@ async_task<int> mainflowWA2(std::initializer_list<CommClient*> clients)
     print(PRI1, "mainflowWA2: begin\n");
     const int nrClients = 3; // clients.size();
     
+    CommClient* _clients[nrClients];
+    int cntr = 0;
+    for (CommClient* cl : clients)
+        _clients[cntr++] = cl;
+
     int counter = 0;
     for (int i = 0; i < 40; i++)
     {
@@ -249,69 +253,63 @@ async_task<int> mainflowWA2(std::initializer_list<CommClient*> clients)
 
         async_operation<void> asyncsc[nrClients];
         async_operation<void> asyncsw[nrClients];
-        async_operation<std::string> asyncsr[3];
+        async_operation<std::string> asyncsr[nrClients];
         std::string str[nrClients];
         std::string results[nrClients];
 
-        int j;
-
         // Connecting
-        j = 0;
-        for (CommClient* cl : clients) {
-            print(PRI1, "mainflowWA2: asyncsc[%d] = cl->start_connecting();\n", j);
-            asyncsc[j++] = cl->start_connecting();
+        for (int j = 0; j < nrClients; j++) {
+            print(PRI1, "mainflowWA2: asyncsc[%d] = _clients[%d]->start_connecting();\n", j, j);
+            asyncsc[j] = _clients[j]->start_connecting();
         }
         
         print(PRI1, "mainflowWA2: when_any<async_operation<void>> wac(asyncsc, nrClients)\n");
         when_any<async_operation<void>> wac(asyncsc, nrClients);
-        for (int i = 0; i < nrClients; i++) {
+        for (int j = 0; j < nrClients; j++) {
             print(PRI1, "mainflowWA2: int r = co_await wac;\n");
             int r = co_await wac;
             print(PRI1, "mainflowWA2: wac %d completed\n", r);
         }
         
         // Writing
-        j = 0;
-        for (CommClient* cl : clients) {
-            print(PRI1, "mainflowWA2: asyncsw[%d] = cl->start_writing(...);\n", j);
+        for (int j = 0; j < nrClients; j++) {
             str[j] = "This is string ";
             str[j] += std::to_string(counter++);
             str[j] += " to echo\n";
-            asyncsw[j] = cl->start_writing(str[j].c_str(), str[j].length() + 1);
-            j++;
+            print(PRI1, "mainflowWA2: asyncsw[%d] = _clients[%d]->start_writing(...);\n", j, j);
+            asyncsw[j] = _clients[j]->start_writing(str[j].c_str(), str[j].length() + 1);
         }
-        
-        print(PRI1, "mainflowWA2: when_any<async_operation<void>> waw(asyncsw, 3)\n");
-        when_any<async_operation<void>> waw(asyncsw, 3);
-        for (int i = 0; i < 3; i++) {
+
+        print(PRI1, "mainflowWA2: when_any<async_operation<void>> waw(asyncsw, nrClients)\n");
+        when_any<async_operation<void>> waw(asyncsw, nrClients);
+        for (int j = 0; j < nrClients; j++) {
             print(PRI1, "mainflowWA2: int r = co_await waw;\n");
             int r = co_await waw;
             print(PRI1, "mainflowWA2: waw %d completed\n", r);
         }
         
         // Reading
-        j = 0;
-        for (CommClient* cl : clients) {
-            print(PRI1, "mainflowWA2: asyncsr[%d] = cl->start_reading();\n", j);
-            asyncsr[j++] = cl->start_reading();
+        for (int j = 0; j < nrClients; j++) {
+            print(PRI1, "mainflowWA2: asyncsr[%d] = _clients[%d]->start_reading();\n", j, j);
+            asyncsr[j] = _clients[j]->start_reading();
         }
         
         print(PRI1, "mainflowWA2: when_any<async_operation<std::string>> war(asyncsr, nrClients)\n");
         when_any<async_operation<std::string>> war(asyncsr, nrClients);
-        for (int i = 0; i < nrClients; i++) {
+        for (int j = 0; j < nrClients; j++) {
             print(PRI1, "mainflowWA2: int r = co_await war;\n");
             int r = co_await war;
             print(PRI1, "mainflowWA2: war %d completed\n", r);
         }
         
-        for (int i = 0; i < nrClients; i++) {
-            print(PRI1, "asyncsr[%d].get_result() = %s", i, asyncsr[i].get_result().c_str());
+        for (int j = 0; j < nrClients; j++) {
+            print(PRI1, "asyncsr[%d].get_result() = %s", j, asyncsr[j].get_result().c_str());
         }
         
         // Closing
-        for (CommClient* cl : clients) {
-            print(PRI1, "mainflowWA2: cl->stop();\n");
-            cl->stop();
+        for (int j = 0; j < nrClients; j++) {
+            print(PRI1, "mainflowWA2: _clients[%d]->stop();\n", j);
+            _clients[j]->stop();
         }
 
         print(PRI1, "mainflowWA2: std::this_thread::sleep_for(std::chrono::seconds(1))\n");

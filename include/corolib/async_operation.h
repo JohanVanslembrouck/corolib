@@ -92,11 +92,11 @@ namespace corolib
     protected:
         CommService* m_service;
         std::coroutine_handle<> m_awaiting;
-        bool m_ready;
-        bool m_autoreset;
-        int m_index;
         when_all_counter* m_ctr;
         when_any_one* m_waitany;
+        int m_index;
+        bool m_ready;
+        bool m_autoreset;
         bool m_timestamp;
     };
 
