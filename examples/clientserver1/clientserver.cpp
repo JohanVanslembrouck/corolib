@@ -62,7 +62,9 @@ public:
         CommClient commClient(ioContextServer, ep2);
 
         print(PRI1, "mainflow_client: begin\n");
-        for (int i = 0; i < 2; i++)
+        // FFS: clientserver often crashes if we run through the following loop more than once.
+        // The crash happens after the client finished.
+        for (int i = 0; i < 1; i++)
         {
             // Connecting
             print(PRI1, "mainflow_client: async_operation<void> sc = commClient.start_connecting();\n");
