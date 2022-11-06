@@ -23,7 +23,7 @@ namespace corolib
      */
     async_operation_base::async_operation_base(CommService* s, int index, bool timestamp)
         : m_service(s)
-        , m_awaiting(nullptr)            // initialized in await_suspend()
+        , m_awaiting(nullptr)           // initialized in await_suspend()
         , m_ctr(nullptr)
         , m_waitany(nullptr)
         , m_index(index)
@@ -32,31 +32,10 @@ namespace corolib
         , m_timestamp(timestamp)
     {
         print(PRI2, "%p: async_operation_base::async_operation_base(CommService* s = %p, index = %d)\n", this, s, index);
+		
         if (m_service)
         {
-            if (!m_timestamp)
-            {
-                if (m_service->m_async_operations[m_index] == nullptr)
-                {
-                    m_service->m_async_operations[m_index] = this;
-                }
-                else
-                {
-                    print(PRI1, "%p: async_operation_base::async_operation_base(): m_service->m_async_operations[%d] WRONGLY INITIALIZED!!!\n", this, m_index);
-                }
-            }
-            else
-            {
-                if (m_service->m_async_operation_info[m_index].async_operation == nullptr)
-                {
-                    m_service->m_async_operation_info[m_index].async_operation = this;
-                    m_service->m_async_operation_info[m_index].start = std::chrono::high_resolution_clock::now();;
-                }
-                else
-                {
-                    print(PRI1, "%p: async_operation_base::async_operation_base(): m_service->m_async_operation_info[%d].async_operation WRONGLY INITIALIZED!!!\n", this, m_index);
-                }
-            }
+            m_service->add_entry(m_index, this, m_timestamp);
         }
     }
 
@@ -67,15 +46,9 @@ namespace corolib
     {
         print(PRI2, "%p: async_operation_base::~async_operation_base(): m_index = %d\n", this, m_index);
 
-        if (m_index != -1)
+        if (m_service)
         {
-            if (m_service)
-            {
-                if (!m_timestamp)
-                    m_service->m_async_operations[m_index] = nullptr;
-                else
-                    m_service->m_async_operation_info[m_index].async_operation = nullptr;
-            }
+            m_service->update_entry(m_index, nullptr, m_timestamp);
         }
         m_index = -1;
 
@@ -100,17 +73,14 @@ namespace corolib
         , m_index(s.m_index)
         , m_ready(s.m_ready)
         , m_autoreset(s.m_autoreset)
-        , m_timestamp(s.m_timestamp)
+        , m_timestamp(s.m_timestamp)      // Should be the same: we cannot "move" from implementation.
     {
         print(PRI2, "%p: async_operation_base::async_operation_base(async_operation_base&& s): s.m_index = %d\n", this, s.m_index);
 
         // Tell the CommService we are at another address after the move.
         if (m_service)
         {
-            if (!m_timestamp)
-                m_service->m_async_operations[m_index] = this;
-            else
-                m_service->m_async_operation_info[m_index].async_operation = this;
+            m_service->update_entry(m_index, this, m_timestamp);
         }
 
         s.m_service = nullptr;
@@ -135,10 +105,7 @@ namespace corolib
         // Clean our entry at the original location, because we will move to another one.
         if (m_service)
         {
-            if (!m_timestamp)
-                m_service->m_async_operations[m_index] = nullptr;
-            else
-                m_service->m_async_operation_info[m_index].async_operation = nullptr;
+            m_service->update_entry(m_index, nullptr, m_timestamp);
         }
 
         m_service = s.m_service;
@@ -162,15 +129,12 @@ namespace corolib
         m_index = s.m_index;
         m_ready = s.m_ready;
         m_autoreset = s.m_autoreset;
-        m_timestamp = s.m_timestamp;
+        //m_timestamp = s.m_timestamp;	// Should be the same: we cannot "move" from implementation.
 
         // Tell the CommService we are at another address after the move.
         if (m_service)
         {
-            if (!m_timestamp)
-                m_service->m_async_operations[m_index] = this;
-            else
-                m_service->m_async_operation_info[m_index].async_operation = this;
+            m_service->update_entry(m_index, this, m_timestamp);
         }
 
         s.m_service = nullptr;

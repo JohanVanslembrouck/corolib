@@ -3,6 +3,8 @@
  *  Description:
  *  Illustrates the use of and the translation of co_await.
  *
+ *  Uses bool await_suspend(std::coroutine_handle<> awaiting)
+ *
  *  Tested with Visual Studio 2019.
  *
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
@@ -13,7 +15,7 @@
 
 using namespace std;
 
-const int priority = 0x0F;
+const int priority = 0x01;
 
 #include "print.h"
 
@@ -26,7 +28,6 @@ struct auto_reset_event {
     auto_reset_event()
         : m_awaiting(nullptr)
         , m_ready(false) {
-        print(PRI2, "auto_reset_event::auto_reset_event()\n");
     }
 
     auto_reset_event(const auto_reset_event&) = delete;
@@ -35,13 +36,11 @@ struct auto_reset_event {
     auto_reset_event(auto_reset_event&& s) noexcept
         : m_awaiting(s.m_awaiting)
         , m_ready(s.m_ready) {
-        print(PRI2, "auto_reset_event::auto_reset_event(auto_reset_event&& s)\n");
         s.m_awaiting = nullptr;
         s.m_ready = false;
     }
 
     auto_reset_event& operator = (auto_reset_event&& s) noexcept {
-        print(PRI2, "auto_reset_event::operator = (auto_reset_event&& s)\n");
         m_awaiting = s.m_awaiting;
         m_ready = s.m_ready;
         s.m_awaiting = nullptr;
@@ -50,7 +49,6 @@ struct auto_reset_event {
     }
 
     void resume() {
-        print(PRI2, "auto_reset_event::resume()\n");
         m_ready = true;
         if (m_awaiting && !m_awaiting.done())
             m_awaiting.resume();
@@ -60,22 +58,15 @@ struct auto_reset_event {
     {
         struct awaiter
         {
-            awaiter(auto_reset_event& are_) : m_are(are_) {
-                print(PRI2, "auto_reset_event::awaiter::awaiter(auto_reset_event& are_)\n");
-            }
+            awaiter(auto_reset_event& are_) : m_are(are_) { }
 
             bool await_ready() {
-                print(PRI2, "auto_reset_event::awaiter::await_ready()\n");
                 return m_are.m_ready;
             }
-
             void await_suspend(std::coroutine_handle<> awaiting) {
-                print(PRI2, "auto_reset_event::awaiter::await_suspend(std::coroutine_handle<> awaiting)\n");
                 m_are.m_awaiting = awaiting;
             }
-
             void await_resume() {
-                print(PRI2, "auto_reset_event::awaiter::await_resume()\n");
                 m_are.m_ready = false;
             }
 
@@ -99,11 +90,9 @@ struct awaitable
 
     awaitable(coro_handle coroutine)
         : m_coroutine(coroutine) {
-        print(PRI2, "awaitable::awaitable(coro_handle coroutine)\n");
     }
 
     ~awaitable() {
-        print(PRI2, "awaitable::~awaitable()\n");
         if (m_coroutine)
             m_coroutine.destroy(); 
     }
@@ -112,14 +101,12 @@ struct awaitable
     awaitable(awaitable const&) = delete;
     awaitable& operator= (awaitable const&) = delete;
 
-    awaitable(awaitable&& other)
+    awaitable(awaitable&& other) noexcept
         : m_coroutine(other.m_coroutine) {
-        print(PRI2, "awaitable::awaitable(awaitable&& other)\n");
         other.m_coroutine = nullptr;
     }
 
-    awaitable& operator= (awaitable&& other) {
-        print(PRI2, "awaitable::operator= (awaitable&& other)\n");
+    awaitable& operator= (awaitable&& other) noexcept {
         if (&other != this) {
             m_coroutine = other.m_coroutine;
             other.m_coroutine = nullptr;
@@ -127,7 +114,6 @@ struct awaitable
     }
 
     T get() {
-        print(PRI2, "awaitable::get()\n");
         if (m_coroutine)
             return m_coroutine.promise().m_value;
         return -1;
@@ -136,78 +122,38 @@ struct awaitable
     // defined in template<typename T> struct awaitable
     auto operator co_await() noexcept {
         struct awaiter {
-            awaiter(awaitable& awaitable_) : m_awaitable(awaitable_) {
-                print(PRI2, "awaitable::awaiter::awaiter(awaitable& awaitable_)\n");
-            }
+            awaiter(awaitable& awaitable_) : m_awaitable(awaitable_) { }
 
-            bool await_ready() noexcept { 
-                print(PRI2, "awaitable::awaiter::await_ready()\n");
-                return m_awaitable.m_coroutine.promise().m_ready;
+            bool await_ready() noexcept {
+                return m_awaitable.m_coroutine.promise().m_ready; 
             }
-
             bool await_suspend(std::coroutine_handle<> awaiting) noexcept {
-                print(PRI2, "awaitable::awaiter::await_suspend(std::coroutine_handle<> awaiting)\n");
                 m_awaitable.m_coroutine.promise().m_awaiting = awaiting;
                 return !m_awaitable.m_coroutine.promise().m_ready;
             }
-
-            T await_resume() noexcept {
-                print(PRI2, "awaitable::awaiter::await_resume()\n");
+            T await_resume() noexcept { 
                 return m_awaitable.m_coroutine.promise().m_value;
             }
-
             awaitable& m_awaitable;
         };
         return awaiter{ *this };
     }
 
-    // defined in template<typename T> struct awaitable
     struct promise_type
     {
         using coro_handle = std::coroutine_handle<promise_type>;
 
-        promise_type() 
-            : m_value(0)
-            , m_ready(false)
-            , m_awaiting(nullptr) {
-            print(PRI2, "awaitable::promise_type::promise_type()\n");
-        }
-
-        ~promise_type() {
-            print(PRI2, "awaitable::promise_type::~promise_type()\n");
-        }
-        auto get_return_object() { 
-            print(PRI2, "awaitable::promise_type::get_return_object()\n");
-            return coro_handle::from_promise(*this);
-        }
-
-        static awaitable get_return_object_on_allocation_failure() {
-            print(PRI2, "awaitable::promise_type::get_return_object_on_allocation_failure()\n");
-            throw std::bad_alloc();
-        }
-
-        auto initial_suspend() {
-            print(PRI2, "awaitable::promise_type::initial_suspend()\n"); 
-            return std::suspend_never{};
-        }
-
-        auto final_suspend() noexcept {
-            print(PRI2, "awaitable::promise_type::final_suspend()\n"); 
-            return std::suspend_always{};
-        }
-
-        void unhandled_exception() {
-            print(PRI2, "awaitable::promise_type::unhandled_exception()\n");
-            std::terminate();
-        }
-
+        promise_type() : m_ready(false), m_awaiting(nullptr) { }
+        auto get_return_object() { return coro_handle::from_promise(*this); }
+        auto initial_suspend() { return std::suspend_never{}; }
+        auto final_suspend() noexcept { return std::suspend_always{}; }
+        void unhandled_exception() { std::terminate(); }
         void return_value(T v) {
-            print(PRI2, "awaitable::promise_type::return_value(T v)\n");
             m_value = v;
             m_ready = true;
             if (m_awaiting) m_awaiting.resume();
         }
-        
+
         T m_value;
         bool m_ready;
         std::coroutine_handle<> m_awaiting;
@@ -230,6 +176,7 @@ awaitable<int> coroutine2() {
 awaitable<int> coroutine1() {
     print(PRI1, "coroutine1(): int i = co_await coroutine2();\n");
     int i = co_await coroutine2();
+    print(PRI1, "coroutine1(): i = %d\n", i);
     print(PRI1, "coroutine1(): co_return 42 + i;\n");
     co_return 42 + i;
 }
@@ -242,5 +189,68 @@ int main() {
     print(PRI1, "main(): int i = the_coroutine1.get();\n");
     int i = the_coroutine1.get();
     print(PRI1, "main(): i = %d\n", i);
+    print(PRI1, "main(): return 0;\n");
     return 0;
 }
+
+// -----------------------------------------------------------------
+
+void save_frame_pointer(void*) {}
+#define suspend_coroutine ;
+#define return_to_the_caller_or_resumer(obj) ;
+#define resume_coroutine ;
+
+struct __awaitable_int_frame
+{
+    awaitable<int>::promise_type    _promise;
+    unsigned                _i;
+    void* _instruction_pointer;
+    // storage for registers, etc.
+};
+
+awaitable<int> coroutine1_compiled()
+{
+    __awaitable_int_frame* __context = new __awaitable_int_frame{};
+    save_frame_pointer(__context);
+    awaitable<int> __return = __context->_promise.get_return_object();
+    co_await __context->_promise.initial_suspend();
+
+    try {
+        print(PRI1, "coroutine1(): int i = co_await coroutine2();\n");
+        // int i = co_await coroutine2();
+        awaitable<int>&& awaitable1 = coroutine2();
+        auto awaiter = awaitable1.operator co_await();
+        if (!awaiter.await_ready()) {
+            suspend_coroutine
+            // await_suspend returns bool
+            bool await_suspend_result = false;
+            try {
+                using handle_t = std::coroutine_handle<awaitable<int>::promise_type>;
+                await_suspend_result = awaiter.await_suspend(handle_t::from_promise(__context->_promise));
+            }
+            catch (...) {
+                auto exception = std::current_exception();
+                goto __resume_point;
+            }
+            if (!await_suspend_result)
+                goto __resume_point;
+            return_to_the_caller_or_resumer(__return)
+        __resume_point :
+            resume_coroutine
+        }
+        int i = awaiter.await_resume();
+		(void) i;
+		
+        print(PRI1, "coroutine1(): co_return 42 + i;\n");
+        //co_return 42 + i;
+        __context->_promise.return_value(42 + 1);
+        goto __final_suspend;
+    }
+    catch (...) {
+        __context->_promise.unhandled_exception();
+    }
+
+__final_suspend:
+    co_await __context->_promise.final_suspend();
+}
+

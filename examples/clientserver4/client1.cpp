@@ -47,7 +47,7 @@ public:
 	{
 		while (str.size())
 		{
-			int index = str.find(':');
+			unsigned long index = str.find(':');
 			if (index != std::string::npos)
 			{
 				return (str.substr(0, index));

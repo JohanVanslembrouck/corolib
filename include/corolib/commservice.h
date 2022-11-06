@@ -55,6 +55,32 @@ namespace corolib
 
         int get_free_index_ts();
 
+        /**
+         * @brief add_entry
+         * @param index
+         * @param op
+         * @param timestamp
+         *
+         */
+        void add_entry(int index, async_operation_base* op, bool timestamp);
+        
+        /**
+         * @brief update_entry
+         * @param index
+         * @param op
+         * @param timestamp
+         *
+         */
+        void update_entry(int index, async_operation_base* op, bool timestamp);
+        
+        /**
+         * @brief completionHandler completes an operation by calling
+         * set_result() and completed() on the async_operation object.
+         * Uses m_async_operations.
+         * @param idx is the index into m_async_operations
+         * @param in is the result of the operation
+         *
+         */ 
         template<typename TYPE>
         void completionHandler(int idx, TYPE in)
         {
@@ -78,6 +104,13 @@ namespace corolib
             }
         }
 
+         /**
+          * @brief completionHandler_v(oid) completes an operation by calling
+          * completed() on the async_operation object.
+          * Uses m_async_operations.
+          * @param idx is the index into m_async_operations
+          *
+          */ 
         void completionHandler_v(int idx)
         {
             print(PRI1, "%p: CommService::completionHandler(%d)\n", this, idx);
@@ -95,6 +128,17 @@ namespace corolib
             }
         }
 
+         /**
+          * @brief completionHandler_ts (timestamp) completes an operation by calling
+          * set_result() and completed() on the async_operation object.
+          * Uses m_async_operation_info.
+          * @param idx is the index into m_async_operation_info.
+          * @param start_time is the time from the m_async_operation_info element at the moment
+          * the async_operation was placed at this element.
+          * Value passed via the lambda closure.
+          * @param in is the result of the operation.
+          *
+          */ 
         template<typename TYPE>
         void completionHandler_ts(const int idx, std::chrono::high_resolution_clock::time_point start_time, TYPE in)
         {
@@ -125,6 +169,16 @@ namespace corolib
             }
         }
 
+         /**
+          * @brief completionHandler_ts_v (timestamp_void) completes an operation by calling
+          * set_result() and completed() on the async_operation object.
+          * Uses m_async_operation_info.
+          * @param idx is the index into m_async_operation_info.
+          * @param start_time is the time from the m_async_operation_info element at the moment
+          * the async_operation was placed at this element.
+          * Value passed via the lambda closure.
+          *
+          */ 
         void completionHandler_ts_v(int idx, std::chrono::high_resolution_clock::time_point start_time)
         {
             print(PRI1, "%p: CommService::completionHandler_ts(%d)\n", this, idx);
@@ -156,9 +210,14 @@ namespace corolib
 
         virtual ~CommService();
 
+        // Old implementation
+        // Still used by many examples. Should be faded out.
         int m_index;
         async_operation_base* m_async_operations[NROPERATIONS];
 
+        // New implementation
+        // Already used by the Boost examples.
+        // Will replace old implementation in the longer term.
         int m_index_ts;
         async_operation_info m_async_operation_info[NROPERATIONS];
     };
