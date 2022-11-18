@@ -19,13 +19,13 @@
 #include <QDebug>
 #include <QByteArray>
 
-const char STX = 0xff;		// STX = Start of Text
-const char ETX = 0xfe;		// ETX = End of Text
-const char DEL = 0xfd;		// DEL = Delimiter
+const char STX = static_cast<char>(0xff);		// STX = Start of Text
+const char ETX = static_cast<char>(0xfe);		// ETX = End of Text
+const char DEL = static_cast<char>(0xfd);		// DEL = Delimiter
 
-const char STX_STUFF = 0x02;
-const char ETX_STUFF = 0x01;
-const char DEL_STUFF = 0x00;
+const char STX_STUFF = static_cast<char>(0x02);
+const char ETX_STUFF = static_cast<char>(0x01);
+const char DEL_STUFF = static_cast<char>(0x00);
 
 enum MessageParsingState
 {

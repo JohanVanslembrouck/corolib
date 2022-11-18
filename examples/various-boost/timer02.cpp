@@ -82,7 +82,7 @@ async_task<int> Timer02::timerTask01()
         co_await op_timer1;
         print(PRI1, "--- timerTask01: after co_await op_timer1 --- 2000\n");
 
-        start_timer_impl(index, timer1, 0);
+        start_timer_impl(index, timer1, 3000);
         co_await op_timer1;
         print(PRI1, "--- timerTask01: after co_await op_timer1 --- 3000\n");
 

@@ -109,14 +109,16 @@ async_task<int> Timer01::timerTask01()
     QTimer timer1(this);
     timer1.setSingleShot(true);
 
-    async_operation<void> op_timer1 = start_timer(timer1, 0);
+    async_operation<void> op_timer1 = start_timer(timer1, 500);
     op_timer1.auto_reset(true);
 
     co_await op_timer1;
-    print(PRI1, "--- timerTask01: after co_await op_timer1 --- 0\n");
+    print(PRI1, "--- timerTask01: after co_await op_timer1 --- 500\n");
 
     for (int i = 0; i < 3; i++)
     {
+        print(PRI1, "--- timerTask01: i = %d\n", i);
+
         timer1.start(1000);
         co_await op_timer1;
         print(PRI1, "--- timerTask01: after co_await op_timer1 --- 1000\n");
@@ -155,18 +157,20 @@ async_task<int> Timer01::timerTask02()
     QTimer timer2(this);
     timer2.setSingleShot(true);
 
-    async_operation<void> op_timer1 = start_timer(timer1, 0);
+    async_operation<void> op_timer1 = start_timer(timer1, 500);
     op_timer1.auto_reset(true);
-    async_operation<void> op_timer2 = start_timer(timer2, 0);
+    async_operation<void> op_timer2 = start_timer(timer2, 550);
     op_timer2.auto_reset(true);
 
     co_await op_timer1;
-    print(PRI1, "--- timerTask02: after co_await op_timer1 --- 0\n");
+    print(PRI1, "--- timerTask02: after co_await op_timer1 --- 500\n");
     co_await op_timer2;
-    print(PRI1, "--- timerTask02: after co_await op_timer2 --- 0\n");
+    print(PRI1, "--- timerTask02: after co_await op_timer2 --- 550\n");
 
     for (int i = 0; i < 3; i++)
     {
+        print(PRI1, "--- timerTask02: i = %d\n", i);
+
         timer1.start(1000);
         timer2.start(1500);
 
@@ -225,18 +229,20 @@ async_task<int> Timer01::timerTask03()
     QTimer timer2(this);
     timer2.setSingleShot(true);
 
-    async_operation<void> op_timer1 = start_timer(timer1, 0);
+    async_operation<void> op_timer1 = start_timer(timer1, 500);
     op_timer1.auto_reset(true);
-    async_operation<void> op_timer2 = start_timer(timer2, 0);
+    async_operation<void> op_timer2 = start_timer(timer2, 550);
     op_timer2.auto_reset(true);
 
     co_await op_timer2;
-    print(PRI1, "--- timerTask03: after co_await op_timer2 --- 0\n");
+    print(PRI1, "--- timerTask03: after co_await op_timer2 --- 550\n");
     co_await op_timer1;
-    print(PRI1, "--- timerTask03: after co_await op_timer1 --- 0\n");
+    print(PRI1, "--- timerTask03: after co_await op_timer1 --- 500\n");
 
     for (int i = 0; i < 3; i++)
     {
+        print(PRI1, "--- timerTask03: i = %d\n", i);
+
         timer1.start(1000);
         timer2.start(1500);
 
@@ -295,23 +301,26 @@ async_task<int> Timer01::timerTask04()
     QTimer timer2(this);
     timer2.setSingleShot(true);
 
-    async_operation<void> op_timer1 = start_timer(timer1, 0);
+    async_operation<void> op_timer1 = start_timer(timer1, 500);
     op_timer1.auto_reset(true);
 
     co_await op_timer1;
-    print(PRI1, "--- timerTask04: after co_await op_timer1 --- 0\n");
+    print(PRI1, "--- timerTask04: after co_await op_timer1 --- 500\n");
 
     for (int i = 0; i < 5; i++)
     {
+        print(PRI1, "--- timerTask04: i = %d\n", i);
+
         print(PRI1, "--- timerTask04: --------------------------- \n");
         timer1.start(1000);
         co_await op_timer1;
         print(PRI1, "--- timerTask04: after co_await op_timer1 --- 1000\n");
-
+#if 1
         async_operation<void> op_timer2 = start_timer(timer2, 2000, true);
+        op_timer2.auto_reset(true);
         co_await op_timer2;
         print(PRI1, "--- timerTask04: after co_await op_timer2 --- 2000\n");
-
+#endif
         timer1.start(5000);
         co_await op_timer1;
         print(PRI1, "--- timerTask04: after co_await op_timer1 --- 5000\n");

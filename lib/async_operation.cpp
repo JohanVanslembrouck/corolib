@@ -23,7 +23,11 @@ namespace corolib
      */
     async_operation_base::async_operation_base(CommService* s, int index, bool timestamp)
         : m_service(s)
+#if RESUME_MULTIPLE_COROUTINES
+        , m_awaitings{}
+#else
         , m_awaiting(nullptr)           // initialized in await_suspend()
+#endif
         , m_ctr(nullptr)
         , m_waitany(nullptr)
         , m_index(index)
@@ -52,7 +56,11 @@ namespace corolib
         }
         m_index = -1;
 
+#if RESUME_MULTIPLE_COROUTINES
+        // m_awaitings
+#else
         m_awaiting = nullptr;
+#endif
         m_ctr = nullptr;
         m_waitany = nullptr;
         m_service = nullptr;
@@ -67,7 +75,11 @@ namespace corolib
      */
     async_operation_base::async_operation_base(async_operation_base&& s) noexcept
         : m_service(s.m_service)
+#if RESUME_MULTIPLE_COROUTINES
+        , m_awaitings(s.m_awaitings)
+#else
         , m_awaiting(s.m_awaiting)
+#endif
         , m_ctr(s.m_ctr)
         , m_waitany(s.m_waitany)
         , m_index(s.m_index)
@@ -84,7 +96,11 @@ namespace corolib
         }
 
         s.m_service = nullptr;
+#if RESUME_MULTIPLE_COROUTINES
+        s.m_awaitings.clear();
+#else
         s.m_awaiting = nullptr;
+#endif
         s.m_ctr = nullptr;
         s.m_waitany = nullptr;
         s.m_index = -1;        // indicates move
@@ -109,7 +125,11 @@ namespace corolib
         }
 
         m_service = s.m_service;
+#if RESUME_MULTIPLE_COROUTINES
+        m_awaitings = s.m_awaitings;
+#else
         m_awaiting = s.m_awaiting;
+#endif
  
         // The following 2 tests allow an async_operation that takes part in
         // a when_all or when_any to be re-assigned.
@@ -138,7 +158,11 @@ namespace corolib
         }
 
         s.m_service = nullptr;
+#if RESUME_MULTIPLE_COROUTINES
+        s.m_awaitings.clear();
+#else
         s.m_awaiting = nullptr;
+#endif
         s.m_ctr = nullptr;
         s.m_waitany = nullptr;
         s.m_index = -1;        // indicates move
@@ -154,30 +178,55 @@ namespace corolib
      */
     void async_operation_base::completed()
     {
-        print(PRI2, "%p: async_operation_base::completed()\n", this);
+        print(PRI2, "%p: async_operation_base::completed(): m_index = %d\n", this, m_index);
+#if RESUME_MULTIPLE_COROUTINES
+        if (m_awaitings.size())
+        {
+            std::vector<std::coroutine_handle<>> tmp;
+
+            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, m_awaitings.size() = %d\n", this, m_index, m_awaitings.size());
+
+            for (std::size_t i = 0; i < m_awaitings.size(); i++)
+            {
+                tmp.push_back(m_awaitings[i]);
+            }
+
+            m_awaitings.clear();
+
+            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, tmp.size() = %d\n", this, m_index, tmp.size());
+
+            for (std::size_t i = 0; i < tmp.size(); i++)
+            {
+                print(PRI2, "%p: async_operation_base::completed(): before tmp[%d].resume();\n", this, i);
+                tmp[i].resume();
+                print(PRI2, "%p: async_operation_base::completed(): after tmp[%d].resume();\n", this, i);
+            }
+            m_ready = true;
+        }
+#else
         if (m_awaiting)
         {
-            print(PRI2, "%p: async_operation_base::completed(): before m_awaiting.resume();\n", this);
+            print(PRI2, "%p: async_operation_base::completed(): : m_index = %d, before m_awaiting.resume();\n", this, m_index);
             m_awaiting.resume();
-            m_ready = true;
-            print(PRI2, "%p: async_operation_base::completed(): after m_awaiting.resume();\n", this);
+            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, after m_awaiting.resume();\n", this, m_index);
         }
+#endif
         else if (m_ctr)
         {
-            print(PRI2, "%p: async_operation_base::completed(): before m_ctr->completed();\n", this);
+            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, before m_ctr->completed();\n", this, m_index);
             m_ctr->completed();
-            print(PRI2, "%p: async_operation_base::completed(): after m_ctr->completed();\n", this);
+            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, after m_ctr->completed();\n", this, m_index);
         }
         else if (m_waitany)
         {
-            print(PRI2, "%p: async_operation_base::completed(): before m_waitany->completed();\n", this);
+            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, before m_waitany->completed();\n", this, m_index);
             m_waitany->completed();
-            print(PRI2, "%p: async_operation_base::completed(): after m_waitany->completed();\n", this);
+            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, after m_waitany->completed();\n", this, m_index);
         }
         else
         {
-            print(PRI2, "%p: async_operation_base::completed(): m_awaiting not yet initialized!!!\n", this);
-            print(PRI2, "%p: async_operation_base::completed(): operation completed before co_waited!!\n", this);
+            print(PRI1, "%p: async_operation_base::completed(): m_index = %d, m_awaiting not (yet) initialized!\n", this, m_index);
+            print(PRI1, "%p: async_operation_base::completed(): m_index = %d, operation completed before co_waited!\n", this, m_index);
             m_ready = true;     // Set to completed.
         }
     }

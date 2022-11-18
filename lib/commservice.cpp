@@ -13,6 +13,8 @@
 namespace corolib
 {
 
+async_operation_base reserved;
+
 CommService::CommService()
     : m_index(-1)
     , m_index_ts(-1)
@@ -48,6 +50,7 @@ int CommService::get_free_index()
         {
             // Found free entry
             print(PRI2, "%p: CommService::get_free_index() returns %d\n", this, m_index);
+            m_async_operations[m_index] = &reserved;
             return m_index;
         }
     }
@@ -84,7 +87,7 @@ void CommService::add_entry(int index, async_operation_base* op, bool timestamp)
 
     if (!timestamp)
     {
-        if (m_async_operations[index] == nullptr)
+        if (m_async_operations[index] == &reserved)
         {
             // Entry is still free
             m_async_operations[index] = op;

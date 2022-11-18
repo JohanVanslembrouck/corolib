@@ -517,7 +517,7 @@ void TcpClientCo1::start_reading_impl(const int idx)
  */
 void TcpClientCo1::stop_reading(int idx)
 {
-
+    (void) idx;
 }
 
 /**

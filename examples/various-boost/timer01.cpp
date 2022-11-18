@@ -74,29 +74,36 @@ async_task<int> Timer01::timerTask01()
 {
     steady_timer timer1(m_ioContext);
 
-    async_operation<void> op_timer1 = start_timer(timer1, 1000);
+    async_operation<void> op_timer1 = start_timer(timer1, 500);
     op_timer1.auto_reset(true);
     co_await op_timer1;
-    print(PRI1, "--- timerTask01: after co_await op_timer1 --- 1000\n");
+    print(PRI1, "--- timerTask01: after co_await op_timer1 --- 550\n");
 
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 5; i++)
     {
+        print(PRI1, "--- timerTask01: i = %d\n", i);
+
+        print(PRI1, "--- timerTask01: async_operation<void> op_timer1a = start_timer(timer1, 1000)\n");
         async_operation<void> op_timer1a = start_timer(timer1, 1000);
         co_await op_timer1a;
         print(PRI1, "--- timerTask01: after co_await op_timer1a --- 1000\n");
 
+        print(PRI1, "--- timerTask01: async_operation<void> op_timer1b = start_timer(timer1, 2000)\n");
         async_operation<void> op_timer1b = start_timer(timer1, 2000);
         co_await op_timer1b;
         print(PRI1, "--- timerTask01: after co_await op_timer1b --- 2000\n");
 
-        async_operation<void> op_timer1c = start_timer(timer1, 0);
+        print(PRI1, "--- timerTask01: async_operation<void> op_timer1c = start_timer(timer1, 3000)\n");
+        async_operation<void> op_timer1c = start_timer(timer1, 3000);
         co_await op_timer1c;
         print(PRI1, "--- timerTask01: after co_await op_timer1c --- 3000\n");
 
+        print(PRI1, "--- timerTask01: async_operation<void> op_timer1d = start_timer(timer1, 4000)\n");
         async_operation<void> op_timer1d = start_timer(timer1, 4000);
         co_await op_timer1d;
         print(PRI2, "--- timerTask01: after co_await op_timer1d --- 4000\n");
 
+        print(PRI1, "--- timerTask01: async_operation<void> op_timer1e = start_timer(timer1, 5000)\n");
         async_operation<void> op_timer1e = start_timer(timer1, 5000);
         co_await op_timer1e;
         print(PRI1, "--- timerTask01: after co_await op_timer1e --- 5000\n");
@@ -114,19 +121,23 @@ async_task<int> Timer01::timerTask02()
     steady_timer timer1(m_ioContext);
     steady_timer timer2(m_ioContext);
 
-    async_operation<void> op_timer1 = start_timer(timer1, 1000);
+    async_operation<void> op_timer1 = start_timer(timer1, 500);
     op_timer1.auto_reset(true);
-    async_operation<void> op_timer2 = start_timer(timer2, 1000);
+    async_operation<void> op_timer2 = start_timer(timer2, 550);
     op_timer2.auto_reset(true);
 
     co_await op_timer1;
-    print(PRI1, "--- timerTask02: after co_await op_timer1 --- 1000\n");
+    print(PRI1, "--- timerTask02: after co_await op_timer1 --- 500\n");
     co_await op_timer2;
-    print(PRI1, "--- timerTask02: after co_await op_timer2 --- 1000\n");
+    print(PRI1, "--- timerTask02: after co_await op_timer2 --- 550\n");
 
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 5; i++)
     {
+        print(PRI1, "--- timerTask02: i = %d\n", i);
+
+        print(PRI1, "--- timerTask02: async_operation<void> op_timer1a = start_timer(timer1, 1000)\n");
         async_operation<void> op_timer1a = start_timer(timer1, 1000);
+        print(PRI1, "--- timerTask02: async_operation<void> op_timer2a = start_timer(timer2, 1000)\n");
         async_operation<void> op_timer2a = start_timer(timer2, 1500);
 
         co_await op_timer1a;
@@ -134,7 +145,9 @@ async_task<int> Timer01::timerTask02()
         co_await op_timer2a;
         print(PRI1, "--- timerTask02: after co_await op_timer2b --- 1500\n");
 
+        print(PRI1, "--- timerTask02: async_operation<void> op_timer1b = start_timer(timer1, 2000)\n");
         async_operation<void> op_timer1b = start_timer(timer1, 2000);
+        print(PRI1, "--- timerTask02: async_operation<void> op_timer2b = start_timer(timer2, 2500)\n");
         async_operation<void> op_timer2b = start_timer(timer2, 2500);
 
         co_await op_timer1b;
@@ -142,7 +155,9 @@ async_task<int> Timer01::timerTask02()
         co_await op_timer2b;
         print(PRI1, "--- timerTask02: after co_await op_timer2b --- 2500\n");
 
+        print(PRI1, "--- timerTask02: async_operation<void> op_timer1c = start_timer(timer1, 3000)\n");
         async_operation<void> op_timer1c = start_timer(timer1, 3000);
+        print(PRI1, "--- timerTask02: async_operation<void> op_timer2c = start_timer(timer2, 3500)\n");
         async_operation<void> op_timer2c = start_timer(timer2, 3500);
 
         co_await op_timer1c;
@@ -150,7 +165,9 @@ async_task<int> Timer01::timerTask02()
         co_await op_timer2c;
         print(PRI1, "--- timerTask02: after co_await op_timer2c --- 3500\n");
 
+        print(PRI1, "--- timerTask02: async_operation<void> op_timer1d = start_timer(timer1, 4000)\n");
         async_operation<void> op_timer1d = start_timer(timer1, 4000);
+        print(PRI1, "--- timerTask02: async_operation<void> op_timer2d = start_timer(timer2, 4500)\n");
         async_operation<void> op_timer2d = start_timer(timer2, 4500);
 
         co_await op_timer1d;
@@ -158,7 +175,9 @@ async_task<int> Timer01::timerTask02()
         co_await op_timer2d;
         print(PRI1, "--- timerTask02: after co_await op_timer2d --- 4500\n");
 
+        print(PRI1, "--- timerTask02: async_operation<void> op_timer1e = start_timer(timer1, 5000)\n");
         async_operation<void> op_timer1e = start_timer(timer1, 5000);
+        print(PRI1, "--- timerTask02: async_operation<void> op_timer2e = start_timer(timer2, 5500)\n");
         async_operation<void> op_timer2e = start_timer(timer2, 5500);
 
         co_await op_timer1e;
@@ -179,19 +198,23 @@ async_task<int> Timer01::timerTask03()
     steady_timer timer1(m_ioContext);
     steady_timer timer2(m_ioContext);
 
-    async_operation<void> op_timer1 = start_timer(timer1, 1000);
+    async_operation<void> op_timer1 = start_timer(timer1, 500);
     op_timer1.auto_reset(true);
-    async_operation<void> op_timer2 = start_timer(timer2, 1000);
+    async_operation<void> op_timer2 = start_timer(timer2, 550);
     op_timer2.auto_reset(true);
 
     co_await op_timer1;
-    print(PRI1, "--- timerTask03: after co_await op_timer1 --- 1000\n");
+    print(PRI1, "--- timerTask03: after co_await op_timer1 --- 500\n");
     co_await op_timer2;
-    print(PRI1, "--- timerTask03: after co_await op_timer2 --- 1000\n");
+    print(PRI1, "--- timerTask03: after co_await op_timer2 --- 550\n");
 
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 5; i++)
     {
+        print(PRI1, "--- timerTask03: i = %d\n", i);
+
+        print(PRI1, "--- timerTask03: async_operation<void> op_timer1a = start_timer(timer1, 1000)\n");
         async_operation<void> op_timer1a = start_timer(timer1, 1000);
+        print(PRI1, "--- timerTask03: async_operation<void> op_timer2a = start_timer(timer2, 1500)\n");
         async_operation<void> op_timer2a = start_timer(timer2, 1500);
 
         co_await op_timer2a;
@@ -199,7 +222,9 @@ async_task<int> Timer01::timerTask03()
         co_await op_timer1a;
         print(PRI1, "--- timerTask03: after co_await op_timer1a --- 1000\n");
 
+        print(PRI1, "--- timerTask03: async_operation<void> op_timer1b = start_timer(timer1, 2000)\n");
         async_operation<void> op_timer1b = start_timer(timer1, 2000);
+        print(PRI1, "--- timerTask03: async_operation<void> op_timer2b = start_timer(timer2, 2500)\n");
         async_operation<void> op_timer2b = start_timer(timer2, 2500);
 
         co_await op_timer2b;
@@ -207,7 +232,9 @@ async_task<int> Timer01::timerTask03()
         co_await op_timer1b;
         print(PRI1, "--- timerTask03: after co_await op_timer1b --- 2000\n");
         
+        print(PRI1, "--- timerTask03: async_operation<void> op_timer1c = start_timer(timer1, 3000)\n");
         async_operation<void> op_timer1c = start_timer(timer1, 3000);
+        print(PRI1, "--- timerTask03: async_operation<void> op_timer2c = start_timer(timer2, 3500)\n");
         async_operation<void> op_timer2c = start_timer(timer2, 3500);
 
         co_await op_timer2c;
@@ -215,7 +242,9 @@ async_task<int> Timer01::timerTask03()
         co_await op_timer1c;
         print(PRI1, "--- timerTask03: after co_await op_timer1c --- 3000\n");
        
+        print(PRI1, "--- timerTask03: async_operation<void> op_timer1d = start_timer(timer1, 4000)\n");
         async_operation<void> op_timer1d = start_timer(timer1, 4000);
+        print(PRI1, "--- timerTask03: async_operation<void> op_timer2d = start_timer(timer2, 4500)\n");
         async_operation<void> op_timer2d = start_timer(timer2, 4500);
 
         co_await op_timer2d;
@@ -223,7 +252,9 @@ async_task<int> Timer01::timerTask03()
         co_await op_timer1d;
         print(PRI1, "--- timerTask03: after co_await op_timer1d --- 4000\n");
        
+        print(PRI1, "--- timerTask03: async_operation<void> op_timer1e = start_timer(timer1, 5000)\n");
         async_operation<void> op_timer1e = start_timer(timer1, 5000);
+        print(PRI1, "--- timerTask03: async_operation<void> op_timer2e = start_timer(timer2, 5500)\n");
         async_operation<void> op_timer2e = start_timer(timer2, 5500);
 
         co_await op_timer2e;
@@ -245,46 +276,58 @@ async_task<int> Timer01::timerTask04()
     steady_timer timer1(m_ioContext);
     steady_timer timer2(m_ioContext);
 
-    async_operation<void> op_timer1 = start_timer(timer1, 1000);
+    async_operation<void> op_timer1 = start_timer(timer1, 500);
     op_timer1.auto_reset(true);
-    async_operation<void> op_timer2 = start_timer(timer2, 1000);
+    async_operation<void> op_timer2 = start_timer(timer2, 550);
     op_timer2.auto_reset(true);
 
     when_all<async_operation<void>> wa({ &op_timer1, &op_timer2 });
     co_await wa;
-    print(PRI1, "--- timerTask04: after co_await wa --- 1000 + 1000\n");
+    print(PRI1, "--- timerTask04: after co_await wa --- 500 + 550\n");
 
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 5; i++)
     {
+        print(PRI1, "--- timerTask04: i = %d\n", i);
+
+        print(PRI1, "--- timerTask04: async_operation<void> op_timer1a = start_timer(timer1, 1000)\n");
         async_operation<void> op_timer1a = start_timer(timer1, 1000);
+        print(PRI1, "--- timerTask04: async_operation<void> op_timer2a = start_timer(timer2, 1500)\n");
         async_operation<void> op_timer2a = start_timer(timer2, 1500);
 
         when_all<async_operation<void>> wa1({ &op_timer1a, &op_timer2a });
         co_await wa1;
         print(PRI1, "--- timerTask04: after co_await wa1 --- 1000 + 1500\n");
 
+        print(PRI1, "--- timerTask04: async_operation<void> op_timer1b = start_timer(timer1, 2000)\n");
         async_operation<void> op_timer1b = start_timer(timer1, 2000);
+        print(PRI1, "--- timerTask04: async_operation<void> op_timer2b = start_timer(timer2, 2500)\n");
         async_operation<void> op_timer2b = start_timer(timer2, 2500);
         
         when_all<async_operation<void>> wa2({ &op_timer1b, &op_timer2b });
         co_await wa2;
         print(PRI1, "--- timerTask04: after co_await wa2 --- 2000 + 2500\n");
     
+        print(PRI1, "--- timerTask04: async_operation<void> op_timer1c = start_timer(timer1, 3000)\n");
         async_operation<void> op_timer1c = start_timer(timer1, 3000);
+        print(PRI1, "--- timerTask04: async_operation<void> op_timer2c = start_timer(timer2, 3500)\n");
         async_operation<void> op_timer2c = start_timer(timer2, 3500);
        
         when_all<async_operation<void>> wa3({ &op_timer1c, &op_timer2c });
         co_await wa3;
         print(PRI1, "--- timerTask04: after co_await wa3 --- 3000 + 3500\n");
         
+        print(PRI1, "--- timerTask04: async_operation<void> op_timer1d = start_timer(timer1, 4000)\n");
         async_operation<void> op_timer1d = start_timer(timer1, 4000);
+        print(PRI1, "--- timerTask04: async_operation<void> op_timer2d = start_timer(timer2, 4500)\n");
         async_operation<void> op_timer2d = start_timer(timer2, 4500);
 
         when_all<async_operation<void>> wa4({ &op_timer1d, &op_timer2d });
         co_await wa4;
         print(PRI1, "--- timerTask04: after co_await wa4 --- 4000 + 4500\n");
         
+        print(PRI1, "--- timerTask04: async_operation<void> op_timer1e = start_timer(timer1, 5000)\n");
         async_operation<void> op_timer1e = start_timer(timer1, 5000);
+        print(PRI1, "--- timerTask04: async_operation<void> op_timer2e = start_timer(timer2, 5500)\n");
         async_operation<void> op_timer2e = start_timer(timer2, 5500);
 
         when_all<async_operation<void>> wa5({ &op_timer1e, &op_timer2e });

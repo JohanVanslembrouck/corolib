@@ -14,6 +14,12 @@
 #ifndef _ASYNC_OPERATION_H_
 #define _ASYNC_OPERATION_H_
 
+#define RESUME_MULTIPLE_COROUTINES 1
+
+#if RESUME_MULTIPLE_COROUTINES
+#include <vector>
+#endif
+
 #include <coroutine>
 
 #include "print.h"
@@ -81,7 +87,11 @@ namespace corolib
         void reset()
         {
             m_ready = false;
+#if RESUME_MULTIPLE_COROUTINES
+            //m_awaitings.clear();  // make empty??? Should only do it for a single coroutine
+#else
             m_awaiting = nullptr;
+#endif
         }
 
         void auto_reset(bool autoreset)
@@ -91,7 +101,11 @@ namespace corolib
 
     protected:
         CommService* m_service;
+#if RESUME_MULTIPLE_COROUTINES
+        std::vector<std::coroutine_handle<>> m_awaitings;
+#else
         std::coroutine_handle<> m_awaiting;
+#endif
         when_all_counter* m_ctr;
         when_any_one* m_waitany;
         int m_index;
@@ -119,13 +133,6 @@ namespace corolib
             print(PRI2, "%p: async_operation<TYPE>::async_operation()\n", this);
         }
 
-#if 0
-        void set_result(std::string result)
-        {
-            print(PRI2, "%p: async_operation<TYPE>::set_result(...): result = %s\n", this, result.c_str());
-            m_result = result;
-        }
-#endif
         /**
          * @brief set_result sets the value of m_result.
          * This function has to be called from the callback function
@@ -165,23 +172,30 @@ namespace corolib
             public:
                 awaiter(async_operation& async_) :
                     m_async(async_)
-                {}
+                {
+                    print(PRI2, "%p: m_async = %p: async_operation<TYPE>::awaiter::awaiter()\n", this, &m_async);
+                }
 
                 bool await_ready()
                 {
-                    print(PRI2, "%p: m_async = %p: async_operation<TYPE>::await_ready(): return %d;\n", this, &m_async, m_async.m_ready);
+                    print(PRI2, "%p: m_async = %p: async_operation<TYPE>::awaiter::await_ready(): return %d;\n", this, &m_async, m_async.m_ready);
                     return m_async.m_ready;
                 }
 
                 void await_suspend(std::coroutine_handle<> awaiting)
                 {
-                    print(PRI2, "%p: m_async = %p: async_operation<TYPE>::await_suspend(...)\n", this, &m_async);
+                    print(PRI2, "%p: m_async = %p: async_operation<TYPE>::awaiter::await_suspend(...)\n", this, &m_async);
+#if RESUME_MULTIPLE_COROUTINES
+                    m_async.m_awaitings.push_back(awaiting);
+#else
                     m_async.m_awaiting = awaiting;
+#endif
                 }
 
                 TYPE await_resume()
                 {
                     print(PRI2, "%p: m_async = %p: async_operation<TYPE>::await_resume()\n", this, &m_async);
+                    // To be placed in void async_operation_base::completed(); // ???
                     if (m_async.m_autoreset)
                         m_async.reset();
                     return m_async.m_result;
@@ -224,12 +238,17 @@ namespace corolib
                 void await_suspend(std::coroutine_handle<> awaiting)
                 {
                     print(PRI2, "%p: m_async = %p: async_operation<void>::await_suspend(...)\n", this, &m_async);
+#if RESUME_MULTIPLE_COROUTINES
+                    m_async.m_awaitings.push_back(awaiting);
+#else
                     m_async.m_awaiting = awaiting;
+#endif
                 }
 
                 void await_resume()
                 {
                     print(PRI2, "%p: m_async = %p: async_operation<void>::await_resume()\n", this, &m_async);
+                    // To be placed in void async_operation_base::completed(); // ???
                     if (m_async.m_autoreset)
                         m_async.reset();
                 }
