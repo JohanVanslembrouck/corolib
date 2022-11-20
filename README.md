@@ -143,9 +143,15 @@ It shows the return type of the asynchronous operation, making it easier to find
 for several asynchronous operation invocations that return an object of the same type.
 Therefore the object has to be declared explicitly.
 
-5. The proposed style is closer to the polling style used in CORBA AMI.
+5. corolib allows declaring an async_operation<aType> object up-front and starting the asynchronous operation afterwards.
+In between the declaration and the start (or after the start), one or more coroutines can co_wait on the async_operation<aType> object.
+All coroutines that co_await-ed the async_operation<aType> object will be resumed when the asynchronous operation completes.
 
-	The reader is referred again to reading/CORBA-AMI.md for more information on this approach.
+    The reader is referred to examples\various-boost\timer03.cpp and examples\various-qt\timer03.cpp for examples.
+
+6. The proposed style is closer to the polling style used in CORBA AMI.
+
+    The reader is referred again to reading/CORBA-AMI.md for more information on this approach.
 
 
 ## Organization of corolib

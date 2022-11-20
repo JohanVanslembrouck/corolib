@@ -1,5 +1,5 @@
 /**
- * @file timer01.cpp
+ * @file timer02.cpp
  * @brief
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
@@ -10,23 +10,23 @@
 
 #include <corolib/when_all.h>
 
-#include "timer01.h"
+#include "timer02.h"
 
 /**
- * @brief Timer01::Timer01
+ * @brief Timer02::Timer02
  * @param parent
  */
-Timer01::Timer01(QObject *parent)
+Timer02::Timer02(QObject *parent)
     : QObject(parent)
 {
     qDebug() << Q_FUNC_INFO;
 }
 
 /**
- * @brief Timer01::start
- * called from main() after having created a Timer01 object
+ * @brief Timer02::start
+ * called from main() after having created a Timer02 object
  */
-void Timer01::start()
+void Timer02::start()
 {
     qInfo() << Q_FUNC_INFO;
   
@@ -37,42 +37,38 @@ void Timer01::start()
 // =================
 
 /**
- * @brief Timer01::start_timer starts a timer.
- * This function must only be called to create and return an async_operation<void> object
- * that afterwards can be reused.
- * The associated Qt timer must then be restarted using timerX.start(timeout);
- *
+ * @brief Timer02::start_timer
  * @param timer
  * @param ms
  * @param doDisconnect
  * @return
  */
-async_operation<void> Timer01::start_timer(QTimer& timer, int ms, bool doDisconnect)
+async_operation<void> Timer02::start_timer(QTimer& timer, int ms, bool doDisconnect)
 {
     int index = get_free_index();
-    print(PRI1, "%p: Timer01::start_timer(): index = %d\n", this, index);
+    print(PRI1, "%p: Timer02::start_timer(): index = %d\n", this, index);
     async_operation<void> ret{ this, index };
     start_timer_impl(index, timer, ms, doDisconnect);
     return ret;
 }
 
 /**
- * @brief Timer01::start_timer_impl
+ * @brief Timer02::start_timer_impl
  * @param idx
  * @param tmr
  * @param ms
  * @param doDisconnect
  */
-void Timer01::start_timer_impl(const int idx, QTimer& tmr, int ms, bool doDisconnect)
+void Timer02::start_timer_impl(const int idx, QTimer& tmr, int ms, bool doDisconnect)
 {
-    print(PRI1, "%p: Timer01::start_timer_impl(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
+    print(PRI1, "%p: Timer02::start_timer_impl(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
 
     tmr.start(ms);
 
     m_connections[idx] = connect(&tmr, &QTimer::timeout,
         [this, idx, doDisconnect]()
         {
-            print(PRI1, "%p: Timer01::handle_timer() lambda: idx = %d\n", this, idx);
+            print(PRI1, "%p: Timer02::handle_timer() lambda: idx = %d\n", this, idx);
 
             async_operation_base* om_async_operation = m_async_operations[idx];
             async_operation<void>* om_async_operation_t =
@@ -85,14 +81,57 @@ void Timer01::start_timer_impl(const int idx, QTimer& tmr, int ms, bool doDiscon
             else
             {
                 // This can occur when the async_operation_base has gone out of scope.
-                print(PRI1, "%p: Timer01::handle_timer(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
+                print(PRI1, "%p: Timer02::handle_timer(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
             }
             if (doDisconnect)
             {
-                print(PRI1, "%p: Timer01::handle_timer(): idx = %d, disconnecting\n", this, idx);
+                print(PRI1, "%p: Timer02::handle_timer(): idx = %d, disconnecting\n", this, idx);
                 if (!disconnect(m_connections[idx]))
                 {
-                    print(PRI1, "%p: Timer01::handle_timer(): idx = %d, Warning: disconnect failed\n", this, idx);
+                    print(PRI1, "%p: Timer02::handle_timer(): idx = %d, Warning: disconnect failed\n", this, idx);
+                }
+            }
+        }
+    );
+}
+
+/**
+ * @brief Timer02::connect_to_timer
+ * @param async_op
+ * @param tmr
+ * @param conn
+ * @param doDisconnect
+ */
+void Timer02::connect_to_timer(async_operation_base& async_op, QTimer& tmr, QMetaObject::Connection& conn, bool doDisconnect)
+{
+	async_operation_base* p_async_op = &async_op;
+	QMetaObject::Connection* p_conn = &conn;
+	
+    print(PRI1, "%p: Timer02::connect_to_timer()\n");
+
+    conn = connect(&tmr, &QTimer::timeout,
+        [this, p_async_op, p_conn, doDisconnect]()
+        {
+            print(PRI1, "%p: Timer02::handle_timer() lambda\n", this);
+
+            async_operation<void>* om_async_operation_t =
+                dynamic_cast<async_operation<void>*>(p_async_op);
+
+            if (om_async_operation_t)
+            {
+                om_async_operation_t->completed();
+            }
+            else
+            {
+                // This can occur when the async_operation_base has gone out of scope.
+                print(PRI1, "%p: Timer02::handle_timer(): Warning: p_async_op == nullptr\n", this);
+            }
+            if (doDisconnect)
+            {
+                print(PRI1, "%p: Timer02::handle_timer(): disconnecting\n", this);
+                if (!disconnect(*p_conn))
+                {
+                    print(PRI1, "%p: Timer02::handle_timer(): Warning: disconnect failed\n", this);
                 }
             }
         }
@@ -103,19 +142,22 @@ void Timer01::start_timer_impl(const int idx, QTimer& tmr, int ms, bool doDiscon
 // ================
 
 /**
- * @brief Timer01::timerTask01
+ * @brief Timer02::timerTask01
  * @return
  */
-async_task<int> Timer01::timerTask01()
+async_task<int> Timer02::timerTask01()
 {
     qDebug() << Q_FUNC_INFO << "begin";
 
+    QMetaObject::Connection conn1;
     QTimer timer1(this);
     timer1.setSingleShot(true);
 
-    async_operation<void> op_timer1 = start_timer(timer1, 500);
+    async_operation<void> op_timer1(this);
     op_timer1.auto_reset(true);
-
+    connect_to_timer(op_timer1, timer1, conn1); 
+	
+    timer1.start(500);
     co_await op_timer1;
     print(PRI1, "--- timerTask01: after co_await op_timer1 --- 500\n");
 
@@ -149,23 +191,32 @@ async_task<int> Timer01::timerTask01()
 }
 
 /**
- * @brief Timer01::timerTask02
+ * @brief Timer02::timerTask02
  * @return
  */
-async_task<int> Timer01::timerTask02()
+async_task<int> Timer02::timerTask02()
 {
     qDebug() << Q_FUNC_INFO << "begin";
 
+    QMetaObject::Connection conn1;
     QTimer timer1(this);
     timer1.setSingleShot(true);
+	
+	QMetaObject::Connection conn2;
     QTimer timer2(this);
     timer2.setSingleShot(true);
 
-    async_operation<void> op_timer1 = start_timer(timer1, 500);
+    async_operation<void> op_timer1(this);
     op_timer1.auto_reset(true);
-    async_operation<void> op_timer2 = start_timer(timer2, 550);
+    async_operation<void> op_timer2(this);
     op_timer2.auto_reset(true);
 
+    connect_to_timer(op_timer1, timer1, conn1); 
+    connect_to_timer(op_timer2, timer2, conn2); 
+	
+	timer1.start(500);
+    timer2.start(550);
+		
     co_await op_timer1;
     print(PRI1, "--- timerTask02: after co_await op_timer1 --- 500\n");
     co_await op_timer2;
@@ -221,23 +272,32 @@ async_task<int> Timer01::timerTask02()
 }
 
 /**
- * @brief Timer01::timerTask03
+ * @brief Timer02::timerTask03
  * @return
  */
-async_task<int> Timer01::timerTask03()
+async_task<int> Timer02::timerTask03()
 {
     qDebug() << Q_FUNC_INFO << "begin";
 
+    QMetaObject::Connection conn1;
     QTimer timer1(this);
     timer1.setSingleShot(true);
+	
+	QMetaObject::Connection conn2;
     QTimer timer2(this);
     timer2.setSingleShot(true);
 
-    async_operation<void> op_timer1 = start_timer(timer1, 500);
+    async_operation<void> op_timer1(this);
     op_timer1.auto_reset(true);
-    async_operation<void> op_timer2 = start_timer(timer2, 550);
+    async_operation<void> op_timer2(this);
     op_timer2.auto_reset(true);
 
+    connect_to_timer(op_timer1, timer1, conn1); 
+    connect_to_timer(op_timer2, timer2, conn2); 
+	
+	timer1.start(500);
+    timer2.start(550);
+	
     co_await op_timer2;
     print(PRI1, "--- timerTask03: after co_await op_timer2 --- 550\n");
     co_await op_timer1;
@@ -293,21 +353,25 @@ async_task<int> Timer01::timerTask03()
 }
 
 /**
- * @brief Timer01::timerTask04
+ * @brief Timer02::timerTask04
  * @return
  */
-async_task<int> Timer01::timerTask04()
+async_task<int> Timer02::timerTask04()
 {
     qDebug() << Q_FUNC_INFO << "begin";
 
+    QMetaObject::Connection conn1;
     QTimer timer1(this);
     timer1.setSingleShot(true);
+
     QTimer timer2(this);
     timer2.setSingleShot(true);
-
-    async_operation<void> op_timer1 = start_timer(timer1, 500);
+	
+    async_operation<void> op_timer1(this);
     op_timer1.auto_reset(true);
-
+    connect_to_timer(op_timer1, timer1, conn1); 
+	
+    timer1.start(500);
     co_await op_timer1;
     print(PRI1, "--- timerTask04: after co_await op_timer1 --- 500\n");
 
@@ -335,10 +399,10 @@ async_task<int> Timer01::timerTask04()
 }
 
 /**
- * @brief Timer01::mainTask
+ * @brief Timer02::mainTask
  * @return
  */
-async_task<int> Timer01::mainTask()
+async_task<int> Timer02::mainTask()
 {
     qDebug() << Q_FUNC_INFO;
 

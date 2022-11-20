@@ -26,7 +26,7 @@ public:
 	void start();
 
 protected:
-	void start_timer_impl(const int idx, steady_timer& tmr, int ms);
+	void start_timer(async_operation_base& async_op, steady_timer& tmr, int ms);
 
 	async_task<int> mainTask();
 	async_task<int> timerTask01();

@@ -1,7 +1,7 @@
 /**
  * @file tcpclient03.cpp
  * @brief
- * Implementation of the second TCP client application
+ * Implementation of the third TCP client application. The only difference with tcpclient2.cpp is the use of tcpclientco1.h instead of tcpclientco.h.
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
@@ -214,7 +214,7 @@ int selectNextLoop(int loop)
     {
     case -10: return 0;
     case 0: return 1;
-    case 1: return 10;      // Skip 2
+    case 1: return 10;      // Skip 2: additional skip compared with tcpclient2.cpp
     case 2: return 10;
 
     case 10: return 12;     // Skip 11
@@ -226,7 +226,7 @@ int selectNextLoop(int loop)
     case 16: return 20;
 
     case 20: return 21;
-    case 21: return 30;     // Skip 22
+    case 21: return 30;     // Skip 22: additional skip compared with tcpclient2.cpp
     case 22: return 30;
 
     case 30: return 32;     // Skip 31
@@ -1771,4 +1771,3 @@ async_task<int> TcpClient03::measurementLoop77()
     m_selection = nr_message_lengths;
     co_return 0;
 }
-

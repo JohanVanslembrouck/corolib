@@ -223,8 +223,8 @@ public:
     async_operation(async_operation&& s)
         : m_service(s.m_service)
         , m_awaiting(s.m_awaiting)
-        , m_waiting_coroutine(s.m_waiting_coroutine)
         , m_ready(s.m_ready)
+        , m_waiting_coroutine(s.m_waiting_coroutine)
     {
         print(PRI2, "%p: async_operation::async_operation(eager&& s)\n", this);
         s.m_service = nullptr;

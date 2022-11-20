@@ -3,69 +3,79 @@
  * @brief This example shows how one instance of an async_operation<void> object
  * can be used to resume several coroutines that co_wait this object.
  *
- * Coroutines timerTask01a, timerTask01b and timerTask01c are identical (apart from the print lines).
- * In a more elaborate example, these coroutines could perform different actions when they are rssumed.
- *
- * This requires RESUME_MULTIPLE_COROUTINES = 1 in async_operation.h.
- * Otherwise, only the last coroutine that co_await the object will be resumed.
- *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
-#include "timer03.h"
+#include <QThread>
+#include <QDebug>
 
 #include <corolib/when_all.h>
 
+#include "timer03.h"
+
 /**
  * @brief Timer03::Timer03
- * @param ioContext
+ * @param parent
  */
-Timer03::Timer03(
-    boost::asio::io_context& ioContext)
-    : m_ioContext(ioContext)
-	, m_running(true)
+Timer03::Timer03(QObject *parent)
+    : QObject(parent)
+    , m_running(true)
 {
-    print(PRI1, "Timer03::Timer03(...)\n");
+    qDebug() << Q_FUNC_INFO;
 }
 
 /**
  * @brief Timer03::start
+ * called from main() after having created a Timer03 object
  */
 void Timer03::start()
 {
+    qInfo() << Q_FUNC_INFO;
+  
     mainTask();
 }
 
-/**
- * @brief Timer03::start_timer
- * @param idx
- * @param tmr
- * @param ms
- */
-void Timer03::start_timer(async_operation_base& async_op, steady_timer& tmr, int ms)
+// Coroutine related
+// =================
+
+void Timer03::connect_to_timer(async_operation_base& async_op, QTimer& tmr, QMetaObject::Connection& conn, bool doDisconnect)
 {
 	async_operation_base* p_async_op = &async_op;
+	QMetaObject::Connection* p_conn = &conn;
 	
-    print(PRI1, "%p: Timer03::start_timer(%p, tmr, %d)\n", this, p_async_op, ms);
+    print(PRI1, "%p: Timer03::connect_to_timer()\n");
 
-    tmr.expires_after(std::chrono::milliseconds(ms));
-
-    tmr.async_wait(
-        [this, p_async_op, ms](const boost::system::error_code& error)
+    conn = connect(&tmr, &QTimer::timeout,
+        [this, p_async_op, p_conn, doDisconnect]()
         {
-            print(PRI1, "%p: Timer03::handle_timer(): p_async_op = %p, ms = %d\n", this, p_async_op, ms);
-            
-            if (!error)
+            print(PRI1, "%p: Timer03::handle_timer() lambda\n", this);
+
+            async_operation<void>* om_async_operation_t =
+                dynamic_cast<async_operation<void>*>(p_async_op);
+
+            if (om_async_operation_t)
             {
-                completionHandler_v(p_async_op);
+                om_async_operation_t->completed();
             }
             else
             {
-                print(PRI1, "%p: Timer03::handle_timer(): p_async_op = %p, ms = %d, error on timer: %s\n", this, p_async_op, ms, error.message().c_str());
-                //stop();
+                // This can occur when the async_operation_base has gone out of scope.
+                print(PRI1, "%p: Timer03::handle_timer(): Warning: p_async_op == nullptr\n", this);
             }
-        });
+            if (doDisconnect)
+            {
+                print(PRI1, "%p: Timer03::handle_timer(): disconnecting\n", this);
+                if (!disconnect(*p_conn))
+                {
+                    print(PRI1, "%p: Timer03::handle_timer(): Warning: disconnect failed\n", this);
+                }
+            }
+        }
+    );
 }
+
+// Using coroutines
+// ================
 
 /**
  * @brief Timer03::timerTask01a
@@ -122,53 +132,57 @@ async_task<int> Timer03::timerTask01c(async_operation<void>& op_tmr)
 }
 
 /**
- * @brief Timer03::mainTask starts 3 coroutines (timerTask01a, timerTask01b, timerTask01c)
- * that will co_await op_timer1 (that is associated with timer1).
- * mainTask will co_await op_timer2 (that is associated with timer2).
- * mainTask will then start timer1 and timer2 a number of times.
- * When timer1 expires, the 3 coroutines will be resumed.
- *
+ * @brief Timer03::mainTask
  * @return
  */
 async_task<int> Timer03::mainTask()
 {
-    steady_timer timer1(m_ioContext);
-    steady_timer timer2(m_ioContext);
+    qDebug() << Q_FUNC_INFO;
+	
+    qDebug() << Q_FUNC_INFO << "begin";
 
-    print(PRI1, "%p: Timer03::mainTask\n", this);
-    async_operation<void> op_timer1{ this };
+    QMetaObject::Connection conn1;
+    QTimer timer1(this);
+    timer1.setSingleShot(true);
+	
+	QMetaObject::Connection conn2;
+    QTimer timer2(this);
+    timer2.setSingleShot(true);
+
+    async_operation<void> op_timer1(this);
     op_timer1.auto_reset(true);
-
-    print(PRI1, "%p: Timer03::mainTask\n", this);
-    async_operation<void> op_timer2{ this };
+    async_operation<void> op_timer2(this);
     op_timer2.auto_reset(true);
+
+    connect_to_timer(op_timer1, timer1, conn1); 
+    connect_to_timer(op_timer2, timer2, conn2); 
 
 	async_task<int> t1a = timerTask01a(op_timer1);
     async_task<int> t1b = timerTask01b(op_timer1);
     async_task<int> t1c = timerTask01c(op_timer1);
 	
-    start_timer(op_timer1, timer1, 1000);
-    start_timer(op_timer2, timer2, 1500);
+    timer1.start(1000);
+    timer2.start(1500);
 	co_await op_timer2;
     print(PRI1, "%p: Timer03::mainTask: after co_await op_timer2 1500\n", this);
 
-    start_timer(op_timer1, timer1, 2000);
-    start_timer(op_timer2, timer2, 2500);
+    timer1.start(2000);
+    timer2.start(2500);
 	co_await op_timer2;
     print(PRI1, "%p: Timer03::mainTask: after co_await op_timer2 2500\n", this);
 
-    start_timer(op_timer1, timer1, 3000);
-    start_timer(op_timer2, timer2, 3500);
+    timer1.start(3000);
+    timer2.start(3500);
     co_await op_timer2;
     print(PRI1, "%p: Timer03::mainTask: after co_await op_timer2 3500\n", this);
 
-    start_timer(op_timer1, timer1, 4000);
-    start_timer(op_timer2, timer2, 4500);
+    timer1.start(4000);
+    timer2.start(4500);
     co_await op_timer2;
     print(PRI1, "%p: Timer03::mainTask: after co_await op_timer2 4500\n", this);
 
-    start_timer(op_timer1, timer1, 5000);
-    start_timer(op_timer2, timer2, 5500);
+    timer1.start(5000);
+    timer2.start(5500);
     co_await op_timer2;
     print(PRI1, "%p: Timer03::mainTask: after co_await op_timer2 5500\n", this);
 
@@ -176,14 +190,13 @@ async_task<int> Timer03::mainTask()
 	m_running = false;
 	
 	// Start the timer: when it expires, the 3 coroutines will leave their loop.
-	start_timer(op_timer1, timer1, 1000);
-    start_timer(op_timer2, timer2, 1500);
-    co_await op_timer2;
-    print(PRI1, "%p: Timer03::mainTask: after co_await op_timer2 1000\n", this);
+	timer1.start(1000);
+	
+    print(PRI1, "--- mainTask: when_all<async_task<int>> wa({ &t1a, &t1b, &t1c });\n");
+    when_all<async_task<int>> wa({ &t1a, &t1b, &t1c });
+    print(PRI1, "--- mainTask: co_await wa;\n");
+    co_await wa;
 
-	when_all<async_task<int>> wa({ &t1a, &t1b, &t1c });
-	co_await wa;
-
-    print(PRI1, "--- mainTask: co_return 1;\n");
-    co_return 1;
+    print(PRI1, "--- mainTask: co_return 0;\n");
+    co_return 0;
 }

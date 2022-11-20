@@ -1,9 +1,9 @@
 /**
  * @file tcpclient02.h
  * @brief
- * Second TCP client application.
- * It uses two TcpClientCo data members for the communication with two server applications.
- * It uses coroutine functionality.
+ * Third TCP client application.
+ * It uses two TcpClientCo1 data members for the communication with two server applications.
+ * It uses coroutine functionality. The only difference with tcpclient2.cpp is the use of tcpclientco1.h instead of tcpclientco.h.
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */

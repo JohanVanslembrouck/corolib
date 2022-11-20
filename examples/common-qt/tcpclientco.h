@@ -2,6 +2,7 @@
  * @file tcpclientco.h
  * @brief TCP client class.
  * Uses coroutines.
+ * See README.md file for further explanation.
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */

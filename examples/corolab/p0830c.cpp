@@ -144,6 +144,42 @@ struct async_task {
         bool m_waiting_coroutine;
     };
 
+    auto operator co_await() noexcept
+    {
+        class awaiter
+        {
+        public:
+            awaiter(async_task& async_task_)
+                : m_async_task(async_task_)
+            {}
+
+            bool await_ready()
+            {
+                const bool ready = m_async_task.coro.done();
+                print("%p: m_async_task::await_ready(): return %d;\n", this, ready);
+                return ready;
+            }
+
+            void await_suspend(std::coroutine_handle<> awaiting)
+            {
+                print("%p: m_async_task::await_suspend(std::coroutine_handle<> awaiting)\n", this);
+                m_async_task.coro.promise().m_awaiting = awaiting;
+            }
+
+            T await_resume()
+            {
+                print("%p: m_async_task::await_resume()\n", this);
+                const T r = m_async_task.coro.promise().m_value;
+                return r;
+            }
+
+        private:
+            async_task& m_async_task;
+        };
+
+        return awaiter{ *this };
+    }
+
     handle_type coro;
 };
 
@@ -717,9 +753,48 @@ async_task<int> mainflowWA(std::initializer_list<client*> clients)
     co_return 0;
 }
 
+
 // -----------------------------------------------------------------
 
-int main()
+void mainflowX(client& c1, client& c2, client& c3, int selected)
+{
+   switch (selected) {
+    case 0:
+        {
+            print("main: async_task<int> si = mainflowWA(c1, c2, c3);\n");
+            async_task<int> si = mainflowWA(c1, c2, c3);
+        }
+        break;
+    case 1:
+        {
+            print("main: async_task<int> si3 = mainflowWA( {&c1, &c2, &c3} )\n");
+            async_task<int> si3 = mainflowWA({ &c1, &c2, &c3 });
+        }
+        break;
+    }
+}
+
+// -----------------------------------------------------------------
+
+async_task<int> mainflowAll(client& c1, client& c2, client& c3)
+{
+    print("mainflowAll: async_task<int> si0 = mainflow(c1, c2, c3);\n");
+    async_task<int> si0 = mainflowWA(c1, c2, c3);
+    print("mainflowAll: co_await si0;\n");
+    co_await si0;
+
+    print("mainflowAll: async_task<int> si1 = mainflow( {&c1, &c2, &c3} )\n");
+    async_task<int> si1 = mainflowWA({ &c1, &c2, &c3 });
+    print("mainflowAll: co_await si4;\n");
+    co_await si1;
+
+    print("mainflowAll: co_return 0;\n");
+    co_return 0;
+}
+
+// -----------------------------------------------------------------
+
+int main(int argc, char* argv[])
 {
     boost::asio::io_context ioContext;
 
@@ -728,14 +803,23 @@ int main()
     client c2(ioContext, ep);
     client c3(ioContext, ep);
 
-#if 0
-    print("main: async_task<int> si1 = mainflowWA(c1, c2, c3);\n");
-    async_task<int> si1 = mainflowWA(c1, c2, c3);
-#endif
-#if 1
-    print("main: async_task<int> si2 = mainflowWA( {&c1, &c2, &c3} )\n");
-    async_task<int> si2 = mainflowWA({ &c1, &c2, &c3 });
-#endif
+    if (argc == 2)
+    {
+        int selected = 1;
+        selected = atoi(argv[1]);
+        if (selected < 0 || selected > 2)
+        {
+            print("main: selection must be in the range [0..3]\n");
+            return 0;
+        }
+        print("main: mainflowX(c1, c2, c3, selected);\n");
+        mainflowX(c1, c2, c3, selected);
+    }
+    else
+    {
+        print("main: async_task<int> si = mainflowAll(c1, c2, c3);\n");
+        async_task<int> si = mainflowAll(c1, c2, c3);
+    }
 
     print("main: ioContext.run();\n");
     ioContext.run();

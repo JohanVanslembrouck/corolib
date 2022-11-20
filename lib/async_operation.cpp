@@ -37,7 +37,7 @@ namespace corolib
     {
         print(PRI2, "%p: async_operation_base::async_operation_base(CommService* s = %p, index = %d)\n", this, s, index);
 		
-        if (m_service)
+        if (m_service && m_index != -1)
         {
             m_service->add_entry(m_index, this, m_timestamp);
         }
@@ -50,7 +50,7 @@ namespace corolib
     {
         print(PRI2, "%p: async_operation_base::~async_operation_base(): m_index = %d\n", this, m_index);
 
-        if (m_service)
+        if (m_service && m_index != -1)
         {
             m_service->update_entry(m_index, nullptr, m_timestamp);
         }
@@ -90,7 +90,7 @@ namespace corolib
         print(PRI2, "%p: async_operation_base::async_operation_base(async_operation_base&& s): s.m_index = %d\n", this, s.m_index);
 
         // Tell the CommService we are at another address after the move.
-        if (m_service)
+        if (m_service && m_index != -1)
         {
             m_service->update_entry(m_index, this, m_timestamp);
         }
@@ -119,7 +119,7 @@ namespace corolib
         print(PRI2, "%p: async_operation_base::operator = (async_operation_base&& s): m_index = %d, s.m_index = %d\n", this, m_index, s.m_index);
 
         // Clean our entry at the original location, because we will move to another one.
-        if (m_service)
+        if (m_service && m_index != -1)
         {
             m_service->update_entry(m_index, nullptr, m_timestamp);
         }

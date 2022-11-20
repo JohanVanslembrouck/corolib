@@ -1,7 +1,8 @@
 /**
  * @file tcpclientco1.h
  * @brief TCP client class.
- * Uses coroutines.
+ * Uses coroutines. Variant of tcpclienco.h.
+ * See README.md file for further explanation.
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
@@ -57,7 +58,7 @@ public:
     void sendMessage(QByteArray& message);
 
 	// Coroutine related
-    async_operation<QByteArray> start_reading();
+    async_operation<QByteArray> start_reading();	// no doDisconnect parameter compared with tcpclientco.h
     async_operation<void> start_timer(QTimer& timer, int ms);
     async_operation<void> start_connecting(QString& serverIpAddress, quint16 port);
 
@@ -68,7 +69,7 @@ protected:    // functions
     void enableKeepAlive(QTcpSocket *socket);
     void closeConnection(QTcpSocket *socket);
 
-    void start_reading_impl(const int idx);
+    void start_reading_impl(const int idx);			// no doDisconnect parameter compared with tcpclientco.h
     void start_timer_impl(const int idx, QTimer& tmr, int ms);
     void start_connecting_impl(const int idx, QString& serverIpAddress, quint16 port);
 
@@ -100,6 +101,7 @@ private:
 
     QMetaObject::Connection m_connections[NROPERATIONS];
 	
+    // The following data members are new compared with tcpclientco.h
 	QMetaObject::Connection m_connection_connect;
 	int m_index_connect;
 	

@@ -9,34 +9,33 @@
 #ifndef TIMER03_H
 #define TIMER03_H
 
-#include <boost/asio/steady_timer.hpp>
+#include <QObject>
+#include <QTimer>
 
-using boost::asio::steady_timer;
-
-#include <corolib/print.h>
-#include <corolib/async_task.h>
 #include <corolib/async_operation.h>
 #include <corolib/commservice.h>
+#include <corolib/async_task.h>
 
 using namespace corolib;
 
-class Timer03 : public CommService
+class Timer03 : public QObject, public CommService
 {
+    Q_OBJECT
+
 public:
-	Timer03(boost::asio::io_context& ioContext);
-	void start();
+    explicit Timer03(QObject *parent = nullptr);
+    void start();
 
 protected:
-	void start_timer(async_operation_base& async_op, steady_timer& tmr, int ms);
-
-	async_task<int> mainTask();
+    void connect_to_timer(async_operation_base& async_op, QTimer& tmr, QMetaObject::Connection& conn, bool doDisconnect = false);
+   
+    async_task<int> mainTask();
 	async_task<int> timerTask01a(async_operation<void>& op_tmr);
     async_task<int> timerTask01b(async_operation<void>& op_tmr);
     async_task<int> timerTask01c(async_operation<void>& op_tmr);
 
 private:
-	boost::asio::io_context& m_ioContext;
-	bool m_running;
+    bool m_running;
 };
 
-#endif
+#endif // TIMER03_H

@@ -1,7 +1,8 @@
 /**
  * @file tcpclientco1.cpp
  * @brief Implementation of a TCP client class.
- * Uses coroutines
+ * Uses coroutines. Variant of tcpclienco.cpp.
+ * See README.md file for further explanation.
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
@@ -17,12 +18,12 @@
  * @param reconnectTimeoutAfterDisconnect
  */
 TcpClientCo1::TcpClientCo1(bool useCoroutines,
-                         qint32 selectImplementation,
-                         const QString& name,
-                         bool autoConnect,
-                         qint32 waitForConnectionTimeout,
-                         qint32 reconnectTimeout,
-                         qint32 reconnectTimeoutAfterDisconnect)
+                          qint32 selectImplementation,
+                          const QString& name,
+                          bool autoConnect,
+                          qint32 waitForConnectionTimeout,
+                          qint32 reconnectTimeout,
+                          qint32 reconnectTimeoutAfterDisconnect)
     : m_useCoroutines(useCoroutines)
     , m_selectImplementation(selectImplementation)
     , m_timer(this)
@@ -125,6 +126,7 @@ bool TcpClientCo1::connectToServer(QString& serverIPaddress, quint16 serverPort)
                 connectionInfo->m_connection_stateChanged = connect(socket, &QTcpSocket::stateChanged, this, &TcpClientCo1::stateChanged);
                 m_connectionInfoList.append(connectionInfo);
 
+                // Begin extra code compared with tcpclientco.cpp
                 m_connection_read = connect(this, &TcpClientCo1::responseReceivedSig,
                     [this](QByteArray msg)
                     {
@@ -171,7 +173,7 @@ bool TcpClientCo1::connectToServer(QString& serverIPaddress, quint16 serverPort)
                         }
                     }
                 );
-/*
+#if 0
                 m_connection_timer = connect(&tmr, &QTimer::timeout,
                     [this]()
                     {
@@ -194,7 +196,8 @@ bool TcpClientCo1::connectToServer(QString& serverIPaddress, quint16 serverPort)
                         }
                     }
                 );
-                */
+#endif
+                // End extra code compared with tcpclientco.cpp
 
                 emit connectedSig();
                 retVal = true;
@@ -487,11 +490,11 @@ void TcpClientCo1::readyReadTcpCo2(QByteArray& data)
  * @brief TcpClientCo1::start_reading
  * @return
  */
-async_operation<QByteArray> TcpClientCo1::start_reading()
+async_operation<QByteArray> TcpClientCo1::start_reading()    // no doDisconnect parameter compared with tcpclientco.cpp
 {
     int index = get_free_index();
     print(PRI2, "%p: TcpClientCo1::start_reading(): index = %d\n", this, index);
-    async_operation<QByteArray> ret{ this, index };
+    async_operation<QByteArray> ret{ this, index };         // no doDisconnect parameter compared with tcpclientco.cpp
     start_reading_impl(index);
     return ret;
 }
@@ -504,11 +507,13 @@ async_operation<QByteArray> TcpClientCo1::start_reading()
  * at the end of its invocation if doDisconnect equals true (this is the default value).
  * @param idx
  */
-void TcpClientCo1::start_reading_impl(const int idx)
+void TcpClientCo1::start_reading_impl(const int idx)        // no doDisconnect parameter compared with tcpclientco.cpp
 {
     print(PRI2, "%p: TcpClientCo1::start_reading_impl(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
 
-    m_index_read = idx;
+    m_index_read = idx;            // New statement compared with tcpclientco.cpp
+    
+    // Original code from tcpclientco.cpp has been moved to connectToServer(), see above
 }
 
 /**
@@ -517,6 +522,7 @@ void TcpClientCo1::start_reading_impl(const int idx)
  */
 void TcpClientCo1::stop_reading(int idx)
 {
+    // Original code from tcplientco.cpp has been removed.
     (void) idx;
 }
 
@@ -576,7 +582,6 @@ void TcpClientCo1::start_timer_impl(const int idx, QTimer& tmr, int ms)
             }
         }
     );
-
 }
 
 /**
@@ -619,8 +624,10 @@ void TcpClientCo1::start_connecting_impl(const int idx, QString& serverIpAddress
 {
     print(PRI2, "%p: TcpClientCo1::start_connecting_impl(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
 
-    m_index_connect = idx;
+    m_index_connect = idx;        // New statement compared with tcpclientco.cpp
 
+    // Original code from tcpclientco.cpp has been moved to connectToServer(), see above
+    
     //connectToServer(serverIpAddress, port);
 
     m_serverIPaddress = serverIpAddress;
