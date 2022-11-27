@@ -343,7 +343,7 @@ async_task<int> Timer01::mainTask()
     qDebug() << Q_FUNC_INFO;
 
     async_task<int> t1 = timerTask01();
-	async_task<int> t2 = timerTask02();
+    async_task<int> t2 = timerTask02();
     async_task<int> t3 = timerTask03();
     async_task<int> t4 = timerTask04();
 

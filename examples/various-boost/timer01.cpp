@@ -348,7 +348,7 @@ async_task<int> Timer01::mainTask()
     async_task<int> t1 = timerTask01();
     async_task<int> t2 = timerTask02();
     async_task<int> t3 = timerTask03();
-	async_task<int> t4 = timerTask04();
+    async_task<int> t4 = timerTask04();
 
     print(PRI1, "--- mainTask: when_all<async_task<int>> wa({ &t1, &t2, &t3, &t4 });\n");
     when_all<async_task<int>> wa({ &t1, &t2, &t3, &t4 });

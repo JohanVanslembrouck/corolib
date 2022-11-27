@@ -104,9 +104,9 @@ void Timer02::start_timer_impl(const int idx, QTimer& tmr, int ms, bool doDiscon
  */
 void Timer02::connect_to_timer(async_operation_base& async_op, QTimer& tmr, QMetaObject::Connection& conn, bool doDisconnect)
 {
-	async_operation_base* p_async_op = &async_op;
-	QMetaObject::Connection* p_conn = &conn;
-	
+    async_operation_base* p_async_op = &async_op;
+    QMetaObject::Connection* p_conn = &conn;
+    
     print(PRI1, "%p: Timer02::connect_to_timer()\n");
 
     conn = connect(&tmr, &QTimer::timeout,
@@ -156,7 +156,7 @@ async_task<int> Timer02::timerTask01()
     async_operation<void> op_timer1(this);
     op_timer1.auto_reset(true);
     connect_to_timer(op_timer1, timer1, conn1); 
-	
+    
     timer1.start(500);
     co_await op_timer1;
     print(PRI1, "--- timerTask01: after co_await op_timer1 --- 500\n");
@@ -201,8 +201,8 @@ async_task<int> Timer02::timerTask02()
     QMetaObject::Connection conn1;
     QTimer timer1(this);
     timer1.setSingleShot(true);
-	
-	QMetaObject::Connection conn2;
+    
+    QMetaObject::Connection conn2;
     QTimer timer2(this);
     timer2.setSingleShot(true);
 
@@ -213,10 +213,10 @@ async_task<int> Timer02::timerTask02()
 
     connect_to_timer(op_timer1, timer1, conn1); 
     connect_to_timer(op_timer2, timer2, conn2); 
-	
-	timer1.start(500);
+    
+    timer1.start(500);
     timer2.start(550);
-		
+        
     co_await op_timer1;
     print(PRI1, "--- timerTask02: after co_await op_timer1 --- 500\n");
     co_await op_timer2;
@@ -282,8 +282,8 @@ async_task<int> Timer02::timerTask03()
     QMetaObject::Connection conn1;
     QTimer timer1(this);
     timer1.setSingleShot(true);
-	
-	QMetaObject::Connection conn2;
+    
+    QMetaObject::Connection conn2;
     QTimer timer2(this);
     timer2.setSingleShot(true);
 
@@ -294,10 +294,10 @@ async_task<int> Timer02::timerTask03()
 
     connect_to_timer(op_timer1, timer1, conn1); 
     connect_to_timer(op_timer2, timer2, conn2); 
-	
-	timer1.start(500);
+    
+    timer1.start(500);
     timer2.start(550);
-	
+    
     co_await op_timer2;
     print(PRI1, "--- timerTask03: after co_await op_timer2 --- 550\n");
     co_await op_timer1;
@@ -366,11 +366,11 @@ async_task<int> Timer02::timerTask04()
 
     QTimer timer2(this);
     timer2.setSingleShot(true);
-	
+    
     async_operation<void> op_timer1(this);
     op_timer1.auto_reset(true);
     connect_to_timer(op_timer1, timer1, conn1); 
-	
+    
     timer1.start(500);
     co_await op_timer1;
     print(PRI1, "--- timerTask04: after co_await op_timer1 --- 500\n");
@@ -407,7 +407,7 @@ async_task<int> Timer02::mainTask()
     qDebug() << Q_FUNC_INFO;
 
     async_task<int> t1 = timerTask01();
-	async_task<int> t2 = timerTask02();
+    async_task<int> t2 = timerTask02();
     async_task<int> t3 = timerTask03();
     async_task<int> t4 = timerTask04();
 

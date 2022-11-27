@@ -30,7 +30,7 @@ protected:
     void connect_to_timer(async_operation_base& async_op, QTimer& tmr, QMetaObject::Connection& conn, bool doDisconnect = false);
    
     async_task<int> mainTask();
-	async_task<int> timerTask01a(async_operation<void>& op_tmr);
+    async_task<int> timerTask01a(async_operation<void>& op_tmr);
     async_task<int> timerTask01b(async_operation<void>& op_tmr);
     async_task<int> timerTask01c(async_operation<void>& op_tmr);
 

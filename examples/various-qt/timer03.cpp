@@ -40,9 +40,9 @@ void Timer03::start()
 
 void Timer03::connect_to_timer(async_operation_base& async_op, QTimer& tmr, QMetaObject::Connection& conn, bool doDisconnect)
 {
-	async_operation_base* p_async_op = &async_op;
-	QMetaObject::Connection* p_conn = &conn;
-	
+    async_operation_base* p_async_op = &async_op;
+    QMetaObject::Connection* p_conn = &conn;
+    
     print(PRI1, "%p: Timer03::connect_to_timer()\n");
 
     conn = connect(&tmr, &QTimer::timeout,
@@ -88,7 +88,7 @@ async_task<int> Timer03::timerTask01a(async_operation<void>& op_tmr)
     while (m_running)
     {
         print(PRI1, "--- timerTask01a: before co_await op_tmr\n");
-	    co_await op_tmr;
+        co_await op_tmr;
         print(PRI1, "--- timerTask01a: after co_await op_tmr\n");
     }
     print(PRI1, "--- timerTask01a: end\n");
@@ -138,14 +138,14 @@ async_task<int> Timer03::timerTask01c(async_operation<void>& op_tmr)
 async_task<int> Timer03::mainTask()
 {
     qDebug() << Q_FUNC_INFO;
-	
+    
     qDebug() << Q_FUNC_INFO << "begin";
 
     QMetaObject::Connection conn1;
     QTimer timer1(this);
     timer1.setSingleShot(true);
-	
-	QMetaObject::Connection conn2;
+    
+    QMetaObject::Connection conn2;
     QTimer timer2(this);
     timer2.setSingleShot(true);
 
@@ -157,18 +157,18 @@ async_task<int> Timer03::mainTask()
     connect_to_timer(op_timer1, timer1, conn1); 
     connect_to_timer(op_timer2, timer2, conn2); 
 
-	async_task<int> t1a = timerTask01a(op_timer1);
+    async_task<int> t1a = timerTask01a(op_timer1);
     async_task<int> t1b = timerTask01b(op_timer1);
     async_task<int> t1c = timerTask01c(op_timer1);
-	
+    
     timer1.start(1000);
     timer2.start(1500);
-	co_await op_timer2;
+    co_await op_timer2;
     print(PRI1, "%p: Timer03::mainTask: after co_await op_timer2 1500\n", this);
 
     timer1.start(2000);
     timer2.start(2500);
-	co_await op_timer2;
+    co_await op_timer2;
     print(PRI1, "%p: Timer03::mainTask: after co_await op_timer2 2500\n", this);
 
     timer1.start(3000);
@@ -187,11 +187,11 @@ async_task<int> Timer03::mainTask()
     print(PRI1, "%p: Timer03::mainTask: after co_await op_timer2 5500\n", this);
 
     // Set m_running to false to make the coroutines leave their loop.
-	m_running = false;
-	
-	// Start the timer: when it expires, the 3 coroutines will leave their loop.
-	timer1.start(1000);
-	
+    m_running = false;
+    
+    // Start the timer: when it expires, the 3 coroutines will leave their loop.
+    timer1.start(1000);
+    
     print(PRI1, "--- mainTask: when_all<async_task<int>> wa({ &t1a, &t1b, &t1c });\n");
     when_all<async_task<int>> wa({ &t1a, &t1b, &t1c });
     print(PRI1, "--- mainTask: co_await wa;\n");

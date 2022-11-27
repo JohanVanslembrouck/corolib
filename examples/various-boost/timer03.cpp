@@ -23,7 +23,7 @@
 Timer03::Timer03(
     boost::asio::io_context& ioContext)
     : m_ioContext(ioContext)
-	, m_running(true)
+    , m_running(true)
 {
     print(PRI1, "Timer03::Timer03(...)\n");
 }
@@ -44,8 +44,8 @@ void Timer03::start()
  */
 void Timer03::start_timer(async_operation_base& async_op, steady_timer& tmr, int ms)
 {
-	async_operation_base* p_async_op = &async_op;
-	
+    async_operation_base* p_async_op = &async_op;
+    
     print(PRI1, "%p: Timer03::start_timer(%p, tmr, %d)\n", this, p_async_op, ms);
 
     tmr.expires_after(std::chrono::milliseconds(ms));
@@ -78,7 +78,7 @@ async_task<int> Timer03::timerTask01a(async_operation<void>& op_tmr)
     while (m_running)
     {
         print(PRI1, "--- timerTask01a: before co_await op_tmr\n");
-	    co_await op_tmr;
+        co_await op_tmr;
         print(PRI1, "--- timerTask01a: after co_await op_tmr\n");
     }
     print(PRI1, "--- timerTask01a: end\n");
@@ -143,18 +143,18 @@ async_task<int> Timer03::mainTask()
     async_operation<void> op_timer2{ this };
     op_timer2.auto_reset(true);
 
-	async_task<int> t1a = timerTask01a(op_timer1);
+    async_task<int> t1a = timerTask01a(op_timer1);
     async_task<int> t1b = timerTask01b(op_timer1);
     async_task<int> t1c = timerTask01c(op_timer1);
-	
+    
     start_timer(op_timer1, timer1, 1000);
     start_timer(op_timer2, timer2, 1500);
-	co_await op_timer2;
+    co_await op_timer2;
     print(PRI1, "%p: Timer03::mainTask: after co_await op_timer2 1500\n", this);
 
     start_timer(op_timer1, timer1, 2000);
     start_timer(op_timer2, timer2, 2500);
-	co_await op_timer2;
+    co_await op_timer2;
     print(PRI1, "%p: Timer03::mainTask: after co_await op_timer2 2500\n", this);
 
     start_timer(op_timer1, timer1, 3000);
@@ -173,16 +173,16 @@ async_task<int> Timer03::mainTask()
     print(PRI1, "%p: Timer03::mainTask: after co_await op_timer2 5500\n", this);
 
     // Set m_running to false to make the coroutines leave their loop.
-	m_running = false;
-	
-	// Start the timer: when it expires, the 3 coroutines will leave their loop.
-	start_timer(op_timer1, timer1, 1000);
+    m_running = false;
+    
+    // Start the timer: when it expires, the 3 coroutines will leave their loop.
+    start_timer(op_timer1, timer1, 1000);
     start_timer(op_timer2, timer2, 1500);
     co_await op_timer2;
     print(PRI1, "%p: Timer03::mainTask: after co_await op_timer2 1000\n", this);
 
-	when_all<async_task<int>> wa({ &t1a, &t1b, &t1c });
-	co_await wa;
+    when_all<async_task<int>> wa({ &t1a, &t1b, &t1c });
+    co_await wa;
 
     print(PRI1, "--- mainTask: co_return 1;\n");
     co_return 1;
