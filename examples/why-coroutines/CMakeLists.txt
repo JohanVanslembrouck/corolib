@@ -29,6 +29,10 @@ add_executable(p1124-coroutines-callstack-1rmi p1124-coroutines-callstack-1rmi.c
 target_link_libraries(p1124-coroutines-callstack-1rmi corolib)
 add_executable(p1126-coroutines-callstack-1rmi p1126-coroutines-callstack-1rmi.cpp)
 target_link_libraries(p1126-coroutines-callstack-1rmi corolib)
+add_executable(p1130-coroutines-async-callstack-1rmi p1130-coroutines-async-callstack-1rmi.cpp)
+target_link_libraries(p1130-coroutines-async-callstack-1rmi corolib)
+add_executable(p1132-coroutines-async-callstack-1rmi-cs p1132-coroutines-async-callstack-1rmi-cs.cpp)
+target_link_libraries(p1132-coroutines-async-callstack-1rmi-cs corolib)
 
 add_executable(p1200-sync-3rmis p1200-sync-3rmis.cpp)
 add_executable(p1202-sync+thread-3rmis p1202-sync+thread-3rmis.cpp)

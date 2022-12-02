@@ -1,23 +1,25 @@
 /**
- * @file p1112-async-callstack-1rmi-cs.cpp
- * @brief Asynchronous implementation of p1100-sync-callstack-1rmi.cpp.
- * Fixes the problem described in p1110-async-callstack-1rmi.cpp.
+ * @file p1132-coroutines-async-callstack-1rmi-cs.cpp
+ * @brief Variant of p1112-async-callstack-1rmi-cs.cpp.
  *
- * Instead of passing a lambda while calling a function at a lower layer,
- * a higher layer passes a CallStack object to the lower layer.
- * The highest layer creates a CallStack object for every asynchronous function 
- * it calls on its lower layer.
- * The CallStack object is also passed vhen returning from a lower layer to a higher layer,
- *
- * The CallStack contains a stack<void*> data member that stores a stack of lambdas.
- * Different CallStack objects may thus store lambdas that correspond to a different callback
- * function at a given layer.
- *
+ * In this example a coroutine layer is added on top of the highest asynchronous layer, Layer03.
+ * It shows that only a few simple modifications have to be made to Layer03.
+ * 
+ * This approach can be useful in case it is not possible or desirable to make modifications
+ * to an existing asynchronous callstack, yet the application should be able to use coroutines.
+ * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <stdio.h>
 #include <stack>
+
+#include <corolib/print.h>
+#include <corolib/async_task.h>
+#include <corolib/commservice.h>
+#include <corolib/async_operation.h>
+
+using namespace corolib;
 
 #include "common.h"
 #include "variables.h"
@@ -183,41 +185,31 @@ class Layer03
 public:
     // int function1(int in1);
             
-    void function1(int in1)
+    void function1(int in1, async_operation<int>& op1)
     {
         printf("Layer03::function1(): part 1\n");
         lambda_cs_1int_t* p = new lambda_cs_1int_t(
-            [this](CallStack& callstack, int ret1)
+            [this, &op1](CallStack& callstack, int ret1)
             {
-                this->function1_cb(callstack, ret1);
+                op1.set_result(ret1);
+                op1.completed();
             });
         m_callstack1.push(p);
         layer02.function1(m_callstack1, in1);
         printf("Layer03::function1(): return\n");
     }
-
-    void function1_cb(CallStack&, int ret1)
-    {
-        printf("Layer03::function1_cb(%d)\n", ret1);
-        printf("Layer03::function1_cb(): part 2\n");
-    }
     
-    void function2(int in1)
+    void function2(int in1, async_operation<int>& op1)
     {
         printf("Layer03::function2(): part 1\n");
         lambda_cs_1int_t* p = new lambda_cs_1int_t(
-            [this](CallStack& callstack, int ret1)
+            [this, &op1](CallStack& callstack, int ret1)
             {
-                this->function2_cb(callstack, ret1);
+                op1.set_result(ret1);
+                op1.completed();
             });
         m_callstack2.push(p);
         layer02.function1(m_callstack2, in1);
-    }
-
-    void function2_cb(CallStack&, int ret1)
-    {
-        printf("Layer03::function2_cb(%d)\n", ret1);
-        printf("Layer03::function2_cb(): part 2\n");
     }
 
 private:
@@ -227,12 +219,47 @@ private:
 
 Layer03 layer03;
 
+class Layer03Co : public CommService
+{
+public:
+    async_task<int> coroutine1(int in1)
+    {
+        printf("Layer03::coroutine1(): part 1\n");
+        int index = get_free_index();
+        async_operation<int> op1{ this, index };
+        layer03.function1(in1, op1);
+        printf("Layer03::coroutine1(): int ret1 = co_await op1\n");
+        int ret1 = co_await op1;
+        printf("Layer03::coroutine1(): ret1 = %d\n", ret1);
+        printf("Layer03::coroutine1(): part 2\n");
+        co_return ret1;
+    }
+
+    async_task<int> coroutine2(int in1)
+    {
+        printf("Layer03::coroutine2(): part 1\n");
+        int index = get_free_index();
+        async_operation<int> op1{ this, index };
+        layer03.function2(in1, op1);
+        printf("Layer03::coroutine2(): int ret1 = co_await op1\n");
+        int ret1 = co_await op1;
+        printf("Layer03::coroutine2(): ret1 = %d\n", ret1);
+        printf("Layer03::coroutine2(): part 2\n");
+        co_return ret1;
+    }
+
+private:
+    int    out1{ 0 };
+};
+
+Layer03Co layer03co;
+
 EventQueue eventQueue;
 
 int main() {
     printf("main()\n");
-    eventQueue.push([]() { layer03.function1(2); });
-    eventQueue.push([]() { layer03.function2(3); });
+    eventQueue.push([]() { layer03co.coroutine1(2); });
+    eventQueue.push([]() { layer03co.coroutine2(3); });
     printf("main(): eventQueue.run();\n");
     eventQueue.run();
     return 0;
