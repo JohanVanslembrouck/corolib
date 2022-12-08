@@ -20,7 +20,7 @@
 
 #include "endpoints.h"
 
-#define SEND_ACK 1
+#define SEND_ACK 0
 
 using namespace corolib;
 
@@ -39,6 +39,19 @@ public:
         print(PRI1, "ClientApp::ClientApp(...)\n");
     }
 
+    enum response_status_t
+    {
+        resp_not_yet_in,
+        resp_arrived,
+        resp_timeout
+    };
+    
+    template<typename TYPE>
+    struct server_response_t
+    {
+        response_status_t response_status;
+        TYPE response;
+    };
     
     /**
      * @brief acknowledgeAction writes an acknowledgement "ACK\n" onto the connection to the server.
@@ -61,47 +74,40 @@ public:
     }
         
     /**
-     * @brief performAction first writes "START\n" onto the connection to the server.
-     * It then start reading the response and it also starts a timer.
+     * @brief start_reading_timed starts reading the response and it also starts a timer.
      * Depending on the timer length, the timer may expire first or the response may arrive first.
-     * performAction uses a when_any to distinguish between both cases.
-     * 1) The response arrives first. performAction cancels the timer and it writes 
+     * start_reading_timed uses a when_any to distinguish between both cases.
+     * 1) The response arrives first. start_reading_timed cancels the timer and it writes 
      * an acknowledgement to the server. The interaction is considered as done.
-     * 2) The timer expires first. performAction sends a cancel request to the server
+     * 2) The timer expires first. start_reading_timed sends a cancel request to the server
      * and it restarts the timer.
      *
      * However, the original response may still arrive: the interaction is not done yet.
-     * If not done, performAction uses when_any again.
+     * If not done, start_reading_timed uses when_any again.
      * There are again two possibilities:
-     * 1) The response arrives first. performAction stops the timer.
+     * 1) The response arrives first. start_reading_timed stops the timer.
      * 2) The timer expires first. There is nothing to be done.
      *
      * @param the timeout to use
      * @return async_task<int> with value 0
      */
-    async_task<int> performAction(int timeout)
+    async_task<server_response_t<std::string>> start_reading_timed(int timeout)
     {
-        // Prepare the START request
-        std::string str1 = "START\n";
-
-        // Writing
-        print(PRI1, "performAction: async_operation<void> sw = start_writing(...);\n");
-        async_operation<void> sw = start_writing(str1.c_str(), str1.length() + 1);
-        print(PRI1, "performAction: co_await sw;\n");
-        co_await sw;
-
+        server_response_t<std::string> resp;
+        resp.response_status = resp_not_yet_in;
+        
         // Reading
-        print(PRI1, "performAction: async_operation<std::string> sr = start_reading();\n");
+        print(PRI1, "start_reading_timed: async_operation<std::string> sr = start_reading();\n");
         async_operation<std::string> sr = start_reading();
 
         // Timing
         steady_timer client_timer(ioContext);
-        print(PRI1, "performAction: async_operation<void> st = start_timer(client_timer, timeout);\n");
+        print(PRI1, "start_reading_timed: async_operation<void> st = start_timer(client_timer, timeout);\n");
         async_operation<void> st = start_timer(client_timer, timeout);
 
-        print(PRI1, "performAction: when_any<async_operation_base> war( { &sr, &st } ) ;\n");
+        print(PRI1, "start_reading_timed: when_any<async_operation_base> war( { &sr, &st } ) ;\n");
         when_any<async_operation_base> war( { &sr, &st } );
-        print(PRI1, "performAction: int i = co_await war;\n");
+        print(PRI1, "start_reading_timed: int i = co_await war;\n");
         int i = co_await war;
         
         bool done = false;
@@ -110,84 +116,92 @@ public:
         {
         case 0:    // Reply has arrived, stop the timer and print the result
         {
-            print(PRI1, "performAction: i = %d: reply has arrived, stop the timer and print the result\n", i);
+            print(PRI1, "start_reading_timed: i = %d: reply has arrived, stop the timer\n", i);
             
-            print(PRI1, "performAction: client_timer.cancel();\n");
+            print(PRI1, "start_reading_timed: client_timer.cancel();\n");
             client_timer.cancel();
 
-            print(PRI1, "performAction: sr.get_result() = %s\n", sr.get_result().c_str());
-
+            resp.response_status = resp_arrived;
+            resp.response = sr.get_result();
+            
             done = true;
+            
 #if SEND_ACK
             // Send acknowledgement to server
-            print(PRI1, "performAction: async_task<int> ackAction = acknowledgeAction();\n");
+            print(PRI1, "start_reading_timed: async_task<int> ackAction = acknowledgeAction();\n");
             async_task<int> ackAction = acknowledgeAction();
-            print(PRI1, "performAction: co_await ackAction;\n");
+            print(PRI1, "start_reading_timed: co_await ackAction;\n");
             co_await ackAction;
 #endif
         }
         break;
         case 1: // Timer has expired, send a cancel request
         {
-            print(PRI1, "performAction: i = %d: timer has expired, send a cancel request\n", i);
+            print(PRI1, "start_reading_timed: i = %d: timer has expired, send a cancel request\n", i);
             
             // Prepare the STOP request
             std::string str1 = "STOP\n";
 
             // Writing
-            print(PRI1, "performAction: async_operation<void> sw = start_writing(...);\n");
+            print(PRI1, "start_reading_timed: async_operation<void> sw = start_writing(...);\n");
             async_operation<void> sw = start_writing(str1.c_str(), str1.length() + 1);
-            print(PRI1, "performAction: co_await sw;\n");
+            print(PRI1, "start_reading_timed: co_await sw;\n");
             co_await sw;
 
             // Start a timer of 500 ms
             // Timing
             steady_timer client_timer(ioContext);
-            print(PRI1, "performAction: st = start_timer(500);\n");
+            print(PRI1, "start_reading_timed: st = start_timer(500);\n");
             st = start_timer(client_timer, 500);
         }
         break;
         default:
-            print(PRI1, "performAction: i = %d: should not occur\n", i);
+            print(PRI1, "start_reading_timed: i = %d: should not occur\n", i);
         }
 
         if (!done)
         {
-            print(PRI1, "performAction: i = co_await war;\n");
+            print(PRI1, "start_reading_timed: i = co_await war;\n");
             i = co_await war;
 
             switch (i)
             {
-            case 0:    // Reply has arrived, stop the timer and print the result
+            case 0:    // Reply has arrived (although timer expired a first time); stop the timer
             {
-                print(PRI1, "performAction: client_timer.cancel();\n");
+                print(PRI1, "start_reading_timed: client_timer.cancel();\n");
                 client_timer.cancel();
 
-                print(PRI1, "performAction: answer arrived after STOP was sent\n");
-                print(PRI1, "performAction: sr.get_result() = %s\n", sr.get_result().c_str());
+                print(PRI1, "start_reading_timed: answer arrived after STOP was sent\n");
+                        
+                resp.response_status = resp_arrived;
+                resp.response = sr.get_result();
             }
             break;
-            case 1: // Timer has expired, send a cancel request
+            case 1: // Timer has expired a second time
             {
-                print(PRI1, "performAction: i = %d: timer has expired a second time, do nothing\n", i);
+                print(PRI1, "start_reading_timed: i = %d: timer has expired a second time\n", i);
+                
+                resp.response_status = resp_timeout;
+                resp.response = "";
             }
             break;
             default:
-                print(PRI1, "performAction: i = %d: should not occur\n", i);
+                print(PRI1, "start_reading_timed: i = %d: should not occur\n", i);
             }
         }
 
-        print(PRI1, "performAction: co_return 0;\n");
-        co_return 0;
+        print(PRI1, "start_reading_timed: co_return 0;\n");
+        co_return resp;
     }
+    
     
     /**
      * @brief mainflow repeats the following actions 100 times:
      * 1) it connects to the server
-     * 2) it calls performAction (see above) to perform the interaction with the server
-     * and co_waits its completion.
-     * 3) it starts a timer of 100 ms
-     * 4) it closes the connection
+     * 2) it calls start_writing to write a string to the server
+     * 3) it calls start_reading_timed (see above) to read the response from the server
+     * 4) it starts a timer of 100 ms
+     * 5) it closes the connection
      *
      * @return async_task<int> with return value 0
      */
@@ -212,15 +226,30 @@ public:
                 print(PRI1, "mainflow: co_await start_timer(3000);\n");
                 co_await start_timer(client_timer, 3000);
             }
+            
+            // Prepare the request
+            std::string str1 = "This is string ";
+            str1 += std::to_string(i);
+            str1 += " to echo\n";
+
+            // Writing
+            print(PRI1, "mainflow: async_operation<void> sw = start_writing(...);\n");
+            async_operation<void> sw = start_writing(str1.c_str(), str1.length() + 1);
+            print(PRI1, "mainflow: co_await sw;\n");
+            co_await sw;
 
             // The server waits 1000 ms before sending the response.
             // Alternating, wait 2000 ms or only 200 ms.
-            print(PRI1, "mainflow: async_task<int> pA = performAction(%d);\n", (i % 2) ? 2000 : secondtimeout);
-            async_task<int> pA = performAction((i % 2) ? 2000 : secondtimeout);
-            print(PRI1, "mainflow: co_await pA;\n");
-            co_await pA;
+            print(PRI1, "mainflow: async_task<server_response_t<std::string>> pA = start_reading_timed(%d);\n", (i % 2) ? 2000 : secondtimeout);
+            async_task<server_response_t<std::string>> pA = start_reading_timed((i % 2) ? 2000 : secondtimeout);
+            print(PRI1, "mainflow: server_response_t<std::string> res = co_await pA;\n");
+            server_response_t<std::string> res = co_await pA;
+            if (res.response_status == resp_arrived)
+                print(PRI1, "mainflow: res.response.c_str() = %s\n", res.response.c_str());
+            else
+                print(PRI1, "mainflow: response did not arrive in time;\n");
 
-            // Wait some time between iterations: timer has to be called before calling stop().
+            // Wait some time between iterations: call timer before calling stop().
             // Timing
             steady_timer client_timer(ioContext);
             print(PRI1, "mainflow: co_await start_timer(100);\n");

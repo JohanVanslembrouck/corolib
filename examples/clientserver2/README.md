@@ -9,15 +9,16 @@ After building, launch the applications in the following order:
 * 'cs2-server' or 'cs2-server2
 * 'cs2-client1' (one or more instances) or 'cs2-client1a' (one or more instances)
 
-In contrast with client1.cpp the implementation of performAction in client1a.cpp uses a loop.
-The behavior should be identical.
-
-The client1 application initiates an action on the server by writing the string "START".
-It also starts a timer and awaits either the reply from the server or the timer expiry.
-In the case the client receives a reply, it sends an "ACK" message to the server.
+The client1 application writes a string to the server.
+Coroutine start_reading_timed starts a read action and a timer.
+It then awaits the reply from the server or the timer expiry.
+In the case the client receives a reply, it (optionally) sends an "ACK" message to the server.
 In the case of timer expiry, the client sends a "STOP" request to the server to stop the running action.
 
-The server application receives a "START" request from the client.
+In contrast with client1.cpp, the implementation of start_reading_timed in client1a.cpp uses a loop.
+The behavior should be identical.
+
+The server application receives a string from the client.
 It starts a timer to simulate a delay during the calculation of the result.
 It awaits the expiry of the timer or the reception of the "STOP" request from the client.
 In the case of timer expiry, the server sends the reply to the client.

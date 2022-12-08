@@ -35,6 +35,7 @@ public:
 
     /**
      * @brief one_client_write_reply writes the reply to the client after having waited some time.
+     * @param strIn the string received from the client and used as input for the response
      * @param commClient identification of the client to communicate with
      * @param cancelAction allows the calling coroutine to indicate to this coroutine
      * that it has to stop the timer and not send the reply
@@ -46,7 +47,7 @@ public:
      * as argument.
      * @return async_task<int> with return value 0
      */
-    async_task<int> one_client_write_reply(spCommCore commClient, 
+    async_task<int> one_client_write_reply(std::string strIn, spCommCore commClient, 
         async_operation_base& cancelAction, async_operation_base& completeAction)
     {
         // Start a timer to introduce a delay (to simulate a long asynchronous calculation)
@@ -72,9 +73,10 @@ public:
         case 0:    // Timer has expired: write the result to the client
         {
             print(PRI1, "one_client_write_reply: i = %d: timer has expired\n", i);
-            
+
             // Preparing output
-            std::string strout = "ANSWER\n";
+            std::string strout = strIn;
+            for (auto& c : strout) c = toupper(c);
 
             // Signal the completion of the action to one_client.
             // one_client co_awaits the completion of completeAction.
@@ -128,8 +130,8 @@ public:
 
         // Call one_client_write_reply to send the reply to the client after some delay.
         // During this delay, the client may cancel the action.
-        print(PRI1, "one_client: async_task<int> ocwr = one_client_write_reply(commClient, cancelAction, completeAction);\n");
-        async_task<int> ocwr = one_client_write_reply(commClient, cancelAction, completeAction);
+        print(PRI1, "one_client: async_task<int> ocwr = one_client_write_reply(strIn, commClient, cancelAction, completeAction);\n");
+        async_task<int> ocwr = one_client_write_reply(strIn, commClient, cancelAction, completeAction);
         
         // Start reading a possible second request, which (in this example)
         // is just a request to cancel the still running action started after the first request.

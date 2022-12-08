@@ -83,7 +83,8 @@ public:
             // Should preferably stop the reading of the second request.
 
             // Preparing output
-            std::string strout = "ANSWER\n";
+            std::string strout = strIn;
+            for (auto& c : strout) c = toupper(c);
 
             // Writing
             print(PRI1, "one_client: async_operation<void> sw = commClient->start_writing(...);\n");
