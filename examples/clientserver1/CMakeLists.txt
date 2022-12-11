@@ -33,6 +33,10 @@ target_link_libraries(cs1-client3WAny corolib corolib-boost)
 
 add_executable(cs1-client4obs client4obs.cpp)
 target_link_libraries(cs1-client4obs corolib corolib-boost)
+add_executable(cs1-client4obs2 client4obs2.cpp)
+target_link_libraries(cs1-client4obs2 corolib corolib-boost)
+add_executable(cs1-client4obs3 client4obs3.cpp)
+target_link_libraries(cs1-client4obs3 corolib corolib-boost)
 
 add_executable(cs1-clientserver clientserver.cpp)
 target_link_libraries(cs1-clientserver corolib corolib-boost)

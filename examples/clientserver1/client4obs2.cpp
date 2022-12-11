@@ -1,10 +1,14 @@
 /** 
- * @file client4obs.cpp
+ * @file client4obs2.cpp
  * @brief
  * Example of a client application.
  * This client application uses 1 CommClient object and 4 observer coroutines observer1 .. observer4
  * that each handle the result of the read operation.
  *
+ * This example is a simplification of client4obs.cpp that co_awaits sr in mainflow()
+ * instead of co_awaiting the co_return of the 4 observer coroutines.
+ * This makes mainflow() in fact the 5th observer.
+ * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
@@ -145,13 +149,9 @@ public:
             // Start reading
             print(PRI1, "mainflow: start_reading_impl(index = %d);\n", index);
             start_reading_impl(index);
-            
-            print(PRI1, "mainflow: when_all<async_operation<int>> war( { &sr1, &sr2, &sr3, &sr4 } );\n");
-            when_all<async_task<int>> war( { &sr1, &sr2, &sr3, &sr4 } );
-            // Wait until all observers have completed their task
-            print(PRI1, "mainflow: before co_await war;\n");
-            co_await war;
-            print(PRI1, "mainflow: after co_await war;\n");
+            print(PRI1, "mainflow: std::string strout =  co_await sr;\n");
+            std::string strout = co_await sr;
+            print(PRI1, "mainflow: strout = %s", strout.c_str());
 
             // Just start a timer to introduce a delay to simulate a long asynchronous calculation 
             // after having read the response.
