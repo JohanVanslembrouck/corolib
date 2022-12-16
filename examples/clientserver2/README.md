@@ -12,7 +12,7 @@ After building, launch the applications in the following order:
 The client1 application writes a string to the server.
 Coroutine start_reading_timed starts a read action and a timer.
 It then awaits the reply from the server or the timer expiry.
-In the case the client receives a reply, it (optionally) sends an "ACK" message to the server.
+In the case the client receives a reply, it sends an "ACK" message to the server.
 In the case of timer expiry, the client sends a "STOP" request to the server to stop the running action.
 
 In contrast with client1.cpp, the implementation of start_reading_timed in client1a.cpp uses a loop.
@@ -22,7 +22,7 @@ The server application receives a string from the client.
 It starts a timer to simulate a delay during the calculation of the result.
 It awaits the expiry of the timer or the reception of the "STOP" request from the client.
 In the case of timer expiry, the server sends the reply to the client.
-In the case of a "STOP" request, it does not send a reply to the client.
+In the case of a "STOP" request, it sends an "ACK" to the client.
 
 The client1a application has the same behaviour as the client1 application, but it uses a small loop to have a somewhat smaller program.
 

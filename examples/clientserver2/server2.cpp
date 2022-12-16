@@ -34,6 +34,26 @@ public:
     }
 
     /**
+     * @brief acknowledgeAction writes an acknowledgement "ACK\n" onto the connection to the client.
+     *
+     * @return async_task<int> with return value 0
+     */
+    async_task<int> acknowledgeAction(spCommCore commClient)
+    {
+        // Prepare the ACK request
+        std::string str1 = "ACK\n";
+
+        // Writing
+        print(PRI1, "acknowledgeAction: async_operation<void> sw = commClient->start_writing(...);\n");
+        async_operation<void> sw = commClient->start_writing(str1.c_str(), str1.length() + 1);
+        print(PRI1, "acknowledgeAction: co_await sw;\n");
+        co_await sw;
+
+        print(PRI1, "acknowledgeAction: co_return 0;\n");
+        co_return 0;
+    }
+
+    /**
      * @brief one_client_write_reply writes the reply to the client after having waited some time.
      * @param strIn the string received from the client and used as input for the response
      * @param commClient identification of the client to communicate with
@@ -91,10 +111,18 @@ public:
         }
         break;
         case 1: // The client has stopped the action: stop the timer
+        {
             print(PRI1, "one_client_write_reply: i = %d: the client stopped the action\n", i);
-            
+
             print(PRI1, "one_client_write_reply: client_timer.cancel();\n");
             client_timer.cancel();
+
+            // Send acknowledgement to the client
+            print(PRI1, "one_client: async_task<int> ackAction = acknowledgeAction();\n");
+            async_task<int> ackAction = acknowledgeAction(commClient);
+            print(PRI1, "one_client: co_await ackAction;\n");
+            co_await ackAction;
+        }
         break;
         default:
             print(PRI1, "one_client_write_reply: i = %d: should not occur\n", i);
@@ -118,68 +146,101 @@ public:
      */
     oneway_task one_client(spCommCore commClient)
     {
-        async_operation_base cancelAction;
-        async_operation_base completeAction;
-        
-        // Reading
-        print(PRI1, "one_client: async_operation<std::string> sr1 = commClient->start_reading();\n");
-        async_operation<std::string> sr1 = commClient->start_reading();
-        print(PRI1, "one_client: std::string strIn = co_await sr1;\n");
-        std::string strIn = co_await sr1;
-        print(PRI1, "one_client: strIn = %s\n", strIn.c_str());
+        bool done = true;
+        int counter = 0;
 
-        // Call one_client_write_reply to send the reply to the client after some delay.
-        // During this delay, the client may cancel the action.
-        print(PRI1, "one_client: async_task<int> ocwr = one_client_write_reply(strIn, commClient, cancelAction, completeAction);\n");
-        async_task<int> ocwr = one_client_write_reply(strIn, commClient, cancelAction, completeAction);
-        
-        // Start reading a possible second request, which (in this example)
-        // is just a request to cancel the still running action started after the first request.
-        print(PRI1, "one_client: async_operation<std::string> sr2 = commClient->start_reading();\n");
-        async_operation<std::string> sr2 = commClient->start_reading();
-        
-        // Wait for either
-        // a) writing of the reply to the client to be started
-        // b) the action to be cancelled by the client,
-        // whichever occurs first.
-        print(PRI1, "one_client: when_any<async_operation_base> war( { &completeAction, &sr2 } ) ;\n");
-        when_any<async_operation_base> war( { &completeAction, &sr2} );
-        print(PRI1, "one_client: int i = co_await war;\n");
-        int i = co_await war;
+        do
+        {
+            print(PRI1, "one_client: %d ------------------------------------------------------------------\n", counter++);
 
-        // Look which one has completed.
-        switch (i)
-        {
-        case 0:    // one_client_write_reply has written the response to the client
-        {
-            print(PRI1, "one_client: i = %d: action completed by one_client_write_reply\n", i);
+            async_operation_base cancelAction;
+            async_operation_base completeAction;
 
-            // Reading ACK
-            print(PRI1, "one_client: std::string strIn2 = co_await sr2;\n");
-            std::string strIn2 = co_await sr2;
-            print(PRI1, "one_client: strIn2 = %s\n", strIn2.c_str());
-        }
-        break;
-        case 1: // We received a second request from the client (should be a stop request)
-        {
-            print(PRI1, "one_client: i = %d: second request received from client\n", i);
+            // Reading
+            print(PRI1, "one_client: async_operation<std::string> sr1 = commClient->start_reading();\n");
+            async_operation<std::string> sr1 = commClient->start_reading();
+            print(PRI1, "one_client: std::string strIn = co_await sr1;\n");
+            std::string strIn = co_await sr1;
+            print(PRI1, "one_client: strIn = %s\n", strIn.c_str());
+
+            if (strIn.compare("EOF") == 0)
+            {
+                print(PRI1, "one_client: EOF\n");
+                break;
+            }
+
+            std::string cmd = strIn.substr(0, 4);
+            print(PRI1, "one_client: cmd = %s\n", cmd.c_str());
+            if (cmd.compare("MORE") == 0)
+            {
+                print(PRI1, "one_client: MORE\n");
+                done = false;
+            }
+            else if (cmd.compare("LAST") == 0)
+            {
+                print(PRI1, "one_client: LAST\n");
+                done = true;
+            }
+            else if (cmd.compare("STOP") == 0)
+            {
+                print(PRI1, "one_client: STOP unexpected\n");
+            }
+
+            // Call one_client_write_reply to send the reply to the client after some delay.
+            // During this delay, the client may cancel the action.
+            print(PRI1, "one_client: async_task<int> ocwr = one_client_write_reply(strIn, commClient, cancelAction, completeAction);\n");
+            async_task<int> ocwr = one_client_write_reply(strIn, commClient, cancelAction, completeAction);
+        
+            // Start reading a possible second request, which (in this example)
+            // is just a request to cancel the still running action started after the first request.
+            print(PRI1, "one_client: async_operation<std::string> sr2 = commClient->start_reading();\n");
+            async_operation<std::string> sr2 = commClient->start_reading();
+        
+            // Wait for either
+            // a) writing of the reply to the client to be started
+            // b) the action to be cancelled by the client,
+            // whichever occurs first.
+            print(PRI1, "one_client: when_any<async_operation_base> war( { &completeAction, &sr2 } ) ;\n");
+            when_any<async_operation_base> war( { &completeAction, &sr2} );
+            print(PRI1, "one_client: int i = co_await war;\n");
+            int i = co_await war;
+
+            // Look which one has completed.
+            switch (i)
+            {
+            case 0:    // one_client_write_reply has written the response to the client
+            {
+                print(PRI1, "one_client: i = %d: action completed by one_client_write_reply\n", i);
+
+                // Reading ACK
+                print(PRI1, "one_client: std::string strIn2 = co_await sr2;\n");
+                std::string strIn2 = co_await sr2;
+                print(PRI1, "one_client: strIn2 = %s\n", strIn2.c_str());
+            }
+            break;
+            case 1: // We received a second request from the client (should be a stop request)
+            {
+                print(PRI1, "one_client: i = %d: second request received from client\n", i);
             
-            print(PRI1, "one_client: std::string strIn2 = sr2.get_result();\n");
-            std::string strIn2 = sr2.get_result();
-            print(PRI1, "one_client: strIn2 = %s\n", strIn2.c_str());
+                print(PRI1, "one_client: std::string strIn2 = sr2.get_result();\n");
+                std::string strIn2 = sr2.get_result();
+                print(PRI1, "one_client: strIn2 = %s\n", strIn2.c_str());
             
-            // Stop the current action in one_client_write_reply
-            print(PRI1, "one_client: cancelAction.completed();\n");
-            cancelAction.completed();
-        }
-        break;
-        default:
-            print(PRI1, "one_client: i = %d: should not occur\n", i);
-        }
+                // Stop the current action in one_client_write_reply
+                print(PRI1, "one_client: cancelAction.completed();\n");
+                cancelAction.completed();
+            }
+            break;
+            default:
+                print(PRI1, "one_client: i = %d: should not occur\n", i);
+            }
         
-        // Await the completion of one_client_write_reply.
-        print(PRI1, "one_client: co_await ocwr;\n");
-        co_await ocwr;
+            // Await the completion of one_client_write_reply.
+            print(PRI1, "one_client: co_await ocwr;\n");
+            co_await ocwr;
+
+        } 
+        while (!done);
 
         // Closing
         print(PRI1, "one_client: clientSession->close();\n");

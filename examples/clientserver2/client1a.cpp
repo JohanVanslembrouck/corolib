@@ -20,11 +20,13 @@
 
 #include "endpoints.h"
 
-#define SEND_ACK 0
-
 using namespace corolib;
 
 int secondtimeout = 200;
+
+const int NR_ITERATIONS_MAINLOOP1 = 100;
+const int NR_OUTER_ITERATIONS_MAINLOOP2 = 10;
+const int NR_INNER_ITERATIONS_MAINLOOP2 = 10;
 
 boost::asio::io_context ioContext;
 
@@ -39,6 +41,46 @@ public:
         print(PRI1, "ClientApp::ClientApp(...)\n");
     }
     
+    /**
+      * @brief performAction writes a request to the server and uses a timed read to wait for the response
+      * @param i is the action number that is also used to calculate how long to wait for the response
+      * A different timeout is used for even and odd numbers.
+      * @param last is used to inform the server if this is the last request or not. In case of a last request,
+      * the server (and client) will close the connection;
+      * @return async_task<void>
+     */
+    async_task<void> performAction(int i, bool last)
+    {
+        print(PRI1, "performAction: begin\n");
+
+        // Prepare the request
+        std::string str1;
+        str1 = last ? "LAST: " : "MORE: ";
+        str1 += "This is string ";
+        str1 += std::to_string(i);
+        str1 += " to echo\n";
+
+        // Writing
+        print(PRI1, "performAction: async_operation<void> sw = start_writing(...);\n");
+        async_operation<void> sw = start_writing(str1.c_str(), str1.length() + 1);
+        print(PRI1, "performAction: co_await sw;\n");
+        co_await sw;
+
+        // The server waits 1000 ms before sending the response.
+        // Alternating, wait 2000 ms or only 200 ms (default value of secondtimeout).
+        print(PRI1, "performAction: async_task<server_response_t<std::string>> pA = start_reading_timed(%d);\n", (i % 2) ? 2000 : secondtimeout);
+        async_task<server_response_t<std::string>> pA = start_reading_timed((i % 2) ? 2000 : secondtimeout);
+        print(PRI1, "performAction: server_response_t<std::string> res = co_await pA;\n");
+        server_response_t<std::string> res = co_await pA;
+        if (res.response_status == resp_arrived)
+            print(PRI1, "performAction: res.response.c_str() = %s\n", res.response.c_str());
+        else
+            print(PRI1, "performAction: response did not arrive in time;\n");
+
+        print(PRI1, "performAction: co_return\n");
+        co_return;
+    }
+
     enum response_status_t
     {
         resp_not_yet_in,
@@ -80,7 +122,7 @@ public:
      * The major difference is the use of a loop of maximum 2 iterations.
      * The content of the loop combines the two parts of start_reading_timed in client1.cpp
      * co_wait war is only used once.
-     * The reader is referred to the description of start_reading_timed in client1.cpp
+     * The reader is referred to the description of start_reading_timed in client1.cpp.
      *
      * @param the timeout to use
      * @return async_task<int> with return value 0
@@ -108,7 +150,7 @@ public:
             print(PRI1, "start_reading_timed: int i = co_await war;\n");
             int i = co_await war;
 
-            print(PRI1, "start_reading_timed: (%d, %d)\n\n", j, i);
+            print(PRI1, "start_reading_timed: (%d, %d)\n", j, i);
             switch (i)
             {
             case 0:    // Reply has arrived, stop the timer and print the result
@@ -126,13 +168,12 @@ public:
                     resp.response = sr.get_result();
                     
                     done = true;
-#if SEND_ACK
+
                     // Send acknowledgement to server
                     print(PRI1, "start_reading_timed: async_task<int> ackAction = acknowledgeAction();\n");
                     async_task<int> ackAction = acknowledgeAction();
                     print(PRI1, "start_reading_timed: co_await ackAction;\n");
                     co_await ackAction;
-#endif
                 }
                 else
                 {
@@ -182,7 +223,7 @@ public:
     }
     
     /**
-     * @brief mainflow repeats the following actions 100 times:
+     * @brief mainflow1 repeats the following actions 100 times:
      * 1) it connects to the server
      * 2) it calls start_writing to write a string to the server
      * 3) it calls start_reading_timed (see above) to read the response from the server
@@ -191,61 +232,125 @@ public:
      *
      * @return async_task<int> with return value 0
      */
-    async_task<int> mainflow()
+    async_task<int> mainflow1()
     {
-        print(PRI1, "mainflow: begin\n");
+        print(PRI1, "mainflow1: begin\n");
 
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < NR_ITERATIONS_MAINLOOP1; i++)
         {
-            print(PRI1, "mainflow: %d ------------------------------------------------------------------\n", i);
+            print(PRI1, "mainflow1: %d ------------------------------------------------------------------\n", i);
 
             // Connecting
-            print(PRI1, "mainflow: async_operation<void> sc = start_connecting();\n");
+            print(PRI1, "mainflow1: async_operation<void> sc = start_connecting();\n");
             async_operation<void> sc = start_connecting();
-            print(PRI1, "mainflow: co_await sc;\n");
+            print(PRI1, "mainflow1: co_await sc;\n");
             co_await sc;
             
             if (i == 0)
             {
                 // Introduce a delay of 3 seconds to allow multiple client1 applications to be started and run in parallel.
                 steady_timer client_timer(ioContext);
-                print(PRI1, "mainflow: co_await start_timer(3000);\n");
+                print(PRI1, "mainflow1: co_await start_timer(3000);\n");
                 co_await start_timer(client_timer, 3000);
             }
+
+            print(PRI1, "mainflow1: co_await performAction(%d, true);\n", i);
+            co_await performAction(i, true);
 
             // Prepare the request
             std::string str1 = "This is string ";
             str1 += std::to_string(i);
             str1 += " to echo\n";
 
-            // Writing
-            print(PRI1, "mainflow: async_operation<void> sw = start_writing(...);\n");
-            async_operation<void> sw = start_writing(str1.c_str(), str1.length() + 1);
-            print(PRI1, "mainflow: co_await sw;\n");
-            co_await sw;
-            
-            // The server waits 1000 ms before sending the response.
-            print(PRI1, "mainflow: async_task<server_response_t<std::string>> pA = start_reading_timed(%d);\n", (i % 2) ? 2000 : secondtimeout);
-            async_task<server_response_t<std::string>> pA = start_reading_timed((i % 2) ? 2000 : secondtimeout);
-            print(PRI1, "mainflow: async_task<server_response_t<std::string>> res = co_await pA;\n");
-            server_response_t<std::string> res = co_await pA;
-            if (res.response_status == resp_arrived)
-                print(PRI1, "mainflow: res.response.c_str() = %s\n", res.response.c_str());
-            else
-                print(PRI1, "mainflow: response did not arrive in time;\n");
-
             // Wait some time between iterations: timer has to be called before calling stop().
             // Timing
             steady_timer client_timer(ioContext);
-            print(PRI1, "mainflow: co_await start_timer(100);\n");
+            print(PRI1, "mainflow1: co_await start_timer(100);\n");
             co_await start_timer(client_timer, 100);
 
             // Closing
-            print(PRI1, "mainflow: stop();\n");
+            print(PRI1, "mainflow1: stop();\n");
             stop();
         }
 
-        print(PRI1, "mainflow: co_return 0;\n");
+        print(PRI1, "mainflow1: co_return 0;\n");
+        co_return 0;
+    }
+
+    async_task<int> mainflow2()
+    {
+        print(PRI1, "mainflow2: begin\n");
+
+        for (int i = 0; i < NR_OUTER_ITERATIONS_MAINLOOP2; i++)
+        {
+            print(PRI1, "mainflow2: %d ------------------------------------------------------------------\n", i);
+
+            // Connecting
+            print(PRI1, "mainflow2: async_operation<void> sc = start_connecting();\n");
+            async_operation<void> sc = start_connecting();
+            print(PRI1, "mainflow2: co_await sc;\n");
+            co_await sc;
+
+            if (i == 0)
+            {
+                // Introduce a delay of 3 seconds to allow multiple client1 applications to be started and run in parallel.
+                steady_timer client_timer(ioContext);
+                print(PRI1, "mainflow2: co_await start_timer(3000);\n");
+                co_await start_timer(client_timer, 3000);
+            }
+
+            for (int j = 0; j < NR_INNER_ITERATIONS_MAINLOOP2; j++)
+            {
+                print(PRI1, "mainflow: co_await performAction(%d, %d);\n", j, j == NR_INNER_ITERATIONS_MAINLOOP2-1);
+                co_await performAction(j, j == NR_INNER_ITERATIONS_MAINLOOP2-1);
+            }
+
+            // Wait some time between iterations: call timer before calling stop().
+            // Timing
+            steady_timer client_timer(ioContext);
+            print(PRI1, "mainflow2: co_await start_timer(100);\n");
+            co_await start_timer(client_timer, 100);
+
+            // Closing
+            print(PRI1, "mainflow2: stop();\n");
+            stop();
+        }
+
+        print(PRI1, "mainflow2: co_return 0;\n");
+        co_return 0;
+    }
+
+    void mainflowX(int selected)
+    {
+        switch (selected) {
+        case 0:
+        {
+            print(PRI1, "mainflowX: async_task<int> si0 = mainflow();\n");
+            async_task<int> si0 = mainflow1();
+        }
+        break;
+        case 1:
+        {
+            print(PRI1, "mainflowX: async_task<int> si1 = mainflow2()\n");
+            async_task<int> si1 = mainflow2();
+        }
+        break;
+        }
+    }
+
+    async_task<int> mainflowAll()
+    {
+        print(PRI1, "mainflowAll: async_task<int> si0 = mainflow1();\n");
+        async_task<int> si0 = mainflow1();
+        print(PRI1, "mainflowAll: co_await si0;\n");
+        co_await si0;
+
+        print(PRI1, "mainflowAll: async_task<int> si1 = mainflow2()\n");
+        async_task<int> si1 = mainflow2();
+        print(PRI1, "mainflowAll: co_await si1;\n");
+        co_await si1;
+
+        print(PRI1, "mainflowAll: co_return 0;\n");
         co_return 0;
     }
 };
@@ -254,14 +359,29 @@ int main(int argc, char* argv[])
 {
     set_priority(0x01);
 
-    if (argc == 2)
-        secondtimeout = atoi(argv[1]);
-
     print(PRI1, "main: ClientApp c1(ioContext, ep);\n");
     ClientApp c1(ioContext, ep);
 
-    print(PRI1, "main: async_task<int> si = mainflow(c1);\n");
-    async_task<int> si = c1.mainflow();
+    if (argc == 3)
+        secondtimeout = atoi(argv[3]);
+
+    if (argc >= 2)
+    {
+        int selected = 0;
+        selected = atoi(argv[1]);
+        if (selected < 0 || selected > 3)
+        {
+            print(PRI1, "main: selection must be in the range [0..3]\n");
+            return 0;
+        }
+        print(PRI1, "main: mainflowX(cselected);\n");
+        c1.mainflowX(selected);
+    }
+    else
+    {
+        print(PRI1, "main: async_task<int> si = mainflowAll();\n");
+        async_task<int> si = c1.mainflowAll();
+    }
 
     print(PRI1, "main: before ioContext.run();\n");
     ioContext.run();
