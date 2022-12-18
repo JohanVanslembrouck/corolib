@@ -59,7 +59,7 @@ public:
             async_operation<std::string> sr = commClient->start_reading();
             print(PRI1, "read_client_request: std::string str = co_await sr;\n");
             std::string str = co_await sr;
-            //print(PRI1, "read_client_request: std::string str = %s\n", str.c_str());
+            print(PRI1, "read_client_request: std::string str = %s\n", str.c_str());
 
             if (str.compare("EOF") == 0)
                 break;
@@ -95,8 +95,6 @@ public:
     {
         Dispatcher dispatcher;
         ServerRequest serverRequest(commClient, m_IoContext);
-
-        async_operation<std::string> reqs[4];
 
         dispatcher.registerFunctor(
             "Req1",
