@@ -191,4 +191,10 @@ The output also shows that all coroutines run on the same thread but that severa
 * I wanted to make a strict separation between the coroutine part and the asynchronous communication library.
 This explains the use of Boost ASIO and Qt: the code in these libraries is not "aware" that is used by coroutines.
 
+## Presentations
+
+* Belgian C++ Users Group, 29 January 2020: Slides + code samples: http://becpp.org/blog/wp-content/uploads/2020/02/Johan-Vanslembrouck-Coroutines-in-C20.zip
+An updated version of the code samples can be found in examples/corolab.
+* Meeting C++ Online, 7 September 2022: Slides: https://meetingcpp.com/mcpp/slides/2022/Corolib-DistributedProgrammingWithC++Coroutines1807.pdf
+
 Contact: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
