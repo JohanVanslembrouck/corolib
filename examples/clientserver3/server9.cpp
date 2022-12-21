@@ -1,13 +1,13 @@
 /**
- * @file server8.cpp
+ * @file server9.cpp
  * @brief
  * This example illustrates the use of coroutines
  * in combination with Boost ASIO to implement a server application.
  * 
- * server8.cpp is a variant of server7.cpp.
- * server8.cpp uses "observer" couroutines, where one observer waits for and handles 1 specific request.
- * server8.cpp resumes the observer coroutine that is interested in that request.
- *
+ * server9.cpp is a variant of server8.cpp.
+ * In contrast to cs3-server8.cpp, cs3-server9.cpp uses a coroutine "chain" from read_client_request to serverRequest.operationX,
+ * i.e. all functions in between (in server8.cpp) have been turned into coroutines.
+ * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
  
@@ -83,7 +83,7 @@ public:
             return "";
         }
 
-        bool dispatch(std::string str)
+        async_task<bool> dispatch(std::string str)
         {
             print(PRI2, "%p: Dispatcher::dispatch(...), m_index = %d\n", this, m_index);
 
@@ -96,13 +96,13 @@ public:
                 {
                     print(PRI1, "%p: Dispatcher::dispatch(...): found match at index %d => %d\n", this, i, m_dispatch_table[i].op);
                     
-                    print(PRI1, "%p: Dispatcher::dispatch(...): before m_serverapp->callCompletionHandler(%d, %s:...)\n", this, m_dispatch_table[i].op, header.c_str());
-                    m_serverapp->callCompletionHandler(m_dispatch_table[i].op, str);
-                    print(PRI1, "%p: Dispatcher::dispatch(...): after m_serverapp->callCompletionHandler(%d, %s:...)\n", this, m_dispatch_table[i].op, header.c_str());
-                    return true;
+                    print(PRI1, "%p: Dispatcher::dispatch(...): before co_await m_serverapp->callCompletionHandler(%d, %s:...)\n", this, m_dispatch_table[i].op, header.c_str());
+                    bool success = co_await m_serverapp->callCompletionHandler(m_dispatch_table[i].op, str);
+                    print(PRI1, "%p: Dispatcher::dispatch(...): after co_await m_serverapp->callCompletionHandler(%d, %s:...)\n", this, m_dispatch_table[i].op, header.c_str());
+                    co_return success;
                 }
             }
-            return false;
+            co_return false;
         }
 
         void invokeAll(std::string str)
@@ -122,9 +122,32 @@ public:
         bool m_running;
     };
 
-    void callCompletionHandler(int i, std::string str)
+    async_task<bool> callCompletionHandler(int idx, std::string str)
     {
-        completionHandler<std::string>(i, str);
+        bool success = false;
+
+		async_operation_base* om_async_operation = m_async_operations[idx];
+
+        async_operation<std::string>* om_async_operation_t =
+            dynamic_cast<async_operation<std::string>*>(om_async_operation);
+
+        if (om_async_operation_t)
+        {
+            print(PRI2, "%p: Dispatcher::callCompletionHandler(%p): om_async_operation_t->set_result(str)\n", this, om_async_operation_t);
+            om_async_operation_t->set_result(str);
+            print(PRI2, "%p: Dispatcher::callCompletionHandler(%p): om_async_operation_t->completed()\n", this, om_async_operation_t);
+            om_async_operation_t->completed();
+            success = true;
+        }
+        else
+        {
+            // This can occur when the async_operation_base has gone out of scope.
+            print(PRI1, "%p: Dispatcher::callCompletionHandler(%p): Warning: om_async_operation_t == nullptr\n", this, om_async_operation_t);
+        }
+		
+		co_await *om_async_operation_t;
+
+        co_return success;
     }
 
     async_task<int> request1Observer(Dispatcher& dispatcher, ServerRequest& serverRequest)
@@ -147,7 +170,7 @@ public:
                 // TODO: unmarshal str into Req1
                 Req1 req1;
                 async_task<int> t = serverRequest.operation1(req1);
-                //co_await t;       // Do not co_await!
+                co_await t;
             }
             counter++;
         }
@@ -175,7 +198,7 @@ public:
                 // TODO: unmarshal str into Req1
                 Req2 req2;
                 async_task<int> t = serverRequest.operation2(req2);
-                //co_await t;       // Do not co_await!
+                co_await t;
             }
             counter++;
         }
@@ -203,7 +226,7 @@ public:
                 // TODO: unmarshal str into Req3
                 Req3 req3;
                 async_task<int> t = serverRequest.operation3(req3);
-                //co_await t;       // Do not co_await!
+                co_await t;
             }
             counter++;
         }
@@ -231,7 +254,7 @@ public:
                 // TODO: unmarshal str into Req4
                 Req4 req4;
                 async_task<int> t = serverRequest.operation4(req4);
-                //co_await t;       // Do not co_await!
+                co_await t;
             }
             counter++;
         }
@@ -271,7 +294,7 @@ public:
 
             print(PRI1, "read_client_request: before dispatcher.dispatch(sr);\n");
             // In reality, str will contain the identification and the marshalled arguments
-            if (!dispatcher.dispatch(str))
+            if (! co_await dispatcher.dispatch(str))
                 print(PRI1, "read_client_request: dispatch failed!!!\n");
             print(PRI1, "read_client_request: after dispatcher.dispatch(sr);\n");
         }

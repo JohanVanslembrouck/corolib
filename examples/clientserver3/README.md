@@ -23,11 +23,11 @@ Such real-life applications could use JSON data structures that, when marshalled
 
 (For the relationship between executables and source files, the reader is referred to CMakeLists.txt in this directory.)
 
-'cs3-server', 'cs3-server2', ... 'cs3-server8' are server applications with 'cs3-client1' or 'cs3-client2' as their client application.
+'cs3-server', 'cs3-server2', ... 'cs3-server9' are server applications with 'cs3-client1' or 'cs3-client2' as their client application.
 
 After building, launch the applications in the following order:
 
-* 'cs3-server' or 'cs3-server2' or ... or 'cs3-server8'
+* 'cs3-server' or 'cs3-server2' or ... or 'cs3-server9'
 * 'cs3-client1' (one or more instances) or 'cs3-client2' (one or more instances)
 
 cs3-server (server.cpp) and cs3-server2 (server2.cpp) are equivalent. 
@@ -57,8 +57,12 @@ the asynchronous operation that is completed by the dispatcher (in server4.cpp, 
 This operation has been removed in server7.cpp.
 
 cs3-server8 (server8.cpp) is based on cs3-server7 (server7.cpp).
-However, server8.cpp uses "observer" couroutines, where one observer couroutine waits for and handles 1 specific request.
+server8.cpp uses "observer" couroutines, where one observer couroutine waits for and handles 1 specific request.
 server8.cpp resumes the observer coroutine that is interested in that request.
+
+cs3-server9 (server9.cpp) is based on cs3-server8 (server8.cpp).
+In contrast to cs3-server8.cpp, cs3-server9.cpp uses a coroutine "chain" from read_client_request to serverRequest.operationX,
+i.e. all functions in between (in server8.cpp) have been turned into coroutines.
 
 cs3-client2 (client2.cpp) is a variant of cs3-client1 (client1.cpp).
 cs3-client2 allows coroutine mainflow() to follow the progress of coroutine mainflow(process_info_t &process_info).
