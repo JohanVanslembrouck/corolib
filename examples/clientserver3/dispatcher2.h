@@ -53,7 +53,7 @@ public:
         m_dispatch_table[index].op = op;
         m_dispatch_table[index].op2 = [this](std::string str, int idx)
         {
-            print(PRI1, "lambda: idx = %d, str = <%s>\n", idx, str.c_str());
+            print(PRI1, "lambda: idx = %d, str = %s", idx, str.c_str());
             m_dispatch_table[idx].op(str);
 
             async_operation<std::string>* om_async_operation = 
@@ -95,7 +95,7 @@ public:
      */
     void dispatch(std::string str)
     {
-        print(PRI2, "Dispatcher::dispatch(<%s>), m-index = %d\n", str.c_str(), m_index);
+        print(PRI2, "Dispatcher::dispatch(str), m_index = %d, str = %s", m_index, str.c_str());
         
         std::string header = getHeader(str);
 

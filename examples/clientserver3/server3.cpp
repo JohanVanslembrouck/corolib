@@ -41,7 +41,7 @@ public:
      * it reads the requests of one client.
      * It then dispatches the request to the operation registered by mainflow_one_client.
      * @param commClient is a shared pointer to a client object
-	 * @param dispatcher a reference to the dispatcher table populated by mainflow_one_client.
+     * @param dispatcher a reference to the dispatcher table populated by mainflow_one_client.
      * @return async_task<int> with value 0
      */
     async_task<int> read_client_request(spCommCore commClient, Dispatcher& dispatcher)
@@ -79,7 +79,7 @@ public:
      * "Req2"           serverRequest.operation2
      * "Req3"           serverRequest.operation3
      * "Req4"           serverRequest.operation4
-	 *
+     *
      * It then calls read_client_request that will handle the requests from that client.
      * @param commClient shared pointer to a client object
      * @return oneway_task

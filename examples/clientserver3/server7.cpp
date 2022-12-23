@@ -43,10 +43,10 @@ public:
      * @brief read_client_request uses a potentially infinite loop where
      * it reads the requests of one client.
      * It then dispatches the request to the operation registered by mainflow_one_client
-	 * and its co_awaits its completion.
+     * and its co_awaits its completion.
      *
      * @param commClient is a shared pointer to a client object
-	 * @param dispatcher a reference to the dispatcher table populated by mainflow_one_client.
+     * @param dispatcher a reference to the dispatcher table populated by mainflow_one_client.
      * @return async_task<int> with value 0
      */
     async_task<int> read_client_request(spCommCore commClient, Dispatcher& dispatcher)
@@ -59,7 +59,7 @@ public:
             async_operation<std::string> sr = commClient->start_reading();
             print(PRI1, "read_client_request: std::string str = co_await sr;\n");
             std::string str = co_await sr;
-            print(PRI1, "read_client_request: std::string str = %s\n", str.c_str());
+            print(PRI1, "read_client_request: std::string str = %s", str.c_str());
 
             if (str.compare("EOF") == 0)
                 break;
@@ -86,7 +86,7 @@ public:
      * "Req2"           serverRequest.operation2
      * "Req3"           serverRequest.operation3
      * "Req4"           serverRequest.operation4
-	 *
+     *
      * It then calls read_client_request that will handle the requests from that client.
      * @param commClient shared pointer to a client object
      * @return oneway_task

@@ -1,12 +1,14 @@
 /**
- * @file server8.cpp
+ * @file server8a.cpp
  * @brief
  * This example illustrates the use of coroutines
  * in combination with Boost ASIO to implement a server application.
  * 
- * server8.cpp is a variant of server7.cpp.
- * server8.cpp uses "observer" couroutines, where one observer waits for and handles 1 specific request.
- * server8.cpp resumes the observer coroutine that is interested in that request.
+ * server8a.cpp is a variant of server8.cpp.
+ * 
+ * Thvariant uses the chain of responsibility design pattern, where the observer coroutines decide if they handle a request or not.
+ * This variant is less efficient than the original implementation because the decision is taken deeper in the call tree.
+ * The main objective is to illustrate the use of the chain of responsibility design pattern.
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
@@ -26,12 +28,6 @@ using namespace corolib;
 
 #include "serverrequest2.h"
 
-struct dispatch_table
-{
-    std::string     str;
-    int             op;
-};
-
 class ServerApp : public CommServer
 {
 public:
@@ -50,57 +46,35 @@ public:
             : m_serverapp(serverapp)
             , m_index(0)
             , m_running(true)
+            , m_handled(false)
         {
             print(PRI1, "%p: Dispatcher::Dispatcher()\n", this);
             for (int i = 0; i < NROPERATIONS; i++)
             {
-                m_dispatch_table[i].str = "EOF";
-                m_dispatch_table[i].op = -1;
+                m_dispatch_table[i] = -1;
             }
         }
 
-        void registerAsyncOperation(std::string tx, int index)
+        void registerAsyncOperation(int index)
         {
-            print(PRI1, "%p: Dispatcher::registerAsyncOperation(<%s>, %d): m_index = %d\n", this,  tx.c_str(), index, m_index);
+            print(PRI1, "%p: Dispatcher::registerAsyncOperation(%d): m_index = %d\n", this, index, m_index);
             if (m_index < NROPERATIONS)
             {
-                m_dispatch_table[m_index].str = tx;
-                m_dispatch_table[m_index].op = index;
+                m_dispatch_table[m_index] = index;
                 m_index++;
             }
-        }
-
-        std::string getHeader(std::string str)
-        {
-            while (str.size())
-            {
-                unsigned long index = str.find(':');
-                if (index != std::string::npos)
-                {
-                    return (str.substr(0, index));
-                }
-            }
-            return "";
         }
 
         bool dispatch(std::string str)
         {
             print(PRI2, "%p. Dispatcher::dispatch(str), m_index = %d, str = %s", this, m_index, str.c_str());
 
-            std::string header = getHeader(str);
-
-            for (int i = 0; i < m_index; i++)
+            m_handled = false;
+            for (int i = 0; i < m_index && !m_handled; i++)
             {
-                print(PRI2, "%p: Dispatcher::dispatch(): m_dispatch_table[%d].str = <%s>\n", this,  i, m_dispatch_table[i].str.c_str());
-                if (m_dispatch_table[i].str.compare(header) == 0)
-                {
-                    print(PRI1, "%p: Dispatcher::dispatch(...): found match at index %d => %d\n", this, i, m_dispatch_table[i].op);
-                    
-                    print(PRI1, "%p: Dispatcher::dispatch(...): before m_serverapp->callCompletionHandler(%d, %s:...)\n", this, m_dispatch_table[i].op, header.c_str());
-                    m_serverapp->callCompletionHandler(m_dispatch_table[i].op, str);
-                    print(PRI1, "%p: Dispatcher::dispatch(...): after m_serverapp->callCompletionHandler(%d, %s:...)\n", this, m_dispatch_table[i].op, header.c_str());
-                    return true;
-                }
+                print(PRI1, "%p: Dispatcher::dispatch(...): before m_serverapp->callCompletionHandler(%d, str)\n", this, m_dispatch_table[i]);
+                m_serverapp->callCompletionHandler(m_dispatch_table[i], str);
+                print(PRI1, "%p: Dispatcher::dispatch(...): after m_serverapp->callCompletionHandler(%d, str)\n", this, m_dispatch_table[i]);
             }
             return false;
         }
@@ -110,21 +84,36 @@ public:
             print(PRI1, "%p: Dispatcher::invokeAll(<%s>), m_index = %d\n", this, str.c_str(), m_index);
             for (int i = 0; i < m_index; i++)
             {
-                m_serverapp->callCompletionHandler(m_dispatch_table[i].op, str);
+                m_serverapp->callCompletionHandler(m_dispatch_table[i], str);
             }
         }
 
     private:
         ServerApp* m_serverapp;
-        dispatch_table m_dispatch_table[NROPERATIONS];
+        int m_dispatch_table[NROPERATIONS];
         int m_index;
+  
     public:
         bool m_running;
+        bool m_handled;
     };
 
     void callCompletionHandler(int i, std::string str)
     {
         completionHandler<std::string>(i, str);
+    }
+
+    std::string getHeader(std::string str)
+    {
+        while (str.size())
+        {
+            unsigned long index = str.find(':');
+            if (index != std::string::npos)
+            {
+                return (str.substr(0, index));
+            }
+        }
+        return "";
     }
 
     async_task<int> request1Observer(Dispatcher& dispatcher, ServerRequest& serverRequest)
@@ -135,7 +124,7 @@ public:
         int index = get_free_index();
         async_operation<std::string> op_str{ this, index };
         op_str.auto_reset(true);
-        dispatcher.registerAsyncOperation("Req1", index);
+        dispatcher.registerAsyncOperation(index);
         
         while (dispatcher.m_running)
         {
@@ -144,10 +133,15 @@ public:
             print(PRI1, "request1Observer: str = %s", str.c_str());
             if (dispatcher.m_running)
             {
-                // TODO: unmarshal str into Req1
-                Req1 req1;
-                async_task<int> t = serverRequest.operation1(req1);
-                //co_await t;       // Do not co_await!
+                std::string header = getHeader(str);
+                if (header.compare("Req1") == 0)
+                {
+                    dispatcher.m_handled = true;
+                    // TODO: unmarshal str into Req1
+                    Req1 req1;
+                    async_task<int> t = serverRequest.operation1(req1);
+                    //co_await t;       // Do not co_await!
+                }
             }
             counter++;
         }
@@ -163,7 +157,7 @@ public:
         int index = get_free_index();
         async_operation<std::string> op_str{ this, index };
         op_str.auto_reset(true);
-        dispatcher.registerAsyncOperation("Req2", index);
+        dispatcher.registerAsyncOperation(index);
         
         while (dispatcher.m_running)
         {
@@ -172,10 +166,15 @@ public:
             print(PRI1, "request2Observer: str = %s", str.c_str());
             if (dispatcher.m_running)
             {
-                // TODO: unmarshal str into Req1
-                Req2 req2;
-                async_task<int> t = serverRequest.operation2(req2);
-                //co_await t;       // Do not co_await!
+                std::string header = getHeader(str);
+                if (header.compare("Req2") == 0)
+                {
+                    dispatcher.m_handled = true;
+                    // TODO: unmarshal str into Req1
+                    Req2 req2;
+                    async_task<int> t = serverRequest.operation2(req2);
+                    //co_await t;       // Do not co_await!
+                }
             }
             counter++;
         }
@@ -191,7 +190,7 @@ public:
         int index = get_free_index();
         async_operation<std::string> op_str{ this, index };
         op_str.auto_reset(true);
-        dispatcher.registerAsyncOperation("Req3", index);
+        dispatcher.registerAsyncOperation(index);
         
         while (dispatcher.m_running)
         {
@@ -200,10 +199,15 @@ public:
             print(PRI1, "request3Observer: str = %s", str.c_str());
             if (dispatcher.m_running)
             {
-                // TODO: unmarshal str into Req3
-                Req3 req3;
-                async_task<int> t = serverRequest.operation3(req3);
-                //co_await t;       // Do not co_await!
+                std::string header = getHeader(str);
+                if (header.compare("Req3") == 0)
+                {
+                    dispatcher.m_handled = true;
+                    // TODO: unmarshal str into Req3
+                    Req3 req3;
+                    async_task<int> t = serverRequest.operation3(req3);
+                    //co_await t;       // Do not co_await!
+                }
             }
             counter++;
         }
@@ -219,7 +223,7 @@ public:
         int index = get_free_index();
         async_operation<std::string> op_str{ this, index };
         op_str.auto_reset(true);
-        dispatcher.registerAsyncOperation("Req4", index);
+        dispatcher.registerAsyncOperation(index);
         
         while (dispatcher.m_running)
         {
@@ -228,10 +232,15 @@ public:
             print(PRI1, "request4Observer: str = %s", str.c_str());
             if (dispatcher.m_running)
             {
-                // TODO: unmarshal str into Req4
-                Req4 req4;
-                async_task<int> t = serverRequest.operation4(req4);
-                //co_await t;       // Do not co_await!
+                std::string header = getHeader(str);
+                if (header.compare("Req4") == 0)
+                {
+                    dispatcher.m_handled = true;
+                    // TODO: unmarshal str into Req4
+                    Req4 req4;
+                    async_task<int> t = serverRequest.operation4(req4);
+                    //co_await t;       // Do not co_await!
+                }
             }
             counter++;
         }

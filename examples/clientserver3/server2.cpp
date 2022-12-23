@@ -46,7 +46,7 @@ public:
      * "Req2"           serverRequest.operation2
      * "Req3"           serverRequest.operation3
      * "Req4"           serverRequest.operation4
-	 *
+     *
      * It then handles the requests of the client.
      * mainflow_one_client uses a potentially infinite loop where
      * it reads the requests of one client.

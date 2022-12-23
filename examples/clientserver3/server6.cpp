@@ -45,8 +45,8 @@ public:
      * it reads the requests of one client.
      * It then dispatches the request to the operation registered by mainflow_one_client.
      * @param commClient is a shared pointer to a client object
-	 * @param dispatcher is a reference to the dispatcher table populated by mainflow_one_client.
-	 * @param done is a boolean passed by reference to indicate to its caller (mainflow_one_client)
+     * @param dispatcher is a reference to the dispatcher table populated by mainflow_one_client.
+     * @param done is a boolean passed by reference to indicate to its caller (mainflow_one_client)
      * that the client has finished processing.
      * @return async_task<int> with value 0
      */
@@ -86,12 +86,12 @@ public:
      * "Req2"           serverRequest.operation2
      * "Req3"           serverRequest.operation3
      * "Req4"           serverRequest.operation4
-	 *
+     *
      * It then calls read_client_request that will handle the requests from that client.
-	 * It then enters a while loop where it co_awaits the completion of any of the
-	 * operations called from within read_client_request.
-	 * It will leave the loop when read_client_request indicates that the client
-	 * has finished.
+     * It then enters a while loop where it co_awaits the completion of any of the
+     * operations called from within read_client_request.
+     * It will leave the loop when read_client_request indicates that the client
+     * has finished.
      * @param commClient shared pointer to a client object
      * @return oneway_task
      */
@@ -158,7 +158,7 @@ public:
         {
             print(PRI1, "main_one_client: int i = co_await wat;\n");
             int i = co_await wat;
-            print(PRI1, "main_one_client: reqs[%d].get_result().c_str().get_result() = %s\n", i, reqs[i].get_result().c_str());
+            print(PRI1, "main_one_client: reqs[%d].get_result().c_str().get_result() = %s", i, reqs[i].get_result().c_str());
         }
 
         print(PRI1, "main_one_client: int i = co_await rcr;\n");

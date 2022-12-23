@@ -49,10 +49,10 @@ public:
      * it reads the requests of one client.
      * It then dispatches the request to the operation registered by mainflow_one_client.
      * @param commClient is a shared pointer to a client object
-	 * @param dispatcher is a reference to the dispatcher table populated by mainflow_one_client.
-	 * @param done is a boolean passed by reference to indicate to its caller (mainflow_one_client)
+     * @param dispatcher is a reference to the dispatcher table populated by mainflow_one_client.
+     * @param done is a boolean passed by reference to indicate to its caller (mainflow_one_client)
      * that the client has finished processing.
-	 * @param process_info is a simple structure with a data member to remember the iteration count. 
+     * @param process_info is a simple structure with a data member to remember the iteration count. 
      * @return async_task<int> with value 0
      */
     async_task<int> read_client_request(spCommCore commClient, Dispatcher& dispatcher, 
@@ -94,12 +94,12 @@ public:
      * "Req2"           serverRequest.operation2
      * "Req3"           serverRequest.operation3
      * "Req4"           serverRequest.operation4
-	 *
+     *
      * It then calls read_client_request that will handle the requests from that client.
-	 * It then enters a while loop where it starts a timer or 50 ms and awaits its expiry.
-	 * At every timer expiry, it displays the process_info filled in by read_client_request.
-	 * It will leave the loop when read_client_request indicates that the client
-	 * has finished.
+     * It then enters a while loop where it starts a timer or 50 ms and awaits its expiry.
+     * At every timer expiry, it displays the process_info filled in by read_client_request.
+     * It will leave the loop when read_client_request indicates that the client
+     * has finished.
      * @param commClient shared pointer to a client object
      * @return oneway_task
      */

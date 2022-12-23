@@ -85,7 +85,7 @@ public:
 
         async_task<bool> dispatch(std::string str)
         {
-            print(PRI2, "%p: Dispatcher::dispatch(...), m_index = %d\n", this, m_index);
+            print(PRI2, "%p. Dispatcher::dispatch(str), m_index = %d, str = %s", this, m_index, str.c_str());
 
             std::string header = getHeader(str);
 
@@ -126,7 +126,7 @@ public:
     {
         bool success = false;
 
-		async_operation_base* om_async_operation = m_async_operations[idx];
+        async_operation_base* om_async_operation = m_async_operations[idx];
 
         async_operation<std::string>* om_async_operation_t =
             dynamic_cast<async_operation<std::string>*>(om_async_operation);
@@ -144,8 +144,8 @@ public:
             // This can occur when the async_operation_base has gone out of scope.
             print(PRI1, "%p: Dispatcher::callCompletionHandler(%p): Warning: om_async_operation_t == nullptr\n", this, om_async_operation_t);
         }
-		
-		co_await *om_async_operation_t;
+        
+        co_await *om_async_operation_t;
 
         co_return success;
     }
@@ -155,11 +155,11 @@ public:
         print(PRI1, "request1Observer\n");
         static int counter = 0;
 
-		int index = get_free_index();
+        int index = get_free_index();
         async_operation<std::string> op_str{ this, index };
-		op_str.auto_reset(true);
+        op_str.auto_reset(true);
         dispatcher.registerAsyncOperation("Req1", index);
-		
+        
         while (dispatcher.m_running)
         {
             print(PRI1, "request1Observer: std::string str = co_await op_str;\n");
@@ -183,11 +183,11 @@ public:
         print(PRI1, "request2Observer\n");
         static int counter = 0;
 
-		int index = get_free_index();
+        int index = get_free_index();
         async_operation<std::string> op_str{ this, index };
-		op_str.auto_reset(true);
+        op_str.auto_reset(true);
         dispatcher.registerAsyncOperation("Req2", index);
-		
+        
         while (dispatcher.m_running)
         {
             print(PRI1, "request2Observer: std::string str = co_await op_str;\n");
@@ -211,11 +211,11 @@ public:
         print(PRI1, "request3Observer\n");
         static int counter = 0;
 
-		int index = get_free_index();
+        int index = get_free_index();
         async_operation<std::string> op_str{ this, index };
-		op_str.auto_reset(true);
+        op_str.auto_reset(true);
         dispatcher.registerAsyncOperation("Req3", index);
-		
+        
         while (dispatcher.m_running)
         {
             print(PRI1, "request3Observer: std::string str = co_await op_str;\n");
@@ -239,11 +239,11 @@ public:
         print(PRI1, "request4Observer\n");
         static int counter = 0;
 
-		int index = get_free_index();
+        int index = get_free_index();
         async_operation<std::string> op_str{ this, index };
-		op_str.auto_reset(true);
+        op_str.auto_reset(true);
         dispatcher.registerAsyncOperation("Req4", index);
-		
+        
         while (dispatcher.m_running)
         {
             print(PRI1, "request4Observer: std::string str = co_await op_str;\n");

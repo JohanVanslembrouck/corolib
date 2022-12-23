@@ -64,5 +64,10 @@ cs3-server9 (server9.cpp) is based on cs3-server8 (server8.cpp).
 In contrast to cs3-server8.cpp, cs3-server9.cpp uses a coroutine "chain" from read_client_request to serverRequest.operationX,
 i.e. all functions in between (in server8.cpp) have been turned into coroutines.
 
+cs3-server8a (server8a.cpp) and cs3-server9a (server9a.cpp) are variants of cs3-server8 (server8.cpp) and cs3-server9 (server9.cpp), respectively.
+The 'a' variant uses the chain of responsibility design pattern, where the observer coroutines decide if they handle a request or not.
+This variant is less efficient than the original implementation because the decision is taken deeper in the call tree.
+The main objective is to illustrate the use of the chain of responsibility design pattern.
+
 cs3-client2 (client2.cpp) is a variant of cs3-client1 (client1.cpp).
 cs3-client2 allows coroutine mainflow() to follow the progress of coroutine mainflow(process_info_t &process_info).
