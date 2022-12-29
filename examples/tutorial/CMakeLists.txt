@@ -148,3 +148,6 @@ add_executable(p1474-async_operation-thread p1474-async_operation-thread.cpp cla
 target_link_libraries(p1474-async_operation-thread corolib)
 add_executable(p1476-async_operation-immediate p1476-async_operation-immediate.cpp class02.cpp p1470.cpp)
 target_link_libraries(p1476-async_operation-immediate corolib)
+
+add_executable(p1500-async_operation p1500-async_operation.cpp p1500.cpp)
+target_link_libraries(p1500-async_operation corolib)

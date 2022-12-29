@@ -1,5 +1,5 @@
 /**
- * @file p1400-async_operation.cpp
+ * @file p1500-async_operation.cpp
  * @brief
  * Starts an asynchronous operation that will be completed from the main() function.
  *
@@ -8,14 +8,17 @@
 
 #include <functional>
 
-#include "p1400.h"
-#include "eventqueue.h"
+#include <corolib/print.h>
+#include <corolib/async_task.h>
+#include <corolib/async_operation.h>
 
 using namespace corolib;
 
-UseMode useMode = USE_NONE;
+extern std::function<void(int)> eventHandler1;      // p1500.cpp
+extern std::function<void(int)> eventHandler2;      // p1500.cpp
 
-extern std::function<void(int)> eventHandler;       // p1400.cpp
+// Uses coroutine1 implemented in p1500.cpp
+async_task<int> coroutine1();
 
 int main()
 {
@@ -28,16 +31,16 @@ int main()
     print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-    print(PRI1, "main(): before eventHandler(10);\n");
-    eventHandler(10);
-    print(PRI1, "main(): after eventHandler(10);\n");
+    print(PRI1, "main(): before eventHandler1(10);\n");
+    eventHandler1(10);
+    print(PRI1, "main(): after eventHandler1(10);\n");
 
     print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-    print(PRI1, "main(): before eventHandler(10);\n");
-    eventHandler(10);
-    print(PRI1, "main(): after eventHandler(10);\n");
+    print(PRI1, "main(): before eventHandler1(10);\n");
+    eventHandler1(10);
+    print(PRI1, "main(): after eventHandler1(10);\n");
 
     print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));

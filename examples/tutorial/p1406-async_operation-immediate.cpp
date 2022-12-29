@@ -6,60 +6,11 @@
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
-#include <functional>
-
-#include <corolib/print.h>
-#include <corolib/async_task.h>
-#include <corolib/async_operation.h>
+#include "p1400.h"
 
 using namespace corolib;
 
-// TODO: use local variable in start_operation_impl
-std::function<void(int)> eventHandler;        // Will be initialized in start_operation_impl
-
-/**
- * @brief start_operation_impl simulates starting an asynchronous operation and
- * initializing an event handler that will be called when that asynchronous operation completes.
- *
- * Starting the asynchronous operation is omitted in this implementation.
- * start_operation_impl initializes eventHandler with a lambda that will
- * be called on completion of the asynchronous operation.
- 
- * start_operation_impl is called from coroutine5 in p1400.cpp to start the asynchronous operation.
- *
- * In this example start_operation_impl itself completes the operation by calling eventHandler
- * at its end, hence "immediate" completion.
- *
- * @param op is a pointer to an async_operation<int> object.
- */
-void start_operation_impl(async_operation<int>* op)
-{
-    print(PRI1, "start_operation_impl()\n");
-
-    // The asynchronous operation is normally started here, passing the eventHandler as one of its arguments.
-
-    eventHandler = [op](int i)
-    {
-        print(PRI1, "eventHandler()\n");
-
-        if (op)
-        {
-            print(PRI1, "eventHandler(): op->set_result(%d)\n", i);
-            op->set_result(i);
-            op->completed();
-        }
-        else
-        {
-            // This can occur when the async_operation_base has gone out of scope.
-            print(PRI1, "eventHandler() : Warning: op == nullptr\n");
-        }
-    };
-
-    eventHandler(10);
-}
-
-// Uses coroutine1 implemented in p1400.cpp
-async_task<int> coroutine1();
+UseMode useMode = USE_IMMEDIATE_COMPLETION;
 
 int main()
 {
