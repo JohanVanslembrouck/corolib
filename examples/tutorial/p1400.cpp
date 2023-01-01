@@ -87,7 +87,7 @@ void start_operation_impl(async_operation<int>* op)
 
 async_task<int> coroutine5()
 {
-	print(PRI1, "coroutine5(): async_operation<int> op;\n");
+    print(PRI1, "coroutine5(): async_operation<int> op;\n");
     async_operation<int> op;
     print(PRI1, "coroutine5(): start_operation_impl(&op);\n");
     start_operation_impl(&op);

@@ -75,7 +75,7 @@ async_task<int> coroutine5()
 {
     async_task<int> a = coroutine11();
 
-	print(PRI1, "coroutine5(): async_operation<int> op;\n");
+    print(PRI1, "coroutine5(): async_operation<int> op;\n");
     async_operation<int> op;
     print(PRI1, "coroutine5(): start_operation_impl(&op);\n");
     start_operation_impl(eventHandler1, op);
