@@ -93,9 +93,13 @@ Uses the "compiler does not support symmetric transfer" alternative from async_g
 
 * p0426.cpp: co_await, co_return, eager, chain of coroutine calls, uses dedicated type, two coroutines resumed from main()
 
-* p0430.cpp: co_await, co_return , lazy, chain of coroutine calls
+* p0430.cpp: co_await, co_return, lazy, chain of coroutine calls, CSemaphore
 
-* p0435.cpp:
+* p0432.cpp: co_await, co_return, lazy, chain of coroutine calls, CSemaphore
+
+* p0435.cpp: co_await, co_return, lazy, chain of coroutine calls, single_consumer_event
+
+* p0436.cpp: co_await, co_return, lazy, chain of coroutine calls, single_consumer_event
 
 * p0440.cpp: co_await, co_return, future, chain of coroutine calls
 

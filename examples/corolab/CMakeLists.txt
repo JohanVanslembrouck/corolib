@@ -48,7 +48,11 @@ add_executable(p0422 p0424.cpp)
 add_executable(p0424 p0424.cpp)
 add_executable(p0426 p0426.cpp)
 
+add_executable(p0430 p0430.cpp)
+add_executable(p0432 p0432.cpp)
 add_executable(p0435 p0435.cpp)
+add_executable(p0436 p0436.cpp)
+
 #add_executable(p0440 p0440.cpp)
 #add_executable(p450 p0450.cpp)
 add_executable(p0460 p0460.cpp)

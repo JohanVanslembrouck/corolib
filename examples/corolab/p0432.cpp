@@ -1,5 +1,5 @@
 /** 
- *  Filename: p0430.cpp
+ *  Filename: p0432.cpp
  *  Description:
  *      Illustrates the use of co_await.
  *
@@ -9,6 +9,12 @@
  *      The calling function or coroutine will resume the called coroutine
  *      from its get() function.
  *
+ *      p0432.cpp is a variant of p0430.cpp.
+ *      It initializes 5 lazy<int> objects with coroutines,
+ *      in the order opposite to the order in which the coroutines will be called.
+ *      The coroutines co_await the initialized lazy<int> objects.
+ *      This approach is possible because of the lazy coroutine type.
+ *      
  *  Tested with Visual Studio 2019.
  *
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
@@ -151,6 +157,12 @@ struct lazy {
 
 // -------------------------------------------------------------
 
+// Forward declarations
+extern lazy<int> a5;
+extern lazy<int> a4;
+extern lazy<int> a3;
+extern lazy<int> a2;
+
 lazy<int> coroutine5() {
     print("coroutine5()\n");
 
@@ -180,46 +192,42 @@ lazy<int> coroutine5() {
 }
 
 lazy<int> coroutine4() {
-    print("coroutine4(): lazy<int> a = coroutine5();\n");
-    lazy<int> a = coroutine5();
-    print("coroutine4(): int v = co_await a;\n");
-    int v = co_await a;
+    print("coroutine4(): int v = co_await a5;\n");
+    int v = co_await a5;
     print("coroutine4(): co_return %d;\n", v + 1);
     co_return v + 1;
 }
 
 lazy<int> coroutine3() {
-    print("coroutine3(): lazy<int> a = coroutine4();\n");
-    lazy<int> a = coroutine4();
-    print("coroutine3(): int v = co_await a;\n");
-    int v = co_await a;
+    print("coroutine3(): int v = co_await a4;\n");
+    int v = co_await a4;
     print("coroutine3(): co_return %d;\n", v + 1);
     co_return v + 1;
 }
 
 lazy<int> coroutine2() {
-    print("coroutine2(): lazy<int> a = coroutine3();\n");
-    lazy<int> a = coroutine3();
-    print("coroutine2(): int v = co_await a;\n");
-    int v = co_await a;
+    print("coroutine2(): int v = co_await a3;\n");
+    int v = co_await a3;
     print("coroutine2(): co_return %d;\n", v + 1);
     co_return v + 1;
 }
 
 lazy<int> coroutine1() {
-    print("coroutine1(): lazy<int> a = coroutine2();\n");
-    lazy<int> a = coroutine2();
-    print("coroutine1(): int v = co_await a;\n");
-    int v = co_await a;
+    print("coroutine1(): int v = co_await a2;\n");
+    int v = co_await a2;
     print("coroutine1(): co_return %d;\n", v + 1);
     co_return v + 1;
 }
 
+lazy<int> a5 = coroutine5();
+lazy<int> a4 = coroutine4();
+lazy<int> a3 = coroutine3();
+lazy<int> a2 = coroutine2();
+lazy<int> a1 = coroutine1();
+
 int main() {
-    print("main(): lazy<int> awa = coroutine1();\n");
-    lazy<int> awa = coroutine1();
-    print("main(): int i = awa.get();\n");
-    int i = awa.get();
+    print("main(): int i = a1.get();\n");
+    int i = a1.get();
     print("main(): i = %d\n", i);
     print("main(): return 0;\n");
     return 0;
