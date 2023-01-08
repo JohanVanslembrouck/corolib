@@ -58,3 +58,6 @@ p1469-async_operation-thread-imm.exe
 p1472-async_operation-eventqueue.exe
 p1474-async_operation-thread.exe
 REM p1476-async_operation-immediate.exe
+p1500-async_operation.exe
+p1600-async_operation.exe
+p1700-async_operation.exe
