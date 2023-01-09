@@ -51,7 +51,8 @@ namespace corolib
         }
 
         async_task_base(handle_type h)
-            : m_coro(h) {
+            : m_coro(h)
+        {
             print(PRI2, "%p: async_task_base::async_task_base(handle_type h)\n", this);
         }
 
@@ -134,7 +135,6 @@ namespace corolib
                 print(PRI2, "%p: async_task_base::promise_type::~promise_type()\n", this);
             }
 
-
             void return_value(TYPE v)
             {
                 print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): begin\n", this);
@@ -155,7 +155,6 @@ namespace corolib
                     print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): after m_waitany->completed();\n", this);
                     return;
                 }
-
                 if (m_awaiting)
                 {
                     print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): before m_awaiting.resume();\n", this);
@@ -202,8 +201,11 @@ namespace corolib
     class async_task : public async_task_base<TYPE>
     {
     public:
+        using handle_type = typename async_task_base<TYPE>::handle_type;
+
         async_task(handle_type h)
-            : async_task_base(h) {
+            : async_task_base<TYPE>(h)
+        {
             print(PRI2, "%p: async_task::async_task(handle_type h)\n", this);
         }
 
@@ -266,8 +268,11 @@ namespace corolib
     class async_ltask : public async_task_base<TYPE>
     {
     public:
+        using handle_type = typename async_task_base<TYPE>::handle_type;
+
         async_ltask(handle_type h)
-            : async_task_base(h) {
+            : async_task_base<TYPE>(h)
+        {
             print(PRI2, "%p: async_ltask::async_task(handle_type h)\n", this);
         }
 
@@ -356,7 +361,8 @@ namespace corolib
         }
 
         async_task(handle_type h)
-            : m_coro(h) {
+            : m_coro(h)
+        {
             print(PRI2, "%p: async_task::async_task(handle_type h)\n", this);
         }
 
@@ -474,7 +480,6 @@ namespace corolib
                     print(PRI2, "%p: async_task::promise_type::return_void(): after m_waitany->completed();\n", this);
                     return;
                 }
-
                 if (m_awaiting)
                 {
                     print(PRI2, "%p: async_task::promise_type::return_void(): before m_awaiting.resume();\n", this);
