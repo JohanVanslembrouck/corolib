@@ -67,6 +67,15 @@ namespace corolib
         }
 
         /**
+         * @brief Starts a lazy coroutine
+         * Should be a member function of async_ltask, but g++ does not find m_coro.
+         */
+        void start()
+        {
+            m_coro.resume();
+        }
+
+        /**
          * @brief get_result retrieves the result of the embedded promise.
          * If the coroutine returning the async_task_base object has not yet returned,
          * get_result will wait for the semaphone to be signaled,
@@ -274,11 +283,6 @@ namespace corolib
             : async_task_base<TYPE>(h)
         {
             print(PRI2, "%p: async_ltask::async_task(handle_type h)\n", this);
-        }
-
-        void start()
-        {
-            m_coro.resume();
         }
 
         auto operator co_await() noexcept
