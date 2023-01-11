@@ -160,3 +160,6 @@ target_link_libraries(p1700-async_operation corolib)
 
 add_executable(p1700a-async_operation p1700-async_operation.cpp p1700a.cpp)
 target_link_libraries(p1700a-async_operation corolib)
+
+add_executable(p1702-async_operation p1702-async_operation.cpp p1700.cpp)
+target_link_libraries(p1702-async_operation corolib)

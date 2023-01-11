@@ -11,8 +11,7 @@
  * (the type the user is interested in).
  * 
  * async_task<TYPE> and async_ltask<TYPE> are derived from a common base class async_task_base<TYPE>.
- * 
- * Note: there is currently no implementation of async_ltask<void>.
+ * async_task<void> and async_ltask<void> are derived from a common base class async_task_void.
  * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
@@ -342,42 +341,50 @@ namespace corolib
     };
 
 
-    template<>
-    class async_task<void>
+    class async_task_void
     {
     public:
 
         struct promise_type;
         using handle_type = std::coroutine_handle<promise_type>;
 
-        async_task(const async_task& s) = delete;
+        async_task_void(const async_task_void& s) = delete;
 
-        async_task(async_task&& s) noexcept
+        async_task_void(async_task_void&& s) noexcept
             : m_coro(s.m_coro)
         {
-            print(PRI2, "%p: async_task::async_task(async_task&& s)\n", this);
+            print(PRI2, "%p: async_task_void::async_task_void(async_task&& s)\n", this);
             s.m_coro = nullptr;
         }
 
-        ~async_task()
+        ~async_task_void()
         {
-            print(PRI2, "%p: async_task::~async_task()\n", this);
+            print(PRI2, "%p: async_task_void::~async_task_void()\n", this);
         }
 
-        async_task(handle_type h)
+        async_task_void(handle_type h)
             : m_coro(h)
         {
-            print(PRI2, "%p: async_task::async_task(handle_type h)\n", this);
+            print(PRI2, "%p: async_task_void::async_task_void(handle_type h)\n", this);
         }
 
-        async_task& operator = (const async_task&) = delete;
+        async_task_void& operator = (const async_task_void&) = delete;
 
-        async_task& operator = (async_task&& s) noexcept
+        async_task_void& operator = (async_task_void&& s) noexcept
         {
-            print(PRI2, "%p: async_task::async_task = (async_task&& s)\n", this);
+            print(PRI2, "%p: async_task_void::async_task_void = (async_task&& s)\n", this);
             m_coro = s.m_coro;
             s.m_coro = nullptr;
             return *this;
+        }
+
+        /**
+         * @brief Starts a lazy coroutine
+         * Should be a member function of async_ltask, but g++ does not find m_coro.
+         */
+        void start()
+        {
+            m_coro.resume();
         }
 
         /**
@@ -402,14 +409,105 @@ namespace corolib
 
         void setCounter(when_all_counter* ctr)
         {
-            print(PRI2, "%p: void m_async_task::setCounter(%p)\n", this, ctr);
+            print(PRI2, "%p: void async_task_void::setCounter(%p)\n", this, ctr);
             m_coro.promise().m_ctr = ctr;
         }
 
         void setWaitAny(when_any_one* waitany)
         {
-            print(PRI2, "%p: void m_async_task::setWaitAny(%p)\n", this, waitany);
+            print(PRI2, "%p: void async_task_void::setWaitAny(%p)\n", this, waitany);
             m_coro.promise().m_waitany = waitany;
+        }
+
+        struct promise_type
+        {
+            friend class async_task_void;
+
+            promise_type()
+                : m_awaiting(nullptr)
+                , m_ctr(nullptr)
+                , m_waitany(nullptr)
+                , m_ready(false)
+                , m_wait_for_signal(false)
+            {
+                print(PRI2, "%p: async_task_void::promise_type::promise_type()\n", this);
+            }
+
+            ~promise_type()
+            {
+                print(PRI2, "%p: async_task_void::promise_type::~promise_type()\n", this);
+            }
+
+            void return_void()
+            {
+                print(PRI2, "%p: async_task_void::promise_type::return_void(): begin\n", this);
+                m_ready = true;
+
+                if (m_ctr)
+                {
+                    print(PRI2, "%p: async_task_void::promise_type::return_void(): before m_ctr->completed();\n", this);
+                    m_ctr->completed();
+                    print(PRI2, "%p: async_task_void::promise_type::return_void(): after m_ctr->completed();\n", this);
+                    return;
+                }
+                if (m_waitany)
+                {
+                    print(PRI2, "%p: async_task_void::promise_type::return_void(): before m_waitany->completed();\n", this);
+                    m_waitany->completed();
+                    print(PRI2, "%p: async_task_void::promise_type::return_void(): after m_waitany->completed();\n", this);
+                    return;
+                }
+                if (m_awaiting)
+                {
+                    print(PRI2, "%p: async_task_void::promise_type::return_void(): before m_awaiting.resume();\n", this);
+                    m_awaiting.resume();
+                    print(PRI2, "%p: async_task_void::promise_type::return_void(): after m_awaiting.resume();\n", this);
+                }
+                if (m_wait_for_signal)
+                {
+                    print(PRI2, "%p: async_task_void::promise_type::return_void(): before sema.signal();\n", this);
+                    m_sema.signal();
+                    print(PRI2, "%p: async_task_void::promise_type::return_void(): after sema.signal();\n", this);
+                }
+                print(PRI2, "%p: async_task_void::promise_type::return_void(): end\n", this);
+            }
+
+            auto final_suspend() noexcept
+            {
+                print(PRI2, "%p: async_task_void::promise_type::final_suspend()\n", this);
+                return std::suspend_always{};
+            }
+
+            void unhandled_exception()
+            {
+                print(PRI2, "%p: async_task_void::promise::promise_type()\n", this);
+                std::exit(1);
+            }
+
+        public:
+            std::coroutine_handle<> m_awaiting;
+            Semaphore m_sema;
+            when_all_counter* m_ctr;
+            when_any_one* m_waitany;
+            bool m_ready;
+            bool m_wait_for_signal;
+        };
+
+    protected:
+        handle_type m_coro;
+    };
+
+    template<>
+    class async_task<void> : public async_task_void
+    {
+    public:
+	
+	    using handle_type = typename async_task_void::handle_type;
+
+        async_task(handle_type h)
+            : async_task_void(h)
+        {
+            print(PRI2, "%p: async_task::async_task(handle_type h)\n", this);
         }
 
         auto operator co_await() noexcept
@@ -445,60 +543,11 @@ namespace corolib
 
             return awaiter{ *this };
         }
-
-        struct promise_type
+       
+        struct promise_type : public async_task_void::promise_type
         {
             friend class async_task;
-
-            promise_type()
-                : m_awaiting(nullptr)
-                , m_ctr(nullptr)
-                , m_waitany(nullptr)
-                , m_ready(false)
-                , m_wait_for_signal(false)
-            {
-                print(PRI2, "%p: async_task::promise_type::promise_type()\n", this);
-            }
-
-            ~promise_type()
-            {
-                print(PRI2, "%p: async_task::promise_type::~promise_type()\n", this);
-            }
-
-            void return_void()
-            {
-                print(PRI2, "%p: async_task::promise_type::return_void(): begin\n", this);
-                m_ready = true;
-
-                if (m_ctr)
-                {
-                    print(PRI2, "%p: async_task::promise_type::return_void(): before m_ctr->completed();\n", this);
-                    m_ctr->completed();
-                    print(PRI2, "%p: async_task::promise_type::return_void(): after m_ctr->completed();\n", this);
-                    return;
-                }
-                if (m_waitany)
-                {
-                    print(PRI2, "%p: async_task::promise_type::return_void(): before m_waitany->completed();\n", this);
-                    m_waitany->completed();
-                    print(PRI2, "%p: async_task::promise_type::return_void(): after m_waitany->completed();\n", this);
-                    return;
-                }
-                if (m_awaiting)
-                {
-                    print(PRI2, "%p: async_task::promise_type::return_void(): before m_awaiting.resume();\n", this);
-                    m_awaiting.resume();
-                    print(PRI2, "%p: async_task::promise_type::return_void(): after m_awaiting.resume();\n", this);
-                }
-                if (m_wait_for_signal)
-                {
-                    print(PRI2, "%p: async_task::promise_type::return_void(): before sema.signal();\n", this);
-                    m_sema.signal();
-                    print(PRI2, "%p: async_task::promise_type::return_void(): after sema.signal();\n", this);
-                }
-                print(PRI2, "%p: async_task::promise_type::return_void(): end\n", this);
-            }
-
+            
             auto get_return_object()
             {
                 print(PRI2, "%p: async_task::promise_type::get_return_object()\n", this);
@@ -510,30 +559,72 @@ namespace corolib
                 print(PRI2, "%p: async_task::promise_type::initial_suspend()\n", this);
                 return std::suspend_never{};
             }
+        };
+    };
+	
+    template<>
+    class async_ltask<void> : public async_task_void
+    {
+    public:
+	    using handle_type = typename async_task_void::handle_type;
 
-            auto final_suspend() noexcept
+        async_ltask(handle_type h)
+            : async_task_void(h)
+        {
+            print(PRI2, "%p: async_ltask::async_ltask(handle_type h)\n", this);
+        }
+		
+        auto operator co_await() noexcept
+        {
+            class awaiter
             {
-                print(PRI2, "%p: async_task::promise_type::final_suspend()\n", this);
+            public:
+                awaiter(async_ltask& async_ltask_)
+                    : m_async_ltask(async_ltask_)
+                {}
+
+                bool await_ready()
+                {
+                    const bool ready = m_async_ltask.m_coro.done();
+                    print(PRI2, "%p: m_async_ltask::await_ready(): return %d;\n", this, ready);
+                    return ready;
+                }
+
+                void await_suspend(std::coroutine_handle<> awaiting)
+                {
+				    m_async_ltask.m_coro.resume();
+                    print(PRI2, "%p: async_ltask::await_suspend(std::coroutine_handle<> awaiting)\n", this);
+                    m_async_ltask.m_coro.promise().m_awaiting = awaiting;
+                }
+
+                void await_resume()
+                {
+                    print(PRI2, "%p: m_async_ltask::await_resume()\n", this);
+                }
+
+            private:
+                async_ltask& m_async_ltask;
+            };
+
+            return awaiter{ *this };
+        }
+
+        struct promise_type : public async_task_void::promise_type
+        {
+            friend class async_ltask;
+            
+            auto get_return_object()
+            {
+                print(PRI2, "%p: async_ltask::promise_type::get_return_object()\n", this);
+                return async_ltask<void>{handle_type::from_promise(*this)};
+            }
+
+            auto initial_suspend()
+            {
+                print(PRI2, "%p: async_ltask::promise_type::initial_suspend()\n", this);
                 return std::suspend_always{};
             }
-
-            void unhandled_exception()
-            {
-                print(PRI2, "%p: async_task::promise::promise_type()\n", this);
-                std::exit(1);
-            }
-
-        private:
-            std::coroutine_handle<> m_awaiting;
-            Semaphore m_sema;
-            when_all_counter* m_ctr;
-            when_any_one* m_waitany;
-            bool m_ready;
-            bool m_wait_for_signal;
         };
-
-    private:
-        handle_type m_coro;
     };
 
 }
