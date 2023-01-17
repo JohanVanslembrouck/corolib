@@ -76,7 +76,7 @@ namespace corolib
     async_operation_base::async_operation_base(async_operation_base&& s) noexcept
         : m_service(s.m_service)
 #if RESUME_MULTIPLE_COROUTINES
-        , m_awaitings(s.m_awaitings)
+        , m_awaitings(std::move(s.m_awaitings))
 #else
         , m_awaiting(s.m_awaiting)
 #endif
@@ -95,18 +95,7 @@ namespace corolib
             m_service->update_entry(m_index, this, m_timestamp);
         }
 
-        s.m_service = nullptr;
-#if RESUME_MULTIPLE_COROUTINES
-        s.m_awaitings.clear();
-#else
-        s.m_awaiting = nullptr;
-#endif
-        s.m_ctr = nullptr;
-        s.m_waitany = nullptr;
-        s.m_index = -1;        // indicates move
-        s.m_ready = false;
-        s.m_autoreset = false;
-        s.m_timestamp = false;
+        s.cleanup();
     }
 
     /**
@@ -126,7 +115,7 @@ namespace corolib
 
         m_service = s.m_service;
 #if RESUME_MULTIPLE_COROUTINES
-        m_awaitings = s.m_awaitings;
+        m_awaitings = std::move(s.m_awaitings);
 #else
         m_awaiting = s.m_awaiting;
 #endif
@@ -157,20 +146,27 @@ namespace corolib
             m_service->update_entry(m_index, this, m_timestamp);
         }
 
-        s.m_service = nullptr;
-#if RESUME_MULTIPLE_COROUTINES
-        s.m_awaitings.clear();
-#else
-        s.m_awaiting = nullptr;
-#endif
-        s.m_ctr = nullptr;
-        s.m_waitany = nullptr;
-        s.m_index = -1;        // indicates move
-        s.m_ready = false;
-        s.m_autoreset = false;
-        s.m_timestamp = false;
-
+        s.cleanup();
         return *this;
+    }
+
+    /**
+    * @brief async_operation_base::cleanup cleans the orgiinal object after a movee
+    */
+    void async_operation_base::cleanup()
+    {
+        m_service = nullptr;
+#if RESUME_MULTIPLE_COROUTINES
+        m_awaitings.clear();
+#else
+        m_awaiting = nullptr;
+#endif
+        m_ctr = nullptr;
+        m_waitany = nullptr;
+        m_index = -1;        // indicates move
+        m_ready = false;
+        m_autoreset = false;
+        m_timestamp = false;
     }
 
     /**

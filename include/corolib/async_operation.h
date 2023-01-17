@@ -100,6 +100,9 @@ namespace corolib
         }
 
     protected:
+        void cleanup();
+
+    protected:
         CommService* m_service;
 #if RESUME_MULTIPLE_COROUTINES
         std::vector<std::coroutine_handle<>> m_awaitings;
