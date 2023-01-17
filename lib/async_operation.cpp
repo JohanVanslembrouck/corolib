@@ -151,7 +151,7 @@ namespace corolib
     }
 
     /**
-    * @brief async_operation_base::cleanup cleans the orgiinal object after a movee
+    * @brief async_operation_base::cleanup cleans the original object after a move
     */
     void async_operation_base::cleanup()
     {
