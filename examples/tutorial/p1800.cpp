@@ -80,32 +80,23 @@ void start_operation_impl(async_operation<int>* op)
     }
 }
 
+async_operation<int> op;
+   
 async_task<int> coroutine1()
 {
     print(PRI1, "coroutine1(): async_operation<int> op;\n");
-    async_operation<int> op;
-	op.auto_reset(true);
-	
-    print(PRI1, "coroutine1(): start_operation_impl(&op);\n");
-    start_operation_impl(&op);
-    print(PRI1, "coroutine1(): int v1 = co_await op;\n");
-    int v1 = co_await op;
-		
-    print(PRI1, "coroutine1(): start_operation_impl(&op);\n");
-    start_operation_impl(&op);
-    print(PRI1, "coroutine1(): int v2 = co_await op;\n");
-    int v2 = co_await op;
-		
-    print(PRI1, "coroutine1(): start_operation_impl(&op);\n");
-    start_operation_impl(&op);
-    print(PRI1, "coroutine1(): int v3 = co_await op;\n");
-    int v3 = co_await op;
-		
-    print(PRI1, "coroutine1(): start_operation_impl(&op);\n");
-    start_operation_impl(&op);
-    print(PRI1, "coroutine1(): int v4 = co_await op;\n");
-    int v4 = co_await op;
-	
-    print(PRI1, "coroutine5(): co_return v1 + v2 + v3 + v4 + 1 = %d;\n", v1 + v2 + v3 + v4 + 1);
-    co_return v1 + v2 + v3 + v4 + 1;
+    op.auto_reset(true);
+    int v1 = 0;
+    int v = 0;
+    
+    do
+    {
+        print(PRI1, "coroutine1(): int v1 = co_await op;\n");
+        v1 = co_await op;
+        v += v1;
+    }
+    while (v1 != 0);
+    
+    print(PRI1, "coroutine5(): co_return v + 1 = %d;\n", v + 1);
+    co_return v + 1;
 }

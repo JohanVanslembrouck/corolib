@@ -8,7 +8,7 @@
  * coroutine3 calls coroutine4 twice and coroutine13 calls coroutine14 twice.
  * 
  * This example demonstrates "split-and-combine".
- * coroutine1 calls and co_awaits coroutine2 and coroutine12, which on their turn call other subroutines.
+ * coroutine1 calls and co_awaits coroutine2 and coroutine12, which on their turn call other coroutines.
  * The coroutines at the deepest call level (coroutine5 and coroutine15) both co_await
  *    static async_operation<int> op;
  * coroutine15 starts the asynchronous operation and initializes the event handler.

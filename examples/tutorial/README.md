@@ -165,3 +165,12 @@ The following describes implementation of the examples per group.
   coroutine4 awaits the completion of the three coroutine5 variants.
   There is no p1470-async_operation.cpp, because the manual resumption from main is difficult 
   in this example and will be different for other timeouts used in coroutine5c.
+
+* p150X.cpp contains a coroutine that, when it is resumed, has to complete a coroutine that it has under its control.
+
+* p160X.cpp demonstrates "split-and-combine". See p1600.cpp for further explanation.
+
+* p170X.cpp demonstrates the use of async_ltask.
+
+* p180X.cpp contains a single coroutine1 that co_awaits in a loop the completion of global async_operation<int> op.
+  This object is completed several times. coroutine1 co_returns when it receives the value 0.

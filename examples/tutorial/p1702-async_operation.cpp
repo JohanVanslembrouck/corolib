@@ -19,8 +19,8 @@ extern std::function<void(int)> eventHandler;       // p1700.cpp
 
 async_ltask<void> coroutine0()
 {
-	async_ltask<int> a = coroutine1();
-	co_await a;
+    async_ltask<int> a = coroutine1();
+    co_await a;
 }
 
 int main()

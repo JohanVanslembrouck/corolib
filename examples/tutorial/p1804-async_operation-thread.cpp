@@ -1,5 +1,5 @@
 /**
- * @file p1800-async_operation.cpp
+ * @file p1804-async_operation-thread.cpp
  * @brief
  * Starts an asynchronous operation that will be completed from the main() function.
  *
@@ -13,7 +13,7 @@
 
 using namespace corolib;
 
-UseMode useMode = USE_NONE;
+UseMode useMode = USE_THREAD;
 
 extern std::function<void(int)> eventHandler;       // p1800.cpp
 extern async_operation<int> op;                        // p1800.cpp
@@ -25,29 +25,26 @@ int main()
     print(PRI1, "main(): async_ltask<int> a = coroutine1();\n");
     async_task<int> a = coroutine1();
  
-    // Begin manual event completion
-    print(PRI1, "coroutine1(): start_operation_impl(&op);\n");
-    start_operation_impl(&op);
-
     for (int i = 0; i < 4; i++)
     {
-        print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(2000));\n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
-        print(PRI1, "main(): before eventHandler(10);\n");
-        eventHandler(10);
-        print(PRI1, "main(): after eventHandler(10);\n");
+        print(PRI1, "main(): start_operation_impl(&op);\n");
+        start_operation_impl(&op);
     }
-        
-    print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-    // Make coroutine1 co_return
+    print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(2000));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+    // Begin manual event completion to make coroutine1 co_return
+    print(PRI1, "main(): start_operation_impl(&op);\n");
+    start_operation_impl(&op);
     print(PRI1, "main(): before eventHandler(0);\n");
     eventHandler(0);
     print(PRI1, "main(): after eventHandler(0);\n");
     // End manual event completion
-    
+
     print(PRI1, "main(): int v = a.get_result();\n");
     int v = a.get_result();
     print(PRI1, "main(): v = %d\n", v);

@@ -166,3 +166,8 @@ target_link_libraries(p1702-async_operation corolib)
 
 add_executable(p1800-async_operation p1800-async_operation.cpp p1800.cpp)
 target_link_libraries(p1800-async_operation corolib)
+add_executable(p1802-async_operation-eventqueue p1802-async_operation-eventqueue.cpp p1800.cpp)
+target_link_libraries(p1802-async_operation-eventqueue corolib)
+add_executable(p1804-async_operation-thread p1804-async_operation-thread.cpp p1800.cpp)
+target_link_libraries(p1804-async_operation-thread corolib)
+

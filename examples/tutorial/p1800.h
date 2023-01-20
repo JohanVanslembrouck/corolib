@@ -22,8 +22,7 @@ enum UseMode
     USE_IMMEDIATE_COMPLETION
 };
 
-void start_operation_impl(UseMode useMode, async_operation<int>* op);
-
+void start_operation_impl(async_operation<int>* op);
 async_task<int> coroutine1();
 
 #endif
