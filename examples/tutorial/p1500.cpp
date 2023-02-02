@@ -39,8 +39,6 @@ void start_operation_impl(std::function<void(int)>& eventHandler, async_operatio
 {
     print(PRI1, "start_operation_impl()\n");
 
-    // The asynchronous operation is normally started here, passing the eventHandler as one of its arguments.
-
     eventHandler = [&op](int i)
     {
         print(PRI1, "eventHandler(): op->set_result(%d)\n", i);

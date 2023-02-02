@@ -19,6 +19,12 @@ Class01 object02(USE_THREAD);
 // Uses coroutine1 implemented in p1440.cpp
 async_task<int> coroutine1();
 
+void completionflow()
+{
+    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+}
+
 int main()
 {
     set_print_level(0x01);        // Use 0x03 to follow the flow in corolib
@@ -26,8 +32,8 @@ int main()
     print(PRI1, "main(): async_task<int> a = coroutine1();\n");
     async_task<int> a = coroutine1();
 
-    print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    print(PRI1, "main(): completionflow();\n");
+    completionflow();
 
     print(PRI1, "main(): int v = a.get_result();\n");
     int v = a.get_result();

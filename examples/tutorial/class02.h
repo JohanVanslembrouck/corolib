@@ -42,7 +42,10 @@ public:
     std::function<void(int)> eventHandler[NROPERATIONS];
 
 protected:
+    void async_op1(const int idx, std::function<void(int)>&& completionHandler);
     void start_operation1_impl(const int idx);
+
+    void async_op2(const int idx, int bias, std::function<void(int)>&& completionHandler);
     void start_operation2_impl(const int idx, int bias);
 
 private:

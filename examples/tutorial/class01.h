@@ -41,6 +41,7 @@ public:
     std::function<void(int)> eventHandler;
 
 protected:
+    void async_op(std::function<void(int)>&& completionHandler);
     void start_operation_impl(const int idx);
 
 private:

@@ -15,8 +15,30 @@ using namespace corolib;
 
 UseMode useMode = USE_THREAD;
 
-extern std::function<void(int)> eventHandler;       // p1800.cpp
 extern async_operation<int> op;                        // p1800.cpp
+
+void completionflow()
+{
+    print(PRI1, "completionflow()\n");
+
+    for (int i = 0; i < 4; i++)
+    {
+        print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+        print(PRI1, "completionflow(): start_operation_impl(op);\n");
+        start_operation_impl(op);
+    }
+
+    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+    // Begin manual event completion to make coroutine1 co_return
+    print(PRI1, "completionflow(): before op.set_result_and_complete(0);\n");
+    op.set_result_and_complete(0);
+    print(PRI1, "completionflow(): after op.set_result_and_complete(0);\n");
+    // End manual event completion
+}
 
 int main()
 {
@@ -25,25 +47,8 @@ int main()
     print(PRI1, "main(): async_ltask<int> a = coroutine1();\n");
     async_task<int> a = coroutine1();
  
-    for (int i = 0; i < 4; i++)
-    {
-        print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(2000));\n");
-        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-
-        print(PRI1, "main(): start_operation_impl(&op);\n");
-        start_operation_impl(&op);
-    }
-
-    print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(2000));\n");
-    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-
-    // Begin manual event completion to make coroutine1 co_return
-    print(PRI1, "main(): start_operation_impl(&op);\n");
-    start_operation_impl(&op);
-    print(PRI1, "main(): before eventHandler(0);\n");
-    eventHandler(0);
-    print(PRI1, "main(): after eventHandler(0);\n");
-    // End manual event completion
+    print(PRI1, "main(): completionflow();\n");
+    completionflow();
 
     print(PRI1, "main(): int v = a.get_result();\n");
     int v = a.get_result();

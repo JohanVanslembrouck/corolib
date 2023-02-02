@@ -23,6 +23,28 @@ async_ltask<void> coroutine0()
     co_await a;
 }
 
+void completionflow()
+{
+    // Begin manual event completion
+    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+    print(PRI1, "completionflow(): before eventHandler(10);\n");
+    eventHandler(10);
+    print(PRI1, "completionflow(): after eventHandler(10);\n");
+
+    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+    print(PRI1, "completionflow(): before eventHandler(10);\n");
+    eventHandler(10);
+    print(PRI1, "completionflow(): after eventHandler(10);\n");
+
+    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    // End manual event completion
+}
+
 int main()
 {
     set_priority(0x01);        // Use 0x03 to follow the flow in corolib
@@ -31,26 +53,10 @@ int main()
     async_ltask<void> a = coroutine0();
     print(PRI1, "main(): a.start();\n");
     a.start();
-    
-    // Begin manual event completion
-    print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-    print(PRI1, "main(): before eventHandler(10);\n");
-    eventHandler(10);
-    print(PRI1, "main(): after eventHandler(10);\n");
+    print(PRI1, "main(): completionflow();\n");
+    completionflow();
 
-    print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-
-    print(PRI1, "main(): before eventHandler(10);\n");
-    eventHandler(10);
-    print(PRI1, "main(): after eventHandler(10);\n");
-
-    print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    // End manual event completion
-    
     print(PRI1, "main(): a.wait();\n");
     a.wait();
 

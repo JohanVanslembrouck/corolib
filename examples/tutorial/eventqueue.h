@@ -58,9 +58,9 @@ public:
 	/**
 	 * @brief push places a functor in the internal queue.
 	 */
-    void push(std::function<void(int)> op)
+    void push(std::function<void(int)>&& op)
     {
-        q.push(op);
+        q.push(std::move(op));
     }
     
 private:

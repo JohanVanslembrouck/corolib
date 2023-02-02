@@ -8,8 +8,6 @@
 
 #include <corolib/print.h>
 #include <corolib/async_task.h>
-//#include <corolib/async_operation.h>
-//#include <corolib/when_all.h>
 
 using namespace corolib;
 
@@ -21,12 +19,20 @@ Class01 object02(USE_THREAD);
 // Uses coroutine1 implemented in p1420.cpp
 async_task<int> coroutine1();
 
+void completionflow()
+{
+
+}
+
 int main()
 {
     set_print_level(0x01);        // Use 0x03 to follow the flow in corolib
 
     print(PRI1, "main(): async_task<int> a = coroutine1();\n");
     async_task<int> a = coroutine1();
+
+    print(PRI1, "main(): completionflow();\n");
+    completionflow();
 
     print(PRI1, "main(): int v = a.get_result();\n");
     int v = a.get_result();

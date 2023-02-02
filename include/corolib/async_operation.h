@@ -150,6 +150,15 @@ namespace corolib
         }
 
         /**
+         * @brief set_result_and_complete combines set_result and completed
+         */
+        void set_result_and_complete(TYPE result)
+        {
+            set_result(result);
+            completed();
+        }
+
+        /**
          * @brief get_result allows retrieving the result of the asynchronous operation.
          * It can be used as an alternative to co_await and after co_await was called:
          * the operation has to be completed because otherwise the value of m_result

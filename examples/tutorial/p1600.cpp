@@ -30,12 +30,17 @@ std::function<void(int)> eventHandler;
 static async_operation<int> op;
 
 /**
- * @brief start_operation_impl simulates starting an asynchronous operation and
- * initializing an event handler that will be called when that asynchronous operation completes.
+ * @brief async_op
  *
- * Starting the asynchronous operation is omitted in this implementation.
- * start_operation_impl initializes eventHandler with a lambda that will
- * be called on completion of the asynchronous operation.
+ * @param completionHandler
+ */
+void async_op(std::function<void(int)>&& completionHandler)
+{
+    eventHandler = completionHandler;
+}
+
+/**
+ * @brief start_operation_impl simulates starting an asynchronous operations.
  *
  * @param eventHandler is a reference to a std::function<void(int)> object.
  * @param op is a pointer to an async_operation<int> object.
@@ -44,14 +49,12 @@ void start_operation_impl(std::function<void(int)>& eventHandler, async_operatio
 {
     print(PRI1, "start_operation_impl()\n");
 
-    // The asynchronous operation is normally started here, passing the eventHandler as one of its arguments.
-
-    eventHandler = [&op](int i)
-    {
-        print(PRI1, "eventHandler(): op->set_result(%d)\n", i);
-        op.set_result(i);
-        op.completed();
-    };
+    async_op([&op](int i)
+        {
+            print(PRI1, "completionHandler(): op->set_result(%d)\n", i);
+            op.set_result(i);
+            op.completed();
+        });
 }
 
 async_task<int> coroutine15()

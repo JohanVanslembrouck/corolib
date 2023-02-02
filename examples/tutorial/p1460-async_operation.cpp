@@ -19,6 +19,11 @@ Class02 object02;
 // Uses coroutine1 implemented in p1460.cpp
 async_task<int> coroutine1();
 
+void mainflow()
+{
+
+}
+
 int main()
 {
     set_print_level(0x01);        // Use 0x03 to follow the flow in corolib

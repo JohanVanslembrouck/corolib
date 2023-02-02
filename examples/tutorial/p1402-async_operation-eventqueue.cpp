@@ -15,6 +15,12 @@ UseMode useMode = USE_EVENTQUEUE;
 
 extern EventQueue eventQueue;           // p1400.cpp
 
+void completionflow()
+{
+    print(PRI1, "completionflow():  eventQueue.run();\n");
+    eventQueue.run();
+}
+
 int main()
 {
     set_print_level(0x01);        // Use 0x03 to follow the flow in corolib
@@ -22,8 +28,8 @@ int main()
     print(PRI1, "main(): async_task<int> a = coroutine1();\n");
     async_task<int> a = coroutine1();
 
-    print(PRI1, "main():  eventQueue.run();\n");
-    eventQueue.run();
+    print(PRI1, "main(): completionflow();\n");
+    completionflow();
 
     print(PRI1, "main(): int v = a.get_result();\n");
     int v = a.get_result();
