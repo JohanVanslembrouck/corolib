@@ -174,3 +174,10 @@ The following describes implementation of the examples per group.
 
 * p180X.cpp contains a single coroutine1 that co_awaits in a loop the completion of global async_operation<int> op.
   This object is completed several times. coroutine1 co_returns when it receives the value 0.
+
+* p181X.cpp contains a coroutine1 that co_awaits the completion of coroutine1a and coroutine1b. Those latter
+  two are identical (apart from the name and print statements) to coroutine1 from p180X.cpp.
+  
+* p1900.cpp: Instead of resuming nicely from the top of the call stack (coroutine6),
+  this example resumes at coroutine4 by using the coroutine_handle to this coroutine.
+  This is not the way to do, of course.

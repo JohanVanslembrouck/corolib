@@ -132,3 +132,11 @@ echo Running ./p1802-async_operation-eventqueue
 ./p1802-async_operation-eventqueue
 echo Running ./p1804-async_operation-thread
 ./p1804-async_operation-thread
+echo Running ./p1810-async_operation
+./p1810-async_operation
+echo Running ./p1812-async_operation-eventqueue
+./p1812-async_operation-eventqueue
+echo Running ./p1814-async_operation-thread
+./p1814-async_operation-thread
+echo Running ./p1900-resume_in_middle
+./p1900-resume_in_middle
