@@ -57,7 +57,7 @@ void start_operation_impl(async_operation<int>& op)
     async_op(
         [&op](int i)
         {
-            print(PRI1, "completionHandler(): op->set_result(%d)\n", i);
+            print(PRI1, "completionHandler(): op.set_result_and_complete(%d)\n", i);
             op.set_result_and_complete(i);
         });
 }
@@ -72,7 +72,7 @@ async_task<int> coroutine1a()
     
     do
     {
-        print(PRI1, "coroutine1a(): int v1 = co_await op;\n");
+        print(PRI1, "coroutine1a(): v1 = co_await op;\n");
         v1 = co_await op;
         v += v1;
     }

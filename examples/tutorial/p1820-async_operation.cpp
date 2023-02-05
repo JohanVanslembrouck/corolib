@@ -1,5 +1,5 @@
 /**
- * @file p1800-async_operation.cpp
+ * @file p1820-async_operation.cpp
  * @brief
  * Starts an asynchronous operation that will be completed from the main() function.
  *
@@ -8,7 +8,7 @@
 
 #include <functional>
 
-#include "p1800.h"
+#include "p1820.h"
 #include "eventqueue.h"
 
 using namespace corolib;
@@ -34,9 +34,9 @@ void completionflow()
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
     // Make coroutine1 co_return
-    print(PRI1, "completionflow(): before op.set_result_and_complete(0);\n");
-    op.set_result_and_complete(0);
-    print(PRI1, "completionflow(): after op.set_result_and_complete(0);\n");
+    print(PRI1, "completionflow(): before op.set_result_and_complete(std::nullopt);\n");
+    op.set_result_and_complete(std::nullopt);
+    print(PRI1, "completionflow(): after op.set_result_and_complete(std::nullopt);\n");
     // End manual event completion
 }
 

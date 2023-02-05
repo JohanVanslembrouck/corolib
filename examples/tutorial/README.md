@@ -177,7 +177,10 @@ The following describes implementation of the examples per group.
 
 * p181X.cpp contains a coroutine1 that co_awaits the completion of coroutine1a and coroutine1b. Those latter
   two are identical (apart from the name and print statements) to coroutine1 from p180X.cpp.
-  
+
+* p182X.cpp is a variant of p180X.cpp that used std::optional<int> to avoid having to use a dedicated
+  value (0 in the case of p180X.cpp) to tell coroutine1 to leave its loop.
+
 * p1900.cpp: Instead of resuming nicely from the top of the call stack (coroutine6),
   this example resumes at coroutine4 by using the coroutine_handle to this coroutine.
   This is not the way to do, of course.

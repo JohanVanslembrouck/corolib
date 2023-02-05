@@ -15,8 +15,6 @@ using namespace corolib;
 
 UseMode useMode = USE_THREAD;
 
-extern async_operation<int> op;                        // p1800.cpp
-
 void completionflow()
 {
     print(PRI1, "completionflow()\n");

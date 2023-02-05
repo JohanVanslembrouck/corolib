@@ -16,7 +16,6 @@ using namespace corolib;
 UseMode useMode = USE_EVENTQUEUE;
 
 extern EventQueue eventQueue;                       // p1800.cpp
-extern async_operation<int> op;                     // p1800.cpp
 
 void completionflow()
 {
