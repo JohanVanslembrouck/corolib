@@ -114,7 +114,6 @@ target_link_libraries(p1448-async_operation-evtq-imm corolib)
 add_executable(p1449-async_operation-thread-imm p1449-async_operation-thread-imm.cpp class01.cpp p1440.cpp)
 target_link_libraries(p1449-async_operation-thread-imm corolib)
 
-
 add_executable(p1450-async_operation p1450-async_operation.cpp class01.cpp p1450.cpp)
 target_link_libraries(p1450-async_operation corolib)
 add_executable(p1452-async_operation-eventqueue p1452-async_operation-eventqueue.cpp class01.cpp p1450.cpp)
@@ -127,7 +126,6 @@ add_executable(p1458-async_operation-evtq-imm p1458-async_operation-evtq-imm.cpp
 target_link_libraries(p1458-async_operation-evtq-imm corolib)
 add_executable(p1459-async_operation-thread-imm p1459-async_operation-thread-imm.cpp class01.cpp p1450.cpp)
 target_link_libraries(p1459-async_operation-thread-imm corolib)
-
 
 add_executable(p1460-async_operation p1460-async_operation.cpp class02.cpp p1460.cpp)
 target_link_libraries(p1460-async_operation corolib)
@@ -178,12 +176,19 @@ target_link_libraries(p1812-async_operation-eventqueue corolib)
 add_executable(p1814-async_operation-thread p1804-async_operation-thread.cpp p1810.cpp)
 target_link_libraries(p1814-async_operation-thread corolib)
 
-add_executable(p1900-resume_in_middle p1900-resume_in_middle.cpp)
-target_link_libraries(p1900-resume_in_middle corolib)
-
 add_executable(p1820-async_operation p1820-async_operation.cpp p1820.cpp)
 target_link_libraries(p1820-async_operation corolib)
 add_executable(p1822-async_operation-eventqueue p1822-async_operation-eventqueue.cpp p1820.cpp)
 target_link_libraries(p1822-async_operation-eventqueue corolib)
 add_executable(p1824-async_operation-thread p1824-async_operation-thread.cpp p1820.cpp)
 target_link_libraries(p1824-async_operation-thread corolib)
+
+add_executable(p1830-async_operation p1820-async_operation.cpp p1830.cpp)
+target_link_libraries(p1830-async_operation corolib)
+add_executable(p1832-async_operation-eventqueue p1822-async_operation-eventqueue.cpp p1830.cpp)
+target_link_libraries(p1832-async_operation-eventqueue corolib)
+add_executable(p1834-async_operation-thread p1824-async_operation-thread.cpp p1830.cpp)
+target_link_libraries(p1834-async_operation-thread corolib)
+
+add_executable(p1900-resume_in_middle p1900-resume_in_middle.cpp)
+target_link_libraries(p1900-resume_in_middle corolib)

@@ -71,4 +71,7 @@ p1814-async_operation-thread.exe
 p1820-async_operation.exe
 p1822-async_operation-eventqueue.exe
 p1824-async_operation-thread.exe
+p1830-async_operation.exe
+p1832-async_operation-eventqueue.exe
+p1834-async_operation-thread.exe
 p1900-resume_in_middle.exe

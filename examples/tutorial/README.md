@@ -181,6 +181,13 @@ The following describes implementation of the examples per group.
 * p182X.cpp is a variant of p180X.cpp that used std::optional<int> to avoid having to use a dedicated
   value (0 in the case of p180X.cpp) to tell coroutine1 to leave its loop.
 
+* p183X.cpp is an extension of p182X.cpp. Instead of 1 coroutine, it uses 3 coroutines,
+  where coroutine1 starts coroutine2 and coroutine2 starts coroutine3.
+  coroutine1 co_awaits the completion of async_operation<std::optional<int>> op,
+  coroutine2 and coroutine3 co_await the completion of op2 and op3, respectively.
+  The completionflow() function completes op. On its turn, coroutine1 completes op2
+  and coroutine2 completes op3.
+
 * p1900.cpp: Instead of resuming nicely from the top of the call stack (coroutine6),
   this example resumes at coroutine4 by using the coroutine_handle to this coroutine.
   This is not the way to do, of course.
