@@ -150,5 +150,11 @@ echo Running ./p1832-async_operation-eventqueue
 ./p1832-async_operation-eventqueue
 echo Running ./p1834-async_operation-thread
 ./p1834-async_operation-thread
+echo Running ./p1840-async_operation
+./p1840-async_operation
+echo Running ./p1842-async_operation-eventqueue
+./p1842-async_operation-eventqueue
+echo Running ./p1844-async_operation-thread
+./p1844-async_operation-thread
 echo Running ./p1900-resume_in_middle
 ./p1900-resume_in_middle

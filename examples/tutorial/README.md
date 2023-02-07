@@ -188,6 +188,13 @@ The following describes implementation of the examples per group.
   The completionflow() function completes op. On its turn, coroutine1 completes op2
   and coroutine2 completes op3.
 
+* p184X.cpp is a variant of p183X.cpp. In contrast to p183X.cpp, main() starts all 3 coroutines
+  and function completionflow() co_awaits their completion.
+  coroutine1 co_awaits the completion of async_operation<std::optional<int>> op1,
+  coroutine2 and coroutine3 co_await the completion of op2 and op3, respectively.
+  The completionflow() function completes op1. On its turn, coroutine1 completes op2
+  and coroutine2 completes op3.
+
 * p1900.cpp: Instead of resuming nicely from the top of the call stack (coroutine6),
   this example resumes at coroutine4 by using the coroutine_handle to this coroutine.
   This is not the way to do, of course.
