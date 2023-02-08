@@ -1,14 +1,14 @@
 /**
- * @file p1820-async_operation.cpp
+ * @file p2010-async_operation.cpp
  * @brief
- * Starts an asynchronous operation that will be completed from the main() function.
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <functional>
+#include <future>
 
-#include "p1820.h"
+#include "p2010.h"
 
 using namespace corolib;
 
@@ -25,7 +25,7 @@ void completionflow()
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
         print(PRI1, "completionflow(): before op.set_result_and_complete(10);\n");
-        op.set_result_and_complete(10);
+        op1.set_result_and_complete(10);
         print(PRI1, "completionflow(): afterop.set_result_and_complete(10)\n");
     }
 
@@ -34,7 +34,7 @@ void completionflow()
 
     // Make coroutine1 co_return
     print(PRI1, "completionflow(): before op.set_result_and_complete(std::nullopt);\n");
-    op.set_result_and_complete(std::nullopt);
+    op1.set_result_and_complete(std::nullopt);
     print(PRI1, "completionflow(): after op.set_result_and_complete(std::nullopt);\n");
     // End manual event completion
 }
@@ -43,19 +43,23 @@ int main()
 {
     set_priority(0x01);        // Use 0x03 to follow the flow in corolib
 
-    print(PRI1, "main(): async_ltask<int> a = coroutine1();\n");
-    async_task<int> a = coroutine1();
- 
+    print(PRI1, "main(): auto task1thr = std::async(std::launch::async, task1);\n");
+    auto task1thr = std::async(std::launch::async, task1);
+    print(PRI1, "main(): auto task2thr = std::async(std::launch::async, task2);\n");
+    auto task2thr = std::async(std::launch::async, task2);
+    print(PRI1, "main(): auto task3thr = std::async(std::launch::async, task3);\n");
+    auto task3thr = std::async(std::launch::async, task3);
+
     print(PRI1, "main(): completionflow();\n");
     completionflow();
-    
-    print(PRI1, "main(): int v = a.get_result();\n");
-    int v = a.get_result();
-    print(PRI1, "main(): v = %d\n", v);
 
     print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
+    print(PRI1, "main(): int v = task1thr.get() + task2thr.get() + task3thr.get();\n");
+    int v = task1thr.get() + task2thr.get() + task3thr.get();
+
+    print(PRI1, "main(): v = %d\n", v);
     print(PRI1, "main(): return 0;\n");
     return 0;
 }

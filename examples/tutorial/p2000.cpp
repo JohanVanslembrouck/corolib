@@ -1,5 +1,5 @@
 /**
- * @file p1830.cpp
+ * @file p2000.cpp
  * @brief
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
@@ -7,7 +7,7 @@
 
 #include <functional>
 
-#include "p1820.h"
+#include "p2000.h"
 #include "eventqueue.h"
 
 using namespace corolib;
@@ -64,7 +64,7 @@ void start_operation_impl(async_operation<std::optional<int>>& op)
 async_operation<std::optional<int>> op4;
 async_operation<std::optional<int>> op3;
 async_operation<std::optional<int>> op2;
-async_operation<std::optional<int>> op;
+async_operation<std::optional<int>> op1;
 
 async_task<int> coroutine3()
 {
@@ -79,7 +79,7 @@ async_task<int> coroutine3()
         v1 = co_await op3;
         print(PRI1, "coroutine3(): op4.set_result_and_complete(v1);\n");
         // Nothing ever co_awaits op4!
-        op4.set_result_and_complete(v1);
+        //op4.set_result_and_complete(v1);
         if (v1 != std::nullopt)
             v += *v1;
         else
@@ -97,8 +97,6 @@ async_task<int> coroutine2()
     op2.auto_reset(true);
     std::optional<int> v1 = 0;
     int v = 0;
-    
-    async_task<int> a3 = coroutine3();
 
     do
     {
@@ -112,26 +110,22 @@ async_task<int> coroutine2()
             break;
     }
     while (true);
-    
-    int v2 = co_await a3;
 
-    print(PRI1, "coroutine2(): co_return v + v2 + 1 = %d;\n", v + v2 + 1);
-    co_return v + v2 + 1;
+    print(PRI1, "coroutine2(): co_return v + 1 = %d;\n", v + 1);
+    co_return v + 1;
 }
 
 async_task<int> coroutine1()
 {
     print(PRI1, "coroutine1()\n");
-    op.auto_reset(true);
+    op1.auto_reset(true);
     std::optional<int> v1 = 0;
     int v = 0;
 
-    async_task<int> a2 = coroutine2();
-    
     do
     {
-        print(PRI1, "coroutine1(): v1 = co_await op;\n");
-        v1 = co_await op;
+        print(PRI1, "coroutine1(): v1 = co_await op1;\n");
+        v1 = co_await op1;
         print(PRI1, "coroutine1(): op2.set_result_and_complete(v1);\n");
         op2.set_result_and_complete(v1);
         if (v1 != std::nullopt)
@@ -141,8 +135,48 @@ async_task<int> coroutine1()
     }
     while (true);
     
-    int v2 = co_await a2;
+    print(PRI1, "coroutine1(): co_return v + 1 = %d;\n", v + 1);
+    co_return v + 1;
+}
 
-    print(PRI1, "coroutine1(): co_return v + v2 + 1 = %d;\n", v + v2 + 1);
-    co_return v + v2 + 1;
+void task1()
+{
+    print(PRI1, "task1: enter\n");
+    []() -> async_task<int> {
+        print(PRI1, "task1: async_task<int> a1 = coroutine1();\n");
+        async_task<int> a1 = coroutine1();
+        print(PRI1, "task1: int v1 = co_await a1;\n");
+        int v1 = co_await a1;
+        print(PRI1, "task1: co_return v1 = %d\n", v1);
+        co_return v1;
+    }();
+    print(PRI1, "task1: exit\n");
+}
+
+void task2()
+{
+    print(PRI1, "task2: enter\n");
+    []() -> async_task<int> {
+        print(PRI1, "task2: async_task<int> a2 = coroutine2();\n");
+        async_task<int> a2 = coroutine2();
+        print(PRI1, "task2: int v2 = co_await a2;\n");
+        int v2 = co_await a2;
+        print(PRI1, "task2: co_return v2 = %d\n", v2);
+        co_return v2;
+    }();
+    print(PRI1, "task2: exit\n");
+}
+
+void task3()
+{
+    print(PRI1, "task3: enter\n");
+    []() -> async_task<int> {
+        print(PRI1, "task3: async_task<int> a3 = coroutine3();\n");
+        async_task<int> a3 = coroutine3();
+        print(PRI1, "task3: int v3 = co_await a3;\n");
+        int v3 = co_await a3;
+        print(PRI1, "task3: co_return v3 = %d\n", v3);
+        co_return v3;
+    }();
+    print(PRI1, "task3: exit\n");
 }

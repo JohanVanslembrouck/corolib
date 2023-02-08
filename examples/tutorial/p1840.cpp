@@ -61,6 +61,7 @@ void start_operation_impl(async_operation<std::optional<int>>& op)
         });
 }
 
+async_operation<std::optional<int>> op4;
 async_operation<std::optional<int>> op3;
 async_operation<std::optional<int>> op2;
 async_operation<std::optional<int>> op1;
@@ -76,6 +77,9 @@ async_task<int> coroutine3()
     {
         print(PRI1, "coroutine3(): v1 = co_await op3;\n");
         v1 = co_await op3;
+        print(PRI1, "coroutine3(): op4.set_result_and_complete(v1);\n");
+        // Nothing ever co_awaits op4!
+        op4.set_result_and_complete(v1);
         if (v1 != std::nullopt)
             v += *v1;
         else

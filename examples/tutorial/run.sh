@@ -158,3 +158,15 @@ echo Running ./p1844-async_operation-thread
 ./p1844-async_operation-thread
 echo Running ./p1900-resume_in_middle
 ./p1900-resume_in_middle
+echo Running ./p2000-async_operation
+./p2000-async_operation
+echo Running ./p2002-async_operation-eventqueue
+./p2002-async_operation-eventqueue
+echo Running ./p2004-async_operation-thread
+./p2004-async_operation-thread
+echo Running ./p2010-async_operation
+./p2010-async_operation
+echo Running ./p2012-async_operation-eventqueue
+./p2012-async_operation-eventqueue
+echo Running ./p2014-async_operation-thread
+./p2014-async_operation-thread

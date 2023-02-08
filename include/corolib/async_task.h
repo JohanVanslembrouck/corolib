@@ -92,9 +92,11 @@ namespace corolib
             print(PRI2, "%p: async_task_base::get_result()\n", this);
             if (!m_coro.promise().m_ready)
             {
+                print(PRI2, "%p: async_task_base::get_result(): waiting for signal\n", this);
                 m_coro.promise().m_wait_for_signal = true;
                 m_coro.promise().m_sema.wait();
             }
+            print(PRI2, "%p: async_task_base::get_result(): return m_coro.promise().m_value;\n", this);
             return m_coro.promise().m_value;
         }
 

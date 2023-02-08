@@ -9,7 +9,6 @@
 #include <functional>
 
 #include "p1800.h"
-#include "eventqueue.h"
 
 using namespace corolib;
 

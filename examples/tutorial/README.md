@@ -198,3 +198,12 @@ The following describes implementation of the examples per group.
 * p1900.cpp: Instead of resuming nicely from the top of the call stack (coroutine6),
   this example resumes at coroutine4 by using the coroutine_handle to this coroutine.
   This is not the way to do, of course.
+
+The p2000 series combines the use of coroutines with threads or futures.
+Several threads start one or more coroutines. Nevertheless, there is interaction between
+these coroutines in the sense that a coroutine can be resumed from another thread, e.g. from the main thread.
+
+* p200X.cpp is based on p184X.cpp. 3 coroutines are started on a separate thread but are resumed from the main thread.
+  Because p200X.cpp uses jthread, there is no way to sum the result of the 3 coroutines (apart from the use of global variables).
+
+* p201X.cpp uses 3 futures instead of jthreads to sum the result of the 3 coroutines.

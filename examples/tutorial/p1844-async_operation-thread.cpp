@@ -1,7 +1,6 @@
 /**
  * @file p1844-async_operation-thread.cpp
  * @brief
- * Starts an asynchronous operation that will be completed from the main() function.
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
@@ -52,12 +51,12 @@ int main()
     print(PRI1, "main(): async_ltask<int> a = coroutine1();\n");
     async_task<int> a1 = coroutine1();
     async_task<int> a2 = coroutine2();
-	async_task<int> a3 = coroutine3();
-	
+    async_task<int> a3 = coroutine3();
+ 
     print(PRI1, "main(): completionflow(a1, a2, a3);\n");
     completionflow(a1, a2, a3);
-  
-	print(PRI1, "main(): int v = a1.get_result() + a2.get_result() + a3.get_result();\n");
+ 
+    print(PRI1, "main(): int v = a1.get_result() + a2.get_result() + a3.get_result();\n");
     int v = a1.get_result() + a2.get_result() + a3.get_result();
     print(PRI1, "main(): v = %d\n", v);
 

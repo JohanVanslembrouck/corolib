@@ -1,16 +1,15 @@
 /**
- * @file p1842-async_operation-eventqueue.cpp
+ * @file p2012-async_operation-eventqueue.cpp
  * @brief
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <functional>
+#include <future>
 
-#include "p1840.h"
+#include "p2010.h"
 #include "eventqueue.h"
-
-#include <corolib/when_all.h>
 
 using namespace corolib;
 
@@ -18,7 +17,7 @@ UseMode useMode = USE_EVENTQUEUE;
 
 extern EventQueue eventQueue;                       // p1840.cpp
 
-async_task<void> completionflow(async_task<int>& a1, async_task<int>& a2, async_task<int>& a3)
+void completionflow()
 {
     print(PRI1, "completionflow()\n");
 
@@ -36,32 +35,29 @@ async_task<void> completionflow(async_task<int>& a1, async_task<int>& a2, async_
     op1.set_result_and_complete(std::nullopt);
     print(PRI1, "completionflow(): after op.set_result_and_complete(std::nullopt);\n");
     // End manual event completion
-
-    print(PRI1, "completionflow(): when_all<async_task<int>> wa({ &a1, &a2, &a3 });\n");
-    when_all<async_task<int>> wa({ &a1, &a2, &a3 });
-    print(PRI1, "completionflow(): co_await wa;\n");
-    co_await wa;
 }
 
 int main()
 {
     set_priority(0x01);        // Use 0x03 to follow the flow in corolib
 
-    print(PRI1, "main(): async_ltask<int> a = coroutine1();\n");
-    async_task<int> a1 = coroutine1();
-    async_task<int> a2 = coroutine2();
-    async_task<int> a3 = coroutine3();
- 
-    print(PRI1, "main(): completionflow(a1, a2, a3);\n");
-    completionflow(a1, a2, a3);
- 
-    print(PRI1, "main(): int v = a1.get_result() + a2.get_result() + a3.get_result();\n");
-    int v = a1.get_result() + a2.get_result() + a3.get_result();
-    print(PRI1, "main(): v = %d\n", v);
+    print(PRI1, "main(): auto task1thr = std::async(std::launch::async, task1);\n");
+    auto task1thr = std::async(std::launch::async, task1);
+    print(PRI1, "main(): auto task2thr = std::async(std::launch::async, task2);\n");
+    auto task2thr = std::async(std::launch::async, task2);
+    print(PRI1, "main(): auto task3thr = std::async(std::launch::async, task3);\n");
+    auto task3thr = std::async(std::launch::async, task3);
+
+    print(PRI1, "main(): completionflow();\n");
+    completionflow();
 
     print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
+    print(PRI1, "main(): int v = task1thr.get() + task2thr.get() + task3thr.get();\n");
+    int v = task1thr.get() + task2thr.get() + task3thr.get();
+
+    print(PRI1, "main(): v = %d\n", v);
     print(PRI1, "main(): return 0;\n");
     return 0;
 }
