@@ -43,7 +43,8 @@ void Class01::async_op(std::function<void(int)>&& completionHandler)
         eventHandler = completionHandler;
         break;
     case USE_EVENTQUEUE:
-        eventQueue.push(std::move(completionHandler));
+        if (m_eventQueue)
+            m_eventQueue->push(std::move(completionHandler));
         break;
     case USE_THREAD:
     {
@@ -93,5 +94,3 @@ void Class01::start_operation_impl(const int idx)
             }
         });
 }
-
-EventQueue eventQueue;

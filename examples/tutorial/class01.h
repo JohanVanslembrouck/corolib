@@ -16,8 +16,6 @@
 
 #include "eventqueue.h"
 
-extern EventQueue eventQueue;
-
 using namespace corolib;
 
 enum UseMode
@@ -31,21 +29,24 @@ enum UseMode
 class Class01 : public CommService
 {
 public:
-    Class01(UseMode useMode = USE_NONE) 
+    Class01(UseMode useMode = USE_NONE, EventQueue* eventQueue = nullptr)
         : m_useMode(useMode)
+        , m_eventQueue(eventQueue)
     {
     }
     
     async_operation<int> start_operation();
     
     std::function<void(int)> eventHandler;
+    EventQueue* getEventQueue() { return m_eventQueue; }
 
 protected:
     void async_op(std::function<void(int)>&& completionHandler);
     void start_operation_impl(const int idx);
 
 private:
-    UseMode    m_useMode;
+    UseMode     m_useMode;
+    EventQueue* m_eventQueue;
 };
 
 #endif

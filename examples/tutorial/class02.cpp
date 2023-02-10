@@ -42,7 +42,8 @@ void Class02::async_op1(const int idx, std::function<void(int)>&& completionHand
         eventHandler[idx] = completionHandler;
         break;
     case USE_EVENTQUEUE:
-        eventQueue.push(std::move(completionHandler));
+        if (m_eventQueue)
+            m_eventQueue->push(std::move(completionHandler));
         break;
     case USE_THREAD:
     {
@@ -124,7 +125,8 @@ void Class02::async_op2(int idx, int bias, std::function<void(int)>&& completion
         eventHandler[idx] = completionHandler;
         break;
     case USE_EVENTQUEUE:
-        eventQueue.push(std::move(completionHandler));
+        if (m_eventQueue)
+            m_eventQueue->push(std::move(completionHandler));
         break;
     case USE_THREAD:
     {
@@ -176,5 +178,3 @@ void Class02::start_operation2_impl(const int idx, int bias)
             }
         });
 }
-
-EventQueue eventQueue;

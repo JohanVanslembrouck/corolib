@@ -170,3 +170,7 @@ echo Running ./p2012-async_operation-eventqueue
 ./p2012-async_operation-eventqueue
 echo Running ./p2014-async_operation-thread
 ./p2014-async_operation-thread
+echo Running ./p2100-async_operation
+./p2100-async_operation
+echo Running ./p2102-async_operation-eventqueue
+./p2102-async_operation-eventqueue

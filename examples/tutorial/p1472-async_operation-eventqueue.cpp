@@ -13,8 +13,9 @@ using namespace corolib;
 
 #include "class02.h"
 
-Class02 object01(USE_EVENTQUEUE);
-Class02 object02(USE_EVENTQUEUE);
+EventQueue eventQueue;
+Class02 object01(USE_EVENTQUEUE, &eventQueue);
+Class02 object02(USE_EVENTQUEUE, &eventQueue);
 
 // Uses coroutine1 implemented in p1470.cpp
 async_task<int> coroutine1();

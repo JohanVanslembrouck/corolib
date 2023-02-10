@@ -205,5 +205,12 @@ these coroutines in the sense that a coroutine can be resumed from another threa
 
 * p200X.cpp is based on p184X.cpp. 3 coroutines are started on a separate thread but are resumed from the main thread.
   Because p200X.cpp uses jthread, there is no way to sum the result of the 3 coroutines (apart from the use of global variables).
+  Notice that the coroutines started by the 3 threads survive their threads, that exit after having started their coroutine.
 
 * p201X.cpp uses 3 futures instead of jthreads to sum the result of the 3 coroutines.
+
+* p210X.cpp is based on p141X.cpp. The main() function starts two threads. 
+  Each thread calls coroutine1, which on its turn calls coroutine2, etc. 
+  Each thread needs a thread_local Class01 object (and EventQueue object in the case of p2102)
+  to proceed independently of the other thread.
+  

@@ -13,7 +13,8 @@ using namespace corolib;
 
 #include "class02.h"
 
-Class02 object01(USE_EVENTQUEUE);
+EventQueue eventQueue;
+Class02 object01(USE_EVENTQUEUE, &eventQueue);
 Class02 object02(USE_IMMEDIATE_COMPLETION);
 
 // Uses coroutine1 implemented in p1460.cpp
