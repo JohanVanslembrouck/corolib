@@ -23,15 +23,14 @@
 
 using namespace corolib;
 
-boost::asio::io_context ioContext;
-
 class ClientApp : public CommClient
 {
 public:
     ClientApp(
         boost::asio::io_context & ioContext,
-        boost::asio::ip::tcp::endpoint ep) :
-        CommClient(ioContext, ep)
+        boost::asio::ip::tcp::endpoint ep)
+            : CommClient(ioContext, ep)
+            , m_ioContext(ioContext)
     {
         print(PRI1, "ClientApp::ClientApp(...)\n");
     }
@@ -67,7 +66,7 @@ public:
         // Just start a timer to introduce a delay to simulate a long asynchronous calculation 
         // after having read the response.
         // Delaying
-        steady_timer client_timer(ioContext);
+        steady_timer client_timer(m_ioContext);
         print(PRI1, "mainflow: co_await start_timer(100);\n");
         co_await start_timer(client_timer, 100);
 
@@ -95,7 +94,7 @@ public:
             if (i == 0)
             {
                 // Introduce a delay of 3 seconds to allow multiple client1x applications to be started and run in parallel.
-                steady_timer client_timer(ioContext);
+                steady_timer client_timer(m_ioContext);
                 print(PRI1, "mainflow: co_await start_timer(3000);\n");
                 co_await start_timer(client_timer, 3000);
             }
@@ -108,11 +107,16 @@ public:
         print(PRI1, "mainflow: co_return 0;\n");
         co_return 0;
     }
+
+protected:
+    boost::asio::io_context& m_ioContext;
 };
 
 int main()
 {
     set_priority(0x01);
+
+    boost::asio::io_context ioContext;
 
     print(PRI1, "main: ClientApp c1(ioContext, ep1);\n");
     ClientApp c1(ioContext, ep1);

@@ -38,6 +38,9 @@ target_link_libraries(cs1-client4obs2 corolib corolib-boost)
 add_executable(cs1-client4obs3 client4obs3.cpp)
 target_link_libraries(cs1-client4obs3 corolib corolib-boost)
 
+add_executable(cs1-client5thr client5thr.cpp)
+target_link_libraries(cs1-client5thr corolib corolib-boost)
+
 add_executable(cs1-clientserver clientserver.cpp)
 target_link_libraries(cs1-clientserver corolib corolib-boost)
 

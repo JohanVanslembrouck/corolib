@@ -77,8 +77,21 @@ client4obs.cpp (cs1-client4obs) uses 4 observer coroutines. This example relies 
 ```c++
 #define RESUME_MULTIPLE_COROUTINES 1
 ```
-in async_operation.h. Before starting the asynchronous read operation, mainflow() starts 4 observer coroutines that each process the read response
+in async_operation.h.
+
+The client application uses 1 CommClient object and 4 observer coroutines observer1 .. observer4
+that each handle the result of the read operation.
+Before starting the asynchronous read operation, mainflow() starts 4 observer coroutines that each process the read response
 from the server. mainflow() co_awaits the completion of the observer coroutines using when_all.
+
+client4obs2.cpp is a simplification of client4obs.cpp that co_awaits sr in mainflow()
+instead of co_awaiting the co_return of the 4 observer coroutines.
+This makes mainflow() in fact the 5th observer.
+
+client4obs3.cpp. In contrast to client4obs.cpp and client4obs2.cpp, the observer coroutines are started only once
+before the loop.
+
+client5thr.cpp starts 3 independent clients, each running in their own thread.
 
 After building, launch the applications in the following order:
 
@@ -88,3 +101,6 @@ After building, launch the applications in the following order:
 * 'cs1-client3WA' (one or more instances) and/or
 * 'cs1-client3WAny' (one or more instances) and/or
 * 'cs1-client4obs' (one or more instances)
+* 'cs1-client4obs2' (one or more instances)
+* 'cs1-client4obs3' (one or more instances)
+* 'cs1-client5thr' (one or more instances)

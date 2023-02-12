@@ -1,8 +1,8 @@
 /** 
- * @file client1.cpp
+ * @file client5thr.cpp
  * @brief
  * Example of a client application.
- * This client application uses 1 CommClient object.
+ * This client application uses 3 CommClient objects that run in a thread of their own.
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
@@ -24,8 +24,8 @@ public:
     ClientApp(
         boost::asio::io_context & ioContext,
         boost::asio::ip::tcp::endpoint ep)
-            : CommClient(ioContext, ep)
-            , m_ioContext(ioContext)
+           : CommClient(ioContext, ep)
+           , m_ioContext(ioContext)
     {
         print(PRI1, "ClientApp::ClientApp(...)\n");
     }
@@ -100,10 +100,8 @@ protected:
     boost::asio::io_context& m_ioContext;
 };
 
-int main()
+int mainflow(int instance)
 {
-    set_priority(0x01);
-
     boost::asio::io_context ioContext;
 
     print(PRI1, "main: ClientApp c1(ioContext, ep1);\n");
@@ -115,6 +113,24 @@ int main()
     print(PRI1, "main: before ioContext.run();\n");
     ioContext.run();
     print(PRI1, "main: after ioContext.run();\n");
+    
+    return instance;
+}
+
+int main()
+{
+    set_priority(0x01);
+
+    print(PRI1, "main(): auto task1thr = std::async(std::launch::async, mainflow, 1);\n");
+    auto task1thr = std::async(std::launch::async, mainflow, 1);
+    print(PRI1, "main(): auto task2thr = std::async(std::launch::async, mainflow, 2);\n");
+    auto task2thr = std::async(std::launch::async, mainflow, 2);
+    print(PRI1, "main(): auto task3thr = std::async(std::launch::async, mainflow, 3);\n");
+    auto task3thr = std::async(std::launch::async, mainflow, 3);
+    
+    print(PRI1, "main(): int v = task1thr.get() + task2thr.get() + task3thr.get();\n");
+    int v = task1thr.get() + task2thr.get() + task3thr.get();
+    print(PRI1, "main(): v = %d\n", v);
 
     print(PRI1, "main: std::this_thread::sleep_for(std::chrono::seconds(1))\n");
     std::this_thread::sleep_for(std::chrono::seconds(1));
