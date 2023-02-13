@@ -86,3 +86,5 @@ p2012-async_operation-eventqueue.exe
 p2014-async_operation-thread.exe
 p2100-async_operation.exe
 p2102-async_operation-eventqueue.exe
+p2110-async_operation.exe
+p2112-async_operation-eventqueue.exe

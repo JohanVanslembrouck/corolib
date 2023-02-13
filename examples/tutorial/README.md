@@ -214,3 +214,6 @@ these coroutines in the sense that a coroutine can be resumed from another threa
   Each thread needs a thread_local Class01 object (and EventQueue object in the case of p2102)
   to proceed independently of the other thread.
   
+* p211X.cpp is based on p210X.cpp. This variant avoids the use of thread_local variables by defining a class CoroClass01 that
+  contains all data members and functions that will be called from a thread function.
+  In other words, the thread local context is provided by the CoroClass01 object that is passed to the thread function.

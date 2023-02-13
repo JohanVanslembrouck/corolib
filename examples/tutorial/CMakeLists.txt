@@ -218,3 +218,8 @@ add_executable(p2100-async_operation p2100-async_operation.cpp class01.cpp p2100
 target_link_libraries(p2100-async_operation corolib)
 add_executable(p2102-async_operation-eventqueue p2102-async_operation-eventqueue.cpp class01.cpp p2100.cpp)
 target_link_libraries(p2102-async_operation-eventqueue corolib)
+
+add_executable(p2110-async_operation p2110-async_operation.cpp class01.cpp p2110.cpp)
+target_link_libraries(p2110-async_operation corolib)
+add_executable(p2112-async_operation-eventqueue p2112-async_operation-eventqueue.cpp class01.cpp p2110.cpp)
+target_link_libraries(p2112-async_operation-eventqueue corolib)
