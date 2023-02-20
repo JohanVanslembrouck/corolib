@@ -12,7 +12,8 @@
 
 using namespace corolib;
 
-EventQueue eventQueue;
+//EventQueue<std::function<void(int)>> eventQueue;
+EventQueueFunctionVoidInt eventQueue;
 extern UseMode useMode;
 
 /**

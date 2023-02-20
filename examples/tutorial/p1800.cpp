@@ -12,7 +12,7 @@
 
 using namespace corolib;
 
-EventQueue eventQueue;
+EventQueueFunctionVoidInt eventQueue;
 extern UseMode useMode;
 
 /**

@@ -16,7 +16,7 @@ using namespace corolib;
 
 UseMode useMode = USE_EVENTQUEUE;
 
-extern EventQueue eventQueue;                       // p1840.cpp
+extern EventQueueFunctionVoidInt eventQueue;                       // p1840.cpp
 
 async_task<void> completionflow(async_task<int>& a1, async_task<int>& a2, async_task<int>& a3)
 {
@@ -28,8 +28,8 @@ async_task<void> completionflow(async_task<int>& a1, async_task<int>& a2, async_
         start_operation_impl(op1);
     }
 
-    print(PRI1, "completionflow(): eventQueue.run();\n");
-    eventQueue.run();
+    print(PRI1, "completionflow(): runEventQueue(eventQueue);\n");
+    runEventQueue(eventQueue);
 
     // Begin manual event completion to make coroutine1 co_return
     print(PRI1, "completionflow(): before op.set_result_and_complete(std::nullopt);\n");

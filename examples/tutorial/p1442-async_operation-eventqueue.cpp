@@ -13,7 +13,7 @@ using namespace corolib;
 
 #include "class01.h"
 
-EventQueue eventQueue;
+EventQueueFunctionVoidInt eventQueue;
 Class01 object01(USE_EVENTQUEUE, &eventQueue);
 Class01 object02(USE_EVENTQUEUE, &eventQueue);
 
@@ -22,8 +22,8 @@ async_task<int> coroutine1();
 
 void completionflow()
 {
-    print(PRI1, "completionflow():  eventQueue.run();\n");
-    eventQueue.run();
+    print(PRI1, "completionflow(): runEventQueue(eventQueue);\n");
+    runEventQueue(eventQueue);
 }
 
 int main()

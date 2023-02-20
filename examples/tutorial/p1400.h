@@ -8,6 +8,8 @@
 #ifndef _P1400_H_
 #define _P1400_H_
 
+#include <functional>
+
 #include <corolib/print.h>
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
@@ -19,10 +21,13 @@ enum UseMode
     USE_NONE,
     USE_EVENTQUEUE,
     USE_THREAD,
+    USE_THREAD_QUEUE,
     USE_IMMEDIATE_COMPLETION
 };
 
 void start_operation_impl(UseMode useMode, async_operation<int>* op);
+
+extern int queueSize;
 
 async_task<int> coroutine1();
 

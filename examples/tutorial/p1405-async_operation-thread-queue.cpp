@@ -1,29 +1,30 @@
 /**
- * @file p1452-async_operation-eventqueue.cpp
+ * @file p1405-async_operation-thread-queue.cpp
  * @brief
- *
+ * Starts an asynchronous operation that will be completed after one second from a thread.
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
-#include <corolib/print.h>
-#include <corolib/async_task.h>
+#include "p1400.h"
+#include "eventqueuethr.h"
+
+extern EventQueueThrFunctionVoidInt eventQueueThr;
 
 using namespace corolib;
 
-#include "class01.h"
-
-EventQueueFunctionVoidInt eventQueue;
-Class01 object01(USE_EVENTQUEUE, &eventQueue);
-Class01 object02(USE_EVENTQUEUE, &eventQueue);
-
-// Uses coroutine1 implemented in p1450.cpp
-async_task<int> coroutine1();
+UseMode useMode = USE_THREAD_QUEUE;
 
 void completionflow()
 {
-    print(PRI1, "completionflow(): runEventQueue(eventQueue);\n");
-    runEventQueue(eventQueue);
+    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+    for (int i = 0; i < queueSize; i++)
+    {
+        std::function<void(int)> fun = eventQueueThr.pop();
+        fun(10);
+    }
 }
 
 int main()

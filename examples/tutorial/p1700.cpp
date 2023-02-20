@@ -16,7 +16,7 @@
 
 using namespace corolib;
 
-EventQueue eventQueue;
+EventQueueFunctionVoidInt eventQueue;
 std::function<void(int)> eventHandler;        // Will be initialized in start_operation_impl below
 
 extern UseMode useMode;

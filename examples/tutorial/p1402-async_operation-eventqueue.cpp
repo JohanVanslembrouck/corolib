@@ -13,12 +13,12 @@ using namespace corolib;
 
 UseMode useMode = USE_EVENTQUEUE;
 
-extern EventQueue eventQueue;           // p1400.cpp
+extern EventQueueFunctionVoidInt eventQueue;           // p1400.cpp
 
 void completionflow()
 {
-    print(PRI1, "completionflow():  eventQueue.run();\n");
-    eventQueue.run();
+    print(PRI1, "completionflow(): runEventQueue(eventQueue);\n");
+    runEventQueue(eventQueue);
 }
 
 int main()

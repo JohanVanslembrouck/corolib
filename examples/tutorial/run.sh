@@ -43,6 +43,8 @@ echo Running ./p1402-async_operation-eventqueue
 ./p1402-async_operation-eventqueue
 echo Running ./p1404-async_operation-thread
 ./p1404-async_operation-thread
+echo Running ./p1405-async_operation-thread-queue
+./p1405-async_operation-thread-queue
 echo Running ./p1406-async_operation-immediate
 ./p1406-async_operation-immediate
 echo Running ./p1410-async_operation
@@ -51,6 +53,8 @@ echo Running ./p1412-async_operation-eventqueue
 ./p1412-async_operation-eventqueue
 echo Running ./p1414-async_operation-thread
 ./p1414-async_operation-thread
+echo Running ./p1415-async_operation-thread-queue
+./p1415-async_operation-thread-queue
 echo Running ./p1416-async_operation-immediate
 ./p1416-async_operation-immediate
 echo Running ./p1420-async_operation
@@ -59,6 +63,8 @@ echo Running ./p1422-async_operation-eventqueue
 ./p1422-async_operation-eventqueue
 echo Running ./p1424-async_operation-thread
 ./p1424-async_operation-thread
+echo Running ./p1425-async_operation-thread-queue
+./p1425-async_operation-thread-queue
 echo Running ./p1426-async_operation-immediate
 ./p1426-async_operation-immediate
 echo Running ./p1428-async_operation-evtq-imm
@@ -71,6 +77,8 @@ echo Running ./p1432-async_operation-eventqueue
 ./p1432-async_operation-eventqueue
 echo Running ./p1434-async_operation-thread
 ./p1434-async_operation-thread
+echo Running ./p1435-async_operation-thread-queue
+./p1435-async_operation-thread-queue
 echo Running ./p1436-async_operation-immediate
 ./p1436-async_operation-immediate
 echo Running ./p1438-async_operation-evtq-imm
@@ -83,6 +91,8 @@ echo Running ./p1442-async_operation-eventqueue
 ./p1442-async_operation-eventqueue
 echo Running ./p1444-async_operation-thread
 ./p1444-async_operation-thread
+echo Running ./p1455-async_operation-thread-queue
+./p1455-async_operation-thread-queue
 echo Running ./p1446-async_operation-immediate
 ./p1446-async_operation-immediate
 echo Running ./p1448-async_operation-evtq-imm
@@ -95,6 +105,8 @@ echo Running ./p1452-async_operation-eventqueue
 ./p1452-async_operation-eventqueue
 echo Running ./p1454-async_operation-thread
 ./p1454-async_operation-thread
+echo Running ./p1455-async_operation-thread-queue
+./p1455-async_operation-thread-queue
 echo Running ./p1456-async_operation-immediate
 ./p1456-async_operation-immediate
 echo Running ./p1458-async_operation-evtq-imm
@@ -107,6 +119,8 @@ echo Running ./p1462-async_operation-eventqueue
 ./p1462-async_operation-eventqueue
 echo Running ./p1464-async_operation-thread
 ./p1464-async_operation-thread
+echo Running ./p1465-async_operation-thread-queue
+./p1465-async_operation-thread-queue
 echo Running ./p1466-async_operation-immediate
 ./p1466-async_operation-immediate
 echo Running ./p1468-async_operation-evtq-imm
@@ -117,6 +131,8 @@ echo Running ./p1472-async_operation-eventqueue
 ./p1472-async_operation-eventqueue
 echo Running ./p1474-async_operation-thread
 ./p1474-async_operation-thread
+echo Running ./p1475-async_operation-thread-queue
+./p1475-async_operation-thread-queue
 # ./p1476-async_operation-immediate
 echo Running ./p1500-async_operation
 ./p1500-async_operation

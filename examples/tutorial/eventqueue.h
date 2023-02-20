@@ -26,45 +26,37 @@
 #ifndef _EVENTQUEUE_H_
 #define _EVENTQUEUE_H_
 
-#include <functional>
 #include <queue>
-#include <thread>
 
-#include <corolib/print.h>
-
-using namespace corolib;
-
+template <typename TYPE>
 class EventQueue
 {
 public:
-    /**
-	 * @brief run takes a functor from the front of the internal queue of void(int) functors
-	 * and calls this functor with argument = 10.
-	 * run uses a delay of 1000 ms before each functor invocation.
-	 */
-    void run()
-    {
-        while (!q.empty())
-        {
-            print(PRI1, "EventQueue::run(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    
-            std::function<void(int)> op = q.front();
-            op(10);
-            q.pop();
-        }
-    }
-    
-	/**
-	 * @brief push places a functor in the internal queue.
-	 */
-    void push(std::function<void(int)>&& op)
+    void push(TYPE&& op)
     {
         q.push(std::move(op));
     }
+
+    bool empty()
+    {
+        return q.empty();
+    }
+
+    TYPE pull()
+    {
+        TYPE op = q.front();
+        q.pop();
+        return op;
+    }
     
-private:
-    std::queue<std::function<void(int)>> q;
+protected:
+    std::queue<TYPE> q;
 };
+
+#include <functional>
+
+using EventQueueFunctionVoidInt = typename EventQueue<std::function<void(int)>>;
+
+void runEventQueue(EventQueueFunctionVoidInt& queue);
 
 #endif

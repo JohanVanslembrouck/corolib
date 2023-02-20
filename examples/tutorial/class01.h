@@ -15,6 +15,7 @@
 #include <corolib/async_operation.h>
 
 #include "eventqueue.h"
+#include "eventqueuethr.h"
 
 using namespace corolib;
 
@@ -23,22 +24,27 @@ enum UseMode
     USE_NONE,
     USE_EVENTQUEUE,
     USE_THREAD,
+    USE_THREAD_QUEUE,
     USE_IMMEDIATE_COMPLETION
 };
 
 class Class01 : public CommService
 {
 public:
-    Class01(UseMode useMode = USE_NONE, EventQueue* eventQueue = nullptr)
+    Class01(UseMode useMode = USE_NONE,
+            EventQueueFunctionVoidInt* eventQueue = nullptr,
+            EventQueueThrFunctionVoidInt* eventQueueThr = nullptr)
         : m_useMode(useMode)
         , m_eventQueue(eventQueue)
+        , m_eventQueueThr(eventQueueThr)
+        , m_queueSize(0)
     {
     }
     
     async_operation<int> start_operation();
     
     std::function<void(int)> eventHandler;
-    EventQueue* getEventQueue() { return m_eventQueue; }
+    EventQueueFunctionVoidInt* getEventQueue() { return m_eventQueue; }
 
 protected:
     void async_op(std::function<void(int)>&& completionHandler);
@@ -46,7 +52,9 @@ protected:
 
 private:
     UseMode     m_useMode;
-    EventQueue* m_eventQueue;
+    EventQueueFunctionVoidInt* m_eventQueue;
+    EventQueueThrFunctionVoidInt* m_eventQueueThr;
+    int m_queueSize;
 };
 
 #endif

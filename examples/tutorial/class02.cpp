@@ -48,11 +48,26 @@ void Class02::async_op1(const int idx, std::function<void(int)>&& completionHand
     case USE_THREAD:
     {
         std::thread thread1([this, idx, completionHandler]() {
-            print(PRI1, "Class02::start_operation1_impl(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+            print(PRI1, "Class02::async_op1(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-            print(PRI1, "Class02::start_operation1_impl(): thread1: this->eventHandler[idx](10);\n", idx);
+            print(PRI1, "Class02::async_op1(): thread1: this->eventHandler[idx](10);\n", idx);
             completionHandler(10);
-            print(PRI1, "Class02::start_operation1_impl(): thread1: return;\n");
+            print(PRI1, "Class02::async_op1(): thread1: return;\n");
+            });
+        thread1.detach();
+        break;
+    }
+    case USE_THREAD_QUEUE:
+    {
+        m_queueSize++;
+
+        std::thread thread1([this, completionHandler]() {
+            print(PRI1, "Class02::async_op1(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            print(PRI1, "Class02::async_op1(): this->completionHandler(10);\n");
+            std::function<void(int)> completionHandler1 = completionHandler;
+            m_eventQueueThr->push(std::move(completionHandler1));
+            print(PRI1, "Class02::async_op1(): return;\n");
             });
         thread1.detach();
         break;
@@ -131,11 +146,26 @@ void Class02::async_op2(int idx, int bias, std::function<void(int)>&& completion
     case USE_THREAD:
     {
         std::thread thread1([this, idx, bias, completionHandler]() {
-            print(PRI1, "Class02::start_operation2_impl(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+            print(PRI1, "Class02::async_op2(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-            print(PRI1, "Class02::start_operation2_impl(): thread1: this->eventHandler[%d](10);\n", idx);
+            print(PRI1, "Class02::async_op2(): thread1: this->eventHandler[%d](10);\n", idx);
             completionHandler(10);
-            print(PRI1, "Class02::start_operation2_impl(): thread1: return;\n");
+            print(PRI1, "Class02::async_op2(): thread1: return;\n");
+            });
+        thread1.detach();
+        break;
+    }
+    case USE_THREAD_QUEUE:
+    {
+        m_queueSize++;
+
+        std::thread thread1([this, completionHandler]() {
+            print(PRI1, "Class02::async_op2(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            print(PRI1, "Class02::async_op2(): this->completionHandler(10);\n");
+            std::function<void(int)> completionHandler1 = completionHandler;
+            m_eventQueueThr->push(std::move(completionHandler1));
+            print(PRI1, "Class02::async_op2(): return;\n");
             });
         thread1.detach();
         break;

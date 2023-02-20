@@ -1,5 +1,5 @@
 /**
- * @file p1452-async_operation-eventqueue.cpp
+ * @file p1455-async_operation-thread-queue.cpp
  * @brief
  *
  *
@@ -13,17 +13,19 @@ using namespace corolib;
 
 #include "class01.h"
 
-EventQueueFunctionVoidInt eventQueue;
-Class01 object01(USE_EVENTQUEUE, &eventQueue);
-Class01 object02(USE_EVENTQUEUE, &eventQueue);
+EventQueueThrFunctionVoidInt eventQueueThr;
+Class01 object01(USE_THREAD_QUEUE, nullptr, &eventQueueThr);
+Class01 object02(USE_THREAD_QUEUE, nullptr, &eventQueueThr);
 
 // Uses coroutine1 implemented in p1450.cpp
 async_task<int> coroutine1();
 
 void completionflow()
 {
-    print(PRI1, "completionflow(): runEventQueue(eventQueue);\n");
-    runEventQueue(eventQueue);
+    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+    runEventQueue(eventQueueThr, 8);
 }
 
 int main()

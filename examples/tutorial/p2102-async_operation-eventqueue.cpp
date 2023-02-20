@@ -17,14 +17,14 @@ using namespace corolib;
 
 void completionflow()
 {
-    print(PRI1, "completionflow(): thr_object01.getEventQueue()->run();\n");
-    thr_object01.getEventQueue()->run();
+    print(PRI1, "completionflow(): runEventQueue(*thr_object01.getEventQueue());\n");
+    runEventQueue(*thr_object01.getEventQueue());
 }
 
-EventQueue eventQueue1;
+EventQueueFunctionVoidInt eventQueue1;
 Class01 object01(USE_EVENTQUEUE, &eventQueue1);
 
-EventQueue eventQueue2;
+EventQueueFunctionVoidInt eventQueue2;
 Class01 object02(USE_EVENTQUEUE, &eventQueue2);
 
 int main()
