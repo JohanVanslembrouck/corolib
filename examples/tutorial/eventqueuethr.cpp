@@ -7,11 +7,17 @@
  
  #include "eventqueuethr.h"
  
+#include <corolib/print.h>
+
+using namespace corolib;
+
 void runEventQueue(EventQueueThrFunctionVoidInt& queue, int size)
 {
     for (int i = 0; i < size; i++)
     {
-        std::function<void(int)> fun = queue.pop();
-        fun(10);
+        print(PRI1, "runEventQueue(): std::function<void(int)> fun = queue.pop();\n");
+        std::function<void(int)> op = queue.pop();
+        print(PRI1, "runEventQueue(): op(10);\n");
+        op(10);
     }
 }

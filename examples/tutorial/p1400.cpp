@@ -46,7 +46,8 @@ void async_op(std::function<void(int)>&& completionHandler)
         std::thread thread1([completionHandler]() {
             print(PRI1, "async_op: thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-            print(PRI1, "async_op: thread1: this->completionHandler(10);\n");
+
+            print(PRI1, "async_op: thread1: completionHandler(10);\n");
             completionHandler(10);
             print(PRI1, "async_op: thread1: return;\n");
             });
@@ -60,7 +61,7 @@ void async_op(std::function<void(int)>&& completionHandler)
         std::thread thread1([completionHandler]() {
             print(PRI1, "async_op: thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-            print(PRI1, "async_op: thread1: this->completionHandler(10);\n");
+
             std::function<void(int)> completionHandler1 = completionHandler;
             eventQueueThr.push(std::move(completionHandler1));
             print(PRI1, "async_op: thread1: return;\n");

@@ -26,7 +26,9 @@ void runEventQueue(EventQueueFunctionVoidInt& queue)
         print(PRI1, "runEventQueue(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
+        print(PRI1, "runEventQueue(): std::function<void(int)> op = queue.pull();\n");
         std::function<void(int)> op = queue.pull();
+        print(PRI1, "runEventQueue(): op(10);\n");
         op(10);
     }
 }

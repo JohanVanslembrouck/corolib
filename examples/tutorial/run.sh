@@ -148,30 +148,40 @@ echo Running ./p1802-async_operation-eventqueue
 ./p1802-async_operation-eventqueue
 echo Running ./p1804-async_operation-thread
 ./p1804-async_operation-thread
+echo Running ./p1805-async_operation-thread-queue
+./p1805-async_operation-thread-queue
 echo Running ./p1810-async_operation
 ./p1810-async_operation
 echo Running ./p1812-async_operation-eventqueue
 ./p1812-async_operation-eventqueue
 echo Running ./p1814-async_operation-thread
 ./p1814-async_operation-thread
+echo Running ./p1815-async_operation-thread-queue
+./p1815-async_operation-thread-queue
 echo Running ./p1820-async_operation
 ./p1820-async_operation
 echo Running ./p1822-async_operation-eventqueue
 ./p1822-async_operation-eventqueue
 echo Running ./p1824-async_operation-thread
 ./p1824-async_operation-thread
+echo Running ./p1825-async_operation-thread-queue
+./p1825-async_operation-thread-queue
 echo Running ./p1830-async_operation
 ./p1830-async_operation
 echo Running ./p1832-async_operation-eventqueue
 ./p1832-async_operation-eventqueue
 echo Running ./p1834-async_operation-thread
 ./p1834-async_operation-thread
+echo Running ./p1835-async_operation-thread-queue
+./p1835-async_operation-thread-queue
 echo Running ./p1840-async_operation
 ./p1840-async_operation
 echo Running ./p1842-async_operation-eventqueue
 ./p1842-async_operation-eventqueue
 echo Running ./p1844-async_operation-thread
 ./p1844-async_operation-thread
+echo Running ./p1845-async_operation-thread-queue
+./p1845-async_operation-thread-queue
 echo Running ./p1900-resume_in_middle
 ./p1900-resume_in_middle
 echo Running ./p2000-async_operation
@@ -180,12 +190,16 @@ echo Running ./p2002-async_operation-eventqueue
 ./p2002-async_operation-eventqueue
 echo Running ./p2004-async_operation-thread
 ./p2004-async_operation-thread
+echo Running ./p2005-async_operation-thread-queue
+./p2005-async_operation-thread-queue
 echo Running ./p2010-async_operation
 ./p2010-async_operation
 echo Running ./p2012-async_operation-eventqueue
 ./p2012-async_operation-eventqueue
 echo Running ./p2014-async_operation-thread
 ./p2014-async_operation-thread
+echo Running ./p2015-async_operation-thread-queue
+./p2015-async_operation-thread-queue
 echo Running ./p2100-async_operation
 ./p2100-async_operation
 echo Running ./p2102-async_operation-eventqueue

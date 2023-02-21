@@ -1,5 +1,5 @@
 /**
- * @file p2012-async_operation-eventqueue.cpp
+ * @file p2015-async_operation-thread-queue.cpp
  * @brief
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
@@ -9,26 +9,35 @@
 #include <future>
 
 #include "p2010.h"
-#include "eventqueue.h"
+#include "eventqueuethr.h"
 
 using namespace corolib;
 
-UseMode useMode = USE_EVENTQUEUE;
+UseMode useMode = USE_THREAD_QUEUE;
 
-extern EventQueueFunctionVoidInt eventQueue;                       // p2010.cpp
+extern EventQueueThrFunctionVoidInt eventQueueThr;                       // p2010.cpp
+
+void task0()
+{
+    for (int i = 0; i < 4; i++)
+    {
+        print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+        print(PRI1, "completionflow(): start_operation_impl(op);\n");
+        start_operation_impl(op1);
+    }
+}
 
 void completionflow()
 {
     print(PRI1, "completionflow()\n");
 
-    for (int i = 0; i < 4; i++)
-    {
-        print(PRI1, "completionflow(): start_operation_impl(op1);\n");
-        start_operation_impl(op1);
-    }
+    print(PRI1, "completionflow(): std::jthread task1thr{ task0 };\n");
+    std::jthread task1thr{ task0 };
 
-    print(PRI1, "completionflow(): runEventQueue(eventQueue);\n");
-    runEventQueue(eventQueue);
+    print(PRI1, "completionflow(): runEventQueue(eventQueueThr, 4);\n");
+    runEventQueue(eventQueueThr, 4);
 
     // Begin manual event completion to make coroutine1 co_return
     print(PRI1, "completionflow(): before op.set_result_and_complete(std::nullopt);\n");

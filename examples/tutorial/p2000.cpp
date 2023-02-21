@@ -9,10 +9,14 @@
 
 #include "p2000.h"
 #include "eventqueue.h"
+#include "eventqueuethr.h"
 
 using namespace corolib;
 
+int queueSize = 0;
 EventQueueFunctionVoidInt eventQueue;
+EventQueueThrFunctionVoidInt eventQueueThr;
+
 extern UseMode useMode;
 
 /**
@@ -34,6 +38,18 @@ void async_op(std::function<void(int)>&& completionHandler)
         std::thread thread1([completionHandler]() {
             print(PRI1, "async_op: thread1: completionHandler(10);\n");
             completionHandler(10);
+            print(PRI1, "async_op: thread1: return;\n");
+            });
+        thread1.detach();
+        break;
+    }
+    case USE_THREAD_QUEUE:
+    {
+        queueSize++;
+
+        std::thread thread1([completionHandler]() {
+            std::function<void(int)> completionHandler1 = completionHandler;
+            eventQueueThr.push(std::move(completionHandler1));
             print(PRI1, "async_op: thread1: return;\n");
             });
         thread1.detach();
