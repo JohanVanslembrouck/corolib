@@ -56,7 +56,9 @@ protected:
 #include <functional>
 
 using EventQueueFunctionVoidInt = typename EventQueue<std::function<void(int)>>;
+using EventQueueFunctionVoidVoid = typename EventQueue<std::function<void(void)>>;
 
 void runEventQueue(EventQueueFunctionVoidInt& queue);
+void runEventQueue(EventQueueFunctionVoidVoid& queue);
 
 #endif

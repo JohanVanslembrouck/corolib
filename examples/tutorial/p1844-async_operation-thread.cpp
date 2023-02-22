@@ -14,8 +14,6 @@
 
 using namespace corolib;
 
-UseMode useMode = USE_THREAD;
-
 async_task<void> completionflow(async_task<int>& a1, async_task<int>& a2, async_task<int>& a3)
 {
     print(PRI1, "completionflow()\n");
@@ -46,6 +44,8 @@ async_task<void> completionflow(async_task<int>& a1, async_task<int>& a2, async_
 
 int main()
 {
+    useMode = UseMode::USE_THREAD;
+
     set_priority(0x01);        // Use 0x03 to follow the flow in corolib
 
     print(PRI1, "main(): async_ltask<int> a = coroutine1();\n");

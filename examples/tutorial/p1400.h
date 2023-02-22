@@ -16,7 +16,7 @@
 
 using namespace corolib;
 
-enum UseMode
+enum class UseMode
 {
     USE_NONE,
     USE_EVENTQUEUE,
@@ -28,6 +28,7 @@ enum UseMode
 void start_operation_impl(UseMode useMode, async_operation<int>* op);
 
 extern int queueSize;
+extern UseMode useMode;
 
 async_task<int> coroutine1();
 

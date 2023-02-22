@@ -22,10 +22,10 @@ void completionflow()
 }
 
 EventQueueFunctionVoidInt eventQueue1;
-Class01 object01(USE_EVENTQUEUE, &eventQueue1);
+Class01 object01(UseMode::USE_EVENTQUEUE, &eventQueue1);
 
 EventQueueFunctionVoidInt eventQueue2;
-Class01 object02(USE_EVENTQUEUE, &eventQueue2);
+Class01 object02(UseMode::USE_EVENTQUEUE, &eventQueue2);
 
 int main()
 {

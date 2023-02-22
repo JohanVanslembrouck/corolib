@@ -38,42 +38,44 @@ void Class01::async_op(std::function<void(int)>&& completionHandler)
 {
     switch (m_useMode)
     {
-    case USE_NONE:
+    case UseMode::USE_NONE:
         // Nothing to be done here: eventHandler should be called "manually" by the application
         eventHandler = completionHandler;
         break;
-    case USE_EVENTQUEUE:
+    case UseMode::USE_EVENTQUEUE:
         if (m_eventQueue)
             m_eventQueue->push(std::move(completionHandler));
         break;
-    case USE_THREAD:
+    case UseMode::USE_THREAD:
     {
         std::thread thread1([completionHandler]() {
             print(PRI1, "Class01::async_op(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-            print(PRI1, "Class01::async_op(): thread1: this->eventHandler(10);\n");
+
+            print(PRI1, "Class01::async_op(): thread1: completionHandler(10);\n");
             completionHandler(10);
             print(PRI1, "Class01::async_op(): thread1: return;\n");
             });
         thread1.detach();
         break;
     }
-    case USE_THREAD_QUEUE:
+    case UseMode::USE_THREAD_QUEUE:
     {
         m_queueSize++;
 
         std::thread thread1([this, completionHandler]() {
-            print(PRI1, "Class01::async_op(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+            print(PRI1, "Class01::async_op(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-            print(PRI1, "Class01::async_op(): this->completionHandler(10);\n");
+            
             std::function<void(int)> completionHandler1 = completionHandler;
+            print(PRI1, "Class01::async_op(): thread1: m_eventQueueThr->push(std::move(completionHandler1));\n");
             m_eventQueueThr->push(std::move(completionHandler1));
-            print(PRI1, "Class01::async_op(): return;\n");
+            print(PRI1, "Class01::async_op(): thread1: return;\n");
             });
         thread1.detach();
         break;
     }
-    case USE_IMMEDIATE_COMPLETION:
+    case UseMode::USE_IMMEDIATE_COMPLETION:
         completionHandler(10);
         break;
     }

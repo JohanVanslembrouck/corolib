@@ -24,7 +24,7 @@ EventQueueThrFunctionVoidInt eventQueueThr;
 
 std::function<void(int)> eventHandler;        // Will be initialized in async_op
 
-extern UseMode useMode;
+UseMode useMode;
 
 /**
  * @brief async_op
@@ -34,42 +34,47 @@ void async_op(std::function<void(int)>&& completionHandler)
 {
     switch (useMode)
     {
-    case USE_NONE:
+    case UseMode::USE_NONE:
         // Nothing to be done here: eventHandler should be called "manually" by the application
         eventHandler = completionHandler;
         break;
-    case USE_EVENTQUEUE:
+    case UseMode::USE_EVENTQUEUE:
+    {
+        //std::function<void(void)> completionHandler1 = [completionHandler]() { completionHandler(10); };    // Not used yet
         eventQueue.push(std::move(completionHandler));
         break;
-    case USE_THREAD:
+    }
+    case UseMode::USE_THREAD:
     {
         std::thread thread1([completionHandler]() {
-            print(PRI1, "async_op: thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+            print(PRI1, "async_op(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-            print(PRI1, "async_op: thread1: completionHandler(10);\n");
+            print(PRI1, "async_op(): thread1: completionHandler(10);\n");
             completionHandler(10);
-            print(PRI1, "async_op: thread1: return;\n");
+            print(PRI1, "async_op(): thread1: return;\n");
             });
         thread1.detach();
         break;
     }
-    case USE_THREAD_QUEUE:
+    case UseMode::USE_THREAD_QUEUE:
     {
         queueSize++;
 
         std::thread thread1([completionHandler]() {
-            print(PRI1, "async_op: thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+            print(PRI1, "async_op(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
+            //std::function<void(void)> completionHandler2 = [completionHandler]() { completionHandler(10); };    // Not used yet
             std::function<void(int)> completionHandler1 = completionHandler;
+            print(PRI1, "async_op(): thread1: eventQueueThr.push(std::move(completionHandler1));\n");
             eventQueueThr.push(std::move(completionHandler1));
-            print(PRI1, "async_op: thread1: return;\n");
+            print(PRI1, "async_op(): thread1: return;\n");
             });
         thread1.detach();
         break;
     }
-    case USE_IMMEDIATE_COMPLETION:
+    case UseMode::USE_IMMEDIATE_COMPLETION:
         completionHandler(10);
         break;
     }

@@ -10,8 +10,6 @@
 
 using namespace corolib;
 
-UseMode useMode = USE_IMMEDIATE_COMPLETION;
-
 void completionflow()
 {
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
@@ -20,6 +18,8 @@ void completionflow()
 
 int main()
 {
+    useMode = UseMode::USE_IMMEDIATE_COMPLETION;
+
     set_print_level(0x01);        // Use 0x03 to follow the flow in corolib
 
     print(PRI1, "main(): async_task<int> a = coroutine1();\n");

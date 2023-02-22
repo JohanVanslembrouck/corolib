@@ -118,6 +118,14 @@ as in the examples using the Boost library and Qt.
   from a thread after a delay of one second.
   The main() function calls get_result() on the first coroutine (coroutine1).
   This will block the main() function until completion of all coroutines.
+  A disadvantage of this approach is that there can occur race conditions between
+  the thread running the main() function (and calling coroutine1) and the thread(s) that perform
+  the completion. This race condition is difficult to reproduce with these small examples,
+  but it is present.
+  
+* The p14X5-async_operation-thread-queue.cpp examples use both a thread and an event queue. It remedies
+  the race condition problem by using a thread-safe queue between the main thread and
+  the threads that complete the operation.
 
 * The p14X6-async_operation-immediate.cpp examples start asychronous operations that complete immediately.
 
@@ -170,7 +178,8 @@ The following describes implementation of the examples per group.
 
 * p160X.cpp demonstrates "split-and-combine". See p1600.cpp for further explanation.
 
-* p170X.cpp demonstrates the use of async_ltask.
+* p170X.cpp demonstrates the use of async_ltask (a "lazy task", or a task that returns suspend_always
+  at its initial suspend point).
 
 * p180X.cpp contains a single coroutine1 that co_awaits in a loop the completion of global async_operation<int> op.
   This object is completed several times. coroutine1 co_returns when it receives the value 0.

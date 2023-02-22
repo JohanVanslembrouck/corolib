@@ -21,3 +21,14 @@ void runEventQueue(EventQueueThrFunctionVoidInt& queue, int size)
         op(10);
     }
 }
+
+void runEventQueue(EventQueueThrFunctionVoidVoid& queue, int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        print(PRI1, "runEventQueue(): std::function<void(void)> fun = queue.pop();\n");
+        std::function<void(void)> op = queue.pop();
+        print(PRI1, "runEventQueue(): op();\n");
+        op();
+    }
+}

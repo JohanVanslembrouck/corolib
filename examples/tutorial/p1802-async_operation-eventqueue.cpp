@@ -13,8 +13,6 @@
 
 using namespace corolib;
 
-UseMode useMode = USE_EVENTQUEUE;
-
 extern EventQueueFunctionVoidInt eventQueue;                       // p1800.cpp
 
 void completionflow()
@@ -39,6 +37,8 @@ void completionflow()
 
 int main()
 {
+    useMode = UseMode::USE_EVENTQUEUE;
+
     set_priority(0x01);        // Use 0x03 to follow the flow in corolib
 
     print(PRI1, "main(): async_ltask<int> a = coroutine1();\n");

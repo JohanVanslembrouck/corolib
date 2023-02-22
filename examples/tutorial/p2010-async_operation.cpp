@@ -12,8 +12,6 @@
 
 using namespace corolib;
 
-UseMode useMode = USE_NONE;
-
 void completionflow()
 {
     print(PRI1, "completionflow()\n");
@@ -41,6 +39,8 @@ void completionflow()
 
 int main()
 {
+    useMode = UseMode::USE_NONE;
+
     set_priority(0x01);        // Use 0x03 to follow the flow in corolib
 
     print(PRI1, "main(): auto task1thr = std::async(std::launch::async, task1);\n");

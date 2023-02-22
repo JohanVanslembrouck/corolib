@@ -22,11 +22,11 @@ void completionflow(CoroClass01& coroObject)
 }
 
 EventQueueFunctionVoidInt eventQueue1;
-Class01 object01(USE_EVENTQUEUE, &eventQueue1);
+Class01 object01(UseMode::USE_EVENTQUEUE, &eventQueue1);
 CoroClass01 coroObject01(object01);
 
 EventQueueFunctionVoidInt eventQueue2;
-Class01 object02(USE_EVENTQUEUE, &eventQueue2);
+Class01 object02(UseMode::USE_EVENTQUEUE, &eventQueue2);
 CoroClass01 coroObject02(object02);
 
 int main()

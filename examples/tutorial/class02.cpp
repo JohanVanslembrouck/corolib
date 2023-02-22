@@ -28,8 +28,11 @@ async_operation<int> Class02::start_operation1()
  * 2) m_useMode == USE_EVENTQUEUE: async_op1 places the completionHandler in an eventQueue.
  *    The application (function main) will run the event loop to call the completionHandler(s) in the eventQueue.
  * 3) m_useMode == USE_THREAD: async_op1 starts a detached thread that will
- *    call the eventHandler after a delay of 1000 ms.
- * 4) m_useMode == USE_IMMEDIATE_COMPLETION: async_op1 calls the completionHandler immediately.
+ *    call the completionHandler after a delay of 1000 ms.
+ * 4) m_useMode == USE_THREAD_QUEUE: async_op1 starts a detached thread that will
+ *    place the completionHandler in a queue after the delay of 1000 ms.
+ *    The main thread will run the completionHandler in its own context.
+ * 5) m_useMode == USE_IMMEDIATE_COMPLETION: async_op1 calls the completionHandler immediately.
  *
  * @param idx
  */
@@ -37,19 +40,20 @@ void Class02::async_op1(const int idx, std::function<void(int)>&& completionHand
 {
     switch (m_useMode)
     {
-    case USE_NONE:
+    case UseMode::USE_NONE:
         // Nothing to be done: eventHandler[idx] should be called "manually" by the application
         eventHandler[idx] = completionHandler;
         break;
-    case USE_EVENTQUEUE:
+    case UseMode::USE_EVENTQUEUE:
         if (m_eventQueue)
             m_eventQueue->push(std::move(completionHandler));
         break;
-    case USE_THREAD:
+    case UseMode::USE_THREAD:
     {
         std::thread thread1([this, idx, completionHandler]() {
             print(PRI1, "Class02::async_op1(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
             print(PRI1, "Class02::async_op1(): thread1: this->eventHandler[idx](10);\n", idx);
             completionHandler(10);
             print(PRI1, "Class02::async_op1(): thread1: return;\n");
@@ -57,22 +61,23 @@ void Class02::async_op1(const int idx, std::function<void(int)>&& completionHand
         thread1.detach();
         break;
     }
-    case USE_THREAD_QUEUE:
+    case UseMode::USE_THREAD_QUEUE:
     {
         m_queueSize++;
 
         std::thread thread1([this, completionHandler]() {
-            print(PRI1, "Class02::async_op1(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+            print(PRI1, "Class02::async_op1(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-            print(PRI1, "Class02::async_op1(): this->completionHandler(10);\n");
+
             std::function<void(int)> completionHandler1 = completionHandler;
+            print(PRI1, "Class02::async_op1(): thread1: m_eventQueueThr->push(std::move(completionHandler1));\n");
             m_eventQueueThr->push(std::move(completionHandler1));
-            print(PRI1, "Class02::async_op1(): return;\n");
+            print(PRI1, "Class02::async_op1(): thread1: return;\n");
             });
         thread1.detach();
         break;
     }
-    case USE_IMMEDIATE_COMPLETION:
+    case UseMode::USE_IMMEDIATE_COMPLETION:
         completionHandler(10);
         break;
     }
@@ -127,50 +132,55 @@ async_operation<int> Class02::start_operation2(int bias)
  * 1) m_useMode == USE_NONE: The application (function main) has to call completionHandler "manually".
  * 2) m_useMode == USE_EVENTQUEUE: async_op2 places the completionHandler in an eventQueue.
  *    The application (function main) will run the event loop to call the completionHandler(s) in the eventQueue.
- * 3) m_useMode == USE_THREAD: async_op2 starts a detached thread that will
- *    call the eventHandler after a delay of 1000 ms.
- * 4) m_useMode == USE_IMMEDIATE_COMPLETION: async_op2 calls the completionHandler immediately.
+ * 3) m_useMode == USE_THREAD: async_op1 starts a detached thread that will
+ *    call the completionHandler after a delay of 1000 ms.
+ * 4) m_useMode == USE_THREAD_QUEUE: async_op1 starts a detached thread that will
+ *    place the completionHandler in a queue after the delay of 1000 ms.
+ *    The main thread will run the completionHandler in its own context.
+ * 5) m_useMode == USE_IMMEDIATE_COMPLETION: async_op1 calls the completionHandler immediately.
  */
 void Class02::async_op2(int idx, int bias, std::function<void(int)>&& completionHandler)
 {
     switch (m_useMode)
     {
-    case USE_NONE:
+    case UseMode::USE_NONE:
         // Nothing to be done: eventHandler[idx] should be called "manually" by the application
         eventHandler[idx] = completionHandler;
         break;
-    case USE_EVENTQUEUE:
+    case UseMode::USE_EVENTQUEUE:
         if (m_eventQueue)
             m_eventQueue->push(std::move(completionHandler));
         break;
-    case USE_THREAD:
+    case UseMode::USE_THREAD:
     {
         std::thread thread1([this, idx, bias, completionHandler]() {
             print(PRI1, "Class02::async_op2(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-            print(PRI1, "Class02::async_op2(): thread1: this->eventHandler[%d](10);\n", idx);
+
+            print(PRI1, "Class02::async_op2(): thread1: completionHandler(10);\n");
             completionHandler(10);
             print(PRI1, "Class02::async_op2(): thread1: return;\n");
             });
         thread1.detach();
         break;
     }
-    case USE_THREAD_QUEUE:
+    case UseMode::USE_THREAD_QUEUE:
     {
         m_queueSize++;
 
         std::thread thread1([this, completionHandler]() {
-            print(PRI1, "Class02::async_op2(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+            print(PRI1, "Class02::async_op2(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-            print(PRI1, "Class02::async_op2(): this->completionHandler(10);\n");
+
             std::function<void(int)> completionHandler1 = completionHandler;
+            print(PRI1, "Class02::async_op2(): thread1: m_eventQueueThr->push(std::move(completionHandler1));\n");
             m_eventQueueThr->push(std::move(completionHandler1));
-            print(PRI1, "Class02::async_op2(): return;\n");
+            print(PRI1, "Class02::async_op2(): thread1: return;\n");
             });
         thread1.detach();
         break;
     }
-    case USE_IMMEDIATE_COMPLETION:
+    case UseMode::USE_IMMEDIATE_COMPLETION:
         completionHandler(10);
         break;
     }

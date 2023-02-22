@@ -12,10 +12,9 @@ using namespace corolib;
 
 #include "class01.h"
 
-//EventQueue<std::function<void(int)>> eventQueue;
 EventQueueFunctionVoidInt eventQueue;
-Class01 object01(USE_EVENTQUEUE, &eventQueue);
-Class01 object02(USE_IMMEDIATE_COMPLETION);
+Class01 object01(UseMode::USE_EVENTQUEUE, &eventQueue);
+Class01 object02(UseMode::USE_IMMEDIATE_COMPLETION);
 
 // Uses coroutine1 implemented in p1420.cpp
 async_task<int> coroutine1();

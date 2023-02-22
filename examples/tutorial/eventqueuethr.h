@@ -65,7 +65,9 @@ private:
 #include <functional>
 
 using EventQueueThrFunctionVoidInt = typename EventQueueThr<std::function<void(int)>>;
+using EventQueueThrFunctionVoidVoid = typename EventQueueThr<std::function<void(void)>>;
 
 void runEventQueue(EventQueueThrFunctionVoidInt& queue, int size);
+void runEventQueue(EventQueueThrFunctionVoidVoid& queue, int size);
 
 #endif

@@ -14,7 +14,7 @@ using namespace corolib;
 #include "class01.h"
 
 EventQueueThrFunctionVoidInt eventQueueThr;
-Class01 object01(USE_THREAD_QUEUE, nullptr, &eventQueueThr);
+Class01 object01(UseMode::USE_THREAD_QUEUE, nullptr, &eventQueueThr);
 
 // Uses coroutine1 implemented in p1410.cpp
 async_task<int> coroutine1();

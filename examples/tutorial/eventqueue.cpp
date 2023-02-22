@@ -32,3 +32,18 @@ void runEventQueue(EventQueueFunctionVoidInt& queue)
         op(10);
     }
 }
+
+void runEventQueue(EventQueueFunctionVoidVoid& queue)
+{
+    while (!queue.empty())
+    {
+        print(PRI1, "runEventQueue(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+        print(PRI1, "runEventQueue(): std::function<void(int)> op = queue.pull();\n");
+        std::function<void(void)> op = queue.pull();
+        print(PRI1, "runEventQueue(): op();\n");
+        op();
+    }
+}
+

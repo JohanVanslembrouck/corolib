@@ -16,7 +16,7 @@
 
 using namespace corolib;
 
-enum UseMode
+enum class UseMode
 {
     USE_NONE,
     USE_EVENTQUEUE,
@@ -25,6 +25,7 @@ enum UseMode
     USE_IMMEDIATE_COMPLETION
 };
 
+extern UseMode useMode;
 extern async_operation<std::optional<int>> op1;
 void start_operation_impl(async_operation<std::optional<int>>& op);
 

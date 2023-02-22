@@ -19,7 +19,7 @@
 
 using namespace corolib;
 
-enum UseMode
+enum class UseMode
 {
     USE_NONE,
     USE_EVENTQUEUE,
@@ -31,7 +31,7 @@ enum UseMode
 class Class02 : public CommService
 {
 public:
-    Class02(UseMode useMode = USE_NONE,
+    Class02(UseMode useMode = UseMode::USE_NONE,
         EventQueueFunctionVoidInt* eventQueue = nullptr,
         EventQueueThrFunctionVoidInt* eventQueueThr = nullptr)
         : m_useMode(useMode)

@@ -18,7 +18,7 @@ int queueSize = 0;
 EventQueueFunctionVoidInt eventQueue;
 EventQueueThrFunctionVoidInt eventQueueThr;
 
-extern UseMode useMode;
+UseMode useMode;
 
 /**
  * @brief async_op
@@ -28,13 +28,13 @@ void async_op(std::function<void(int)>&& completionHandler)
 {
     switch (useMode)
     {
-    case USE_NONE:
+    case UseMode::USE_NONE:
         // Nothing to be done here: completionHandler should be called "manually" by the application
         break;
-    case USE_EVENTQUEUE:
+    case UseMode::USE_EVENTQUEUE:
         eventQueue.push(std::move(completionHandler));
         break;
-    case USE_THREAD:
+    case UseMode::USE_THREAD:
     {
         std::thread thread1([completionHandler]() {
             print(PRI1, "async_op: thread1: completionHandler(10);\n");
@@ -44,19 +44,20 @@ void async_op(std::function<void(int)>&& completionHandler)
         thread1.detach();
         break;
     }
-    case USE_THREAD_QUEUE:
+    case UseMode::USE_THREAD_QUEUE:
     {
         queueSize++;
 
         std::thread thread1([completionHandler]() {
             std::function<void(int)> completionHandler1 = completionHandler;
+            print(PRI1, "async_op: thread1: eventQueueThr.push(std::move(completionHandler1));\n");
             eventQueueThr.push(std::move(completionHandler1));
             print(PRI1, "async_op: thread1: return;\n");
             });
         thread1.detach();
         break;
     }
-    case USE_IMMEDIATE_COMPLETION:
+    case UseMode::USE_IMMEDIATE_COMPLETION:
         completionHandler(10);
         break;
     }

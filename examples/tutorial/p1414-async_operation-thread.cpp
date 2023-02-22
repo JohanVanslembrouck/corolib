@@ -13,7 +13,7 @@ using namespace corolib;
 
 #include "class01.h"
 
-Class01 object01(USE_THREAD);
+Class01 object01(UseMode::USE_THREAD);
 
 // Uses coroutine1 implemented in p1410.cpp
 async_task<int> coroutine1();

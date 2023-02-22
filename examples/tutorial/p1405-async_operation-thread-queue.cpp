@@ -9,26 +9,22 @@
 #include "p1400.h"
 #include "eventqueuethr.h"
 
-extern EventQueueThrFunctionVoidInt eventQueueThr;
+extern EventQueueThrFunctionVoidInt eventQueueThr;      // p1400.cpp
 
 using namespace corolib;
-
-UseMode useMode = USE_THREAD_QUEUE;
 
 void completionflow()
 {
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-    for (int i = 0; i < queueSize; i++)
-    {
-        std::function<void(int)> fun = eventQueueThr.pop();
-        fun(10);
-    }
+    runEventQueue(eventQueueThr, 2);
 }
 
 int main()
 {
+    useMode = UseMode::USE_THREAD_QUEUE;
+
     set_print_level(0x01);        // Use 0x03 to follow the flow in corolib
 
     print(PRI1, "main(): async_task<int> a = coroutine1();\n");
