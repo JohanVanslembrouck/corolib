@@ -174,6 +174,11 @@ The following describes implementation of the examples per group.
   There is no p1470-async_operation.cpp, because the manual resumption from main is difficult 
   in this example and will be different for other timeouts used in coroutine5c.
 
+* p148X.cpp is based upon https://github.com/pdeitel/CPlusPlus20ForProgrammers/blob/master/examples/ch18/fig18_03.cpp
+  p148X.cpp uses corolib instead of concurrencpp: https://github.com/David-Haim/concurrencpp
+  No changes had to be made to corolib to "translate" the example. corolib does not support executors;
+  "ordinary" threads are used instead.
+
 * p150X.cpp contains a coroutine that, when it is resumed, has to complete a coroutine that it has under its control.
 
 * p160X.cpp demonstrates "split-and-combine". See p1600.cpp for further explanation.

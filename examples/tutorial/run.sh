@@ -131,9 +131,16 @@ echo Running ./p1472-async_operation-eventqueue
 ./p1472-async_operation-eventqueue
 echo Running ./p1474-async_operation-thread
 ./p1474-async_operation-thread
-echo Running ./p1475-async_operation-thread-queue
-./p1475-async_operation-thread-queue
+# echo Running ./p1475-async_operation-thread-queue
+# ./p1475-async_operation-thread-queue
+# echo Running ./p1476-async_operation-immediate
 # ./p1476-async_operation-immediate
+echo Running ./p1482-async_operation-eventqueue
+./p1482-async_operation-eventqueue
+echo Running ./p1484-async_operation-thread
+./p1484-async_operation-thread
+echo Running ./p1485-async_operation-thread-queue
+./p1485-async_operation-thread-queue
 echo Running ./p1500-async_operation
 ./p1500-async_operation
 echo Running ./p1600-async_operation
