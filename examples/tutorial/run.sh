@@ -147,8 +147,6 @@ echo Running ./p1600-async_operation
 ./p1600-async_operation
 echo Running ./p1700-async_operation
 ./p1700-async_operation
-echo Running ./p1702-async_operation
-./p1702-async_operation
 echo Running ./p1800-async_operation
 ./p1800-async_operation
 echo Running ./p1802-async_operation-eventqueue

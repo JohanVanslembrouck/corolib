@@ -157,3 +157,11 @@ async_ltask<int> coroutine1()
     print(PRI1, "coroutine1(): co_return v+1 = %d;\n", v + 1);
     co_return v + 1;
 }
+
+async_ltask<void> coroutine0()
+{
+    print(PRI1, "coroutine0(): async_ltask<int> a1 = coroutine1();\n");
+    async_ltask<int> a1 = coroutine1();
+    print(PRI1, "coroutine0(): co_await a1;\n");
+    co_await a1;
+}

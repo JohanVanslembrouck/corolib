@@ -26,5 +26,6 @@ enum class UseMode
 extern UseMode useMode;
 void start_operation_impl(UseMode useMode, async_operation<int>& op);
 async_ltask<int> coroutine1();
+async_ltask<void> coroutine0();
 
 #endif

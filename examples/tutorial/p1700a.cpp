@@ -108,6 +108,7 @@ extern async_ltask<int> a4;
 extern async_ltask<int> a3;
 extern async_ltask<int> a2;
 extern async_ltask<int> a1;
+extern async_ltask<void> a0;
 
 async_ltask<int> coroutine5()
 {
@@ -162,8 +163,15 @@ async_ltask<int> coroutine1()
     co_return v + 1;
 }
 
+async_ltask<void> coroutine0()
+{
+    print(PRI1, "coroutine0(): co_await a1;\n");
+    co_await a1;
+}
+
 async_ltask<int> a5 = coroutine5();
 async_ltask<int> a4 = coroutine4();
 async_ltask<int> a3 = coroutine3();
 async_ltask<int> a2 = coroutine2();
 async_ltask<int> a1 = coroutine1();
+//async_ltask<void> a0 = coroutine0();
