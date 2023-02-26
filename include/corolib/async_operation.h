@@ -99,6 +99,14 @@ namespace corolib
             m_autoreset = autoreset;
         }
 
+        /**
+         * @brief start is a dummy function for asynchronous operations, but it required because
+         * of its call in when_all and when_any.
+         */
+        void start()
+        {
+        }
+
     protected:
         void cleanup();
 

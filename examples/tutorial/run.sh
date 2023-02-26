@@ -73,6 +73,8 @@ echo Running ./p1429-async_operation-thread-imm
 ./p1429-async_operation-thread-imm
 echo Running ./p1430-async_operation
 ./p1430-async_operation
+echo Running ./p1430a-async_operation
+./p1430a-async_operation
 echo Running ./p1432-async_operation-eventqueue
 ./p1432-async_operation-eventqueue
 echo Running ./p1434-async_operation-thread
@@ -147,6 +149,12 @@ echo Running ./p1600-async_operation
 ./p1600-async_operation
 echo Running ./p1700-async_operation
 ./p1700-async_operation
+echo Running ./p1700a-async_operation
+./p1700a-async_operation
+echo Running ./p1730-async_operation
+./p1730-async_operation
+echo Running ./p1730a-async_operation
+./p1730a-async_operation
 echo Running ./p1800-async_operation
 ./p1800-async_operation
 echo Running ./p1802-async_operation-eventqueue
@@ -187,8 +195,8 @@ echo Running ./p1844-async_operation-thread
 ./p1844-async_operation-thread
 echo Running ./p1845-async_operation-thread-queue
 ./p1845-async_operation-thread-queue
-echo Running ./p1900-resume_in_middle
-./p1900-resume_in_middle
+# echo Running ./p1900-resume_in_middle
+# ./p1900-resume_in_middle
 echo Running ./p2000-async_operation
 ./p2000-async_operation
 echo Running ./p2002-async_operation-eventqueue

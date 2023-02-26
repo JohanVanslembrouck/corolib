@@ -6,6 +6,11 @@
  * coroutine3 calls coroutine4 twice.
  * coroutine5 starts an asynchronous operation and awaits its completion.
  *
+ * p1700a.cpp is a variant of p1700.cpp that shows that lazy start coroutines can all
+ * be started and assigned to async_ltask<int> objects.
+ * Afterwards, these objects are co_awaited in the coroutines.
+ * For new runs (iterations), the async_ltask<int> objects have to be re-initialized.
+ * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
@@ -108,7 +113,6 @@ extern async_ltask<int> a4;
 extern async_ltask<int> a3;
 extern async_ltask<int> a2;
 extern async_ltask<int> a1;
-extern async_ltask<void> a0;
 
 async_ltask<int> coroutine5()
 {
@@ -174,4 +178,16 @@ async_ltask<int> a4 = coroutine4();
 async_ltask<int> a3 = coroutine3();
 async_ltask<int> a2 = coroutine2();
 async_ltask<int> a1 = coroutine1();
-//async_ltask<void> a0 = coroutine0();
+
+/**
+ * @brief reinit reinitializes the async_ltask<int> objects for a new run.
+ * 
+ */
+void reinit()
+{
+    a5 = coroutine5();
+    a4 = coroutine4();
+    a3 = coroutine3();
+    a2 = coroutine2();
+    a1 = coroutine1();
+}

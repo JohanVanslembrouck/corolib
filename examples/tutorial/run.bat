@@ -35,6 +35,7 @@ p1426-async_operation-immediate.exe
 p1428-async_operation-evtq-imm.exe
 p1429-async_operation-thread-imm.exe
 p1430-async_operation.exe
+p1430a-async_operation.exe
 p1432-async_operation-eventqueue.exe
 p1434-async_operation-thread.exe
 p1435-async_operation-thread-queue.exe
@@ -72,6 +73,9 @@ p1485-async_operation-thread-queue.exe
 p1500-async_operation.exe
 p1600-async_operation.exe
 p1700-async_operation.exe
+p1700a-async_operation.exe
+p1730-async_operation.exe
+p1730a-async_operation.exe
 p1800-async_operation.exe
 p1802-async_operation-eventqueue.exe
 p1804-async_operation-thread.exe
@@ -90,7 +94,7 @@ p1840-async_operation.exe
 p1842-async_operation-eventqueue.exe
 p1844-async_operation-thread.exe
 p1845-async_operation-thread-queue.exe
-p1900-resume_in_middle.exe
+REM p1900-resume_in_middle.exe
 p2000-async_operation.exe
 p2002-async_operation-eventqueue.exe
 p2004-async_operation-thread.exe

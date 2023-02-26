@@ -165,3 +165,13 @@ async_ltask<void> coroutine0()
     print(PRI1, "coroutine0(): co_await a1;\n");
     co_await a1;
 }
+
+/**
+ * @brief reinit has a void implementation for eager start coroutines.
+ * It has been added to p1700.cpp because the main() function is the same
+ * for eager start and lazy start coroutines and calls reinit().
+ * 
+ */
+void reinit()
+{
+}

@@ -95,33 +95,52 @@ namespace corolib
             return *this;
         }
 
+        /**
+         * @brief
+         *
+         */
+        void start_all()
+        {
+            print(PRI1, "%p: when_all:start_all()\n", this);
+            for (std::size_t i = 0; i < m_elements.size(); i++)
+            {
+                m_elements[i]->start();
+            }
+        }
+
         auto operator co_await() noexcept
         {
             class awaiter
             {
             public:
-                awaiter(when_all& sync_) : m_sync(sync_) {}
+                awaiter(when_all& when_all_) 
+                    : m_when_all(when_all_)
+                {
+                    print(PRI2, "%p: when_all::awaiter::awaiter()\n", this);
+                }
 
                 bool await_ready()
                 {
-                    print(PRI2, "%p: when_all::await_ready(): m_sync.m_counter.get_counter() = %d;\n", this, m_sync.m_counter.get_counter());
-                    bool ready = (m_sync.m_counter.get_counter() == 0);
-                    print(PRI2, "%p: when_all::await_ready(): return %d;\n", this, ready);
+                    print(PRI2, "%p: when_all::awaiter::await_ready(): m_when_all.m_counter.get_counter() = %d;\n", 
+                            this, m_when_all.m_counter.get_counter());
+                    bool ready = (m_when_all.m_counter.get_counter() == 0);
+                    print(PRI2, "%p: when_all::awaiter::await_ready(): return %d;\n", this, ready);
                     return ready;
                 }
 
                 void await_suspend(std::coroutine_handle<> awaiting)
                 {
-                    print(PRI2, "%p: when_all::await_suspend(...)\n", this);
-                    m_sync.m_counter.set_awaiting(awaiting);
+                    print(PRI2, "%p: when_all::awaiter::await_suspend(...)\n", this);
+                    m_when_all.start_all();    // Will have no effect in case of an eager start
+                    m_when_all.m_counter.set_awaiting(awaiting);
                 }
 
                 void await_resume()
                 {
-                    print(PRI2, "%p: when_all::await_resume()\n", this);
+                    print(PRI2, "%p: when_all::awaiter::await_resume()\n", this);
                 }
             private:
-                when_all& m_sync;
+                when_all& m_when_all;
             };
 
             return awaiter{ *this };

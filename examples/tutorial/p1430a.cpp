@@ -1,10 +1,11 @@
 /**
- * @file p1430.cpp
+ * @file p1430a.cpp
  * @brief
  * Example with 6 coroutines.
  * coroutineI (I = 1..4) co_awaits coroutineI+1.
  * coroutine3 calls coroutine4 twice.
  * coroutine4 calls coroutine5a and coroutine5b and awaits the completion of both coroutines.
+ * p1430a.cpp uses wait_any instead of wait_all (in p1430.cpp).
  * coroutine5a starts an asynchronous operation on object01 and awaits its completion.
  * coroutine5b starts an asynchronous operation on object02 and awaits its completion.
  *
@@ -14,7 +15,7 @@
 #include <corolib/print.h>
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
-#include <corolib/when_all.h>
+#include <corolib/when_any.h>
 
 using namespace corolib;
 
@@ -50,10 +51,15 @@ async_task<int> coroutine4()
     print(PRI1, "coroutine4(): async_task<int> b = coroutine5b();\n");
     async_task<int> b = coroutine5b();
 
-    print(PRI1, "coroutine4(): when_all<async_task<int>> wa({ &a, &b });\n");
-    when_all<async_task<int>> wa({ &a, &b });
-    print(PRI1, "coroutine4(): co_await wa;\n");
-    co_await wa;
+    print(PRI1, "coroutine4(): when_any<async_task<int>> wa({ &a, &b });\n");
+    when_any<async_task<int>> wa({ &a, &b });
+	int idx = -1;
+    for (int i = 0; i < 2; i++) 
+    {
+        print(PRI1, "coroutine4: idx : co_await wa;\n");
+        idx = co_await wa;
+        print(PRI1, "coroutine4: idx = %d\n", idx);
+    }
     print(PRI1, "coroutine4(): int v = a.get_result() + b.get_result();\n");
     int v = a.get_result() + b.get_result();
     print(PRI1, "coroutine4(): co_return v+1 = %d;\n", v + 1);

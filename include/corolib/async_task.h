@@ -66,10 +66,10 @@ namespace corolib
         }
 
         /**
-         * @brief Starts a lazy coroutine
+         * @brief Starts a lazy coroutine.
          * Should be a member function of async_ltask, but g++ does not find m_coro.
          */
-        void start()
+        void baseStart()
         {
             m_coro.resume();
         }
@@ -85,16 +85,26 @@ namespace corolib
          * If this is not possible (because you cannot use co_await in a normal function),
          * make sure there is another thread that will
          * resume the coroutine and make it return.
+         * @brief waitIfNotReady instructs get_result to wait by default
+         * if the promise is not ready.
          * @return
          */
-        TYPE get_result()
+        TYPE get_result(bool waitIfNotReady = true)
         {
             print(PRI2, "%p: async_task_base::get_result()\n", this);
             if (!m_coro.promise().m_ready)
             {
-                print(PRI2, "%p: async_task_base::get_result(): waiting for signal\n", this);
-                m_coro.promise().m_wait_for_signal = true;
-                m_coro.promise().m_sema.wait();
+                if (waitIfNotReady)
+                {
+                    print(PRI2, "%p: async_task_base::get_result(): waiting for signal\n", this);
+                    m_coro.promise().m_wait_for_signal = true;
+                    m_coro.promise().m_sema.wait();
+                }
+                else
+                {
+                    print(PRI1, "%p: async_task_base::get_result(): returning NULL value!\n", this);
+                    return {};
+                }
             }
             print(PRI2, "%p: async_task_base::get_result(): return m_coro.promise().m_value;\n", this);
             return m_coro.promise().m_value;
@@ -219,6 +229,14 @@ namespace corolib
             print(PRI2, "%p: async_task::async_task(handle_type h)\n", this);
         }
 
+        /**
+         * @brief start is a dummy function for eager start coroutines, but it required because
+         * of its call in when_all and when_any.
+         */
+        void start()
+        {
+        }
+
         auto operator co_await() noexcept
         {
             class awaiter
@@ -284,6 +302,15 @@ namespace corolib
             : async_task_base<TYPE>(h)
         {
             print(PRI2, "%p: async_ltask::async_task(handle_type h)\n", this);
+        }
+
+        /**
+         * @brief start starts a lazy coroutine.
+         * 
+         */
+        void start()
+        {
+            this->baseStart();
         }
 
         auto operator co_await() noexcept
@@ -381,10 +408,10 @@ namespace corolib
         }
 
         /**
-         * @brief Starts a lazy coroutine
+         * @brief baseStart() starts a lazy coroutine.
          * Should be a member function of async_ltask, but g++ does not find m_coro.
          */
-        void start()
+        void baseStart()
         {
             m_coro.resume();
         }
@@ -393,14 +420,23 @@ namespace corolib
          * @brief wait is the counterpart of get_result for an asynchronous task
          * that returns void instead of any other type.
          * See get_result for more information on its use.
+         * @brief waitIfNotReady instructs get_result to wait by default
+         * if the promise is not ready.
          */
-        void wait()
+        void wait(bool waitIfNotReady = true)
         {
             print(PRI2, "%p: async_task::wait()\n", this);
             if (!m_coro.promise().m_ready)
             {
-                m_coro.promise().m_wait_for_signal = true;
-                m_coro.promise().m_sema.wait();
+                if (waitIfNotReady)
+                {
+                    m_coro.promise().m_wait_for_signal = true;
+                    m_coro.promise().m_sema.wait();
+                }
+                else
+                {
+                    print(PRI1, "%p: async_task_void::wait(): returning without ready\n", this);
+                }
             }
         }
 
@@ -512,6 +548,14 @@ namespace corolib
             print(PRI2, "%p: async_task::async_task(handle_type h)\n", this);
         }
 
+        /**
+         * @brief start is a dummy function for eager start coroutines, but it required because
+         * of its call in when_all and when_any.
+         */
+        void start()
+        {
+        }
+
         auto operator co_await() noexcept
         {
             class awaiter
@@ -576,6 +620,14 @@ namespace corolib
             print(PRI2, "%p: async_ltask::async_ltask(handle_type h)\n", this);
         }
 		
+        /**
+         * @brief start starts a lazy coroutine.
+         */
+        void start()
+        {
+            this->baseStart();
+        }
+
         auto operator co_await() noexcept
         {
             class awaiter
