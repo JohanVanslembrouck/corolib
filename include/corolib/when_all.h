@@ -101,7 +101,7 @@ namespace corolib
          */
         void start_all()
         {
-            print(PRI1, "%p: when_all:start_all()\n", this);
+            print(PRI2, "%p: when_all:start_all()\n", this);
             for (std::size_t i = 0; i < m_elements.size(); i++)
             {
                 m_elements[i]->start();
