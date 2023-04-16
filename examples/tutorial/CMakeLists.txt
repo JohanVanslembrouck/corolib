@@ -1,14 +1,4 @@
-cmake_minimum_required(VERSION 3.17)
-
 project (tutorial)
-
-if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-	set(CMAKE_CXX_FLAGS "/await:strict /EHsc /std:c++20 /D _WIN32_WINNT=0x0601")
-elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    set(CMAKE_CXX_FLAGS "-Wall -std=c++20 -fcoroutines")
-else()
-	message("Unsupported compiler")
-endif()
 
 include_directories(../../include)
 
