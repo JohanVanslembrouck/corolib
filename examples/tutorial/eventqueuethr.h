@@ -15,7 +15,7 @@
 constexpr int ARRAYSIZE = 16;   // Use 2^N
 
 template <typename TYPE>
-class EventQueueThr
+class QueueThr
 {
 public:
     void push(TYPE value) 
@@ -57,15 +57,15 @@ private:
     std::mutex m_mutex;
     std::array<TYPE, ARRAYSIZE> m_buffer;
    
-    int m_occupiedCells{0};
+    size_t m_occupiedCells{0};
     int m_writeIndex{0};
     int m_readIndex{0};
 };
 
 #include <functional>
 
-using EventQueueThrFunctionVoidInt = typename EventQueueThr<std::function<void(int)>>;
-using EventQueueThrFunctionVoidVoid = typename EventQueueThr<std::function<void(void)>>;
+using EventQueueThrFunctionVoidInt = QueueThr<std::function<void(int)>>;
+using EventQueueThrFunctionVoidVoid = QueueThr<std::function<void(void)>>;
 
 void runEventQueue(EventQueueThrFunctionVoidInt& queue, int size);
 void runEventQueue(EventQueueThrFunctionVoidVoid& queue, int size);

@@ -29,7 +29,7 @@
 #include <queue>
 
 template <typename TYPE>
-class EventQueue
+class Queue
 {
 public:
     void push(TYPE&& op)
@@ -55,8 +55,8 @@ protected:
 
 #include <functional>
 
-using EventQueueFunctionVoidInt = typename EventQueue<std::function<void(int)>>;
-using EventQueueFunctionVoidVoid = typename EventQueue<std::function<void(void)>>;
+using EventQueueFunctionVoidInt = Queue<std::function<void(int)>>;
+using EventQueueFunctionVoidVoid = Queue<std::function<void(void)>>;
 
 void runEventQueue(EventQueueFunctionVoidInt& queue);
 void runEventQueue(EventQueueFunctionVoidVoid& queue);
