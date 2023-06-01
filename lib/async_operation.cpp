@@ -221,8 +221,8 @@ namespace corolib
         }
         else
         {
-            print(PRI1, "%p: async_operation_base::completed(): m_index = %d, m_awaiting not (yet) initialized!\n", this, m_index);
-            print(PRI1, "%p: async_operation_base::completed(): m_index = %d, operation completed before co_waited!\n", this, m_index);
+            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, m_awaiting not (yet) initialized!\n", this, m_index);
+            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, operation completed before co_waited!\n", this, m_index);
             m_ready = true;     // Set to completed.
         }
     }

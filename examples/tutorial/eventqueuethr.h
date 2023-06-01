@@ -12,9 +12,7 @@
 #include <condition_variable> 
 #include <mutex>
 
-constexpr int ARRAYSIZE = 16;   // Use 2^N
-
-template <typename TYPE>
+template <typename TYPE, int ARRAYSIZE>
 class QueueThr
 {
 public:
@@ -64,8 +62,10 @@ private:
 
 #include <functional>
 
-using EventQueueThrFunctionVoidInt = QueueThr<std::function<void(int)>>;
-using EventQueueThrFunctionVoidVoid = QueueThr<std::function<void(void)>>;
+constexpr int ARRAYSIZE = 16;   // Use 2^N
+
+using EventQueueThrFunctionVoidInt = QueueThr<std::function<void(int)>, ARRAYSIZE>;
+using EventQueueThrFunctionVoidVoid = QueueThr<std::function<void(void)>, ARRAYSIZE>;
 
 void runEventQueue(EventQueueThrFunctionVoidInt& queue, int size);
 void runEventQueue(EventQueueThrFunctionVoidVoid& queue, int size);
