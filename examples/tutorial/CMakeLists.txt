@@ -228,6 +228,8 @@ target_link_libraries(p1900-resume_in_middle corolib)
 
 add_executable(p1910-async_queue p1910-async_queue.cpp)
 target_link_libraries(p1910-async_queue corolib)
+add_executable(p1912-async_queue-fibonacci p1912-async_queue-fibonacci.cpp)
+target_link_libraries(p1912-async_queue-fibonacci corolib)
 
 add_executable(p2000-async_operation p2000-async_operation.cpp p2000.cpp)
 target_link_libraries(p2000-async_operation corolib)

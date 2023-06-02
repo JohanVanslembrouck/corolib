@@ -19,7 +19,7 @@ using boost::asio::steady_timer;
 
 using namespace corolib;
 
-const int QUEUESIZE = 16;
+const int QUEUESIZE = 32;
 
 const int NR_OPERATIONS = 100;
 const int MULTIPLIER = 5;
@@ -42,7 +42,7 @@ protected:
     async_task<void> consumer(int timeout);
 
 private:
-    async_queue<int, 32> m_queue;
+    async_queue<int, QUEUESIZE> m_queue;
     boost::asio::io_context& m_ioContext;
 };
 

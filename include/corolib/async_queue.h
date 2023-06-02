@@ -97,7 +97,7 @@ namespace corolib
          */
         void complete_push(int idx)
         {
-            print(PRI1, "async_queue<...>::complete_push(idx = %d): m_value_to_be_pushed = %d\n", idx, m_value_to_be_pushed);
+            print(PRI2, "async_queue<...>::complete_push(idx = %d): m_value_to_be_pushed = %d\n", idx, m_value_to_be_pushed);
 
             async_operation_base* om_async_operation = m_async_operations[idx];
             async_operation<void>* om_async_operation_t =
@@ -127,7 +127,7 @@ namespace corolib
         */
         void complete_pop(int idx)
         {
-            print(PRI1, "async_queue<...>::complete_pop(%d)\n", idx);
+            print(PRI2, "async_queue<...>::complete_pop(%d)\n", idx);
 
             TYPE readValue;
 

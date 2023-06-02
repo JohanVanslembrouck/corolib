@@ -199,6 +199,8 @@ echo Running ./p1845-async_operation-thread-queue
 # ./p1900-resume_in_middle
 echo Running ./p1910-async_queue
 ./p1910-async_queue
+echo Running ./p1912-async_queue-fibonacci
+./p1912-async_queue-fibonacci
 echo Running ./p2000-async_operation
 ./p2000-async_operation
 echo Running ./p2002-async_operation-eventqueue
