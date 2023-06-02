@@ -52,7 +52,7 @@ async_task<void> consumer()
     print(PRI1, "consumer(): entered\n");
     for (int i = 0; i < NR_OPERATIONS; i++)
     {
-	    val = co_await q.pop();
+        val = co_await q.pop();
         if (val != (prev_val + MULTIPLIER))
         {
             print(PRI1, "consumer(): prev_val = %d, val = %d\n", prev_val, val);

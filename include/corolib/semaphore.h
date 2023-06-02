@@ -17,7 +17,7 @@ namespace corolib
     class Semaphore
     {
     public:
-        Semaphore() : m_count() { }
+        Semaphore(unsigned int count = 0) : m_count(count) { }
 
         void reset()
         {

@@ -9,12 +9,13 @@
 #include <chrono>
 
 #include <corolib/when_all.h>
+#include <corolib/print.h>
 
 Timer05::Timer05(
     boost::asio::io_context& ioContext)
     : m_ioContext(ioContext)
 {
-    print(PRI1, "Timer01::Timer01(...)\n");
+    print(PRI1, "Timer05::Timer05(...)\n");
 }
 
 void Timer05::start()
@@ -75,17 +76,13 @@ async_task<void> Timer05::producer(int timeout)
 {
     steady_timer timer1(m_ioContext);
 
-    async_operation<void> op_timer1 = start_timer(timer1, 0);
-    op_timer1.auto_reset(true);
-    co_await op_timer1;
-
     print(PRI1, "producer(): entered\n");
     for (int i = 0; i < NR_OPERATIONS; i++)
     {
         print(PRI1, "producer(): pushing value %d\n", MULTIPLIER * i);
         co_await m_queue.push(MULTIPLIER * i);
 
-        op_timer1 = start_timer(timer1, timeout);
+        async_operation<void> op_timer1 = start_timer(timer1, timeout);
         co_await op_timer1;
     }
     print(PRI1, "producer(): co_return;\n");
@@ -102,10 +99,6 @@ async_task<void> Timer05::consumer(int timeout)
 {
     steady_timer timer1(m_ioContext);
 
-    async_operation<void> op_timer1 = start_timer(timer1, 0);
-    op_timer1.auto_reset(true);
-    co_await op_timer1;
-
     int val = -1;
     int prev_val = -MULTIPLIER;
     int nrErrors = 0;
@@ -121,7 +114,7 @@ async_task<void> Timer05::consumer(int timeout)
         }
         prev_val = val;
 
-        op_timer1 = start_timer(timer1, timeout);
+        async_operation<void> op_timer1 = start_timer(timer1, timeout);
         co_await op_timer1;
 
         print(PRI1, "consumer(): popped value  %d\n", val);
