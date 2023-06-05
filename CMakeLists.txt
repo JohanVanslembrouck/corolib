@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.14)
 
-set(Boost_INCLUDE_DIR C:/local/boost/boost_1_79_0)
-set(Boost_LIBRARY_DIR C:/local/boost/boost_1_79_0/stage/lib)
-
 project (corolib)
+
+set(Boost_INCLUDE_DIR C:/local/boost/boost_1_82_0)
+set(Boost_LIBRARY_DIR C:/local/boost/boost_1_82_0/stage/lib)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -29,6 +29,8 @@ add_subdirectory(examples/tutorial/test)
 
 add_subdirectory(examples/why-coroutines)
 add_subdirectory(examples/corolab)
+
+add_subdirectory(examples/grpc/cpp/helloworld)
 
 if (NOT googletest)
 	include(FetchContent)
