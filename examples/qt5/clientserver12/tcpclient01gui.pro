@@ -29,36 +29,36 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     tcpclient01.cpp \
-    ../common-qt/crc.cpp \
-    ../common-qt/protocolmessage.cpp \
-    ../common-qt/tcpclient.cpp \
-    ../../lib/print.cpp \
-    ../../lib/async_operation.cpp \
-    ../../lib/commservice.cpp \
+    ../common/crc.cpp \
+    ../common/protocolmessage.cpp \
+    ../common/tcpclient.cpp \
+    ../../../lib/print.cpp \
+    ../../../lib/async_operation.cpp \
+    ../../../lib/commservice.cpp \
 
 HEADERS += \
-    ../../include/corolib/async_operation.h \
-    ../../include/corolib/async_task.h \
-    ../../include/corolib/commservice.h \
-    ../../include/corolib/print.h \
-    ../../include/corolib/when_all_counter.h \
-    ../../include/corolib/when_all.h \
+    ../../../include/corolib/async_operation.h \
+    ../../../include/corolib/async_task.h \
+    ../../../include/corolib/commservice.h \
+    ../../../include/corolib/print.h \
+    ../../../include/corolib/when_all_counter.h \
+    ../../../include/corolib/when_all.h \
     ../clientserver11/tcpconfig.h \
     ../clientserver11/tcpconfigfile.h \
     mainwindow.h \
     tcpclient01.h \
-    ../common-qt/connectioninfo.h \
-    ../common-qt/crc.h \
-    ../common-qt/protocolmessage.h \
-    ../common-qt/tcpclient.h
+    ../common/connectioninfo.h \
+    ../common/crc.h \
+    ../common/protocolmessage.h \
+    ../common/tcpclient.h
 
 FORMS += \
     mainwindow.ui
 
 INCLUDEPATH += \
-    ../common-qt \
+    ../common \
     ../clientserver11 \
-    ../../include \
+    ../../../include \
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

@@ -13,9 +13,9 @@ SOURCES += \
         tcpconfigfile.cpp \
         tcpserver01.cpp \
         tcpservermain01.cpp \
-        ../common-qt/crc.cpp \
-        ../common-qt/protocolmessage.cpp \
-        ../common-qt/tcpserver.cpp
+        ../common/crc.cpp \
+        ../common/protocolmessage.cpp \
+        ../common/tcpserver.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -27,10 +27,10 @@ HEADERS += \
         tcpconfigfile.h \
         connectioninfo.h \
         tcpserver01.h \
-        ../common-qt/connectioninfo.h \
-        ../common-qt/crc.h \
-        ../common-qt/protocolmessage.h \
-        ../common-qt/tcpserver.h
+        ../common/connectioninfo.h \
+        ../common/crc.h \
+        ../common/protocolmessage.h \
+        ../common/tcpserver.h
 
 INCLUDEPATH += \
-    ../common-qt \
+    ../common \

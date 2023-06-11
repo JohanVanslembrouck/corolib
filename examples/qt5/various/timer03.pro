@@ -18,9 +18,9 @@ QMAKE_CXXFLAGS += -fcoroutines
 SOURCES += \
         timer03.cpp \
         timermain03.cpp \
-        ../../lib/print.cpp \
-        ../../lib/async_operation.cpp \
-        ../../lib/commservice.cpp \
+        ../../../lib/print.cpp \
+        ../../../lib/async_operation.cpp \
+        ../../../lib/commservice.cpp \
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -28,13 +28,13 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-        ../../include/corolib/async_operation.h \
-        ../../include/corolib/async_task.h \
-        ../../include/corolib/commservice.h \
-        ../../include/corolib/print.h \
-        ../../include/corolib/when_all.h \
+        ../../../include/corolib/async_operation.h \
+        ../../../include/corolib/async_task.h \
+        ../../../include/corolib/commservice.h \
+        ../../../include/corolib/print.h \
+        ../../../include/corolib/when_all.h \
         timer03.h \
 
 INCLUDEPATH += \
-    ../common-qt \
-    ../../include \
+    ../common \
+    ../../../include \

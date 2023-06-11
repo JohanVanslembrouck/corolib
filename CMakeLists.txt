@@ -18,16 +18,17 @@ endif()
 
 add_subdirectory(lib)
 
-add_subdirectory(examples/clientserver1)
-add_subdirectory(examples/clientserver2)
-add_subdirectory(examples/clientserver3)
-add_subdirectory(examples/clientserver4)
+add_subdirectory(examples/boost/clientserver1)
+add_subdirectory(examples/boost/clientserver2)
+add_subdirectory(examples/boost/clientserver3)
+add_subdirectory(examples/boost/clientserver4)
+add_subdirectory(examples/boost/various)
 
-add_subdirectory(examples/various-boost)
 add_subdirectory(examples/tutorial)
 add_subdirectory(examples/tutorial/test)
 
 add_subdirectory(examples/why-coroutines)
+
 add_subdirectory(examples/corolab)
 
 add_subdirectory(examples/grpc/cpp/helloworld)

@@ -20,13 +20,13 @@ SOURCES += \
         tcpconfigfile.cpp \
         tcpclient02.cpp \
         tcpclientmain02.cpp \
-        ../common-qt/crc.cpp \
-        ../common-qt/protocolmessage.cpp \
-        ../common-qt/tcpclientco.cpp \
-        ../common-qt/tcpclient.cpp \
-        ../../lib/print.cpp \
-        ../../lib/async_operation.cpp \
-        ../../lib/commservice.cpp \
+        ../common/crc.cpp \
+        ../common/protocolmessage.cpp \
+        ../common/tcpclientco.cpp \
+        ../common/tcpclient.cpp \
+        ../../../lib/print.cpp \
+        ../../../lib/async_operation.cpp \
+        ../../../lib/commservice.cpp \
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -34,21 +34,21 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-        ../../include/corolib/async_operation.h \
-        ../../include/corolib/async_task.h \
-        ../../include/corolib/commservice.h \
-        ../../include/corolib/print.h \
-        ../../include/corolib/when_all_counter.h \
-        ../../include/corolib/when_any.h \
+        ../../../include/corolib/async_operation.h \
+        ../../../include/corolib/async_task.h \
+        ../../../include/corolib/commservice.h \
+        ../../../include/corolib/print.h \
+        ../../../include/corolib/when_all_counter.h \
+        ../../../include/corolib/when_any.h \
         tcpconfig.h \
         tcpconfigfile.h \
         tcpclient02.h \
-        ../common-qt/connectioninfo.h \
-        ../common-qt/crc.h \
-        ../common-qt/protocolmessage.h \
-        ../common-qt/tcpclientco.h \
-        ../common-qt/tcpclient.h \
+        ../common/connectioninfo.h \
+        ../common/crc.h \
+        ../common/protocolmessage.h \
+        ../common/tcpclientco.h \
+        ../common/tcpclient.h \
 
 INCLUDEPATH += \
-    ../common-qt \
-    ../../include \
+    ../common \
+    ../../../include \
