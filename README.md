@@ -8,12 +8,74 @@ Copy or clone corolib.git to your computer.
 
 ### Prerequisites
 
-For its communication corolib uses the Boost ASIO library or Qt (QTcpSocket, QTcpServer).
-I originally used Boost 1.70 (now Boost 1.79) and Qt 5.14.2, but many other versions will do.
+For its communication, corolib uses the Boost ASIO library, Qt (QTcpSocket, QTcpServer), or gRPC.
+Other publicly available asynchronous communication frameworks may follow.
+
+I originally used Boost 1.70 (now Boost 1.82) and Qt 5.14.2, but many other versions will do.
+
+Without any of these libraries, there are still a large number of examples illustrating the use of corolib.
+None of them will involve communication, i.e. they are all stand-alone examples.
+
+#### Installation of Boost
+
+Starting point: https://www.boost.org/
+
+Download release 1.82 from https://boostorg.jfrog.io/artifactory/main/release/1.82.0/source/
+
+I copied boost_1_82_0.zip to C:\local\boost and unzipped it into this directory.
+
+In a Windows terminal (e.g. Command Prompt or PowerShell), go to C:\local\boost\boost_1_82_0
+
+Follow the instructions in https://www.boost.org/doc/libs/1_82_0/more/getting_started/windows.html#simplified-build-from-source
+
+Step 1: .\bootstrap.bat
+
+This will generate b2.exe
+
+Step 2: .\b2.exe
+
+b2.exe generates the libraries we will need. Its execution takes a while.
+
+The root directory for the include files is C:/local/boost/boost_1_82_0.
+
+The root directory for the libraries is C:/local/boost/boost_1_82_0/stage/lib.
+
+### Installation of Qt
+
+Starting points: https://www.qt.io/download, https://www.qt.io/download-open-source
+
+Download the Qt Online Installer for your operating system (macOS, Windows, Linux) 
+(e.g., for Windows: qt-unified-windows-x64-4.5.2-online.exe)
+
+Run the installer. I installed Qt in C:\Qt.
+
+### Installation of gRPC
+
+Starting points: https://github.com/grpc/grpc, https://github.com/grpc/grpc/tree/master/src/cpp
+
+Building gRPC using CMake with FetchContent, see https://github.com/grpc/grpc/tree/master/src/cpp#fetchcontent, did not work on my machine.
+
+Rather, I used the instructions under https://github.com/grpc/grpc/tree/master/src/cpp#install-using-vcpkg-package
+
+I cloned https://github.com/Microsoft/vcpkg.git into C:\local, giving C:\local\vcpkg  
+
+Note: this requires the installation of Git if this is not yet the case (e.g., on Windows: https://gitforwindows.org/)
+
+The execution of 
+
+	./vcpkg install grpc
+
+may take 0.5 hour, 1.5 hours or even more, depending on your computer.
+
+Finally, I added the following folders to my PATH:
+
+	C:\local\vcpkg\installed\x64-windows\tools\protobuf
+	C:\local\vcpkg\installed\x64-windows\tools\grpc
 
 ### Building on Windows 10
 
-I developed corolib with Visual Studio 2019 and Qt Creator 4.12.0 on a Windows 10 laptop.
+I originally developed corolib with Visual Studio 2019 and Qt Creator 4.12.0 on a Windows 10 laptop.
+Now I am using Visual Studio 2022 and Qt Creator 10.0.1 on a Windows 11 laptop.
 
 Building the Visual Studio projects makes use of the CMake support of Visual Studio:
 
@@ -23,8 +85,8 @@ and select the CMakeLists.txt in the top-level folder.
 
 In the CMakeLists.txt in the top-level folder, adapt the following variables to your own installation of the Boost library:
 
-	set(Boost_INCLUDE_DIR C:/local/boost/boost_1_79_0)
-	set(Boost_LIBRARY_DIR C:/local/boost/boost_1_79_0/stage/lib)
+	set(Boost_INCLUDE_DIR C:/local/boost/boost_1_82_0)
+	set(Boost_LIBRARY_DIR C:/local/boost/boost_1_82_0/stage/lib)
 
 The Qt examples are not built from the top-level CMakeLists.txt file,
 but have to be built from the .pro files in examples/clientserver11.
@@ -197,4 +259,6 @@ This explains the use of Boost ASIO and Qt: the code in these libraries is not "
 An updated version of the code samples can be found in examples/corolab.
 * Meeting C++ Online, 7 September 2022: Slides: https://meetingcpp.com/mcpp/slides/2022/Corolib-DistributedProgrammingWithC++Coroutines1807.pdf
 
-Contact: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+## Contact
+
+Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
