@@ -40,16 +40,16 @@ The root directory for the include files is C:/local/boost/boost_1_82_0.
 
 The root directory for the libraries is C:/local/boost/boost_1_82_0/stage/lib.
 
-### Installation of Qt
+#### Installation of Qt
 
 Starting points: https://www.qt.io/download, https://www.qt.io/download-open-source
 
 Download the Qt Online Installer for your operating system (macOS, Windows, Linux) 
-(e.g., for Windows: qt-unified-windows-x64-4.5.2-online.exe)
+(e.g., for Windows: qt-unified-windows-x64-4.5.2-online.exe).
 
 Run the installer. I installed Qt in C:\Qt.
 
-### Installation of gRPC
+#### Installation of gRPC
 
 Starting points: https://github.com/grpc/grpc, https://github.com/grpc/grpc/tree/master/src/cpp
 
