@@ -17,10 +17,11 @@
 
 #include <corolib/print.h>
 #include <corolib/async_task.h>
-#include <corolib/commserver.h>
 #include <corolib/async_operation.h>
 #include <corolib/oneway_task.h>
 #include <corolib/when_all.h>
+
+#include <commserver.h>
 
 #include "endpoints.h"
 

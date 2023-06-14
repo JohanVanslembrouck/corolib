@@ -12,10 +12,11 @@
 
 #include <corolib/print.h>
 #include <corolib/commservice.h>
-#include <corolib/commcore.h>
-#include <corolib/commclient.h>
 #include <corolib/async_operation.h>
-#include <corolib/commserver.h>
+
+#include "commcore.h"
+#include "commclient.h"
+#include "commserver.h"
 
 namespace corolib
 {

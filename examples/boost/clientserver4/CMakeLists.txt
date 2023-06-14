@@ -1,6 +1,6 @@
 project (clientserver4)
 
-include_directories(../../../include ${Boost_INCLUDE_DIR})
+include_directories(../../../include ../common ${Boost_INCLUDE_DIR})
 
 link_directories(${Boost_LIBRARY_DIR})
 

@@ -14,9 +14,10 @@
 #include <corolib/oneway_task.h>
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
-#include <corolib/commcore.h>
-#include <corolib/commclient.h>
-#include <corolib/commserver.h>
+
+#include <commcore.h>
+#include <commclient.h>
+#include <commserver.h>
 
 #include "endpoints.h"
 

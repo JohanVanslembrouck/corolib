@@ -1,8 +1,8 @@
-project(corolibrary)
+project(coroboostlibrary)
 
-include_directories(../include ${Boost_INCLUDE_DIR})
+include_directories(../../../include ${Boost_INCLUDE_DIR})
 
-add_library(corolib print.cpp async_operation.cpp commservice.cpp )
+add_library(corolib-boost commcore.cpp commclient.cpp commserver.cpp)
 
 target_link_libraries(corolib)
 

@@ -11,8 +11,9 @@
 
 #include <corolib/print.h>
 #include <corolib/async_operation.h>
-#include <corolib/commclient.h>
 #include <corolib/async_task.h>
+
+#include <commclient.h>
 
 #include "endpoints.h"
 

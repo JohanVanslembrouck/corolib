@@ -15,7 +15,7 @@
 #include <boost/asio/write.hpp>
 #include <boost/asio.hpp>
 
-#include <corolib/commcore.h>
+#include "commcore.h"
 
 using boost::asio::steady_timer;
 using boost::asio::ip::tcp;

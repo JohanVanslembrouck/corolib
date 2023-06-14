@@ -14,7 +14,8 @@
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
 #include <corolib/when_all.h>
-#include <corolib/commclient.h>
+
+#include <commclient.h>
 
 #include "endpoints.h"
 

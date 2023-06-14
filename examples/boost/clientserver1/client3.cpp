@@ -16,7 +16,8 @@
 #include <corolib/oneway_task.h>
 #include <corolib/auto_reset_event.h>
 #include <corolib/async_operation.h>
-#include <corolib/commclient.h>
+
+#include <commclient.h>
 
 #include "endpoints.h"
 

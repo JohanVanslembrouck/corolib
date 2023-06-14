@@ -12,11 +12,13 @@
 #define _COMMSERVER_H_
 
 #include <boost/asio.hpp>
-#include "print.h"
-#include "commservice.h"
+
+#include <corolib/print.h>
+#include <corolib/async_operation.h>
+#include <corolib/commservice.h>
+
 #include "commcore.h"
 #include "commclient.h"
-#include "async_operation.h"
 
 namespace corolib
 {

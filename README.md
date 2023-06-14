@@ -127,6 +127,14 @@ Go to the examples/ subdirectories and start the executables.
 To install and configure qtcreator on Ubuntu 22.04, follow the instructions at
 https://askubuntu.com/questions/1404263/how-do-you-install-qt-on-ubuntu22-04
 	
+## Organization of corolib
+
+The GitHub repository contains the library itself and several examples.
+
+The README.md file in include/corolib gives more information on each of the classes of corolib.
+Folder lib contains the source (.cpp) files for the header files (.h) in include/corolib.
+
+The examples folder contains a README.md file with more information on the examples.
 
 ## Why coroutines?
 
@@ -214,31 +222,6 @@ All coroutines that co_await-ed the async_operation<aType> object will be resume
 6. The proposed style is closer to the polling style used in CORBA AMI.
 
     The reader is referred again to reading/CORBA-AMI.md for more information on this approach.
-
-
-## Organization of corolib
-
-The GitHub repository contains the library itself and several examples.
-
-The library (include/corolib) has two parts:
-* Files async_operation.h, async_task.h, auto_reset_event.h, commservice.h, oneway_task.h, print.h, 
-semaphore.h, wait_all_awaitable.h, wait_all_counter.h, wait_any_one.h and wait_any_awaitable.h 
-are independent of Boost and are also used by the Qt examples. 
-The README file in include/corolib gives more information on each of the classes.
-* Files commclient.h, commcore.h and commserver.h use boost/asio and are only used by the Boost examples.
-
-Folder lib contains the source (.cpp) files for the header files (.h) in include/corolib.
-
-The examples folder has the following subfolders:
-* Folder tutorial contains various standalone examples showing the use of corolib but without use of Boost or Qt.
-* Folders clientserver1, clientserver2, clientserver3 and clientserver4 use Boost for client-server communication.
-Two or more applications have to be started, e.g. a server application and one or more client applications.
-* Folder clientserver11 uses Qt and folder common-qt defines classes that are used by clientserver11 
-(and other examples that may be added in the future).
-* Folder various-boost contains stand-alone applications that use Boost. At this moment it contains only a timer application.
-* Folder various-qt contains stand-alone applications that use Qt. Again, at this moment it contains only a timer application.
-* Folder why-coroutines contains various examples that explain the advantages of C++ coroutines for writing (distributed) applications.
-* Folder corolab contains examples that do not use the corolib include files or libraries, but were the basis from where corolib has been "distilled."
 
 ## Comparison with other libraries
 

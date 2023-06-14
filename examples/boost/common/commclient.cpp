@@ -17,8 +17,9 @@
 
 #include <corolib/async_operation.h>
 #include <corolib/commservice.h>
-#include <corolib/commcore.h>
-#include <corolib/commclient.h>
+
+#include "commcore.h"
+#include "commclient.h"
 
 using boost::asio::steady_timer;
 using boost::asio::ip::tcp;

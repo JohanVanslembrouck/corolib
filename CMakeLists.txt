@@ -18,6 +18,7 @@ endif()
 
 add_subdirectory(lib)
 
+add_subdirectory(examples/boost/common)
 add_subdirectory(examples/boost/clientserver1)
 add_subdirectory(examples/boost/clientserver2)
 add_subdirectory(examples/boost/clientserver3)

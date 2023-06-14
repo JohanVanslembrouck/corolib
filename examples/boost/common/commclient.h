@@ -15,8 +15,9 @@
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio.hpp>
 
-#include "async_operation.h"
-#include "commservice.h"
+#include <corolib/async_operation.h>
+#include <corolib/commservice.h>
+
 #include "commcore.h"
 
 using boost::asio::steady_timer;
