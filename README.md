@@ -4,19 +4,23 @@ A C++ coroutine library for writing asynchronous distributed applications.
 
 ## Installation and building
 
-Copy or clone corolib.git to your computer.
+For its communication, corolib currently uses
+* Boost ASIO library
+* Qt (QTcpSocket, QTcpServer)
+* gRPC
+Other publicly available asynchronous communication frameworks may follow in the future.
 
-### Prerequisites
+These frameworks have to be installed on your computer before building corolib.
+The installation steps are described below.
 
-For its communication, corolib uses the Boost ASIO library, Qt (QTcpSocket, QTcpServer), or gRPC.
-Other publicly available asynchronous communication frameworks may follow.
-
-I originally used Boost 1.70 (now Boost 1.82) and Qt 5.14.2, but many other versions will do.
-
-Without any of these libraries, there are still a large number of examples illustrating the use of corolib.
+However, without any of these libraries, there are still a large number of examples illustrating the use of corolib.
 None of them will involve communication, i.e. they are all stand-alone examples.
 
-#### Installation of Boost
+### On Windows 10 or 11
+
+#### Boost
+
+I originally used Boost 1.70 (now Boost 1.82), but many other versions will do.
 
 Starting point: https://www.boost.org/
 
@@ -40,7 +44,7 @@ The root directory for the include files is C:/local/boost/boost_1_82_0.
 
 The root directory for the libraries is C:/local/boost/boost_1_82_0/stage/lib.
 
-#### Installation of Qt
+#### Qt
 
 Starting points: https://www.qt.io/download, https://www.qt.io/download-open-source
 
@@ -49,30 +53,35 @@ Download the Qt Online Installer for your operating system (macOS, Windows, Linu
 
 Run the installer. I installed Qt in C:\Qt.
 
-#### Installation of gRPC
+#### gRPC
 
 Starting points: https://github.com/grpc/grpc, https://github.com/grpc/grpc/tree/master/src/cpp
 
-Building gRPC using CMake with FetchContent, see https://github.com/grpc/grpc/tree/master/src/cpp#fetchcontent, did not work on my machine.
+Building gRPC using CMake with FetchContent, see https://github.com/grpc/grpc/tree/master/src/cpp#fetchcontent, did not work on my computer.
 
 Rather, I used the instructions under https://github.com/grpc/grpc/tree/master/src/cpp#install-using-vcpkg-package
 
-I cloned https://github.com/Microsoft/vcpkg.git into C:\local, giving C:\local\vcpkg  
+	git clone https://github.com/Microsoft/vcpkg.git
+	cd vcpkg
 
-Note: this requires the installation of Git if this is not yet the case (e.g., on Windows: https://gitforwindows.org/)
+I cloned vcpkg.git into C:\local, giving C:\local\vcpkg  
 
-The execution of 
+Note: this of course requires the installation of Git if this is not yet the case, see https://gitforwindows.org/
 
+	./bootstrap-vcpkg.bat
+	
 	./vcpkg install grpc
-
-may take 0.5 hour, 1.5 hours or even more, depending on your computer.
+	
+The execution of this last command may take 0.5 hour to 1.5 hours or even more, depending on your computer.
 
 Finally, I added the following folders to my PATH:
 
 	C:\local\vcpkg\installed\x64-windows\tools\protobuf
 	C:\local\vcpkg\installed\x64-windows\tools\grpc
 
-### Building on Windows 10
+#### corolib
+
+Copy or clone corolib.git to your computer.
 
 I originally developed corolib with Visual Studio 2019 and Qt Creator 4.12.0 on a Windows 10 laptop.
 Now I am using Visual Studio 2022 and Qt Creator 10.0.1 on a Windows 11 laptop.
@@ -89,18 +98,30 @@ In the CMakeLists.txt in the top-level folder, adapt the following variables to 
 	set(Boost_LIBRARY_DIR C:/local/boost/boost_1_82_0/stage/lib)
 
 The Qt examples are not built from the top-level CMakeLists.txt file,
-but have to be built from the .pro files in examples/clientserver11.
+but have to be built from the .pro files in the subdirectories of examples/qt5.
 
-### Building on Linux
+Go to the examples/ subdirectories and start the executables.
+(See README.md files in the corresponding source directories.)
 
-I have tested corolib on an Ubuntu MATE 22.04 installation. The g++ version is 11.2.0.
-(The g++ version should be >= 10 to have coroutine support.)
+### On Ubuntu 22.04 LTS
 
-You have to install cmake (if not yet done):
+I have tested corolib on an Ubuntu MATE 22.04 installation in VirtualBox. 
+The g++ version was 11.2.0.
 
-	sudo apt install cmake
+Currently I am using Ubuntu 22.04 LTS in WSL on a Windows 11 laptop.
+The g++ version is 11.3.0.
 
-and boost:
+The g++ version should be >= 10 to have coroutine support.)
+
+#### CMake
+
+Install cmake (if not yet done):
+
+	sudo apt install -y cmake
+
+#### Boost
+
+Install Boost:
 
 	sudo apt-get update
 	sudo apt-get -y install libboost-dev
@@ -112,6 +133,51 @@ The Boost include files are in
 On my machine, the Boost libraries (version 1.74.0) are located in
 
 	/usr/lib/x86_64-linux-gnu/
+	
+In the CMakeLists.txt in the top-level folder, adapt (if necessary) the following variables to your own installation of the Boost library:
+
+	set(Boost_INCLUDE_DIR /usr/include/boost)
+	set(Boost_LIBRARY_DIR /usr/lib/x86_64-linux-gnu/)
+
+#### Qt
+
+To install and configure qtcreator on Ubuntu 22.04, follow the instructions described in
+https://askubuntu.com/questions/1404263/how-do-you-install-qt-on-ubuntu22-04:
+
+	sudo apt install -y qtcreator qtbase5-dev qt5-qmake cmake
+	
+#### gRPC
+
+Starting points: https://github.com/grpc/grpc, https://github.com/grpc/grpc/tree/master/src/cpp
+
+Building gRPC using CMake with FetchContent, see https://github.com/grpc/grpc/tree/master/src/cpp#fetchcontent, did not work on my computer.
+
+Rather, I used the instructions under https://grpc.io/docs/languages/cpp/quickstart/#install-grpc
+
+	export MY_INSTALL_DIR=$HOME/.local
+	mkdir -p $MY_INSTALL_DIR
+	export PATH="$MY_INSTALL_DIR/bin:$PATH"
+	
+	sudo apt install -y build-essential autoconf libtool pkg-config
+	
+Clone the grpc repo and its submodules to a local directory:
+
+	git clone --recurse-submodules -b v1.55.0 --depth 1 --shallow-submodules https://github.com/grpc/grpc
+	
+	cd grpc
+	mkdir -p cmake/build
+	pushd cmake/build
+	cmake -DgRPC_INSTALL=ON \
+      -DgRPC_BUILD_TESTS=OFF \
+      -DCMAKE_INSTALL_PREFIX=$MY_INSTALL_DIR \
+      ../..
+	make -j 4
+	make install
+	popd
+	
+#### corolib
+
+Copy or clone corolib.git to your computer.
 
 I propose to build corolib as follows:
 
@@ -119,14 +185,14 @@ I propose to build corolib as follows:
 	mkdir build
 	cd build
 	cmake ../
-	make
+	make -j 4
+
+The Qt examples are not built from the top-level CMakeLists.txt file,
+but have to be built from the .pro files in the subdirectories of examples/qt5.
 
 Go to the examples/ subdirectories and start the executables. 
 (See README.md files in the corresponding source directories.)
 
-To install and configure qtcreator on Ubuntu 22.04, follow the instructions at
-https://askubuntu.com/questions/1404263/how-do-you-install-qt-on-ubuntu22-04
-	
 ## Organization of corolib
 
 The GitHub repository contains the library itself and several examples.

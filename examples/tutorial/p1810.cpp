@@ -128,7 +128,14 @@ async_task<int> coroutine1()
    
     async_task<int> t1 = coroutine1a();
     async_task<int> t2 = coroutine1b();
+#if 0
+	// The following statement does not compile with g++ 11.3.0
     co_await when_all<async_task<int>>( { &t1, &t2 } );
+#else
+	// Split it into two lines:
+	when_all<async_task<int>> wa( { &t1, &t2 } );
+	co_await wa;
+#endif
     int v = t1.get_result() + t2.get_result();
     
     print(PRI1, "coroutine1(): co_return v + 1 = %d;\n", v + 1);
