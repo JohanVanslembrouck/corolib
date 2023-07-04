@@ -4,13 +4,16 @@ A C++ coroutine library for writing asynchronous distributed applications.
 
 ## Installation and building
 
-For its communication, corolib currently uses
+For its communication, corolib currently uses any of the following frameworks:
+
 * Boost ASIO library
 * Qt (QTcpSocket, QTcpServer)
 * gRPC
+* ROS 2 (Humble)
+
 Other publicly available asynchronous communication frameworks may follow in the future.
 
-These frameworks have to be installed on your computer before building corolib.
+These frameworks have to be installed on your computer before building corolib from the root CMakeLists.txt file.
 The installation steps are described below.
 
 However, without any of these libraries, there are still a large number of examples illustrating the use of corolib.
@@ -79,6 +82,12 @@ Finally, I added the following folders to my PATH:
 	C:\local\vcpkg\installed\x64-windows\tools\protobuf
 	C:\local\vcpkg\installed\x64-windows\tools\grpc
 
+#### ROS 2
+
+I did not manage to install ROS 2 on Windows 11. I tried to follow the instructions at https://docs.ros.org/en/humble/Installation/Windows-Install-Binary.html. According to https://docs.ros.org/en/humble/Installation/Windows-Install-Binary.html#system-requirements, only Windows 10 is supported.
+
+See below for an installation on Ubuntu 22.04 LTS.
+
 #### corolib
 
 Copy or clone corolib.git to your computer.
@@ -130,7 +139,7 @@ The Boost include files are in
 
 	/usr/include/boost
 	
-On my machine, the Boost libraries (version 1.74.0) are located in
+On my computer, the Boost libraries (version 1.74.0) are located in
 
 	/usr/lib/x86_64-linux-gnu/
 	
@@ -174,7 +183,12 @@ Clone the grpc repo and its submodules to a local directory:
 	make -j 4
 	make install
 	popd
-	
+
+
+#### ROS 2
+
+Please follow the instructions at https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html
+
 #### corolib
 
 Copy or clone corolib.git to your computer.
