@@ -84,6 +84,27 @@ install(TARGETS
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)
+ 
+add_library(action_client_co2 SHARED
+  src/fibonacci_action_client_co2.cpp)
+target_link_libraries(action_client_co2 corolib_library)
+target_include_directories(action_client_co2 PRIVATE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+target_compile_definitions(action_client_co2
+  PRIVATE "ACTION_TUTORIALS_CPP_BUILDING_DLL")
+ament_target_dependencies(action_client_co2
+  "action_tutorials_interfaces"
+  "rclcpp"
+  "rclcpp_action"
+  "rclcpp_components")
+rclcpp_components_register_node(action_client_co2 PLUGIN "action_tutorials_cpp::FibonacciActionClientCo2" EXECUTABLE fibonacci_action_client_co2)
+install(TARGETS
+  action_client_co2
+  corolib_library
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

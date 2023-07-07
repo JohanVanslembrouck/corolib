@@ -1,7 +1,8 @@
 /**
  * @file fibonacci_action_client_co.cpp
  * @brief
- *
+ * First version with coroutines with minimal changes to the original code in fibonacci_action_client.cpp
+ * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
@@ -95,14 +96,7 @@ public:
       {
           if (!goal_handle) {
               RCLCPP_ERROR(this->get_logger(), "Goal was rejected by server");
-
-              async_operation_base* om_async_operation = m_async_operations[idx];
-              async_operation<bool>* om_async_operation_t =
-                  dynamic_cast<async_operation<bool>*>(om_async_operation);
-              if (om_async_operation_t)
-              {
-                  om_async_operation_t->set_result_and_complete(false);
-              }
+              completionHandler<bool>(idx, false);
           }
           else {
               RCLCPP_INFO(this->get_logger(), "Goal accepted by server, waiting for result");
@@ -129,14 +123,18 @@ public:
               break;
           case rclcpp_action::ResultCode::ABORTED:
               RCLCPP_ERROR(this->get_logger(), "Goal was aborted");
+              completionHandler<bool>(idx, false);
               return;
           case rclcpp_action::ResultCode::CANCELED:
               RCLCPP_ERROR(this->get_logger(), "Goal was canceled");
+              completionHandler<bool>(idx, false);
               return;
           default:
               RCLCPP_ERROR(this->get_logger(), "Unknown result code");
+              completionHandler<bool>(idx, false);
               return;
           }
+
           std::stringstream ss;
           ss << "Result received: ";
           for (auto number : result.result->sequence) {
@@ -144,14 +142,7 @@ public:
           }
 
           RCLCPP_INFO(this->get_logger(), ss.str().c_str());
-
-          async_operation_base* om_async_operation = m_async_operations[idx];
-          async_operation<bool>* om_async_operation_t =
-              dynamic_cast<async_operation<bool>*>(om_async_operation);
-          if (om_async_operation_t)
-          {
-              om_async_operation_t->set_result_and_complete(true);
-          }
+          completionHandler<bool>(idx, true);
       };
 
       this->client_ptr_->async_send_goal(goal_msg, send_goal_options);
