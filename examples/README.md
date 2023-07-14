@@ -5,6 +5,7 @@ This directory/folder has the following subdirectories/subfolders that use an as
 * boost
 * grpc
 * qt5
+* ROS2 (Humble)
 
 See the README.md file in those directories for further information.
 

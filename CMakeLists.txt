@@ -40,6 +40,7 @@ add_subdirectory(examples/why-coroutines)
 add_subdirectory(examples/corolab)
 
 add_subdirectory(examples/grpc/cpp/helloworld)
+add_subdirectory(examples/grpc/cpp/route_guide)
 
 if (NOT googletest)
 	include(FetchContent)
