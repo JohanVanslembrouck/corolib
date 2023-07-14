@@ -54,7 +54,6 @@
 #include <corolib/commservice.h>
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
-#include <corolib/semaphore.h>
 
 using grpc::Channel;
 using grpc::ClientContext;
@@ -156,6 +155,12 @@ public:
         status_ = s;
         done_ = true;
         eventHandler(status_);
+        std::unique_lock<std::mutex> l(mu_);
+        cv_.notify_one();
+    }
+    void Await() {
+        std::unique_lock<std::mutex> l(mu_);
+        cv_.wait(l, [this] { return done_; });
     }
 
 private:
@@ -165,6 +170,8 @@ private:
     float coord_factor_;
     Feature feature_;
     Status status_;
+    std::mutex mu_;
+    std::condition_variable cv_;
     bool done_ = false;
 public:
     std::function<void(Status)> eventHandler;
@@ -368,13 +375,14 @@ class RouteGuideClient : public CommService {
           std::cout << "ListFeatures rpc failed." << std::endl;
       }
       print(PRI1, "ListFeaturesCo - end\n");
-      semaphore_.signal();
       co_return;
   }
 
   void startReader() {
-      if (pReaderCo_)
+      if (pReaderCo_) {
           pReaderCo_->start();
+          pReaderCo_->Await();
+      }
   }
 
   async_operation<Status> start_ListFeatures(ReaderCo* pReaderCo) {
@@ -398,10 +406,6 @@ class RouteGuideClient : public CommService {
               om_async_operation_t->set_result_and_complete(status);
           }
       };
-  }
-
-  void waitComplete() {
-      semaphore_.wait();
   }
 
   // RecordRoute
@@ -477,7 +481,6 @@ class RouteGuideClient : public CommService {
   std::unique_ptr<RouteGuide::Stub> stub_;
   std::vector<Feature> feature_list_;
   ReaderCo* pReaderCo_ = nullptr;
-  Semaphore semaphore_;
 };
 
 int main(int argc, char** argv) {
@@ -500,11 +503,9 @@ int main(int argc, char** argv) {
   std::cout << "-------------- ListFeatures using coroutines (1) --------------" << std::endl;
   guide.ListFeaturesCo();
   guide.startReader();
-  guide.waitComplete();
   std::cout << "-------------- ListFeatures using coroutines (2) --------------" << std::endl;
   guide.ListFeaturesCo();
   guide.startReader();
-  guide.waitComplete();
 
   print(PRI1, "Leaving main\n");
   return 0;
