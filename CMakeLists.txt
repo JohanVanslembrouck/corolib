@@ -16,6 +16,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+# For boost: /D _WIN32_WINNT=0x0601
     set(CMAKE_CXX_FLAGS "/await:strict /EHsc /D _WIN32_WINNT=0x0601")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     set(CMAKE_CXX_FLAGS "-Wall -fcoroutines")
@@ -41,6 +42,8 @@ add_subdirectory(examples/corolab)
 
 add_subdirectory(examples/grpc/cpp/helloworld)
 add_subdirectory(examples/grpc/cpp/route_guide)
+
+add_subdirectory(examples/tao/Buffered_AMI)
 
 if (NOT googletest)
 	include(FetchContent)
