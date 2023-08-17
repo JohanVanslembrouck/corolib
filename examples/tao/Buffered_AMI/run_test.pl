@@ -25,8 +25,8 @@ my $client_iorfile = $client->LocalFile ($iorbase);
 $server->DeleteFile($iorbase);
 $client->DeleteFile($iorbase);
 
-$SV = $server->CreateProcess ("server", "-ORBdebuglevel $debug_level -o $server_iorfile");
-$CL = $client->CreateProcess ("client", "-k file://$client_iorfile -x");
+$SV = $server->CreateProcess ("ami_server", "-ORBdebuglevel $debug_level -o $server_iorfile");
+$CL = $client->CreateProcess ("ami_client", "-k file://$client_iorfile -x");
 $server_status = $SV->Spawn ();
 
 if ($server_status != 0) {

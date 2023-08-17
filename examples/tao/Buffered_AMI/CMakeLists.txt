@@ -14,7 +14,8 @@ if (WIN32)
     set(TAO_INCLUDE_DIRS C:/local/ACE_wrappers C:/local/ACE_wrappers/TAO)
     set(TAO_LIBRARY_DIR C:/local/ACE_wrappers/lib)
 elseif (UNIX)
-    message("Unsupported operating system")
+    set(TAO_INCLUDE_DIRS $ENV{HOME}/ACE_wrappers $ENV{HOME}/ACE_wrappers/TAO)
+    set(TAO_LIBRARY_DIR $ENV{HOME}/ACE_wrappers/lib)
 else()
     message("Unsupported operating system")
 endif()
@@ -35,14 +36,28 @@ add_custom_command(
       COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/testS.cpp ${CMAKE_CURRENT_SOURCE_DIR}/testS.cpp
       DEPENDS "${idlfile}")
 
-set(TAO_LIBRARIES ${TAO_LIBRARY_DIR}/ACEd.lib 
-    ${TAO_LIBRARY_DIR}/TAOd.lib
-    ${TAO_LIBRARY_DIR}/TAO_AnyTypeCoded.lib
-    ${TAO_LIBRARY_DIR}/TAO_Valuetyped.lib
-    ${TAO_LIBRARY_DIR}/TAO_PortableServerd.lib
-    ${TAO_LIBRARY_DIR}/TAO_CodecFactoryd.lib
-    ${TAO_LIBRARY_DIR}/TAO_PId.lib
-    ${TAO_LIBRARY_DIR}/TAO_Messagingd.lib)
+if (WIN32)
+    set(TAO_LIBRARIES ${TAO_LIBRARY_DIR}/ACEd.lib
+        ${TAO_LIBRARY_DIR}/TAOd.lib
+        ${TAO_LIBRARY_DIR}/TAO_AnyTypeCoded.lib
+        ${TAO_LIBRARY_DIR}/TAO_Valuetyped.lib
+        ${TAO_LIBRARY_DIR}/TAO_PortableServerd.lib
+        ${TAO_LIBRARY_DIR}/TAO_CodecFactoryd.lib
+        ${TAO_LIBRARY_DIR}/TAO_PId.lib
+        ${TAO_LIBRARY_DIR}/TAO_Messagingd.lib)
+elseif (UNIX)
+     set(TAO_LIBRARIES ${TAO_LIBRARY_DIR}/libACE.so
+        ${TAO_LIBRARY_DIR}/libTAO.so
+        ${TAO_LIBRARY_DIR}/libTAO_AnyTypeCode.so
+        ${TAO_LIBRARY_DIR}/libTAO_Valuetype.so
+        ${TAO_LIBRARY_DIR}/libTAO_PortableServer.so
+        ${TAO_LIBRARY_DIR}/libTAO_CodecFactory.so
+        ${TAO_LIBRARY_DIR}/libTAO_PI.so
+        ${TAO_LIBRARY_DIR}/libTAO_Messaging.so)
+
+else()
+    message("Unsupported operating system")
+endif()
 
 include_directories(${TAO_INCLUDE_DIRS})
 
@@ -53,6 +68,9 @@ target_link_libraries(ami_client ${TAO_LIBRARIES})
 
 add_executable(ami_client_coroutine client_coroutine.cpp testC.cpp testS.cpp)
 target_link_libraries(ami_client_coroutine ${TAO_LIBRARIES} corolib)
+
+add_executable(ami_client_coroutine2 client_coroutine2.cpp testC.cpp testS.cpp)
+target_link_libraries(ami_client_coroutine2 ${TAO_LIBRARIES} corolib)
 
 add_executable(ami_server server.cpp testC.cpp testS.cpp test_i.cpp)
 target_link_libraries(ami_server ${TAO_LIBRARIES})

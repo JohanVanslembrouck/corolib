@@ -10,6 +10,7 @@ For its communication, corolib currently uses any of the following frameworks:
 * Qt (QTcpSocket, QTcpServer)
 * gRPC
 * ROS 2 (Humble)
+* TAO (The ACE ORB)
 
 Other publicly available asynchronous communication frameworks may follow in the future.
 
@@ -88,6 +89,50 @@ I did not manage to install ROS 2 on Windows 11. I tried to follow the instructi
 
 See below for an installation on Ubuntu 22.04 LTS.
 
+#### TAO
+
+Starting point: https://download.dre.vanderbilt.edu/
+
+Download the file ACE+TAO-7.1.1.zip and place it in a directory (e.g.) C:\local. 
+This is the directory that already contains boost and vcpkg, see above.
+
+Unzip the file. This will produce a directory ACE_wrappers.
+Consequently, the full path is C:\local\ACE_wrappers.
+I will refer to this directory as ...\ACE_wrappers from now on.
+
+Open the file ...\ACE_wrappers\ACE-INSTALL.html in a web browser and navigate to the section 
+"Building and Installing ACE on Windows" and, in case of the use of Visual Studio, to 
+"Building and Installing ACE on Windows with Microsoft Visual Studio".
+
+Follow the instructions in that section. In short:
+
+In directory ...\ACE_wrappers\ace, create a file called config.h and enter the following line in this file:
+
+    #include "ace/config-win32.h"
+
+Open the file ..\ACE_wrappers\ACE_vs2019.sln with Visual Studio 2019 or 2022 (or ACE_vs2017.sln with Visual Studio 2017).
+
+Visual Studio 2022 reports the use of an earlier version of the Visual Studio platform toolset 
+and proposes to upgrade the projects to target the latest Microsoft toolset. I upgraded to the latest toolset.
+
+Build the solution. This builds ACE (The ADAPTIVE Communication Environment). We still have to build TAO (The ACE ORB).
+
+Open the file ...\ACE_wrappers\TAO\TAO-INSTALL.html in a web browser and follow the instructions in section 
+"On Windows NT and Windows 2000 and Windows XP". In short:
+
+Open the file ..\ACE_wrappers\TAO\TAO_vs2019.sln with Visual Studio and build the solution.
+
+Edit the Environment Variables and add the following directories to the Path variable:
+
+C:\local\ACE_wrappers\lib
+C:\local\ACE_wrappers\bin
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\<VERSION>\bin\Hostx64\x64
+
+<VERSION> changes with every upgrade of Visual Studio (2022).
+
+The last line is needed when you want to run the TAO IDL compiler (tao_idl in C:\local\ACE_wrappers\bin) from the command line.
+If the last line is not present, running tao_idl will fail with the message that CL.exe is not found.
+
 #### corolib
 
 Copy or clone corolib.git to your computer.
@@ -154,7 +199,7 @@ To install and configure qtcreator on Ubuntu 22.04, follow the instructions desc
 https://askubuntu.com/questions/1404263/how-do-you-install-qt-on-ubuntu22-04:
 
 	sudo apt install -y qtcreator qtbase5-dev qt5-qmake cmake
-	
+
 #### gRPC
 
 Starting points: https://github.com/grpc/grpc, https://github.com/grpc/grpc/tree/master/src/cpp
@@ -168,7 +213,9 @@ Rather, I used the instructions under https://grpc.io/docs/languages/cpp/quickst
 	export PATH="$MY_INSTALL_DIR/bin:$PATH"
 	
 	sudo apt install -y build-essential autoconf libtool pkg-config
-	
+
+Note: I used MY_INSTALL_DIR=$HOME/grpcbin as installation directory.
+
 Clone the grpc repo and its submodules to a local directory:
 
 	git clone --recurse-submodules -b v1.55.0 --depth 1 --shallow-submodules https://github.com/grpc/grpc
@@ -184,10 +231,87 @@ Clone the grpc repo and its submodules to a local directory:
 	make install
 	popd
 
+Note: I cloned grpc to $HOME/grpcsrc.
+
+Add the following lines to .bashrc for future use:
+
+    export PATH=$HOME/.local/bin:$PATH
+
+or, in my setup:
+
+    export PATH=$HOME/grpcbin/bin:$PATH
 
 #### ROS 2
 
 Please follow the instructions at https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html
+
+#### TAO
+
+Starting point: https://download.dre.vanderbilt.edu/
+
+Download the file ACE+TAO-7.1.1.tar.gz and place it in (e.g.) your home directory, $HOME.
+Unzip the file:
+
+    tar xvf ACE+TAO-7.1.1.tar.gz
+
+This will produce a directory ACE_wrappers.
+Consequently, the full path is $HOME\ACE_wrappers.
+
+Open the file $HOME\ACE_wrappers\ACE-INSTALL.html in a web browser and navigate to the section 
+"Building and Installing ACE on UNIX".
+
+Follow the instructions in that section. In short:
+
+Define the ACE_ROOT environment variable:
+
+    export ACE_ROOT=$HOME/ACE_wrappers 
+
+Create a configuration file, $ACE_ROOT/ace/config.h, 
+that includes the appropriate platform/compiler-specific header configurations from the ACE source directory:
+
+    #include "ace/config-linux.h"
+
+Create a build configuration file, $ACE_ROOT/include/makeinclude/platform_macros.GNU,
+that contains the appropriate platform/compiler-specific Makefile configurations, e.g.,
+
+    include $(ACE_ROOT)/include/makeinclude/platform_linux.GNU
+
+Set LD_LIBRARY_PATH to the directory where the binary version of the ACE library will be built into:
+
+    export LD_LIBRARY_PATH=$ACE_ROOT/lib:$LD_LIBRARY_PATH
+
+In a terminal window, navigate to $ACE_ROOT and build ACE:
+
+    cd $ACE_ROOT
+    make
+
+Building ACE in my WSL environment took about 10 minutes.
+
+Open the file ...\ACE_wrappers\TAO\TAO-INSTALL.html in a web browser and follow the instructions in section 
+"On UNIX platforms". In short:
+
+Build GPERF as follows:
+
+    cd $ACE_ROOT/apps/gperf/src
+    make
+
+Set the TAO_ROOT environment variable to $ACE_ROOT/TAO:
+
+    export TAO_ROOT=$ACE_ROOT/TAO
+
+Build TAO:
+
+    cd $TAO_ROOT
+    make
+
+Building TAO takes a long time (about 2 hours in my WSL environment). I did not use e.g. make -j 4.
+
+Add the following lines to .bashrc:
+
+    export ACE_ROOT=$HOME/ACE_wrappers
+    export TAO_ROOT=$ACE_ROOT/TAO
+    export PATH=$ACE_ROOT/bin:$PATH
+    export LD_LIBRARY_PATH=$ACE_ROOT/lib:$LD_LIBRARY_PATH
 
 #### corolib
 

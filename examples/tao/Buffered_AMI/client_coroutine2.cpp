@@ -1,28 +1,26 @@
 
 //=============================================================================
 /**
- *  @file     client_coroutine.cpp
+ *  @file     client_coroutine2.cpp
  *
- *   This is the coroutine version of client.cpp.
+ *   This is a second coroutine version of client.cpp.
  * 
- *   client_coroutine.cpp uses a buffer size of 1: we expect a reply for every sent request.
- *   If that reply is not received (due to the buffer size > 1),
+ *   client_coroutine2.cpp uses a buffer size of 4: we expect to receive 4 replies for every 4 sent requests.
+ *   If one or more replies are not received,
  *   the coroutine mainflow() remains suspended "for ever".
- *
- *   It is possible to send multiple requests one after the other, and then co_await the replies.
- *   The number of sent requests must correspond to the buffer size.
- *   However, we must then match the reply with the corresponding async_operation.
- *   This is not possible with the current implementation and IDL definition.
- *   There is only one Reply_Handler object for all requests.
  * 
- *   A solution could be to pass the index into the m_async_operations array
- *   as an extra argument in the request to the server, and "echo" it back in the reply
- *   so that it can be used to find the entry in the m_async_operations array.
+ *   Reply_Handler uses a queue of event handlers.
+ *   We expect the replies to be received in the same order as the requests were sent.
+ *   If not, a wrong wrong reply will be associated with a request.
+ *   In this example, this will not cause any harm.
  * 
+ *   To make the solution more reliable, see the description in the header of client_coroutine.cpp.
+ *   
  *  @author  Johan Vanslembrouck
  */
 //=============================================================================
 
+#include <queue>
 
 #include "testS.h"
 #include "tao/Messaging/Messaging.h"
@@ -35,6 +33,7 @@
 #include <corolib/commservice.h>
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
+#include <corolib/when_all.h>
 
 using namespace corolib;
 
@@ -45,8 +44,7 @@ static const ACE_TCHAR *IOR = ACE_TEXT ("file://ior");
 static CORBA::ULong iterations = 20;
 
 // Default number of invocations to buffer before flushing.
-//static CORBA::Long message_count = iterations / 4;
-static CORBA::Long message_count = 1;
+static CORBA::Long message_count = 4;
 
 // Time interval between invocation (in milli seconds).
 static long interval = 1000;
@@ -189,7 +187,7 @@ class Reply_Handler : public POA_AMI_testHandler
 public:
 
     // Added to the original implementation (see client.cpp):
-    std::function<void(CORBA::ULong)> eventHandler;
+    std::queue<std::function<void(CORBA::ULong)>> eventHandlers;
 
     void method(CORBA::ULong reply_number)
     {
@@ -198,8 +196,13 @@ public:
             reply_number));
 
         // Added to the original implementation (see client.cpp):
-        if (eventHandler)
-            eventHandler(reply_number);
+        if (!eventHandlers.empty())
+        {
+            std::function<void(CORBA::ULong)> eventHandler = eventHandlers.front();
+            eventHandlers.pop();
+            if (eventHandler)
+                eventHandler(reply_number);
+        }
     }
 
     void method_excep(::Messaging::ExceptionHolder* holder)
@@ -252,7 +255,7 @@ public:
 
     void start_method_impl(int idx, CORBA::ULong i)
     {
-        m_reply_handler_servant.eventHandler =
+        m_reply_handler_servant.eventHandlers.push(
             [this, idx](CORBA::ULong reply_number)
         {
             async_operation_base* om_async_operation = m_async_operations[idx];
@@ -262,7 +265,7 @@ public:
             {
                 om_async_operation_t->set_result_and_complete(reply_number);
             }
-        };
+        });
 
         AMI_testHandler_var reply_handler_object = m_reply_handler_servant._this();
         m_test_object->sendc_method(reply_handler_object.in(),
@@ -273,18 +276,26 @@ public:
     {
         AMI_testHandler_var reply_handler_object = m_reply_handler_servant._this();
 
-        for (CORBA::ULong i = 0; i < iterations; ++i)
+        for (CORBA::ULong i = 0; i < iterations; i = i + message_count)
         {
             ACE_DEBUG((LM_DEBUG,
                 "Client::mainflow: Iteration %d @ %T\n",
                 i));
 
-            async_operation<CORBA::ULong> op = start_method(i);
-            CORBA::ULong result = co_await op;
+            async_operation<CORBA::ULong> op1 = start_method(i);
+            async_operation<CORBA::ULong> op2 = start_method(i + 1);
+            async_operation<CORBA::ULong> op3 = start_method(i + 2);
+            async_operation<CORBA::ULong> op4 = start_method(i + 3);
+            when_all<async_operation<CORBA::ULong>> wa({&op1, &op2,  &op3, &op4});
+            co_await wa;
+            CORBA::ULong result1 = op1.get_result();
+            CORBA::ULong result2 = op2.get_result();
+            CORBA::ULong result3 = op3.get_result();
+            CORBA::ULong result4 = op4.get_result();
 
             ACE_DEBUG((LM_DEBUG,
-                "mainflow: AMI Reply %d @ %T\n",
-                result));
+                "mainflow: AMI Reply %d %d %d %d@ %T\n",
+                result1, result2, result3, result4));
         }
         co_return;
     }

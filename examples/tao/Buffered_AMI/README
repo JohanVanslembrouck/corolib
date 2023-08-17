@@ -20,8 +20,8 @@ How to run:
 
 You can use the run_test.pl script to run it or:
 
-$ server
-$ client
+$ ami_server
+$ ami_client
 
 Notes:
 
@@ -46,7 +46,11 @@ Addition for corolib:
 
 The content of this directory is based upon the one in ACE_wrappers/TAO/examples/Buffered_AMI
 
-To use the coroutine version, use:
+To use the coroutine versions, use:
 
-$ server
-$ client_coroutine
+$ ami_server
+$ ami_client_coroutine
+
+or
+
+$ ami_client_coroutine2
