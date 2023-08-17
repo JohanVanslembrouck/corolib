@@ -124,13 +124,13 @@ Open the file ..\ACE_wrappers\TAO\TAO_vs2019.sln with Visual Studio and build th
 
 Edit the Environment Variables and add the following directories to the Path variable:
 
-C:\local\ACE_wrappers\lib
-C:\local\ACE_wrappers\bin
-C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\<VERSION>\bin\Hostx64\x64
+	C:\local\ACE_wrappers\lib
+	C:\local\ACE_wrappers\bin
+	C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\<VERSION>\bin\Hostx64\x64
 
-<VERSION> changes with every upgrade of Visual Studio (2022).
+The VERSION changes with every upgrade of Visual Studio (2022).
 
-The last line is needed when you want to run the TAO IDL compiler (tao_idl in C:\local\ACE_wrappers\bin) from the command line.
+The last line is needed if you want to run the TAO IDL compiler (tao_idl in C:\local\ACE_wrappers\bin) from the command line.
 If the last line is not present, running tao_idl will fail with the message that CL.exe is not found.
 
 #### corolib
