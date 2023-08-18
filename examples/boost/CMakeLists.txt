@@ -1,0 +1,27 @@
+project (boostexamples)
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+# For boost: /D _WIN32_WINNT=0x0601
+    set(CMAKE_CXX_FLAGS "/await:strict /EHsc /D _WIN32_WINNT=0x0601")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    set(CMAKE_CXX_FLAGS "-Wall -fcoroutines")
+else()
+    message("Unsupported compiler")
+endif()
+
+if (WIN32)
+    set(Boost_INCLUDE_DIR C:/local/boost/boost_1_82_0)
+    set(Boost_LIBRARY_DIR C:/local/boost/boost_1_82_0/stage/lib)
+elseif (UNIX)
+    set(Boost_INCLUDE_DIR /usr/include/boost)
+    set(Boost_LIBRARY_DIR /usr/lib/x86_64-linux-gnu/)
+else()
+    message("Unsupported operating system")
+endif()
+
+add_subdirectory(common)
+add_subdirectory(clientserver1)
+add_subdirectory(clientserver2)
+add_subdirectory(clientserver3)
+add_subdirectory(clientserver4)
+add_subdirectory(various)

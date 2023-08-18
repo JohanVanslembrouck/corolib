@@ -146,7 +146,7 @@ Building the Visual Studio projects makes use of the CMake support of Visual Stu
 	
 and select the CMakeLists.txt in the top-level folder.
 
-In the CMakeLists.txt in the top-level folder, adapt the following variables to your own installation of the Boost library:
+In examples/boost/CMakeLists.txt and examples/corolab/CMakeLists.txt, adapt the following variables to your own installation of the Boost library:
 
 	set(Boost_INCLUDE_DIR C:/local/boost/boost_1_82_0)
 	set(Boost_LIBRARY_DIR C:/local/boost/boost_1_82_0/stage/lib)
@@ -188,7 +188,7 @@ On my computer, the Boost libraries (version 1.74.0) are located in
 
 	/usr/lib/x86_64-linux-gnu/
 	
-In the CMakeLists.txt in the top-level folder, adapt (if necessary) the following variables to your own installation of the Boost library:
+In examples/boost/CMakeLists.txt and examples/corolab/CMakeLists.txt, adapt (if necessary) the following variables to your own installation of the Boost library:
 
 	set(Boost_INCLUDE_DIR /usr/include/boost)
 	set(Boost_LIBRARY_DIR /usr/lib/x86_64-linux-gnu/)
@@ -429,9 +429,8 @@ All coroutines that co_await-ed the async_operation<aType> object will be resume
 
 ## Comparison with other libraries
 
-corolib is only a small library, but it allows to write a lot of client-server applications.
-For a more comprehensive library, see https://github.com/lewissbaker/cppcoro
-Some code in corolib has been inspired by cppcoro.
+corolib is a rather small library, because it completely separates the coroutine part from the communication frameworks.
+Some code in corolib has been inspired by  https://github.com/lewissbaker/cppcoro
 
 The approach in corolib is different from cppcoro in the following ways:
 * corolib is meant as a library to learn about coroutines in C++, not as a means for evaluating the coroutines TS.
