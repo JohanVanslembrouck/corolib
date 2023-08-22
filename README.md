@@ -11,6 +11,7 @@ For its communication, corolib currently uses any of the following frameworks:
 * gRPC
 * ROS 2 (Humble)
 * TAO (The ACE ORB)
+* cppcoro (WIN32 API)
 
 Other publicly available asynchronous communication frameworks may follow in the future.
 

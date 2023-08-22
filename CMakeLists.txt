@@ -31,6 +31,10 @@ if (TAO_INSTALLED)
     add_subdirectory(examples/tao/Buffered_AMI)
 endif()
 
+if (WIN32)
+    add_subdirectory(examples/cppcoro)
+endif()
+
 add_subdirectory(examples/tutorial)
 add_subdirectory(examples/tutorial/test)
 
