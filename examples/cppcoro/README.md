@@ -1,6 +1,6 @@
 # CppCoro - A coroutine library for C++
 
-Please see https://github.com/lewissbaker/cppcoro for the original README.md.
+Please see https://github.com/lewissbaker/cppcoro for the original repository and README.md.
 
 This directory contains the complete include/ and lib/ directories of the cppcoro project, but with the following modifications:
 
