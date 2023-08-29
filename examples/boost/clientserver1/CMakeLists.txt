@@ -4,6 +4,19 @@ include_directories(../../../include ../common ${Boost_INCLUDE_DIR})
 
 link_directories(${Boost_LIBRARY_DIR})
 
+foreach(_target
+    client1 client1a client1b client1c
+    client3 client3WA client3WAny
+    client4obs client4obs2 client4obs3
+    client5thr
+    clientserver
+    server
+  )
+  add_executable(cs1-${_target} ${_target}.cpp)
+  target_link_libraries(cs1-${_target} corolib corolib-boost)
+endforeach()
+
+#[[
 add_executable(cs1-client1 client1.cpp)
 target_link_libraries(cs1-client1 corolib corolib-boost)
 add_executable(cs1-client1a client1a.cpp)
@@ -36,4 +49,4 @@ target_link_libraries(cs1-clientserver corolib corolib-boost)
 
 add_executable(cs1-server server.cpp)
 target_link_libraries(cs1-server corolib corolib-boost)
-
+]]

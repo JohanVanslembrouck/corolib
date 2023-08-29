@@ -2,58 +2,21 @@ project (corolab)
 
 include_directories(../../include)
 
-add_executable(p0010 p0010.cpp)
-add_executable(p0020 p0020.cpp)
-add_executable(p0030 p0030.cpp)
-add_executable(p0040 p0040.cpp)
-add_executable(p0050 p0050.cpp)
-add_executable(p0060 p0060.cpp)
-
-add_executable(p0100 p0100.cpp)
-add_executable(p0110 p0110.cpp)
-add_executable(p0120 p0120.cpp)
-
-add_executable(p0200 p0200.cpp)
-
-add_executable(p0300 p0300.cpp)
-add_executable(p0310 p0310.cpp)
-add_executable(p0320 p0320.cpp)
-#add_executable(p0330 p0330.cpp)
-#add_executable(p0340 p0340.cpp)
-#add_executable(p0345 p0345.cpp)
-
-add_executable(p0400 p0400.cpp)
-add_executable(p0403a p0403a.cpp)
-add_executable(p0403at p0403at.cpp)
-add_executable(p0403b p0403b.cpp)
-add_executable(p0403bt p0403bt.cpp)
-add_executable(p0403c p0403c.cpp)
-add_executable(p0403ct p0403ct.cpp)
-add_executable(p0403d p0403d.cpp)
-add_executable(p0403dt p0403dt.cpp)
-add_executable(p0406 p0406.cpp)
-
-add_executable(p0414 p0414.cpp)
-add_executable(p0416 p0416.cpp)
-add_executable(p0418 p0418.cpp)
-add_executable(p0420 p0420.cpp)
-add_executable(p0422 p0424.cpp)
-add_executable(p0424 p0424.cpp)
-add_executable(p0426 p0426.cpp)
-
-add_executable(p0430 p0430.cpp)
-add_executable(p0432 p0432.cpp)
-add_executable(p0435 p0435.cpp)
-add_executable(p0436 p0436.cpp)
-
-#add_executable(p0440 p0440.cpp)
-#add_executable(p450 p0450.cpp)
-add_executable(p0460 p0460.cpp)
-add_executable(p0470 p0470.cpp)
-
-add_executable(p0500 p0500.cpp)
-add_executable(p0510 p0510.cpp)
-add_executable(p0520 p0520.cpp)
+foreach(_target
+    p0010 p0020 p0030 p0040 p0050 p0060
+    p0100 p0110 p0120
+    p0200
+    p0300 p0310 p0320 
+#   p0330 p0340 p0345
+    p0400 p0403a p0403at p0403b p0403bt p0403c p0403ct p0403d p0403dt p0406
+    p0414 p0416 p0418 p0420 p0422 p0424 p0426
+    p0430 p0432 p0435 p0436
+#   p0440 p450
+    p0460 p0470
+    p0500 p0510 p0520
+  )
+  add_executable(${_target} ${_target}.cpp)
+endforeach()
 
 if (BOOST_INSTALLED)
 
@@ -79,15 +42,12 @@ if (BOOST_INSTALLED)
     include_directories(${Boost_INCLUDE_DIR})
     link_directories(${Boost_LIBRARY_DIR})
 
-    add_executable(p0700c p0700c.cpp)
-    add_executable(p0700s p0700s.cpp)
-    add_executable(p0710c p0710c.cpp)
+    foreach(_target
+        p0700c p0700s p0710c
+        p0800c p0800cs p0800s
+        p0810c p0820c p0830c p0830s
+      )
+      add_executable(${_target} ${_target}.cpp)
+    endforeach()
 
-    add_executable(p0800c p0800c.cpp)
-    add_executable(p0800cs p0800cs.cpp)
-    add_executable(p0800s p0800s.cpp)
-    add_executable(p0810c p0810c.cpp)
-    add_executable(p0820c p0820c.cpp)
-    add_executable(p0830c p0830c.cpp)
-    add_executable(p0830s p0830s.cpp)
 endif()

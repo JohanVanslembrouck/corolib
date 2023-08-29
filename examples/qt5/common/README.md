@@ -12,9 +12,8 @@ When imitating the Boost way of working, this means that the slot function has t
 If not, the number of slot functions connected to the same signal will grow with every asynchronous operation invocation
 that makes a new connect.
 
-    For example, when using timers, the timer slot function will be called N times if a timer was
-started N times. If the slot function starts the timer again, this would lead to an exponential growth in the number of timers
-that is started and that expires.
+For example, when using timers, the timer slot function will be called N times if a timer was
+started N times. If the slot function starts the timer again, this would lead to an exponential growth in the number of timers that is started and that expires.
 
 The implementation in tcpclientco1.h|.cpp follows the Qt way of working.
 Slot functions are connected to a signal only once, at startup or just before the point where they are needed.

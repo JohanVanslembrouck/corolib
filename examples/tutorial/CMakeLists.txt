@@ -2,31 +2,15 @@ project (tutorial)
 
 include_directories(../../include)
 
-add_executable(p1000 p1000.cpp)
-target_link_libraries(p1000 corolib)
-add_executable(p1001-recursive p1001-recursive.cpp)
-target_link_libraries(p1001-recursive corolib)
-add_executable(p1002-no-coroutines p1002-no-coroutines.cpp)
-target_link_libraries(p1002-no-coroutines corolib)
-
-add_executable(p1010-thread p1010-thread.cpp)
-target_link_libraries(p1010-thread corolib)
-add_executable(p1011-thread-recursive p1011-thread-recursive.cpp)
-target_link_libraries(p1011-thread-recursive corolib)
-
-add_executable(p1050-resume_same_thread p1050-resume_same_thread.cpp)
-target_link_libraries(p1050-resume_same_thread corolib)
-add_executable(p1052-resume_same_thread p1052-resume_same_thread.cpp)
-target_link_libraries(p1052-resume_same_thread corolib)
-add_executable(p1054-resume_same_thread p1054-resume_same_thread.cpp)
-target_link_libraries(p1054-resume_same_thread corolib)
-
-add_executable(p1060-resume_new_thread p1060-resume_new_thread.cpp)
-target_link_libraries(p1060-resume_new_thread corolib)
-add_executable(p1062-resume_new_thread p1062-resume_new_thread.cpp)
-target_link_libraries(p1062-resume_new_thread corolib)
-add_executable(p1064-resume_new_thread p1064-resume_new_thread.cpp)
-target_link_libraries(p1064-resume_new_thread corolib)
+foreach(_target
+    p1000 p1001-recursive p1002-no-coroutines
+    p1010-thread p1011-thread-recursive
+    p1050-resume_same_thread p1052-resume_same_thread p1054-resume_same_thread 
+    p1060-resume_new_thread p1062-resume_new_thread p1064-resume_new_thread
+  )
+  add_executable(${_target} ${_target}.cpp)
+  target_link_libraries(${_target} corolib)
+endforeach()
 
 add_executable(p1100-auto_reset_event p1100-auto_reset_event.cpp)
 target_link_libraries(p1100-auto_reset_event corolib)
