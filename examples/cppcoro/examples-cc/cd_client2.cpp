@@ -1,7 +1,12 @@
 /**
 * @file cd_client2.cpp
 * @brief
-*
+* Based upon TEST_CASE("TCP/IPv4 connect/disconnect")
+* in https://github.com/lewissbaker/cppcoro/blob/master/test/socket_tests.cpp
+* Client and server part have been placed in separate files.
+* cd stands for connect-disconnect.
+* Lambdas have been replaced by normal functions.
+* 
 * @author Johan Vanslembrouck(johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
 */
 
@@ -63,6 +68,8 @@ void mainflow()
 
 int main()
 {
+    std::cout << "main: entering\n";
 	mainflow();
+    std::cout << "main: leaving\n";
 	return 0;
 }

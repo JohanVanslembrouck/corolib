@@ -1,7 +1,11 @@
 /**
 * @file cd_client1.cpp
 * @brief
-*
+* Based upon TEST_CASE("TCP/IPv4 connect/disconnect")
+* in https://github.com/lewissbaker/cppcoro/blob/master/test/socket_tests.cpp
+* Client and server part have been placed in separate files.
+* cd stands for connect-disconnect.
+* 
 * @author Johan Vanslembrouck(johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
 */
 

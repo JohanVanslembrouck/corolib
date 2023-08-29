@@ -1,7 +1,8 @@
 /**
 * @file cl_client2.cpp
 * @brief
-*
+* Based upon ../examples-cc/cd_client2.cpp
+* 
 * @author Johan Vanslembrouck(johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
 */
 
@@ -10,7 +11,6 @@
 #include <cppcoro/net/socket.hpp>
 
 #include <corolib/async_task.h>
-#include <corolib/print.h>
 
 #include "addressfile.hpp"
 #include "cppcoro_wrapper.hpp"
@@ -20,9 +20,7 @@ using namespace cppcoro::net;
 
 using namespace corolib;
 
-io_service ioSvc;
-
-async_task<int> client(std::optional<ipv4_endpoint>& serverAddress)
+async_task<int> client(io_service& ioSvc, std::optional<ipv4_endpoint>& serverAddress)
 {
     cppcoro_wrapper cc_wrapper;
 
@@ -38,12 +36,12 @@ async_task<int> client(std::optional<ipv4_endpoint>& serverAddress)
     co_return 0;
 }
 
-async_task<void> mainflow()
+async_task<void> mainflow(io_service& ioSvc)
 {
     std::string serverAddressStr = readServerAddress();
     auto serverAddress = cppcoro::net::ipv4_endpoint::from_string(serverAddressStr);
 
-    co_await client(serverAddress);
+    co_await client(ioSvc, serverAddress);
 
     ioSvc.stop();
     co_return;
@@ -51,8 +49,10 @@ async_task<void> mainflow()
 
 int main()
 {
-    set_priority(0x01);
-    mainflow();
+    std::cout << "main: entering\n";
+    io_service ioSvc;
+    mainflow(ioSvc);
     ioSvc.process_events();
+    std::cout << "main: leaving\n";
 	return 0;
 }

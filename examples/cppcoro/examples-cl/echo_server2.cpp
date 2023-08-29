@@ -1,7 +1,8 @@
 /**
 * @file echo_server2.cpp
 * @brief
-*
+* Based upon ../examples-cc/echo_server2.cpp
+* 
 * @author Johan Vanslembrouck(johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
 */
 
@@ -23,9 +24,8 @@ using namespace cppcoro::net;
 using namespace corolib;
 
 cppcoro_wrapper cc_wrapper;
-io_service ioSvc;
 
-async_task<int> echoServer(socket& listeningSocket)
+async_task<int> echoServer(io_service& ioSvc, socket& listeningSocket)
 {
     std::cout << "echoServer: entering\n";
 	auto acceptingSocket = socket::create_tcpv4(ioSvc);
@@ -64,8 +64,7 @@ async_task<int> echoServer(socket& listeningSocket)
 
     std::cout << "echoServer: totalBytesReceived = " << totalBytesReceived << ", totalBytesSent = " << totalBytesSent << "\n";
 
-    // The presence of the following statement gives problems. FFS:
-	// acceptingSocket.close_send();
+	acceptingSocket.close_send();
 
     // Original statement:
 	// co_await acceptingSocket.disconnect();
@@ -75,7 +74,7 @@ async_task<int> echoServer(socket& listeningSocket)
 	co_return 0;
 }
 
-async_task<int> mainflow()
+async_task<int> mainflow(io_service& ioSvc)
 {
 	socket listeningSocket = socket::create_tcpv4(ioSvc);
 
@@ -83,10 +82,9 @@ async_task<int> mainflow()
 	listeningSocket.listen(3);
 
     ip_endpoint serverAddress = listeningSocket.local_endpoint();
-
     saveServerAddress(serverAddress);
 
-    co_await echoServer(listeningSocket);
+    co_await echoServer(ioSvc, listeningSocket);
 
     ioSvc.stop();
     co_return 0;
@@ -95,7 +93,8 @@ async_task<int> mainflow()
 int main()
 {
     std::cout << "main: entering\n";
-	mainflow();
+    io_service ioSvc;
+	mainflow(ioSvc);
     ioSvc.process_events();
     std::cout << "main: leaving\n";
 	return 0;

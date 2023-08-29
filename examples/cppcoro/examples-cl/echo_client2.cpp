@@ -1,7 +1,8 @@
 /**
 * @file echo_client2.cpp
 * @brief
-*
+* Based upon ../examples-cc/echo_client2.cpp
+* 
 * @author Johan Vanslembrouck(johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
 */
 
@@ -23,7 +24,6 @@ using namespace cppcoro::net;
 using namespace corolib;
 
 cppcoro_wrapper cc_wrapper;
-io_service ioSvc;
 
 async_task<int> receive(socket& connectingSocket)
 {
@@ -82,13 +82,13 @@ async_task<int> send(socket& connectingSocket)
 
     std::cout << "send: totalBytesSent = " << totalBytesSent << "\n";
 
-    // The presence of the following statement gives problems. FFS:
-	// connectingSocket.close_send();
+    // The presence of the following statement gives problems: Connection closed before bytes are received.
+    //connectingSocket.close_send();
 
 	co_return 0;
 };
 
- async_task<int> echoClient(std::optional<ipv4_endpoint>& serverAddress)
+ async_task<int> echoClient(io_service& ioSvc, std::optional<ipv4_endpoint>& serverAddress)
  {
 	socket connectingSocket = socket::create_tcpv4(ioSvc);
 	connectingSocket.bind(ipv4_endpoint{});
@@ -110,20 +110,21 @@ async_task<int> send(socket& connectingSocket)
 	co_return 0;
 };
 
-async_task<int> mainflow()
+async_task<int> mainflow(io_service& ioSvc)
 {
     std::string serverAddressStr = readServerAddress();
 
     auto serverAddress = cppcoro::net::ipv4_endpoint::from_string(serverAddressStr);
 
-    co_await echoClient(serverAddress);
+    co_await echoClient(ioSvc, serverAddress);
     co_return 0;
 }
 
 int main()
 {
     std::cout << "main: entering\n";
-	mainflow();
+    io_service ioSvc;
+	mainflow(ioSvc);
     ioSvc.process_events();
     std::cout << "main: leaving\n";
 	return 0;

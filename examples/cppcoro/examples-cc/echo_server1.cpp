@@ -1,7 +1,10 @@
 /**
 * @file echo_server1.cpp
 * @brief
-*
+* Based upon TEST_CASE("send/recv TCP/IPv4")
+* in https://github.com/lewissbaker/cppcoro/blob/master/test/socket_tests.cpp
+* Client and server part have been placed in separate files.
+* 
 * @author Johan Vanslembrouck(johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
 */
 

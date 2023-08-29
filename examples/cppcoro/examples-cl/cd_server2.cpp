@@ -1,7 +1,8 @@
 /**
 * @file cd_server2.cpp
 * @brief
-*
+* Based upon ../examples-cc/cd_server2.cpp
+* 
 * @author Johan Vanslembrouck(johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
 */
 
@@ -20,9 +21,7 @@ using namespace cppcoro::net;
 
 using namespace corolib;
 
-io_service ioSvc;
-
-async_task<int> server(socket& listeningSocket)
+async_task<int> server(io_service& ioSvc, socket& listeningSocket)
 {
     cppcoro_wrapper cc_wrapper;
 
@@ -37,7 +36,7 @@ async_task<int> server(socket& listeningSocket)
     co_return 0;
 }
 
-async_task<void> mainflow()
+async_task<void> mainflow(io_service& ioSvc)
 {
     ip_endpoint serverAddress;
  
@@ -48,7 +47,7 @@ async_task<void> mainflow()
 
     saveServerAddress(serverAddress);
 
-    co_await server(serverSocket);
+    co_await server(ioSvc, serverSocket);
 
     ioSvc.stop();
     co_return;
@@ -56,7 +55,10 @@ async_task<void> mainflow()
 
 int main()
 {
-	mainflow();
+    std::cout << "main: entering\n";
+    io_service ioSvc;
+	mainflow(ioSvc);
     ioSvc.process_events();
+    std::cout << "main: leaving\n";
 	return 0;
 }
