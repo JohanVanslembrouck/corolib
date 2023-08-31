@@ -39,51 +39,51 @@ cppcoro_wrapper cc_wrapper;
 async_task<void> write(cppcoro::io_service& ioService, std::filesystem::path& filePath)
 {
     std::printf(" starting write\n"); std::fflush(stdout);
+    { // Without this extra scope, the application may sometimes abort. FFS.
+        auto f = cppcoro::write_only_file::open(ioService, filePath);
 
-    auto f = cppcoro::write_only_file::open(ioService, filePath);
+        CHECK(f.size() == 0);
 
-    CHECK(f.size() == 0);
+        char buffer[1024];
+        char c = 'a';
+        for (int i = 0; i < sizeof(buffer); ++i, c = (c == 'z' ? 'a' : c + 1))
+        {
+            buffer[i] = c;
+        }
 
-    char buffer[1024];
-    char c = 'a';
-    for (int i = 0; i < sizeof(buffer); ++i, c = (c == 'z' ? 'a' : c + 1))
-    {
-        buffer[i] = c;
+        for (int chunk = 0; chunk < 10; ++chunk)
+        {
+            // Original statement:
+            // co_await f.write(chunk * sizeof(buffer), buffer, sizeof(buffer));
+            co_await cc_wrapper.write(f, chunk * sizeof(buffer), buffer, sizeof(buffer));
+        }
     }
-
-    for (int chunk = 0; chunk < 10; ++chunk)
-    {
-        // Original statement:
-        // co_await f.write(chunk * sizeof(buffer), buffer, sizeof(buffer));
-        co_await cc_wrapper.write(f, chunk * sizeof(buffer), buffer, sizeof(buffer));
-    }
- 
     co_return;
 }
 
 async_task<void> read(cppcoro::io_service& ioService, std::filesystem::path& filePath)
 {
     std::printf(" starting read\n"); std::fflush(stdout);
+    { // Without this extra scope, the application may sometimes abort. FFS.
+        auto f = cppcoro::read_only_file::open(ioService, filePath);
 
-    auto f = cppcoro::read_only_file::open(ioService, filePath);
+        const auto fileSize = f.size();
 
-    const auto fileSize = f.size();
-        
-    CHECK(fileSize == 10240);
+        CHECK(fileSize == 10240);
 
-    char buffer[20];
+        char buffer[20];
 
-    for (std::uint64_t i = 0; i < fileSize;)
-    {
-        // Original statement:
-        // auto bytesRead = co_await f.read(i, buffer, 20);
-        auto bytesRead = co_await cc_wrapper.read(f, i, buffer, 20);
-        for (size_t j = 0; j < bytesRead; ++j, ++i)
+        for (std::uint64_t i = 0; i < fileSize;)
         {
-            CHECK(buffer[j] == ('a' + ((i % 1024) % 26)));
+            // Original statement:
+            // auto bytesRead = co_await f.read(i, buffer, 20);
+            auto bytesRead = co_await cc_wrapper.read(f, i, buffer, 20);
+            for (size_t j = 0; j < bytesRead; ++j, ++i)
+            {
+                CHECK(buffer[j] == ('a' + ((i % 1024) % 26)));
+            }
         }
     }
- 
     co_return;
 }
 

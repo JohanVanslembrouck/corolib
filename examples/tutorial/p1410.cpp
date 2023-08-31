@@ -23,8 +23,18 @@ async_task<int> coroutine5()
 {
     print(PRI1, "coroutine5(): async_operation<int> op = object01.start_operation()\n");
     async_operation<int> op = object01.start_operation();
-    print(PRI1, "coroutine5(): int v = co_await op;\n");
-    int v = co_await op;
+    int v = 0;
+    try {
+        print(PRI1, "coroutine5(): before v = co_await op;\n");
+        v = co_await op;
+        print(PRI1, "coroutine5(): after v = co_await op;\n");
+    }
+    catch (const std::system_error& ex) {
+        print(PRI1, "coroutine5(): v = co_await op; raised system_error exception!\n");
+    }
+    catch (...) {
+        print(PRI1, "coroutine5(): v = co_await op; raised ... exception!\n");
+    }
     print(PRI1, "coroutine5(): co_return v+1 = %d;\n", v + 1);
     co_return v + 1;
 }

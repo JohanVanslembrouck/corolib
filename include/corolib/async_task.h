@@ -157,37 +157,37 @@ namespace corolib
 
             void return_value(TYPE v)
             {
-                print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): begin\n", this);
+                print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): begin\n", this);
                 m_value = v;
                 m_ready = true;
 
                 if (m_ctr)
                 {
-                    print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): before m_ctr->completed();\n", this);
+                    print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): before m_ctr->completed();\n", this);
                     m_ctr->completed();
-                    print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): after m_ctr->completed();\n", this);
+                    print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): after m_ctr->completed();\n", this);
                     return;
                 }
                 if (m_waitany)
                 {
-                    print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): before m_waitany->completed();\n", this);
+                    print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): before m_waitany->completed();\n", this);
                     m_waitany->completed();
-                    print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): after m_waitany->completed();\n", this);
+                    print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): after m_waitany->completed();\n", this);
                     return;
                 }
                 if (m_awaiting)
                 {
-                    print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): before m_awaiting.resume();\n", this);
+                    print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): before m_awaiting.resume();\n", this);
                     m_awaiting.resume();
-                    print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): after m_awaiting.resume();\n", this);
+                    print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): after m_awaiting.resume();\n", this);
                 }
                 if (m_wait_for_signal)
                 {
-                    print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): before sema.signal();\n", this);
+                    print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): before sema.signal();\n", this);
                     m_sema.signal();
-                    print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): after sema.signal();\n", this);
+                    print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): after sema.signal();\n", this);
                 }
-                print(PRI2, "%p: async_task::promise_type::return_value(TYPE v): end\n", this);
+                print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): end\n", this);
             }
 
             auto final_suspend() noexcept
@@ -198,8 +198,19 @@ namespace corolib
 
             void unhandled_exception()
             {
-                print(PRI2, "%p: async_task_base::promise::promise_type()\n", this);
-                std::exit(1);
+                print(PRI2, "%p: async_task_base::promise_type::unhandled_exception()\n", this);
+                m_exception = std::current_exception();
+            }
+
+            TYPE get_result()
+            {
+                print(PRI2, "%p: async_task_base::promise_type::get_result()\n", this);
+                if (m_exception != nullptr)
+                {
+                    print(PRI1, "%p: async_task_base::promise_type::get_result(): throwing exception\n", this);
+                    std::rethrow_exception(m_exception);
+                }
+                return m_value;
             }
 
         public:
@@ -210,6 +221,8 @@ namespace corolib
             TYPE m_value;
             bool m_ready;
             bool m_wait_for_signal;
+        private:
+            std::exception_ptr m_exception;
         };
 
     protected:
@@ -226,7 +239,7 @@ namespace corolib
         async_task(handle_type h)
             : async_task_base<TYPE>(h)
         {
-            print(PRI2, "%p: async_task::async_task(handle_type h)\n", this);
+            print(PRI2, "%p: async_task<TYPE>::async_task(handle_type h)\n", this);
         }
 
         /**
@@ -249,20 +262,20 @@ namespace corolib
                 bool await_ready()
                 {
                     const bool ready = m_async_task.m_coro.done();
-                    print(PRI2, "%p: m_async_task::await_ready(): return %d;\n", this, ready);
+                    print(PRI2, "%p: async_task<TYPE>::await_ready(): return %d;\n", this, ready);
                     return ready;
                 }
 
                 void await_suspend(std::coroutine_handle<> awaiting)
                 {
-                    print(PRI2, "%p: m_async_task::await_suspend(std::coroutine_handle<> awaiting)\n", this);
+                    print(PRI2, "%p: async_task<TYPE>::await_suspend(std::coroutine_handle<> awaiting)\n", this);
                     m_async_task.m_coro.promise().m_awaiting = awaiting;
                 }
 
                 TYPE await_resume()
                 {
-                    print(PRI2, "%p: m_async_task::await_resume()\n", this);
-                    const TYPE r = m_async_task.m_coro.promise().m_value;
+                    print(PRI2, "%p: async_task<TYPE>::await_resume()\n", this);
+                    const TYPE r = m_async_task.m_coro.promise().get_result();
                     return r;
                 }
 
@@ -279,13 +292,13 @@ namespace corolib
             
             auto get_return_object()
             {
-                print(PRI2, "%p: async_task::promise_type::get_return_object()\n", this);
+                print(PRI2, "%p: async_task<TYPE>::promise_type::get_return_object()\n", this);
                 return async_task<TYPE>{handle_type::from_promise(*this)};
             }
 
             auto initial_suspend()
             {
-                print(PRI2, "%p: async_task::promise_type::initial_suspend()\n", this);
+                print(PRI2, "%p: async_task<TYPE>::promise_type::initial_suspend()\n", this);
                 return std::suspend_never{};
             }
         };
@@ -301,7 +314,7 @@ namespace corolib
         async_ltask(handle_type h)
             : async_task_base<TYPE>(h)
         {
-            print(PRI2, "%p: async_ltask::async_task(handle_type h)\n", this);
+            print(PRI2, "%p: async_ltask<TYPE>::async_task(handle_type h)\n", this);
         }
 
         /**
@@ -325,21 +338,21 @@ namespace corolib
                 bool await_ready()
                 {
                     const bool ready = m_async_ltask.m_coro.done();
-                    print(PRI2, "%p: m_async_ltask::await_ready(): return %d;\n", this, ready);
+                    print(PRI2, "%p: m_async_ltask<TYPE>::await_ready(): return %d;\n", this, ready);
                     return ready;
                 }
 
                 void await_suspend(std::coroutine_handle<> awaiting)
                 {
                     m_async_ltask.m_coro.resume();
-                    print(PRI2, "%p: m_async_ltask::await_suspend(std::coroutine_handle<> awaiting)\n", this);
+                    print(PRI2, "%p: m_async_ltask<TYPE>::await_suspend(std::coroutine_handle<> awaiting)\n", this);
                     m_async_ltask.m_coro.promise().m_awaiting = awaiting;
                 }
 
                 TYPE await_resume()
                 {
-                    print(PRI2, "%p: m_async_ltask::await_resume()\n", this);
-                    const TYPE r = m_async_ltask.m_coro.promise().m_value;
+                    print(PRI2, "%p: m_async_ltask<TYPE>::await_resume()\n", this);
+                    const TYPE r = m_async_ltask.m_coro.promise().get_result();
                     return r;
                 }
 
@@ -356,13 +369,13 @@ namespace corolib
  
             auto get_return_object()
             {
-                print(PRI2, "%p: async_ltask::promise_type::get_return_object()\n", this);
+                print(PRI2, "%p: async_ltask<TYPE>::promise_type::get_return_object()\n", this);
                 return async_ltask<TYPE>{handle_type::from_promise(*this)};
             }
 
             auto initial_suspend()
             {
-                print(PRI2, "%p: async_ltask::promise_type::initial_suspend()\n", this);
+                print(PRI2, "%p: async_ltask<TYPE>::promise_type::initial_suspend()\n", this);
                 return std::suspend_always{};
             }
         };
@@ -425,7 +438,7 @@ namespace corolib
          */
         void wait(bool waitIfNotReady = true)
         {
-            print(PRI2, "%p: async_task::wait()\n", this);
+            print(PRI2, "%p: async_task_void::wait()\n", this);
             if (!m_coro.promise().m_ready)
             {
                 if (waitIfNotReady)
@@ -518,8 +531,18 @@ namespace corolib
 
             void unhandled_exception()
             {
-                print(PRI2, "%p: async_task_void::promise::promise_type()\n", this);
-                std::exit(1);
+                print(PRI2, "%p: async_task_void::promise_type::unhandled_exception()\n", this);
+                m_exception = std::current_exception();
+            }
+
+            void get_result()
+            {
+                print(PRI2, "%p: async_task_void::promise_type::get_result()\n", this);
+                if (m_exception != nullptr)
+                {
+                    print(PRI1, "%p: async_task_void::promise_type::get_result(): throwing exception\n", this);
+                    std::rethrow_exception(m_exception);
+                }
             }
 
         public:
@@ -529,6 +552,8 @@ namespace corolib
             when_any_one* m_waitany;
             bool m_ready;
             bool m_wait_for_signal;
+        private:
+            std::exception_ptr m_exception;
         };
 
     protected:
@@ -545,7 +570,7 @@ namespace corolib
         async_task(handle_type h)
             : async_task_void(h)
         {
-            print(PRI2, "%p: async_task::async_task(handle_type h)\n", this);
+            print(PRI2, "%p: async_task<void>::async_task(handle_type h)\n", this);
         }
 
         /**
@@ -568,19 +593,19 @@ namespace corolib
                 bool await_ready()
                 {
                     const bool ready = m_async_task.m_coro.done();
-                    print(PRI2, "%p: m_async_task::await_ready(): return %d;\n", this, ready);
+                    print(PRI2, "%p: async_task<void>::await_ready(): return %d;\n", this, ready);
                     return ready;
                 }
 
                 void await_suspend(std::coroutine_handle<> awaiting)
                 {
-                    print(PRI2, "%p: m_async_task::await_suspend(std::coroutine_handle<> awaiting)\n", this);
+                    print(PRI2, "%p: async_task<void>::await_suspend(std::coroutine_handle<> awaiting)\n", this);
                     m_async_task.m_coro.promise().m_awaiting = awaiting;
                 }
 
                 void await_resume()
                 {
-                    print(PRI2, "%p: m_async_task::await_resume()\n", this);
+                    print(PRI2, "%p: async_task<void>::await_resume()\n", this);
                 }
 
             private:
@@ -596,13 +621,13 @@ namespace corolib
             
             auto get_return_object()
             {
-                print(PRI2, "%p: async_task::promise_type::get_return_object()\n", this);
+                print(PRI2, "%p: async_task<void>::promise_type::get_return_object()\n", this);
                 return async_task<void>{handle_type::from_promise(*this)};
             }
 
             auto initial_suspend()
             {
-                print(PRI2, "%p: async_task::promise_type::initial_suspend()\n", this);
+                print(PRI2, "%p: async_task<void>::promise_type::initial_suspend()\n", this);
                 return std::suspend_never{};
             }
         };
@@ -617,7 +642,7 @@ namespace corolib
         async_ltask(handle_type h)
             : async_task_void(h)
         {
-            print(PRI2, "%p: async_ltask::async_ltask(handle_type h)\n", this);
+            print(PRI2, "%p: async_ltask<void>::async_ltask(handle_type h)\n", this);
         }
 		
         /**
@@ -640,20 +665,20 @@ namespace corolib
                 bool await_ready()
                 {
                     const bool ready = m_async_ltask.m_coro.done();
-                    print(PRI2, "%p: m_async_ltask::await_ready(): return %d;\n", this, ready);
+                    print(PRI2, "%p: async_ltask<void>::await_ready(): return %d;\n", this, ready);
                     return ready;
                 }
 
                 void await_suspend(std::coroutine_handle<> awaiting)
                 {
 				    m_async_ltask.m_coro.resume();
-                    print(PRI2, "%p: async_ltask::await_suspend(std::coroutine_handle<> awaiting)\n", this);
+                    print(PRI2, "%p: async_ltask<void>::await_suspend(std::coroutine_handle<> awaiting)\n", this);
                     m_async_ltask.m_coro.promise().m_awaiting = awaiting;
                 }
 
                 void await_resume()
                 {
-                    print(PRI2, "%p: m_async_ltask::await_resume()\n", this);
+                    print(PRI2, "%p: async_ltask<void>::await_resume()\n", this);
                 }
 
             private:
@@ -669,13 +694,13 @@ namespace corolib
             
             auto get_return_object()
             {
-                print(PRI2, "%p: async_ltask::promise_type::get_return_object()\n", this);
+                print(PRI2, "%p: async_ltask<void>::promise_type::get_return_object()\n", this);
                 return async_ltask<void>{handle_type::from_promise(*this)};
             }
 
             auto initial_suspend()
             {
-                print(PRI2, "%p: async_ltask::promise_type::initial_suspend()\n", this);
+                print(PRI2, "%p: async_ltask<void>::promise_type::initial_suspend()\n", this);
                 return std::suspend_always{};
             }
         };

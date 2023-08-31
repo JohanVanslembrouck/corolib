@@ -100,8 +100,16 @@ void Class01::start_operation_impl(const int idx)
 
             if (om_async_operation_t)
             {
-                print(PRI1, "Class01::eventHandler[%p, %d](%d): om_async_operation_t->set_result(%d);\n", this, idx, i, i);
-                om_async_operation_t->set_result(i);
+                if (i >= 0)
+                {
+                    print(PRI1, "Class01::eventHandler[%p, %d](%d): om_async_operation_t->set_result(%d);\n", this, idx, i, i);
+                    om_async_operation_t->set_result(i);
+                }
+                else
+                {
+                    print(PRI1, "Class01::eventHandler[%p, %d](%d): om_async_operation_t->set_error(%d);\n", this, idx, i, i);
+                    om_async_operation_t->set_error(i);
+                }
                 om_async_operation_t->completed();
             }
             else

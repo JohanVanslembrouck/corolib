@@ -49,6 +49,8 @@ echo Running ./p1406-async_operation-immediate
 ./p1406-async_operation-immediate
 echo Running ./p1410-async_operation
 ./p1410-async_operation
+echo Running ./p1411-async_operation-exception
+./p1411-async_operation-exception
 echo Running ./p1412-async_operation-eventqueue
 ./p1412-async_operation-eventqueue
 echo Running ./p1414-async_operation-thread
@@ -59,6 +61,8 @@ echo Running ./p1416-async_operation-immediate
 ./p1416-async_operation-immediate
 echo Running ./p1420-async_operation
 ./p1420-async_operation
+echo Running ./p1421-async_operation-exception
+./p1421-async_operation-exception
 echo Running ./p1422-async_operation-eventqueue
 ./p1422-async_operation-eventqueue
 echo Running ./p1424-async_operation-thread

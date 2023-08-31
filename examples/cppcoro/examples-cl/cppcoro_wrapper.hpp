@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <functional>
+#include <system_error>
 
 #include <cppcoro/net/socket.hpp>
 
@@ -30,10 +31,8 @@ struct cppcoro_result
     {
         if (m_errorCode != 0)
         {
-            throw std::system_error{
-                static_cast<int>(m_errorCode),
-                std::system_category()
-            };
+            corolib::print(corolib::PRI1, "cppcoro_result::get_result(): m_errorCode = %d: throw exception!\n", m_errorCode);
+            throw std::system_error{ static_cast<int>(m_errorCode), std::system_category() };
         }
 
         return m_numberOfBytesTransferred;
@@ -45,7 +44,7 @@ using recv_from_result_t = std::tuple<std::size_t, cppcoro::net::ip_endpoint>;
 struct cppcoro_wrapper : public corolib::CommService
 {
     template<typename OPERATION>
-    corolib::async_operation<cppcoro_result> start(OPERATION& op)
+    corolib::async_operation<cppcoro_result> start(OPERATION& op) noexcept
     {
         int index = get_free_index();
         corolib::async_operation<cppcoro_result> ret{ this, index };
@@ -54,7 +53,7 @@ struct cppcoro_wrapper : public corolib::CommService
     }
 
     template<typename OPERATION>
-    void start_impl(OPERATION& op, int idx)
+    void start_impl(OPERATION& op, int idx) noexcept
     {
         if (op.try_start())
         {
@@ -72,51 +71,6 @@ struct cppcoro_wrapper : public corolib::CommService
             // synchronous completion
             cppcoro_result res{};
             op.get_results(res.m_errorCode, res.m_numberOfBytesTransferred);
-            completionHandler(idx, res);
-        }
-    }
-
-    corolib::async_operation<recv_from_result_t>
-        start(cppcoro::net::socket_recv_from_operation& op)
-    {
-        int index = get_free_index();
-        corolib::async_operation<recv_from_result_t> ret{ this, index };
-        start_impl(op, index);
-        return ret;
-    }
-
-    void start_impl(cppcoro::net::socket_recv_from_operation& op, int idx)
-    {
-        if (op.try_start())
-        {
-            // asynchronous completion
-            op.register_corolib_cb(
-                [this, &op, idx](cppcoro::detail::win32::dword_t errorCode,
-                    cppcoro::detail::win32::dword_t numberOfBytesTransferred)
-                {
-                    recv_from_result_t res{};
-                    try {
-                        res = op.get_result();
-                    }
-                    catch (...) {
-                        std::cout << "start_impl: op.get_result(); raised exception\n";
-                        //throw;
-                    }
-
-                    completionHandler(idx, res);
-                });
-        }
-        else
-        {
-            // synchronous completion
-            recv_from_result_t res{};
-            try {
-                res = op.get_result();
-            }
-            catch (...) {
-                std::cout << "start_impl: op.get_result(); raised exception\n";
-                //throw;
-            }
             completionHandler(idx, res);
         }
     }
@@ -158,10 +112,24 @@ struct cppcoro_wrapper : public corolib::CommService
         co_return bytesSent;
     }
 
-    corolib::async_task<recv_from_result_t> recv_from(cppcoro::net::socket& s, void* buffer, std::size_t size) noexcept
+    corolib::async_task<recv_from_result_t> recv_from(cppcoro::net::socket& s, void* buffer, std::size_t size)
     {
         cppcoro::net::socket_recv_from_operation srfo = s.recv_from(buffer, size);
-        recv_from_result_t res = co_await start(srfo);
+        cppcoro_result res1 = co_await start(srfo);
+        try {
+            std::size_t bytesReceived = res1.get_result();
+        }
+        catch (...) {
+            corolib::print(corolib::PRI1, "cppcoro_wrapper::recv_from caught exception 1\n");
+        }
+        try {
+            recv_from_result_t res = srfo.get_result();
+            co_return res;
+        }
+        catch(...) {
+            corolib::print(corolib::PRI1, "cppcoro_wrapper::recv_from caught exception 2\n");
+        }
+        recv_from_result_t res{};
         co_return res;
     }
 
@@ -169,12 +137,18 @@ struct cppcoro_wrapper : public corolib::CommService
         cppcoro::net::socket& s,
         const cppcoro::net::ip_endpoint& remoteEndPoint,
         const void* buffer,
-        std::size_t size) noexcept
+        std::size_t size)
     {
         cppcoro::net::socket_send_to_operation ssto = s.send_to(remoteEndPoint, buffer, size);
         cppcoro_result res = co_await start(ssto);
-        std::size_t bytesSent = res.get_result();
-        co_return bytesSent;
+        try {
+            std::size_t bytesSent = res.get_result();
+            co_return bytesSent;
+        }
+        catch (...) {
+            corolib::print(corolib::PRI1, "cppcoro_wrapper::send_to caught exception\n");
+        }
+        co_return 0;
     }
 
     // File operations
@@ -197,10 +171,10 @@ struct cppcoro_wrapper : public corolib::CommService
         void* buffer,
         std::size_t byteCount) noexcept
     {
-            cppcoro::file_write_operation fwo = file.write(offset, buffer, byteCount);
-            cppcoro_result res = co_await start(fwo);
-            std::size_t bytesWritten = res.get_result();
-            co_return bytesWritten;
+        cppcoro::file_write_operation fwo = file.write(offset, buffer, byteCount);
+        cppcoro_result res = co_await start(fwo);
+        std::size_t bytesWritten = res.get_result();
+        co_return bytesWritten;
     }
 
 };

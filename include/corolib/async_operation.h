@@ -20,6 +20,7 @@
 #include <vector>
 #endif
 
+#include <system_error>
 #include <coroutine>
 
 #include "print.h"
@@ -128,9 +129,6 @@ namespace corolib
     template<typename TYPE>
     class async_operation : public async_operation_base
     {
-    private:
-        TYPE m_result;
-
     public:
         /**
          * @brief async_operation is the constructor for an asynchronous operation.
@@ -140,6 +138,7 @@ namespace corolib
         async_operation(CommService* s = nullptr, int index = -1, bool timestamp = false)
             : async_operation_base(s, index, timestamp)
             , m_result{}
+            , m_errorCode{ 0 }
         {
             print(PRI2, "%p: async_operation<TYPE>::async_operation()\n", this);
         }
@@ -157,11 +156,18 @@ namespace corolib
             m_result = result;
         }
 
+        void set_error(int errorCode)
+        {
+            print(PRI1, "%p: async_operation<TYPE>::set_error(%d)\n", this, errorCode);
+            m_errorCode = errorCode;
+        }
+
         /**
          * @brief set_result_and_complete combines set_result and completed
          */
         void set_result_and_complete(TYPE result)
         {
+            print(PRI2, "%p: async_operation<TYPE>::set_result_and_complete(...)\n", this);
             set_result(result);
             completed();
         }
@@ -179,6 +185,11 @@ namespace corolib
         TYPE get_result()
         {
             print(PRI2, "%p: async_operation<TYPE>::get_result()\n", this);
+            if (m_errorCode != 0)
+            {
+                print(PRI1, "%p: async_operation<TYPE>::get_result(): m_errorCode = %d: throw exception!\n", this, m_errorCode);
+                throw std::system_error{ m_errorCode, std::system_category() };
+            }
             return m_result;
         }
 
@@ -218,7 +229,7 @@ namespace corolib
                     // To be placed in void async_operation_base::completed(); // ???
                     if (m_async.m_autoreset)
                         m_async.reset();
-                    return m_async.m_result;
+                    return m_async.get_result();
                 }
 
             private:
@@ -228,6 +239,9 @@ namespace corolib
             return awaiter{ *this };
         }
 
+    private:
+        TYPE m_result;
+        int m_errorCode;
     };
 
     template<>

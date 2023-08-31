@@ -57,11 +57,13 @@ namespace cppcoro
 			, m_impl(fileHandle, buffer, byteCount)
 		{}
 
-	private:
+	public: // give access to corolib
 
 		friend class cppcoro::detail::win32_overlapped_operation<file_read_operation>;
 
 		bool try_start() noexcept { return m_impl.try_start(*this); }
+
+    private:
 
 		file_read_operation_impl m_impl;
 
@@ -83,12 +85,14 @@ namespace cppcoro
 			, m_impl(fileHandle, buffer, byteCount)
 		{}
 
-	private:
+	public: // give access to corolib
 
 		friend class cppcoro::detail::win32_overlapped_operation_cancellable<file_read_operation_cancellable>;
 
 		bool try_start() noexcept { return m_impl.try_start(*this); }
 		void cancel() noexcept { m_impl.cancel(*this); }
+
+    private:
 
 		file_read_operation_impl m_impl;
 

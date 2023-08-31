@@ -103,8 +103,16 @@ void Class02::start_operation1_impl(const int idx)
 
             if (om_async_operation_t)
             {
-                print(PRI1, "Class02::eventHandler[%p, %d](%d): om_async_operation_t->set_result(%d);\n", this, idx, i, i);
-                om_async_operation_t->set_result(i);
+                if (i >= 0)
+                {
+                    print(PRI1, "Class02::eventHandler[%p, %d](%d): om_async_operation_t->set_result(%d);\n", this, idx, i, i);
+                    om_async_operation_t->set_result(i);
+                }
+                else
+                {
+                    print(PRI1, "Class02::eventHandler[%p, %d](%d): om_async_operation_t->set_error(%d);\n", this, idx, i, i);
+                    om_async_operation_t->set_error(i);
+                }
                 om_async_operation_t->completed();
             }
             else
@@ -207,8 +215,16 @@ void Class02::start_operation2_impl(const int idx, int bias)
 
             if (om_async_operation_t)
             {
-                print(PRI1, "Class02::eventHandler[%p, %d, %d](%d): om_async_operation_t->set_result(%d);\n", this, idx, bias, i, bias + i);
-                om_async_operation_t->set_result(bias + i);
+                if (i >= 0)
+                {
+                    print(PRI1, "Class02::eventHandler[%p, %d](%d): om_async_operation_t->set_result(%d);\n", this, idx, i, bias + i);
+                    om_async_operation_t->set_result(i);
+                }
+                else
+                {
+                    print(PRI1, "Class02::eventHandler[%p, %d](%d): om_async_operation_t->set_error(%d);\n", this, idx, i, i);
+                    om_async_operation_t->set_error(i);
+                }
                 om_async_operation_t->completed();
             }
             else

@@ -41,6 +41,7 @@ async_task<int> server(socket& serverSocket)
     // Original statement:
     // auto [bytesReceived, remoteEndPoint] = co_await serverSocket.recv_from(buffer, 100);
     auto [bytesReceived, remoteEndPoint] = co_await cc_wrapper.recv_from(serverSocket, buffer, 100);
+    auto remoteEndpointSave = remoteEndPoint;   // Save for later use
     CHECK(bytesReceived == 50);
 
     // Send an ACK response.
@@ -48,9 +49,7 @@ async_task<int> server(socket& serverSocket)
         const std::uint8_t response[1] = { 0 };
         // Original statement:
         // co_await serverSocket.send_to(remoteEndPoint, &response, 1);
-        std::cout << "server: before send_to 1\n";
         co_await cc_wrapper.send_to(serverSocket, remoteEndPoint, response, 1);
-        std::cout << "server: after send_to 1\n";
     }
 
     // Second message received won't fit within buffer.
@@ -59,18 +58,14 @@ async_task<int> server(socket& serverSocket)
         // Original statement:
         // std::tie(bytesReceived, remoteEndPoint) = co_await serverSocket.recv_from(buffer, 100);
         std::tie(bytesReceived, remoteEndPoint) = co_await cc_wrapper.recv_from(serverSocket, buffer, 100);
-        FAIL("Should have thrown");
+        // The previous statement does no throw because the exception is caught in the cppcoro_wrapper.
+        // 
+        if (bytesReceived == 0)     // This indicates an error (exception) in the previous call.
+            remoteEndPoint = remoteEndpointSave;    // Restore the original value of remoteEndPoint
     }
     catch (const std::system_error&)
     {
-        std::cout << "co_await serverSocket.recv_from(buffer, 100) threw exception\n";
-        // TODO: Map this situation to some kind of error_condition value.
-        // The win32 ERROR_MORE_DATA error code doesn't seem to map to any of the standard std::errc values.
-        //
-        // CHECK(ex.code() == ???);
-        //
-        // Possibly also need to switch to returning a std::error_code directly rather than
-        // throwing a std::system_error for this case.
+        FAIL("co_await serverSocket.recv_from(buffer, 100) threw exception");
     }
  
     // Send an NACK response.
@@ -78,9 +73,7 @@ async_task<int> server(socket& serverSocket)
         const std::uint8_t response[1] = { 1 };
         // Original statement:
         // co_await serverSocket.send_to(remoteEndPoint, response, 1);
-        std::cout << "server: before send_to 2\n";
         co_await cc_wrapper.send_to(serverSocket, remoteEndPoint, response, 1);
-        std::cout << "server: after send_to 2\n";
     }
     std::cout << "server: leaving\n";
     co_return 0;

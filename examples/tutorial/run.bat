@@ -23,11 +23,13 @@ p1404-async_operation-thread.exe
 p1405-async_operation-thread-queue.exe
 p1406-async_operation-immediate.exe
 p1410-async_operation.exe
+p1411-async_operation-exception.exe
 p1412-async_operation-eventqueue.exe
 p1414-async_operation-thread.exe
 p1415-async_operation-thread-queue.exe
 p1416-async_operation-immediate.exe
 p1420-async_operation.exe
+p1421-async_operation-exception.exe
 p1422-async_operation-eventqueue.exe
 p1424-async_operation-thread.exe
 p1425-async_operation-thread-queue.exe

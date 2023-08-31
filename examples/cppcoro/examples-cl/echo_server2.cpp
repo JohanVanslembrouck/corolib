@@ -64,7 +64,8 @@ async_task<int> echoServer(io_service& ioSvc, socket& listeningSocket)
 
     std::cout << "echoServer: totalBytesReceived = " << totalBytesReceived << ", totalBytesSent = " << totalBytesSent << "\n";
 
-	acceptingSocket.close_send();
+    // The presence of the following statement gives problems: server keeps hanging on this statement. FFS
+	//acceptingSocket.close_send();
 
     // Original statement:
 	// co_await acceptingSocket.disconnect();

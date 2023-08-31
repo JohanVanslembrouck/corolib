@@ -29,10 +29,20 @@ async_task<int> coroutine5()
     async_operation<int> op2 = object02.start_operation();
     print(PRI1, "coroutine5(): when_all<async_operation<int>> wa({ &op1, &op2 });\n");
     when_all<async_operation<int>> wa({ &op1, &op2 });
+    int v = 0;
     print(PRI1, "coroutine5(): co_await wa;\n");
     co_await wa;
-    print(PRI1, "coroutine5(): int v = op1.get_result() + op2.get_result();\n");
-    int v = op1.get_result() + op2.get_result();
+    try {
+       
+        print(PRI1, "coroutine5(): int v = op1.get_result() + op2.get_result();\n");
+        v = op1.get_result() + op2.get_result();
+    }
+    catch (const std::system_error& ex) {
+        print(PRI1, "coroutine5(): v = op1.get_result() + op2.get_result(); raised system_error exception!\n");
+    }
+    catch (...) {
+        print(PRI1, "coroutine5(): v = op1.get_result() + op2.get_result(); raised ... exception!\n");
+    }
     print(PRI1, "coroutine5(): co_return v+1 = %d;\n", v + 1);
     co_return v + 1;
 }
