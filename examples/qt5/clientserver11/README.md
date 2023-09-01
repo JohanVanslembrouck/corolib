@@ -1,7 +1,7 @@
 # Client-server application using Qt
 
-This folder contains three Qt projects: tcpserver01.pro, tcpclient01.pro and tcpclient02.pro.
-Build them using Qt Creator or qmake.
+This folder contains several Qt projects: tcpserver01.pro, tcpserver02.pro, tcpclient01.pro, tcpclient02.pro and tcpclient03.pro.
+Build them using Qt Creator or qmake using qt5.pro in the corolib root diretory.
 
 After building, launch the applications in the following order:
 

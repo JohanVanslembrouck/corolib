@@ -1,3 +1,5 @@
+TEMPLATE = app
+
 QT -= gui
 QT += network
 
@@ -51,4 +53,10 @@ HEADERS += \
 
 INCLUDEPATH += \
     ../common \
-    ../../../include \
+    ../../../include
+
+#LIBS += -L../../../lib
+#LIBS += -L../common
+#LIBS += -lcorolib
+#LIBS += -lcommonqt
+

@@ -1,3 +1,5 @@
+TEMPLATE = app
+
 QT -= gui
 QT += network
 

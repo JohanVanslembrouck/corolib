@@ -1,6 +1,6 @@
 # Various stand-alone Qt applications
 
-At the moment this folder contains only an example using timers in combination with coroutines.
+At the moment this folder contains only examples using timers in combination with coroutines.
 
 Notice that op_timer1 (returned from start_timer) can be co_await-ed for several times because 
 it has been instructed to reset itself:
