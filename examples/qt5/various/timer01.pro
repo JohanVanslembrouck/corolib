@@ -19,10 +19,7 @@ QMAKE_CXXFLAGS += -fcoroutines
 
 SOURCES += \
         timer01.cpp \
-        timermain01.cpp \
-        ../../../lib/print.cpp \
-        ../../../lib/async_operation.cpp \
-        ../../../lib/commservice.cpp \
+        timermain01.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -35,8 +32,9 @@ HEADERS += \
         ../../../include/corolib/commservice.h \
         ../../../include/corolib/print.h \
         ../../../include/corolib/when_all.h \
-        timer01.h \
+        timer01.h
 
 INCLUDEPATH += \
-    ../common \
-    ../../../include \
+    ../../../include
+
+LIBS += -L../../../ -lcorolib

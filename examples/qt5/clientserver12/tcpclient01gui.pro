@@ -30,13 +30,7 @@ SOURCES += \
     ../clientserver11/tcpconfigfile.cpp \
     main.cpp \
     mainwindow.cpp \
-    tcpclient01.cpp \
-    ../common/crc.cpp \
-    ../common/protocolmessage.cpp \
-    ../common/tcpclient.cpp \
-    ../../../lib/print.cpp \
-    ../../../lib/async_operation.cpp \
-    ../../../lib/commservice.cpp \
+    tcpclient01.cpp
 
 HEADERS += \
     ../../../include/corolib/async_operation.h \
@@ -60,9 +54,11 @@ FORMS += \
 INCLUDEPATH += \
     ../common \
     ../clientserver11 \
-    ../../../include \
+    ../../../include
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+LIBS += -L../../../ -lcorolib -lcommonqt

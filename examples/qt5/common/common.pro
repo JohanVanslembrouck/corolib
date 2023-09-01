@@ -13,7 +13,7 @@ QMAKE_CXXFLAGS += -fcoroutines
 }
 
 INCLUDEPATH += \
-    ../../../include \
+    ../../../include
 
 HEADERS *= connectioninfo.h \
         crc.h \
@@ -31,3 +31,5 @@ SOURCES += crc.cpp \
         tcpserver.cpp
 
 TARGET = commonqt
+
+DESTDIR = ../../../

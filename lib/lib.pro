@@ -13,7 +13,7 @@ QMAKE_CXXFLAGS += -fcoroutines
 }
 
 INCLUDEPATH += \
-    ../include \
+    ../include
 				
 SOURCES += async_operation.cpp \
         commservice.cpp \
@@ -21,5 +21,4 @@ SOURCES += async_operation.cpp \
 
 TARGET = corolib
 
-#DESTDIR = ../
-
+DESTDIR = ../

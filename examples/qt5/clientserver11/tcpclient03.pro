@@ -21,14 +21,7 @@ SOURCES += \
         tcpconfig.cpp \
         tcpconfigfile.cpp \
         tcpclient03.cpp \
-        tcpclientmain03.cpp \
-        ../common/crc.cpp \
-        ../common/protocolmessage.cpp \
-        ../common/tcpclientco1.cpp \
-        ../common/tcpclient.cpp \
-        ../../../lib/print.cpp \
-        ../../../lib/async_operation.cpp \
-        ../../../lib/commservice.cpp \
+        tcpclientmain03.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -55,8 +48,4 @@ INCLUDEPATH += \
     ../common \
     ../../../include
 
-#LIBS += -L../../../lib
-#LIBS += -L../common
-#LIBS += -lcorolib
-#LIBS += -lcommonqt
-
+LIBS += -L../../../ -lcorolib -lcommonqt
