@@ -194,8 +194,8 @@ public:
             stop();
         }
 
-        print(PRI1, "mainflow: when_all<async_operation<int>> war( { &sr1, &sr2, &sr3, &sr4 } );\n");
-        when_all<async_task<int>> war({ &sr1, &sr2, &sr3, &sr4 });
+        print(PRI1, "mainflow: when_all war( { &sr1, &sr2, &sr3, &sr4 } );\n");
+        when_all war({ &sr1, &sr2, &sr3, &sr4 });
         // Wait until all observers have completed their task
         print(PRI1, "mainflow: before co_await war;\n");
         co_await war;

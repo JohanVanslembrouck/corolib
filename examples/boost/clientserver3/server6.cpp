@@ -147,8 +147,8 @@ public:
                 co_return 0;
             });
         
-        print(PRI1, "main_one_client: when_any<async_operation<std::string>> wat(reqs, 4);\n");
-        when_any<async_operation<std::string>> wat(reqs, 4);
+        print(PRI1, "main_one_client: when_anyT<async_operation<std::string>> wat(reqs, 4);\n");
+        when_anyT<async_operation<std::string>> wat(reqs, 4);
 
         bool done = false;
         print(PRI1, "main_one_client: async_task<int> rcr = read_client_request(commClient, dispatcher);\n");

@@ -186,7 +186,7 @@ public:
             std::string user4("coroutine world " + std::to_string(i + 3));
             async_task<std::string> t4 = SayHelloAsync(user4);
             
-            when_all<async_task<std::string>> wa({ &t1, &t2, &t3, &t4 });
+            when_all wa({ &t1, &t2, &t3, &t4 });
             co_await wa;
 
             std::cout << "Greeter received: " << t1.get_result() << std::endl;

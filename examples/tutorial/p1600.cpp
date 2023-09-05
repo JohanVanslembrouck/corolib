@@ -161,8 +161,8 @@ async_task<int> coroutine1()
     print(PRI1, "coroutine1(): async_task<int> a = coroutine12();\n");
     async_task<int> a2 = coroutine12();
     
-    print(PRI1, "coroutine1(): when_all<async_operation<int>> wa({ &a1, &a2 });\n");
-    when_all<async_task<int>> wa({ &a1, &a2 });
+    print(PRI1, "coroutine1(): when_all wa({ &a1, &a2 });\n");
+    when_all wa({ &a1, &a2 });
     
     print(PRI1, "coroutine1(): co_await wa;\n");
     co_await wa;

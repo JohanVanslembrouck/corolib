@@ -286,7 +286,7 @@ public:
             async_operation<CORBA::ULong> op2 = start_method(i + 1);
             async_operation<CORBA::ULong> op3 = start_method(i + 2);
             async_operation<CORBA::ULong> op4 = start_method(i + 3);
-            when_all<async_operation<CORBA::ULong>> wa({&op1, &op2,  &op3, &op4});
+            when_all wa({&op1, &op2,  &op3, &op4});
             co_await wa;
             CORBA::ULong result1 = op1.get_result();
             CORBA::ULong result2 = op2.get_result();

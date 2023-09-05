@@ -92,8 +92,8 @@ async_task<void> sortCoroutine(Sorter& sorter, std::vector<int>& values)
 
    async_operation<void> op1 = sorter.start_sorting(values.begin(), values.begin() + middle);
    async_operation<void> op2 = sorter.start_sorting(values.begin() + middle, values.end());
-   print(PRI1, "sortCoroutine: when_all<async_operation<void>> wa({ &op1, &op2 })\n");
-   when_all<async_operation<void>> wa({ &op1, &op2 });
+   print(PRI1, "sortCoroutine: when_all wa({ &op1, &op2 })\n");
+   when_all wa({ &op1, &op2 });
    print(PRI1, "sortCoroutine: co_await wa;\n");
    co_await wa;
 

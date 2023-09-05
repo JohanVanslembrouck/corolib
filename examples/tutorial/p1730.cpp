@@ -50,8 +50,8 @@ async_ltask<int> coroutine4()
     print(PRI1, "coroutine4(): async_ltask<int> b = coroutine5b();\n");
     async_ltask<int> b = coroutine5b();
 
-    print(PRI1, "coroutine4(): when_all<async_ltask<int>> wa({ &a, &b });\n");
-    when_all<async_ltask<int>> wa({ &a, &b });
+    print(PRI1, "coroutine4(): when_all wa({ &a, &b });\n");
+    when_all wa({ &a, &b });
     print(PRI1, "coroutine4(): co_await wa;\n");
     co_await wa;
     print(PRI1, "coroutine4(): int v = a.get_result() + b.get_result();\n");

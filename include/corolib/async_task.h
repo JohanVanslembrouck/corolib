@@ -22,13 +22,14 @@
 #include <coroutine>
 #include "print.h"
 #include "semaphore.h"
+#include "async_base.h"
 #include "when_all_counter.h"
 #include "when_any_one.h"
 
 namespace corolib
 {
     template<typename TYPE>
-    class async_task_base
+    class async_task_base : public async_base
     {
     public:
 	
@@ -110,8 +111,9 @@ namespace corolib
             return m_coro.promise().m_value;
         }
 
-        bool is_ready()
+        bool is_ready() override
         {
+            print(PRI2, "%p: void async_task_base::is_ready() returns %d\n", this, m_coro.promise().m_ready);
             return m_coro.promise().m_ready;
         }
 
@@ -119,7 +121,7 @@ namespace corolib
          * @brief called from the constructors and destructor of when_all
          *
          */
-        void setCounter(when_all_counter* ctr)
+        void setCounter(when_all_counter* ctr) override
         {
             print(PRI2, "%p: void m_async_task_base::setCounter(%p)\n", this, ctr);
             m_coro.promise().m_ctr = ctr;
@@ -129,7 +131,7 @@ namespace corolib
 		 * @brief called from the constructors and destructor of when_any
          *
          */
-        void setWaitAny(when_any_one* waitany)
+        void setWaitAny(when_any_one* waitany) override
         {
             print(PRI2, "%p: void m_async_task_base::setWaitAny(%p)\n", this, waitany);
             m_coro.promise().m_waitany = waitany;
@@ -198,8 +200,12 @@ namespace corolib
 
             void unhandled_exception()
             {
-                print(PRI2, "%p: async_task_base::promise_type::unhandled_exception()\n", this);
+                print(PRI1, "%p: async_task_base::promise_type::unhandled_exception()\n", this);
                 m_exception = std::current_exception();
+#if 0
+                print(PRI1, "%p: async_task_base::promise_type::unhandled_exception(): rethrow exception\n", this);
+                std::rethrow_exception(m_exception);
+#endif
             }
 
             TYPE get_result()
@@ -246,7 +252,7 @@ namespace corolib
          * @brief start is a dummy function for eager start coroutines, but it required because
          * of its call in when_all and when_any.
          */
-        void start()
+        void start() override
         {
         }
 
@@ -321,7 +327,7 @@ namespace corolib
          * @brief start starts a lazy coroutine.
          * 
          */
-        void start()
+        void start() override
         {
             this->baseStart();
         }
@@ -383,7 +389,7 @@ namespace corolib
     };
 
 
-    class async_task_void
+    class async_task_void : public async_base
     {
     public:
 
@@ -453,18 +459,19 @@ namespace corolib
             }
         }
 
-        bool is_ready()
+        bool is_ready() override
         {
+            print(PRI2, "%p: void async_task_void::is_ready() returns %d\n", this, m_coro.promise().m_ready);
             return m_coro.promise().m_ready;
         }
 
-        void setCounter(when_all_counter* ctr)
+        void setCounter(when_all_counter* ctr) override
         {
             print(PRI2, "%p: void async_task_void::setCounter(%p)\n", this, ctr);
             m_coro.promise().m_ctr = ctr;
         }
 
-        void setWaitAny(when_any_one* waitany)
+        void setWaitAny(when_any_one* waitany) override
         {
             print(PRI2, "%p: void async_task_void::setWaitAny(%p)\n", this, waitany);
             m_coro.promise().m_waitany = waitany;
@@ -531,7 +538,7 @@ namespace corolib
 
             void unhandled_exception()
             {
-                print(PRI2, "%p: async_task_void::promise_type::unhandled_exception()\n", this);
+                print(PRI1, "%p: async_task_void::promise_type::unhandled_exception()\n", this);
                 m_exception = std::current_exception();
             }
 
@@ -577,7 +584,7 @@ namespace corolib
          * @brief start is a dummy function for eager start coroutines, but it required because
          * of its call in when_all and when_any.
          */
-        void start()
+        void start() override
         {
         }
 
@@ -648,7 +655,7 @@ namespace corolib
         /**
          * @brief start starts a lazy coroutine.
          */
-        void start()
+        void start() override
         {
             this->baseStart();
         }

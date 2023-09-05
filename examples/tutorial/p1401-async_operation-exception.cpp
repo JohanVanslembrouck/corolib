@@ -1,22 +1,19 @@
 /**
- * @file p1411-async_operation-exception.cpp
- * @author
- *
+ * @file p1400-async_operation.cpp
+ * @brief
+ * Starts an asynchronous operation that will be completed from the main() function.
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
-#include <corolib/print.h>
-#include <corolib/async_task.h>
+#include <functional>
+
+#include "p1400.h"
+#include "eventqueue.h"
 
 using namespace corolib;
 
-#include "class01.h"
-
-Class01 object01;
-
-// Uses coroutine1 implemented in p1410.cpp
-async_task<int> coroutine1();
+extern std::function<void(int)> eventHandler;       // p1400.cpp
 
 void completionflow()
 {
@@ -25,26 +22,31 @@ void completionflow()
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
     try {
-        print(PRI1, "completionflow(): before object01.eventHandler(-1);\n");
-        object01.eventHandler(-1);
-        print(PRI1, "completionflow(): after object01.eventHandler(-1);\n");
+        print(PRI1, "completionflow(): before eventHandler(-1);\n");
+        eventHandler(-1);
+        print(PRI1, "completionflow(): after eventHandler(-1);\n");
     }
-    catch (...) {
-        print(PRI1, "completionflow: caught exception after object01.eventHandler(-1);\n");
+    catch(...) {
+        print(PRI1, "completionflow: caught exception after eventHandler(-1);\n");
     }
 
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-    print(PRI1, "completionflow(): before object01.eventHandler(10);\n");
-    object01.eventHandler(10);
-    print(PRI1, "completionflow(): after object01.eventHandler(10);\n");
+    print(PRI1, "completionflow(): before eventHandler(10);\n");
+    eventHandler(10);
+    print(PRI1, "completionflow(): after eventHandler(10);\n");
+
+    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     // End manual event completion
 }
 
 int main()
 {
-    set_print_level(0x03);        // Use 0x03 to follow the flow in corolib
+    useMode = UseMode::USE_NONE;
+
+    set_priority(0x03);        // Use 0x03 to follow the flow in corolib
 
     print(PRI1, "main(): async_task<int> a = coroutine1();\n");
     async_task<int> a = coroutine1();

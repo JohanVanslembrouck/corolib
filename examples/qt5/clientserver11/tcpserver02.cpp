@@ -571,7 +571,7 @@ async_task<int> TcpServer02::mainTask()
     async_task<int> t2 = readTask();
     async_task<int> t3 = disconnectTask();
 
-    when_all<async_task<int>> wa({ &t1, &t2, &t3 });
+    when_all wa({ &t1, &t2, &t3 });
     co_await wa;
     // We should never reach this point.
 

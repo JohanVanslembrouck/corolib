@@ -192,8 +192,8 @@ async_task<int> Timer03::mainTask()
     // Start the timer: when it expires, the 3 coroutines will leave their loop.
     timer1.start(1000);
     
-    print(PRI1, "--- mainTask: when_all<async_task<int>> wa({ &t1a, &t1b, &t1c });\n");
-    when_all<async_task<int>> wa({ &t1a, &t1b, &t1c });
+    print(PRI1, "--- mainTask: when_all wa({ &t1a, &t1b, &t1c });\n");
+    when_all wa({ &t1a, &t1b, &t1c });
     print(PRI1, "--- mainTask: co_await wa;\n");
     co_await wa;
 

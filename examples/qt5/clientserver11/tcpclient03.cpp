@@ -171,7 +171,7 @@ async_task<int> TcpClient03::connectToServerAsync()
 
     async_operation<void> c1 = m_tcpClient1.start_connecting(m_servers[0].m_ipAddress, m_servers[0].m_port);
     async_operation<void> c2 = m_tcpClient2.start_connecting(m_servers[1].m_ipAddress, m_servers[1].m_port);
-    when_all<async_operation<void>> wa({ &c1, &c2 });
+    when_all wa({ &c1, &c2 });
 
     qDebug() << Q_FUNC_INFO << "before co_await wa;";
     co_await wa;
@@ -839,7 +839,7 @@ async_task<int> TcpClient03::measurementLoop16()
         async_operation<QByteArray> op1 = m_tcpClient1.start_reading();
         async_operation<QByteArray> op2 = m_tcpClient2.start_reading();
 
-        when_all<async_operation<QByteArray>> wa( { &op1, &op2 } );
+        when_all wa( { &op1, &op2 } );
         co_await wa;
 
         QByteArray dataOut1 = op1.get_result();
@@ -1202,7 +1202,7 @@ async_task<int> TcpClient03::measurementLoop36()
             async_operation<QByteArray> op1 = m_tcpClient1.start_reading();
             async_operation<QByteArray> op2 = m_tcpClient2.start_reading();
 
-            when_all<async_operation<QByteArray>> wa( { &op1, &op2 } );
+            when_all wa( { &op1, &op2 } );
             co_await wa;
 
             QByteArray dataOut1 = op1.get_result();
@@ -1305,7 +1305,7 @@ async_task<int> TcpClient03::measurementLoop44()
     qDebug() << Q_FUNC_INFO << "begin";
     async_task<int> t1 = measurementLoop40(m_tcpClient1);
     async_task<int> t2 = measurementLoop40(m_tcpClient2);
-    when_all<async_task<int>> wa({ &t1, &t2 });
+    when_all wa({ &t1, &t2 });
     co_await wa;
     qDebug() << Q_FUNC_INFO << "end";
     m_timerStartSending.start(100);
@@ -1403,7 +1403,7 @@ async_task<int> TcpClient03::measurementLoop54()
     qDebug() << Q_FUNC_INFO << "begin";
     async_task<int> t1 = measurementLoop50(m_tcpClient1, 5);
     async_task<int> t2 = measurementLoop50(m_tcpClient2, 5);
-    when_all<async_task<int>> wa({ &t1, &t2 });
+    when_all wa({ &t1, &t2 });
     co_await wa;
     qDebug() << Q_FUNC_INFO << "end";
     m_timerStartSending.start(100);
@@ -1454,7 +1454,7 @@ async_task<int> TcpClient03::measurementLoop57()
     qDebug() << Q_FUNC_INFO << "begin";
     async_task<int> t1 = measurementLoop50(m_tcpClient1, 5);
     async_task<int> t2 = measurementLoop50(m_tcpClient2, 7);
-    when_all<async_task<int>> wa({ &t1, &t2 });
+    when_all wa({ &t1, &t2 });
     co_await wa;
     qDebug() << Q_FUNC_INFO << "end";
     m_timerStartSending.start(100);
@@ -1554,7 +1554,7 @@ async_task<int> TcpClient03::measurementLoop64()
     qDebug() << Q_FUNC_INFO << "begin";
     async_task<int> t1 = measurementLoop60(m_tcpClient1, 5);
     async_task<int> t2 = measurementLoop60(m_tcpClient2, 5);
-    when_all<async_task<int>> wa({ &t1, &t2 });
+    when_all wa({ &t1, &t2 });
     co_await wa;
     qDebug() << Q_FUNC_INFO << "end";
     m_timerStartSending.start(100);
@@ -1605,7 +1605,7 @@ async_task<int> TcpClient03::measurementLoop67()
     qDebug() << Q_FUNC_INFO << "begin";
     async_task<int> t1 = measurementLoop60(m_tcpClient1, 5);
     async_task<int> t2 = measurementLoop60(m_tcpClient2, 7);
-    when_all<async_task<int>> wa({ &t1, &t2 });
+    when_all wa({ &t1, &t2 });
     co_await wa;
     qDebug() << Q_FUNC_INFO << "end";
     m_timerStartSending.start(100);
@@ -1713,7 +1713,7 @@ async_task<int> TcpClient03::measurementLoop74()
     qDebug() << Q_FUNC_INFO << "begin";
     async_task<int> t1 = measurementLoop70(m_tcpClient1, 5, 30);
     async_task<int> t2 = measurementLoop70(m_tcpClient2, 5, 20);
-    when_all<async_task<int>> wa({ &t1, &t2 });
+    when_all wa({ &t1, &t2 });
     co_await wa;
     qDebug() << Q_FUNC_INFO << "end";
     m_timerStartSending.start(100);
@@ -1764,7 +1764,7 @@ async_task<int> TcpClient03::measurementLoop77()
     qDebug() << Q_FUNC_INFO << "begin";
     async_task<int> t1 = measurementLoop70(m_tcpClient1, 5, 30);
     async_task<int> t2 = measurementLoop70(m_tcpClient2, 7, 20);
-    when_all<async_task<int>> wa({ &t1, &t2 });
+    when_all wa({ &t1, &t2 });
     co_await wa;
     qDebug() << Q_FUNC_INFO << "end";
     m_timerStartSending.start(100);

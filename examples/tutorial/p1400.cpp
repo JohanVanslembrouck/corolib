@@ -91,11 +91,23 @@ void start_operation_impl(async_operation<int>& op)
     async_op(
         [&op](int i)
         {
-            print(PRI1, "completionHandler(): op->set_result(%d)\n", i);
-            op.set_result_and_complete(i);
+            if (i >= 0)
+            {
+                print(PRI1, "completionHandler(): op->set_result(%d)\n", i);
+                op.set_result(i);
+            }
+            else
+            {
+                print(PRI1, "completionHandler(): op->set_error(%d)\n", i);
+                op.set_error(i);
+            }
+            op.completed();
         });
 }
 
+#define CATCH_EXCEPTION_IN_COROUTINE5 1
+#define THROW_EXCEPTION_FROM_COROUTINE5 0
+#define CATCH_EXCEPTION_IN_COROUTINE4 1
 
 async_task<int> coroutine5()
 {
@@ -103,8 +115,28 @@ async_task<int> coroutine5()
     async_operation<int> op;
     print(PRI1, "coroutine5(): start_operation_impl(op);\n");
     start_operation_impl(op);
-    print(PRI1, "coroutine5(): int v = co_await op;\n");
+#if !CATCH_EXCEPTION_IN_COROUTINE5
+    print(PRI1, "coroutine5(): before int v = co_await op;\n");
     int v = co_await op;
+    print(PRI1, "coroutine5(): after int v = co_await op;\n");
+#else
+    int v = 0;
+    try {
+        print(PRI1, "coroutine5(): before v = co_await op;\n");
+        v = co_await op;
+        print(PRI1, "coroutine5(): after v = co_await op;\n");
+    }
+    catch (const std::system_error& ex) {
+        print(PRI1, "coroutine5(): v = co_await op; raised system_error exception!\n");
+    }
+    catch (...) {
+        print(PRI1, "coroutine5(): v = co_await op; raised ... exception!\n");
+    }
+#endif
+#if THROW_EXCEPTION_FROM_COROUTINE5
+    print(PRI1, "coroutine5(): throw std::system_error{ 234, std::system_category() }; \n");
+    throw std::system_error{ 234, std::system_category() };
+#endif
     print(PRI1, "coroutine5(): co_return v+1 = %d;\n", v + 1);
     co_return v + 1;
 }
@@ -113,8 +145,23 @@ async_task<int> coroutine4()
 {
     print(PRI1, "coroutine4(): async_task<int> a = coroutine5();\n");
     async_task<int> a = coroutine5();
+#if !CATCH_EXCEPTION_IN_COROUTINE4
     print(PRI1, "coroutine4(): int v = co_await a;\n");
     int v = co_await a;
+#else
+    int v = 0;
+    try {
+        print(PRI1, "coroutine4(): before v = co_await a;\n");
+        v = co_await a;
+        print(PRI1, "coroutine4(): after v = co_await a;\n");
+    }
+    catch (const std::system_error& ex) {
+        print(PRI1, "coroutine4(): v = co_await a; raised system_error exception!\n");
+    }
+    catch (...) {
+        print(PRI1, "coroutine4(): v = co_await a; raised ... exception!\n");
+    }
+#endif
     print(PRI1, "coroutine4(): co_return v+1 = %d;\n", v + 1);
     co_return v + 1;
 }

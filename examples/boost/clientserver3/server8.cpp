@@ -322,8 +322,8 @@ public:
 
         dispatcher.invokeAll("EOF");
 
-        print(PRI1, "main_one_client: when_all<async_task<int>> obs({ &sr1, &sr2, &sr3, &sr4 });\n");
-        when_all<async_task<int>> obs({ &sr1, &sr2, &sr3, &sr4 });
+        print(PRI1, "main_one_client: when_all obs({ &sr1, &sr2, &sr3, &sr4 });\n");
+        when_all obs({ &sr1, &sr2, &sr3, &sr4 });
         print(PRI1, "main_one_client: co_await obs;\n");
         co_await obs;
         (void)i;

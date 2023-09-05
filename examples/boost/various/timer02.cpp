@@ -263,7 +263,7 @@ async_task<int> Timer02::timerTask04()
     start_timer(op_timer1, timer1, 1000);
     start_timer(op_timer2, timer2, 1000);
 
-    when_all<async_operation<void>> wa({ &op_timer1, &op_timer2 });
+    when_all wa({ &op_timer1, &op_timer2 });
     co_await wa;
     print(PRI1, "--- timerTask04: after co_await wa --- 1000 + 1000\n");
     
@@ -272,35 +272,35 @@ async_task<int> Timer02::timerTask04()
         start_timer(op_timer1, timer1, 1000);
         start_timer(op_timer2, timer2, 1500);
 
-        when_all<async_operation<void>> wa1({ &op_timer1, &op_timer2 });
+        when_all wa1({ &op_timer1, &op_timer2 });
         co_await wa1;
         print(PRI1, "--- timerTask04: after co_await wa1 --- 1000 + 1500\n");
     
         start_timer(op_timer1, timer1, 2000);
         start_timer(op_timer2, timer2, 2500);
 
-        when_all<async_operation<void>> wa2({ &op_timer1, &op_timer2 });
+        when_all wa2({ &op_timer1, &op_timer2 });
         co_await wa2;
         print(PRI1, "--- timerTask04: after co_await wa2 --- 2000 + 2500\n");
     
         start_timer(op_timer1, timer1, 3000);
         start_timer(op_timer2, timer2, 3500);
 
-        when_all<async_operation<void>> wa3({ &op_timer1, &op_timer2 });
+        when_all wa3({ &op_timer1, &op_timer2 });
         co_await wa3;
         print(PRI1, "--- timerTask04: after co_await wa3 --- 3000 + 3500\n");
     
         start_timer(op_timer1, timer1, 4000);
         start_timer(op_timer2, timer2, 4500);
 
-        when_all<async_operation<void>> wa4({ &op_timer1, &op_timer2 });
+        when_all wa4({ &op_timer1, &op_timer2 });
         co_await wa4;
         print(PRI1, "--- timerTask04: after co_await wa4 --- 4000 + 4500\n");
     
         start_timer(op_timer1, timer1, 5000);
         start_timer(op_timer2, timer2, 5500);
 
-        when_all<async_operation<void>> wa5({ &op_timer1, &op_timer2 });
+        when_all wa5({ &op_timer1, &op_timer2 });
         co_await wa5;
         print(PRI1, "--- timerTask04: after co_await wa5 --- 5000 + 5500\n");
     }
@@ -319,8 +319,8 @@ async_task<int> Timer02::mainTask()
     async_task<int> t3 = timerTask03();
     async_task<int> t4 = timerTask04();
 
-    print(PRI1, "--- mainTask: when_all<async_task<int>> wa({ &t1, &t2, &t3, &t4 });\n");
-    when_all<async_task<int>> wa({ &t1, &t2, &t3, &t4 });
+    print(PRI1, "--- mainTask: when_all wa({ &t1, &t2, &t3, &t4 });\n");
+    when_all wa({ &t1, &t2, &t3, &t4 });
     print(PRI1, "--- mainTask: co_await wa;\n");
     co_await wa;
 

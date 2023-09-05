@@ -24,6 +24,7 @@
 #include <coroutine>
 
 #include "print.h"
+#include "async_base.h"
 #include "when_all_counter.h"
 #include "when_any_one.h"
 
@@ -31,7 +32,7 @@ namespace corolib
 {
     class CommService;
 
-    class async_operation_base
+    class async_operation_base : public async_base
     {
     public:
         async_operation_base(CommService* s = nullptr, int index = -1, bool timestamp = false);
@@ -51,8 +52,9 @@ namespace corolib
          */
         void completed();
 		
-        bool is_ready()
+        bool is_ready() override
         {
+            print(PRI2, "%p: void async_operation_base::is_ready() returns %d\n", this, m_ready);
             return m_ready;
         }
 
@@ -60,7 +62,7 @@ namespace corolib
          * @brief called from the constructors and destructor of when_all
          *
          */
-        void setCounter(when_all_counter* ctr)
+        void setCounter(when_all_counter* ctr) override
         {
             print(PRI2, "%p: void async_operation_base::setCounter(%p)\n", this, ctr);
             m_ctr = ctr;
@@ -70,7 +72,7 @@ namespace corolib
 		 * @brief called from the constructors and destructor of when_any
          *
          */
-        void setWaitAny(when_any_one* waitany)
+        void setWaitAny(when_any_one* waitany) override
         {
             print(PRI2, "%p: void async_operation_base::setWaitAny(%p)\n", this, waitany);
             m_waitany = waitany;
@@ -104,7 +106,7 @@ namespace corolib
          * @brief start is a dummy function for asynchronous operations, but it required because
          * of its call in when_all and when_any.
          */
-        void start()
+        void start() override
         {
         }
 

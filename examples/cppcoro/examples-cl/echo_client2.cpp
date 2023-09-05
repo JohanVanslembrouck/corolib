@@ -99,7 +99,7 @@ async_task<int> send(socket& connectingSocket)
 
     async_task<int> cl = send(connectingSocket);
     async_task<int> rc = receive(connectingSocket);
-    when_all<async_task<int>> wa({ &cl, &rc });
+    when_all wa({ &cl, &rc });
     co_await wa;
 
     // Original statement:

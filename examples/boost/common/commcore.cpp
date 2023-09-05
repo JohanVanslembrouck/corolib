@@ -50,6 +50,7 @@ void CommCore::stop()
 async_operation<void> CommCore::start_writing(const char* str, int size)
 {
     print(PRI2, "%p: CommCore::start_writing()\n", this);
+    print(PRI3, "%p: CommCore::start_writing(str = %s, size = %d)\n", this, str, size);
     int index = get_free_index_ts();
     print(PRI2, "%p: CommCore::start_writing(): index = %d\n", this, index);
     async_operation<void> ret{ this, index, true };

@@ -35,7 +35,8 @@ namespace corolib
         , m_autoreset(false)
         , m_timestamp(timestamp)
     {
-        print(PRI2, "%p: async_operation_base::async_operation_base(CommService* s = %p, index = %d)\n", this, s, index);
+        print(PRI2, "%p: async_operation_base::async_operation_base(CommService* s = %p, index = %d, timestamp = %d)\n",
+            this, s, index, static_cast<int>(timestamp));
 		
         if (m_service && m_index != -1)
         {
@@ -87,7 +88,8 @@ namespace corolib
         , m_autoreset(s.m_autoreset)
         , m_timestamp(s.m_timestamp)      // Should be the same: we cannot "move" from implementation.
     {
-        print(PRI2, "%p: async_operation_base::async_operation_base(async_operation_base&& s): s.m_index = %d\n", this, s.m_index);
+        print(PRI2, "%p: async_operation_base::async_operation_base(async_operation_base&& s): s.m_index = %d, s.m_service = %p, s.m_timestamp = %d\n",
+                this, s.m_index, s.m_service, static_cast<int>(s.m_timestamp));
 
         // Tell the CommService we are at another address after the move.
         if (m_service && m_index != -1)
@@ -105,7 +107,18 @@ namespace corolib
      */
     async_operation_base& async_operation_base::operator = (async_operation_base&& s) noexcept
     {
-        print(PRI2, "%p: async_operation_base::operator = (async_operation_base&& s): m_index = %d, s.m_index = %d\n", this, m_index, s.m_index);
+        print(PRI2, "%p: async_operation_base::operator = (async_operation_base&& s):\n\tm_index = %d, s.m_index = %d, s.m_service = %p, s.m_timestamp = %d\n",
+            this, m_index, s.m_index, s.m_service, static_cast<int>(s.m_timestamp));
+
+        if (m_timestamp != s.m_timestamp)
+            if (m_timestamp == 1)
+                // We should not go from timestamped to non-timestamped.
+                // Going from non-timestamped to timestamped can occur when the async_operation is declared without
+                // immediately initializing it to an operation (e.g. when it is declared in an array).
+                print(PRI1, "%p: async_operation_base::operator = (async_operation_base&& s): m_timestamp = %d != s.m_timestamp = %d\n",
+                    this, static_cast<int>(m_timestamp), static_cast<int>(s.m_timestamp));
+
+        m_timestamp = s.m_timestamp;
 
         // Clean our entry at the original location, because we will move to another one.
         if (m_service && m_index != -1)
@@ -138,7 +151,6 @@ namespace corolib
         m_index = s.m_index;
         m_ready = s.m_ready;
         m_autoreset = s.m_autoreset;
-        //m_timestamp = s.m_timestamp;	// Should be the same: we cannot "move" from implementation.
 
         // Tell the CommService we are at another address after the move.
         if (m_service)

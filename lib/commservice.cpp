@@ -42,6 +42,7 @@ CommService::~CommService()
 
 int CommService::get_free_index()
 {
+    print(PRI3, "%p: CommService::get_free_index(): m_index = %d\n", this, m_index);
     for (int i = 0; i < NROPERATIONS / 2; i++)
     {
         m_index = (m_index + 1) & (NROPERATIONS - 1);
@@ -61,6 +62,7 @@ int CommService::get_free_index()
 
 int CommService::get_free_index_ts()
 {
+    print(PRI3, "%p: CommService::get_free_index_ts(): m_index_ts = %d\n", this, m_index_ts);
     for (int i = 0; i < NROPERATIONS / 2; i++)
     {
         m_index_ts = (m_index_ts + 1) & (NROPERATIONS - 1);
@@ -114,9 +116,12 @@ void CommService::add_entry(int index, async_operation_base* op, bool timestamp)
 
 void CommService::update_entry(int index, async_operation_base* op, bool timestamp)
 {
+    print(PRI2, "%p: CommService::update_entry(index = %d, op = %p, timestamp = %d)\n",
+                                        this, index, op, static_cast<int>(timestamp));
     if (index == -1)
     {
-        print(PRI1, "%p: CommService::update_entry(): index == -1!\n", this);
+        print(PRI1, "%p: CommService::update_entry(index = -1, op = %d, timestamp = %d): index == -1!\n",
+                                        this, index, op, static_cast<int>(timestamp));
         return;
     }
 

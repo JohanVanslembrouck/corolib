@@ -64,10 +64,10 @@ async_task<void> start1()
     print(PRI1, "start1(): co_await when_all...\n");
 #if 0
 	// The following statement does not compile with g++ 11.3.0
-    co_await when_all<async_task<void>>({ &p, &c });
+    co_await when_all({ &p, &c });
 #else
 	// Split it into two lines:
-	when_all<async_task<void>> wa({ &p, &c });
+    when_all wa({ &p, &c });
 	co_await wa;
 #endif
     print(PRI1, "start1(); co_return;\n");
@@ -83,12 +83,14 @@ async_task<void> start2()
     async_task<void> p = fibonacciConsumer();
 
     print(PRI1, "start2(): co_await when_all...\n");
+#if 0
 	// The following statement does not compile with g++ 11.3.0
-    //co_await when_all<async_task<void>>({ &p, &c });
+    co_await when_all({ &p, &c });
+#else
 	// Split it into two lines:
-	when_all<async_task<void>> wa({ &p, &c });
+    when_all wa({ &p, &c });
 	co_await wa;
-
+#endif
     print(PRI1, "start2(); co_return;\n");
     co_return;
 }

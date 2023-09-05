@@ -21,17 +21,25 @@ using namespace corolib;
 extern Class01 object01;
 extern Class01 object02;
 
+#define CATCH_EXCEPTION_IN_COROUTINE5 1
+#define THROW_EXCEPTION_FROM_COROUTINE5 0
+#define CATCH_EXCEPTION_IN_COROUTINE4 1
+
 async_task<int> coroutine5()
 {
     print(PRI1, "coroutine5(): async_operation<int> op1 = object01.start_operation();\n");
     async_operation<int> op1 = object01.start_operation();
     print(PRI1, "coroutine5(): async_operation<int> op2 = object02.start_operation();\n");
     async_operation<int> op2 = object02.start_operation();
-    print(PRI1, "coroutine5(): when_all<async_operation<int>> wa({ &op1, &op2 });\n");
-    when_all<async_operation<int>> wa({ &op1, &op2 });
+    print(PRI1, "coroutine5(): when_all wa({ &op1, &op2 });\n");
+    when_all wa({ &op1, &op2 });
     int v = 0;
     print(PRI1, "coroutine5(): co_await wa;\n");
     co_await wa;
+#if !CATCH_EXCEPTION_IN_COROUTINE5
+    print(PRI1, "coroutine5(): int v = op1.get_result() + op2.get_result();\n");
+    v = op1.get_result() + op2.get_result();
+#else
     try {
        
         print(PRI1, "coroutine5(): int v = op1.get_result() + op2.get_result();\n");
@@ -43,6 +51,11 @@ async_task<int> coroutine5()
     catch (...) {
         print(PRI1, "coroutine5(): v = op1.get_result() + op2.get_result(); raised ... exception!\n");
     }
+#endif
+#if THROW_EXCEPTION_FROM_COROUTINE5
+    print(PRI1, "coroutine5(): throw std::system_error{ 234, std::system_category() }; \n");
+    throw std::system_error{ 234, std::system_category() };
+#endif
     print(PRI1, "coroutine5(): co_return v+1 = %d;\n", v + 1);
     co_return v + 1;
 }
@@ -51,8 +64,23 @@ async_task<int> coroutine4()
 {
     print(PRI1, "coroutine4(): async_task<int> a = coroutine5();\n");
     async_task<int> a = coroutine5();
+#if !CATCH_EXCEPTION_IN_COROUTINE4
     print(PRI1, "coroutine4(): int v = co_await a;\n");
     int v = co_await a;
+#else
+    int v = 0;
+    try {
+        print(PRI1, "coroutine4(): before v = co_await a;\n");
+        v = co_await a;
+        print(PRI1, "coroutine4(): after v = co_await a;\n");
+    }
+    catch (const std::system_error& ex) {
+        print(PRI1, "coroutine4(): v = co_await a; raised system_error exception!\n");
+    }
+    catch (...) {
+        print(PRI1, "coroutine4(): v = co_await a; raised ... exception!\n");
+    }
+#endif
     print(PRI1, "coroutine4(): co_return v+1 = %d;\n", v + 1);
     co_return v + 1;
 }
