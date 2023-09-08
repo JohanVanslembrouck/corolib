@@ -132,9 +132,7 @@ async_task<int> coroutine1()
 	// The following statement does not compile with g++ 11.3.0
     co_await when_all( { &t1, &t2 } );
 #else
-	// Split it into two lines:
-    when_all wa({ &t1, &t2 });
-	co_await wa;
+    co_await when_all(t1, t2);
 #endif
     int v = t1.get_result() + t2.get_result();
     

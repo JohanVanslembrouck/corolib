@@ -66,9 +66,7 @@ async_task<void> start1()
 	// The following statement does not compile with g++ 11.3.0
     co_await when_all({ &p, &c });
 #else
-	// Split it into two lines:
-    when_all wa({ &p, &c });
-	co_await wa;
+    co_await when_all(p, c);
 #endif
     print(PRI1, "start1(); co_return;\n");
     co_return;
@@ -87,9 +85,7 @@ async_task<void> start2()
 	// The following statement does not compile with g++ 11.3.0
     co_await when_all({ &p, &c });
 #else
-	// Split it into two lines:
-    when_all wa({ &p, &c });
-	co_await wa;
+    co_await when_all(p, c);
 #endif
     print(PRI1, "start2(); co_return;\n");
     co_return;

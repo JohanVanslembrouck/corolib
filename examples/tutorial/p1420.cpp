@@ -31,8 +31,8 @@ async_task<int> coroutine5()
     async_operation<int> op1 = object01.start_operation();
     print(PRI1, "coroutine5(): async_operation<int> op2 = object02.start_operation();\n");
     async_operation<int> op2 = object02.start_operation();
-    print(PRI1, "coroutine5(): when_all wa({ &op1, &op2 });\n");
-    when_all wa({ &op1, &op2 });
+    print(PRI1, "coroutine5(): when_all wa(op1, op2);\n");
+    when_all wa(op1, op2);
     int v = 0;
     print(PRI1, "coroutine5(): co_await wa;\n");
     co_await wa;

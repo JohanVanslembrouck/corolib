@@ -20,6 +20,7 @@
 #define _WHEN_ANY_AWAITABLE_
 
 #include <vector>
+#include <type_traits>
 
 #include "print.h"
 #include "when_any_one.h"
@@ -30,6 +31,16 @@ namespace corolib
     class when_any
     {
     public:
+        /**
+         * @brief constructor that takes a variable list of async_base-derived objects and
+         * populates the internal vector m_elements with its elements.
+         */
+        template<typename... AsyncBaseTypes>
+        when_any(AsyncBaseTypes&... others)
+        {
+            make_when_any(others...);
+        }
+
         /**
          * @brief constructor that takes an initializer list and
          * populates the internal vector m_elements with its elements.
@@ -175,6 +186,30 @@ namespace corolib
 
             return awaiter{ *this };
         }
+
+    protected:
+
+        template<typename... AsyncBaseTypes>
+        void make_when_any(AsyncBaseTypes&... others);
+
+        template<typename T, typename... AsyncBaseTypes,
+                 typename std::enable_if<std::is_base_of_v<async_base, T>, int>::type = 0>
+        void make_when_any(T& t, AsyncBaseTypes&... others) {
+            async_base* async_op = static_cast<async_base*>(&t);
+            // Only place the object in m_elements if it has not yet been completed.
+            if (!async_op->is_ready())
+            {
+                when_any_one* q = new when_any_one();
+                m_wait_any.push_back(q);
+                async_op->setWaitAny(q);
+                m_elements.push_back(async_op);
+            }
+            make_when_any(others...);
+        };
+
+        //template<>      // g++:  error: explicit specialization in non-namespace scope ‘class corolib::when_any’
+        void make_when_any() {
+        };
 
     private:
         std::vector<when_any_one*> m_wait_any;

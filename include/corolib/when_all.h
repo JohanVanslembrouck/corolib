@@ -18,6 +18,7 @@
 #define _WHEN_ALL
 
 #include <vector>
+#include <type_traits>
 
 #include "print.h"
 #include "when_all_counter.h"
@@ -28,6 +29,18 @@ namespace corolib
     class when_all
     {
     public:
+
+        /**
+         * @brief constructor that takes a variable list of async_base-derived objects and
+         * populates the internal vector m_elements with its elements.
+         */
+        template<typename... AsyncBaseTypes>
+        when_all(AsyncBaseTypes&... others)
+            : m_counter(0)
+        {
+            make_when_all(others...);
+        }
+
         /**
          * @brief constructor that takes an initializer list and
          * populates the internal vector m_elements with its elements.
@@ -135,6 +148,29 @@ namespace corolib
 
             return awaiter{ *this };
         }
+
+    protected:
+
+        template<typename... AsyncBaseTypes>
+        void make_when_all(AsyncBaseTypes&... others);
+
+        template<typename T, typename... AsyncBaseTypes, 
+                 typename std::enable_if<std::is_base_of_v<async_base, T>, int>::type = 0>
+        void make_when_all(T& t, AsyncBaseTypes&... others) {
+            async_base* async_op = static_cast<async_base*>(&t);
+            // Only place the object in m_elements if it has not yet been completed.
+            if (!async_op->is_ready())
+            {
+                async_op->setCounter(&m_counter);
+                m_elements.push_back(async_op);
+                m_counter.increment();
+            }
+            make_when_all(others...);
+        };
+
+        //template<>      // g++: error: explicit specialization in non-namespace scope ‘class corolib::when_all’
+        void make_when_all() {
+        };
 
     private:
         when_all_counter m_counter;

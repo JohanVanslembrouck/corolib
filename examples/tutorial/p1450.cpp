@@ -59,8 +59,8 @@ async_task<int> coroutine4()
     async_task<int> a = coroutine5a();
     print(PRI1, "coroutine4(): async_task<int> b = coroutine5b();\n");
     async_task<int> b = coroutine5b();
-    print(PRI1, "coroutine4(): when_all wa({ &a, &b });\n");
-    when_all wa({ &a, &b });
+    print(PRI1, "coroutine4(): when_all wa(a, b);\n");
+    when_all wa(a, b);
     print(PRI1, "coroutine4(): co_await wa;\n");
     co_await wa;
     print(PRI1, "coroutine4(): int v = a.get_result() + b.get_result();\n");

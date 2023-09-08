@@ -38,8 +38,8 @@ async_task<void> completionflow(async_task<int>& a1, async_task<int>& a2, async_
     print(PRI1, "completionflow(): after op.set_result_and_complete(std::nullopt);\n");
     // End manual event completion
 
-    print(PRI1, "completionflow(): when_all wa({ &a1, &a2, &a3 });\n");
-    when_all wa({ &a1, &a2, &a3 });
+    print(PRI1, "completionflow(): when_all wa(a1, a2, a3);\n");
+    when_all wa(a1, a2, a3);
     print(PRI1, "completionflow(): co_await wa;\n");
     co_await wa;
 }

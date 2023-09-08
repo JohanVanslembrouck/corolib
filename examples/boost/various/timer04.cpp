@@ -179,7 +179,7 @@ async_task<int> Timer04::mainTask()
     co_await op_timer1;
     print(PRI1, "%p: Timer04::mainTask: after co_await op_timer1 1000\n", this);
 
-    when_all wa({ &t1a, &t1b, &t1c });
+    when_all wa(t1a, t1b, t1c);
     co_await wa;
 
     print(PRI1, "--- mainTask: co_return 1;\n");

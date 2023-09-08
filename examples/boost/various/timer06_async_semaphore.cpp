@@ -135,9 +135,7 @@ async_task<void> Timer06::mainTask()
 	// The following statement does not compile with g++ 11.3.0
     co_await when_all({ &t0, &t1, &t2, &t3, &t4, &t5, &t6, &t7, &t8, &t9, &t10, &t11 });
 #else
-	// Split it into two lines:
-    when_all wa({ &t0, &t1, &t2, &t3, &t4, &t5, &t6, &t7, &t8, &t9, &t10, &t11 });
-	co_await wa;
+    co_await when_all(t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11);
 #endif
     print(PRI1, "mainTask(): co_return;\n");
     co_return;

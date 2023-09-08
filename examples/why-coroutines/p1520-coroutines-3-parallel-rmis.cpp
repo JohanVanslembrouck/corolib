@@ -41,9 +41,7 @@ public:
         // The following statement does not compile with g++ 11.3.0
         co_await when_all({ &op1, &op2, &op3 });
 #else
-        // Split it into two lines:
-        when_all wa({ &op1, &op2, &op3 });
-        co_await wa;
+        co_await when_all(op1, op2, op3);
 #endif
         printf("Class01a::coroutine1(); result = %d\n", op1.get_result().ret +  op2.get_result().ret + op3.get_result().ret);
     } // g++ 11 reports at this line: error: array used as initializer

@@ -406,6 +406,43 @@ async_task<int> mainflowWA3(CommClient& c1, CommClient& c2, CommClient& c3)
 
 /**
  * @brief
+ *
+ * @param c1 is the first client
+ * @param c2 is the second client
+ * @param c3 is the third client
+ * @return always 0
+ */
+async_task<int> mainflowWA4(CommClient& c1, CommClient& c2, CommClient& c3)
+{
+    print(PRI1, "mainflowWA4: begin\n");
+
+    int counter = 0;
+    for (int i = 0; i < 60; i++)
+    {
+        print(PRI1, "mainflowWA4: %d ------------------------------------------------------------------\n", i);
+
+        print(PRI1, "mainflowWA4: mainflowOneClient(c1, 0, counter++);\n");
+        async_task<int> tc1 = mainflowOneClient(c1, 0, counter++);
+        print(PRI1, "mainflowWA4: mainflowOneClient(c2, 1, counter++);\n");
+        async_task<int> tc2 = mainflowOneClient(c2, 1, counter++);
+        print(PRI1, "mainflowWA4: mainflowOneClient(c3, 2, counter++);\n");
+        async_task<int> tc3 = mainflowOneClient(c3, 2, counter++);
+
+        print(PRI1, "mainflowWA4: when_all wat(tc1, tc2, tc3);\n");
+        when_all wat(tc1, tc2, tc3);
+
+        print(PRI1, "mainflowWA4: co_await wat;\n");
+        co_await wat;
+
+        print(PRI1, "mainflowWA4: std::this_thread::sleep_for(std::chrono::seconds(1))\n");
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+    print(PRI1, "mainflowWA4: co_return 0;\n");
+    co_return 0;
+}
+
+/**
+ * @brief
  * mainflowX selects one of the 4 mainflowWA implementations (mainflowWA0 till mainflowWA3) to be used
  *
  * @param c1 is the first client
@@ -438,6 +475,12 @@ void mainflowX(CommClient& c1, CommClient& c2, CommClient& c3, int selected)
     {
         print(PRI1, "mainflowX: async_task<int> si3 = mainflowWA3(c1, c2, c3)\n");
         async_task<int> si3 = mainflowWA3(c1, c2, c3);
+    }
+    break;
+    case 4:
+    {
+        print(PRI1, "mainflowX: async_task<int> si4 = mainflowWA4(c1, c2, c3)\n");
+        async_task<int> si4 = mainflowWA4(c1, c2, c3);
     }
     break;
     }
@@ -474,6 +517,11 @@ async_task<int> mainflowAll(CommClient& c1, CommClient& c2, CommClient& c3)
     print(PRI1, "mainflowAll: co_await si3;\n");
     co_await si3;
 
+    print(PRI1, "mainflowAll: async_task<int> si4 = mainflowWA4(c1, c2, c3} )\n");
+    async_task<int> si4 = mainflowWA4(c1, c2, c3);
+    print(PRI1, "mainflowAll: co_await si4;\n");
+    co_await si4;
+
     print(PRI1, "mainflowAll: co_return 0;\n");
     co_return 0;
 }
@@ -495,9 +543,9 @@ int main(int argc, char* argv[])
     {
         int selected = 0;
         selected = atoi(argv[1]);
-        if (selected < 0 || selected > 3)
+        if (selected < 0 || selected > 4)
         {
-            print(PRI1, "main: selection must be in the range [0..3]\n");
+            print(PRI1, "main: selection must be in the range [0..4]\n");
             return 0;
         }
         print(PRI1, "main: mainflowX(c1, c2, c3, selected);\n");

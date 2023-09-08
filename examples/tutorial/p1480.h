@@ -17,7 +17,6 @@
 #include <corolib/commservice.h>
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
-#include <corolib/when_all.h>
 
 #include "eventqueue.h"
 #include "eventqueuethr.h"

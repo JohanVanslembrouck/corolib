@@ -50,8 +50,8 @@ async_task<int> coroutine4()
     async_task<int> a = coroutine5a();
     print(PRI1, "coroutine4(): async_task<int> b = coroutine5b();\n");
     async_task<int> b = coroutine5b();
-    print(PRI1, "coroutine4(): when_any wa({ &a, &b });\n");
-    when_any wa({ &a, &b });
+    print(PRI1, "coroutine4(): when_any wa(a, b);\n");
+    when_any wa(a, b);
 	int idx = -1;
     for (int i = 0; i < 2; i++) 
     {
