@@ -33,8 +33,11 @@ struct awaitable
 
     ~awaitable() {
         print(PRI2, "awaitable::~awaitable()\n");
-        if (m_coroutine)
-            m_coroutine.destroy(); 
+        if (m_coroutine) {
+            print(PRI2, "awaitable::~awaitable(): m_coroutine.done() = %d\n", m_coroutine.done());
+            if (m_coroutine.done())
+                m_coroutine.destroy();
+        }
     }
 
     bool resume() {
@@ -110,6 +113,7 @@ struct awaitable
         ~promise_type() {
             print(PRI2, "awaitable::promise_type::~promise_type()\n");
         }
+
         auto get_return_object() { 
             print(PRI2, "awaitable::promise_type::get_return_object()\n");
             return coro_handle::from_promise(*this);
@@ -164,7 +168,8 @@ struct awaitable2
     ~awaitable2() {
         print(PRI2, "awaitable2::~awaitable2()\n");
         if (m_coroutine)
-            m_coroutine.destroy();
+            if (m_coroutine.done())
+                m_coroutine.destroy();
     }
 
     awaitable2() = default;
@@ -233,6 +238,7 @@ struct awaitable2
         ~promise_type() {
             print(PRI2, "awaitable2::promise_type::~promise_type()\n");
         }
+
         auto get_return_object() {
             print(PRI2, "awaitable2::promise_type::get_return_object()\n");
             return coro_handle::from_promise(*this);

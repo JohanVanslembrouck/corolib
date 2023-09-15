@@ -46,8 +46,11 @@ struct syncr {
     }
 
     ~syncr() {
-        print("~syncr::syncr()\n");
-        if (coro) coro.destroy();
+        print("syncr::~syncr():\n");
+        if (coro) {
+            print("syncr::~syncr(): coro.done() = %d\n", coro.done());
+            coro.destroy(); // Without this statement, syncr::promise_type::~promise_type() is not called.
+        }
     }
 
     syncr& operator = (const syncr&) = delete;
@@ -72,7 +75,7 @@ struct syncr {
         }
 
         ~promise_type() {
-            print("~syncr::promise_type::promise_type()\n");
+            print("syncr::promise_type::~promise_type()\n");
         }
 
         auto get_return_object() {
@@ -130,8 +133,12 @@ struct lazy {
     }
 
     ~lazy() {
-        print("~lazy::lazy()\n");
-        if (coro) coro.destroy();
+        print("lazy::~lazy()\n");
+        if (coro) {
+            print("lazy::~lazy(): coro.done() = %d\n", coro.done());
+            if (coro.done())
+                coro.destroy();     // Without this statement, lazy::promise_type::~promise_type() is not called.
+        }
     }
 
     lazy& operator = (const lazy&) = delete;
@@ -158,7 +165,7 @@ struct lazy {
         }
 
         ~promise_type() {
-            print("~lazy::promise_type::promise_type()\n");
+            print("lazy::promise_type::~promise_type()\n");
         }
 
         auto get_return_object() {
@@ -182,6 +189,7 @@ struct lazy {
         }
 
         void unhandled_exception() {
+            print("%p: lazy::promise::unhandled_exception()\n", this);
             std::exit(1);
         }
 
@@ -244,7 +252,7 @@ syncr<int> answer1() {
     // 00: auto syncr::promise_type::final_suspend()
     
     // 4
-    // 00: ~syncr::promise_type::promise_type()
+    // 00: syncr::promise_type::~promise_type()
 }
 
 void test_syncr() {
@@ -257,7 +265,7 @@ void test_syncr() {
     int v = a1.get();
     print("The coroutine value is: %d\n", v);
     
-    // 00: ~syncr::syncr()
+    // 00: syncr::~syncr()
 }
 
 // -----------------------------------------------------------------
@@ -279,7 +287,7 @@ lazy<int> answer2() {
     // 00: auto lazy::promise_type::final_suspend()
     
     // 6
-    // 00: ~lazy::promise_type::promise_type()
+    // 00: lazy::promise_type::~promise_type()
 }
 
 void test_lazy() {
@@ -297,7 +305,7 @@ void test_lazy() {
     // 5
     print("The coroutine value is: %d\n", v);
     
-    // 00: ~lazy::lazy()
+    // 00: lazy::~lazy()
 }
 
 // -----------------------------------------------------------------
@@ -310,4 +318,3 @@ int main() {
     test_lazy();
     return 0;
 }
-

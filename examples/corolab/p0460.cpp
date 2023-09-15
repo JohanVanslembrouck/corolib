@@ -133,6 +133,15 @@ struct syncr {
         print("%p: syncr::syncr(handle_type h)\n", this);
     }
 
+    ~syncr() {
+        print("%p: syncr::~syncr()\n", this);
+        if (coro) {
+            print("%p: syncr::~syncr(): coro.done() = %d\n", this, coro.done());
+            if (coro.done())
+                coro.destroy();
+        }
+    }
+
     bool await_ready() {
         print("%p: syncr::await_ready()\n", this);
         const auto ready = coro.done();

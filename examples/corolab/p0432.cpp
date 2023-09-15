@@ -50,8 +50,11 @@ struct lazy {
 
     ~lazy() {
         print("%p: lazy::~lazy()\n", this);
-        if (coro)
-            coro.destroy();
+        if (coro) {
+            print("%p: lazy::~lazy(): coro.done() = %d\n", this, coro.done());
+            if (coro.done())
+                coro.destroy();
+        }
     }
 
     lazy& operator = (const lazy&) = delete;
@@ -138,7 +141,7 @@ struct lazy {
         }
 
         void unhandled_exception() {
-            print("%p: lazy::promise::promise_type()\n", this);
+            print("%p: lazy::promise_type::unhandled_exception()\n", this);
             std::exit(1);
         }
 

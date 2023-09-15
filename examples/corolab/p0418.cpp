@@ -50,6 +50,11 @@ struct eager {
 
     ~eager() {
         print("%p: eager::~eager()\n", this);
+        if (coro) {
+            print("%p: eager::~eager(): coro.done() = %d\n", this, coro.done());
+            if (coro.done())        // Do not destroy if not yet done
+                coro.destroy();
+        }
     }
 
     eager(handle_type h)
@@ -140,6 +145,7 @@ struct eager {
 
         promise_type() :
             m_value{},
+            m_ready{false},
             m_awaiting(nullptr),
             m_wait_for_signal(false) {
             print("%p: eager::promise_type::promise_type()\n", this);
@@ -152,6 +158,7 @@ struct eager {
         void return_value(T v) {
             print("%p: eager::promise_type::return_value(T v): begin\n", this);
             m_value = v;
+            m_ready = true;
             if (m_awaiting) {
                 print("%p: eager::promise_type::return_value(T v): before m_awaiting.resume();\n", this);
                 m_awaiting.resume();
@@ -175,18 +182,41 @@ struct eager {
             return std::suspend_never{};
         }
 
+        struct final_awaiter {
+            bool await_ready() const noexcept {
+                print("%p: eager::promise_type::final_awaiter::await_ready()\n", this);
+                return false;
+            }
+
+            bool await_suspend(handle_type h) noexcept {
+                print("%p: eager::promise_type::final_awaiter::await_suspend()\n", this);
+                promise_type& promise = h.promise();
+                
+                if (promise.m_ready) {
+                    print("%p: eager::promise_type::final_awaiter::await_suspend(): value ready\n", this);
+                    print("%p: eager::promise_type::final_awaiter::await_suspend(): m_value = %d\n", this, promise.m_value);
+                }
+                return !promise.m_ready;
+            }
+
+            void await_resume() noexcept {
+                print("%p: eager::promise_type::final_awaiter::await_resume()\n", this);
+            }
+        };
+
         auto final_suspend() noexcept {
             print("%p: eager::promise_type::final_suspend()\n", this);
-            return std::suspend_always{};
+            return final_awaiter{};
         }
 
         void unhandled_exception() {
-            print("%p: eager::promise::promise_type()\n", this);
+            print("%p: eager::promise_type::unhandled_exception()\n", this);
             std::exit(1);
         }
 
     private:
         T m_value;
+        bool m_ready;
         CSemaphore m_sema;
         std::coroutine_handle<> m_awaiting;
         bool m_wait_for_signal;
@@ -207,6 +237,8 @@ struct resume_new_thread {
         print("resume_new_thread ::await_suspend(...)\n");
         std::thread(
             [handle] {
+                print("std::thread: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
                 print("std::thread: before handle.resume();\n");
                 handle.resume();
                 print("std::thread: after handle.resume();\n\n");

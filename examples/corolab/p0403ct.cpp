@@ -94,7 +94,8 @@ struct awaitable
 
     ~awaitable() {
         if (m_coroutine)
-            m_coroutine.destroy();
+            if (m_coroutine.done())
+                m_coroutine.destroy();
     }
 
     awaitable() = default;

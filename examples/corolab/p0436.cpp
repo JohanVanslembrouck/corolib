@@ -123,7 +123,11 @@ struct lazy {
 
     ~lazy() {
         print("lazy::~lazy()\n");
-        //if (coro) coro.destroy();    // can throw exception when lazy goes out of scope. FFS
+        if (coro) {
+            print("%p: lazy::~lazy(): coro.done() = %d\n", this, coro.done());
+            if (coro.done())
+                coro.destroy();
+        }
     }
 
     lazy& operator = (const lazy&) = delete;
@@ -205,7 +209,7 @@ struct lazy {
         }
 
         void unhandled_exception() {
-            print("lazy::promise::promise_type()\n");
+            print("lazy::promise_type::unhandled_exception()\n");
             std::exit(1);
         }
 

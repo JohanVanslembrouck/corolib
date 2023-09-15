@@ -214,7 +214,7 @@ async_task<int> mainflowWA1(std::initializer_list<CommClient*> clients)
         
         // Reading
         for (int j = 0; j < nrClients; j++) {
-            print(PRI1, "mainflowWA1: asyncsr[%d] = _clients[j]->start_reading();\n", j);
+            print(PRI1, "mainflowWA1: asyncsr[%d] = _clients[%d]->start_reading();\n", j, j);
             asyncsr[j] = _clients[j]->start_reading();
         }
 

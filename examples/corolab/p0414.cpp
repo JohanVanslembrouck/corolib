@@ -48,6 +48,11 @@ struct eager {
 
     ~eager() {
         print("%p: eager::~eager()\n", this);
+        if (coro) {
+            print("%p: eager::~eager(): coro.done() = %d\n", this, coro.done());
+            if (coro.done())
+                coro.destroy();
+        }
     }
 
     eager(handle_type h)
@@ -179,7 +184,7 @@ struct eager {
         }
 
         void unhandled_exception() {
-            print("%p: eager::promise::promise_type()\n", this);
+            print("%p: eager::promise_type::unhandled_exception()\n", this);
             std::exit(1);
         }
 

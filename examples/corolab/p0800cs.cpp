@@ -52,6 +52,8 @@ struct eager {
 
     ~eager() {
         print(PRI2, "%p: eager::~eager()\n", this);
+        if (coro && coro.done())
+            coro.destroy();
     }
 
     eager() {
@@ -187,7 +189,7 @@ struct eager {
         }
 
         void unhandled_exception() {
-            print(PRI2, "%p: eager::promise::promise_type()\n", this);
+            print(PRI2, "%p: eager::promise_type::unhandled_exception()\n", this);
             std::exit(1);
         }
 

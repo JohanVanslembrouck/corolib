@@ -47,7 +47,8 @@ struct async_task {
 
     ~async_task() {
         print(PRI2, "%p: async_task::~async_task()\n", this);
-        //if (coro) coro.destroy();    // can throw exception when async_task goes out of scope. FFS
+        if (coro && coro.done())
+            coro.destroy();
     }
 
     async_task(handle_type h)
@@ -123,7 +124,7 @@ struct async_task {
         }
 
         void unhandled_exception() {
-            print(PRI2, "%p: async_task::promise::promise_type()\n", this);
+            print(PRI2, "%p: async_task::promise_type::unhandled_exception()\n", this);
             std::exit(1);
         }
 

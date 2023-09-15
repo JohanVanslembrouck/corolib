@@ -93,5 +93,6 @@ int main()
     print(PRI1, "main(): 2: int v = a1.get_result();\n");
     int v = a1.get_result();
     print(PRI1, "main(): 3: v = %d\n", v);
+    print(PRI1, "main(): return 0;\n");
     return 0;
 }

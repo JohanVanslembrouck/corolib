@@ -48,6 +48,11 @@ namespace corolib
         ~async_task_base()
         {
             print(PRI2, "%p: async_task_base::~async_task_base()\n", this);
+            if (m_coro)
+                if (m_coro.done())
+                    m_coro.destroy();
+                else
+                    print(PRI1, "%p: async_task_base::~async_task_base(): m_coro.done() returned false\n", this);
         }
 
         async_task_base(handle_type h)
@@ -408,6 +413,11 @@ namespace corolib
         ~async_task_void()
         {
             print(PRI2, "%p: async_task_void::~async_task_void()\n", this);
+            if (m_coro)
+                if (m_coro.done())
+                    m_coro.destroy();
+                else
+                    print(PRI1, "%p: async_task_void::~async_task_void(): m_coro.done() returned false\n", this);
         }
 
         async_task_void(handle_type h)

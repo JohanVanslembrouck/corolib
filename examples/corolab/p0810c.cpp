@@ -46,6 +46,8 @@ struct async_task {
 
     ~async_task() {
         print(PRI2, "%p: async_task::~async_task()\n", this);
+        if (coro && coro.done())
+            coro.destroy();
     }
 
     async_task(handle_type h)
@@ -121,7 +123,7 @@ struct async_task {
         }
 
         void unhandled_exception() {
-            print(PRI2, "%p: async_task::promise::promise_type()\n", this);
+            print(PRI2, "%p: async_task::promise_type::unhandled_exception()\n", this);
             std::exit(1);
         }
 
@@ -341,6 +343,9 @@ struct eager {
 
     ~eager() {
         print(PRI2, "%p: eager::~eager()\n", this);
+        if (coro)
+            if (coro.done())
+                coro.destroy();
     }
 
     eager() {
@@ -451,7 +456,7 @@ struct eager {
         }
 
         void unhandled_exception() {
-            print(PRI2, "%p: eager::promise::promise_type()\n", this);
+            print(PRI2, "%p: eager::promise_type::unhandled_exception()\n", this);
             std::exit(1);
         }
 

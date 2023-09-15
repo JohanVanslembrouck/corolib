@@ -80,7 +80,11 @@ struct syncr {
 
     ~syncr() {
         print(PRI1, "syncr::~syncr()\n");
-        //if (m_coroutine) m_coroutine.destroy();    // can throw exception when syncr goes out of scope. FFS
+        if (m_coroutine) {
+            print(PRI1, "%p: syncr::~syncr(): coro.done() = %d\n", this, m_coroutine.done());
+            if (m_coroutine.done())
+                m_coroutine.destroy();
+        }
     }
 
     syncr& operator = (const syncr&) = delete;
@@ -137,7 +141,7 @@ struct syncr {
         }
 
         void unhandled_exception() {
-            print(PRI1, "syncr::promise::promise_type()\n");
+            print(PRI1, "syncr::promise_type::unhandled_exception()\n");
             std::exit(1);
         }
 

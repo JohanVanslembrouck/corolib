@@ -107,8 +107,11 @@ struct awaitable
 
     ~awaitable() {
         print(PRI2, "awaitable::~awaitable()\n");
-        if (m_coroutine)
-            m_coroutine.destroy(); 
+        if (m_coroutine) {
+            print(PRI2, "awaitable::~awaitable(): m_coroutine.done() = %d\n", m_coroutine.done());
+            if (m_coroutine.done())
+                m_coroutine.destroy();
+        }
     }
 
     bool resume() {

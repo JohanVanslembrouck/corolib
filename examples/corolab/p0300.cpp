@@ -31,7 +31,7 @@ struct generator {
             print("generator::promise_type::promise_type()\n");
         }
         ~promise_type() {
-            print("~generator::promise_type::promise_type()\n");
+            print("generator::promise_type::~promise_type()\n");
         }
 
         auto initial_suspend() {
@@ -72,8 +72,12 @@ struct generator {
 
 public:
     ~generator() {
-        print("~generator::generator(): %s\n", (!coro ? "(empty)" : "(contains a coroutine)"));
-        if (coro) coro.destroy();
+        print("generator::~generator(): %s\n", (!coro ? "(empty)" : "(contains a coroutine)"));
+        if (coro) {
+            print("generator::~generator(): coro.done() = %d\n", coro.done());
+            if (coro.done())
+                coro.destroy();
+        }
     }
 
     generator(const generator&) = delete;

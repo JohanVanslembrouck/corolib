@@ -43,8 +43,12 @@ struct coreturn {
     }
 
     ~coreturn() {
-        print("~coreturn::coreturn()\n");
-        if (coro) coro.destroy();
+        print("coreturn::~coreturn()\n");
+        if (coro) {
+            print("coreturn::~coreturn(): coro.done() = %d\n", coro.done());
+            if (coro.done())
+                coro.destroy();
+        }
     }
 
     coreturn& operator = (const coreturn&) = delete;
@@ -64,7 +68,7 @@ struct coreturn {
         }
 
         ~promise() {
-            print("~coreturn::promise::promise()\n");
+            print("coreturn::promise::~promise()\n");
         }
 
         void return_value(T v) {
@@ -78,6 +82,7 @@ struct coreturn {
         }
 
         void unhandled_exception() {
+            print("%p: coreturn::promise::unhandled_exception()\n", this);
             std::exit(1);
         }
 
@@ -188,4 +193,3 @@ int main() {
     test_lazy();
     return 0;
 }
-

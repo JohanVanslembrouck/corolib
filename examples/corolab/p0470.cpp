@@ -57,6 +57,13 @@ struct syncr {
         print("%p: syncr::syncr(handle_type h)\n", this);
     }
 
+    ~syncr() {
+        print("%p: syncr::~syncr()\n", this);
+        if (coro)
+            if (coro.done())
+                coro.destroy();
+    }
+
     bool await_ready() {
         print("%p: syncr::await_ready()\n", this);
         const auto ready = coro.done();
@@ -165,6 +172,15 @@ struct syncr {
     syncr(handle_type h)
         : coro(h) {
         print("%p: syncr::syncr(handle_type h): h.address() = %p, coro.address() = %p\n", this, h.address(), coro.address());
+    }
+
+    ~syncr() {
+        print("%p: syncr::~syncr()\n", this);
+        if (coro) {
+            print("%p: syncr::~syncr(): coro.done() = %d\n", this, coro.done());
+            if (coro.done())
+                coro.destroy();
+        }
     }
 
     bool await_ready() {

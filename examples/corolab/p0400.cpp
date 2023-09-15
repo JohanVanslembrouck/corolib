@@ -61,8 +61,12 @@ public:
     }
 
     ~resumable() { 
-        print("resumable::~resumable()");
-        handle_.destroy();
+        print("resumable::~resumable()\n");
+        if (handle_) {
+            print("resumable::~resumable(): handle_.done() = %d\n", handle_.done());
+            if (handle_.done())
+                handle_.destroy();
+        }
     }
 
     struct promise_type {
@@ -71,6 +75,10 @@ public:
 
         promise_type() {
             print("resumable::promise_type::promise_type()\n");
+        }
+
+        ~promise_type() {
+            print("resumable::promise_type::~promise_type()\n");
         }
 
         auto get_return_object() {
