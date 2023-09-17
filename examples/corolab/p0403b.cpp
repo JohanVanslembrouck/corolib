@@ -16,9 +16,8 @@
 
 using namespace std;
 
-const int priority = 0x0F;
-
 #include "print.h"
+#include "tracker.h"
 
 // -----------------------------------------------------------------
 
@@ -95,7 +94,7 @@ struct auto_reset_event {
 // -----------------------------------------------------------------
 
 template <typename T>
-struct awaitable
+struct awaitable : private coroutine_tracker
 {
     struct promise_type;
     using coro_handle = std::coroutine_handle<promise_type>;
@@ -168,7 +167,7 @@ struct awaitable
     }
 
     // defined in template<typename T> struct awaitable
-    struct promise_type
+    struct promise_type : private promise_type_tracker
     {
         using coro_handle = std::coroutine_handle<promise_type>;
 
@@ -241,6 +240,7 @@ awaitable<int> coroutine1() {
 }
 
 int main() {
+    priority = 0x0F;
     print(PRI1, "main(): awaitable the_coroutine1 = coroutine1();\n");
     awaitable<int> the_coroutine1 = coroutine1();
     print(PRI1, "main(): are1.resume();\n");

@@ -32,7 +32,7 @@
 
 const boost::asio::ip::tcp::endpoint ep{ boost::asio::ip::make_address("127.0.0.1"), 8242 };
 
-#include "print0.h"
+#include "print.h"
 #include "csemaphore.h"
 
 CSemaphore sema;

@@ -21,8 +21,6 @@
 
 #include <stdarg.h>
 
-const int priority = 0x0F;
-
 #include "print.h"
 
 //--------------------------------------------------------------
@@ -603,6 +601,8 @@ future<void> waitfor()
 }
 
 int main() {
+    priority = 0x0F;
+
     print(PRI2, "main(): waitfor().get();\n");
     waitfor().get();
     print(PRI2, "main(): return 0;\n");

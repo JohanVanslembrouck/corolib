@@ -18,9 +18,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-const int priority = 0x0F;
-
 #include "print.h"
+#include "tracker.h"
 
 // -----------------------------------------------------------------
 // Auxiliary awaitable that allows a coroutine to return control to main().
@@ -30,7 +29,7 @@ const int priority = 0x0F;
 #include <coroutine>
 
 template<typename T>
-struct async_task {
+struct async_task : private coroutine_tracker {
 
     struct promise_type;
     friend struct promise_type;
@@ -64,7 +63,7 @@ struct async_task {
         return *this;
     }
 
-    struct promise_type {
+    struct promise_type : private promise_type_tracker {
 
         friend struct async_task;
 
@@ -534,6 +533,7 @@ async_task<int> mainflow(CommClient& c)
 
 int main()
 {
+    priority = 0x0F;
     boost::asio::io_context ioContext;
 
     print(PRI2, "main: CommClient c1(ioContext);\n");

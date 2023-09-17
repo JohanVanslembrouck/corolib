@@ -19,7 +19,8 @@
 #include <string>
 #include <thread>
 
-#include "print0.h"
+#include "print.h"
+#include "tracker.h"
 
 // -----------------------------------------------------------------
 
@@ -31,7 +32,7 @@
  */
 
 template<typename T>
-struct syncr {
+struct syncr : private coroutine_tracker {
     struct promise_type;
     friend struct promise_type;
 
@@ -67,7 +68,7 @@ struct syncr {
         return coro.promise().value;
     }
 
-    struct promise_type {
+    struct promise_type : private promise_type_tracker {
         friend struct syncr;
 
         promise_type() {

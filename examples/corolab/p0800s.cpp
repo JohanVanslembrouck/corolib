@@ -17,9 +17,8 @@
 #include <thread>
 #include <string>
 
-const int priority = 0x0F;
-
 #include "print.h"
+#include "tracker.h"
 #include "csemaphore.h"
 
 // -----------------------------------------------------------------
@@ -36,7 +35,7 @@ const int priority = 0x0F;
 //--------------------------------------------------------------
 
 template<typename T>
-struct eager {
+struct eager : private coroutine_tracker {
 
     struct promise_type;
     friend struct promise_type;
@@ -120,7 +119,7 @@ struct eager {
         return awaiter{ *this };
     }
 
-    struct promise_type {
+    struct promise_type : private promise_type_tracker {
 
         friend struct eager;
 
@@ -704,6 +703,8 @@ void asyncSignal(boost::asio::io_context& ioContext)
 
 int main()
 {
+    priority = 0x0F;
+
     boost::asio::io_context ioContextSignal;
     boost::asio::io_context ioContextServer;
 

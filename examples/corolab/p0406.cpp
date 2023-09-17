@@ -14,8 +14,6 @@
 
 using namespace std;
 
-const int priority = 0x0F;
-
 #include "print.h"
 
 // -----------------------------------------------------------------
@@ -294,6 +292,7 @@ awaitable<int> coroutine1() {
 }
 
 int main() {
+    priority = 0x0F;
     print(PRI1, "main(): awaitable the_coroutine1 = coroutine1();\n");
     awaitable<int> the_coroutine1 = coroutine1();
     print(PRI1, "main(): int i = the_coroutine1.get();\n");

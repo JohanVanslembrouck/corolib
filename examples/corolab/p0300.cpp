@@ -16,16 +16,17 @@
 #include <string>
 #include <thread>
 
-#include "print0.h"
+#include "print.h"
+#include "tracker.h"
 
 // -----------------------------------------------------------------
 
 #include <coroutine>
 
 template <typename T>
-struct generator {
+struct generator : private coroutine_tracker {
 
-    struct promise_type {
+    struct promise_type : private promise_type_tracker {
 
         promise_type() : current_value(0) {
             print("generator::promise_type::promise_type()\n");

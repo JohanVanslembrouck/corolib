@@ -16,8 +16,6 @@
 
 #include <stdarg.h>
 
-const int priority = 0x01;
-
 #include "print.h"
 
 //--------------------------------------------------------------

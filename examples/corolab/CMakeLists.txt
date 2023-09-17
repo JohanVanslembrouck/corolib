@@ -15,7 +15,7 @@ foreach(_target
     p0460 p0470
     p0500 p0510 p0520
   )
-  add_executable(${_target} ${_target}.cpp)
+  add_executable(${_target} ${_target}.cpp tracker.cpp print.cpp)
 endforeach()
 
 if (BOOST_INSTALLED)
@@ -47,7 +47,7 @@ if (BOOST_INSTALLED)
         p0800c p0800cs p0800s
         p0810c p0820c p0830c p0830s
       )
-      add_executable(${_target} ${_target}.cpp)
+      add_executable(${_target} ${_target}.cpp tracker.cpp print.cpp)
     endforeach()
 
 endif()

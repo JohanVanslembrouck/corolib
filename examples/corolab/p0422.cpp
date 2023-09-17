@@ -25,7 +25,8 @@
 #include <mutex>
 #include <condition_variable>
 
-#include "print0.h"
+#include "print.h"
+#include "tracker.h"
 #include "csemaphore.h"
 
 //--------------------------------------------------------------
@@ -86,7 +87,7 @@ struct mini {
 //--------------------------------------------------------------
 
 template<typename T>
-struct eager {
+struct eager : private coroutine_tracker {
 
     struct promise_type;
     friend struct promise_type;
@@ -185,7 +186,7 @@ struct eager {
     }
 #endif
 
-    struct promise_type  {
+    struct promise_type : private promise_type_tracker {
 
         friend struct eager;
 

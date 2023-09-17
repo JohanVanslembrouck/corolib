@@ -15,8 +15,6 @@
 
 using namespace std;
 
-const int priority = 0x01;
-
 #include "print.h"
 
 // -----------------------------------------------------------------

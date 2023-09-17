@@ -21,14 +21,15 @@
 #include <string>
 #include <thread>
 
-#include "print0.h"
+#include "print.h"
+#include "tracker.h"
 
 // -----------------------------------------------------------------
 
 #include <coroutine>
 
 template<typename T>
-struct coreturn {
+struct coreturn : private coroutine_tracker {
     struct promise;
     friend struct promise;
 
@@ -60,7 +61,7 @@ struct coreturn {
         return *this;
     }
 
-    struct promise {
+    struct promise : private promise_type_tracker {
         friend struct coreturn;
 
         promise() {

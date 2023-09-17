@@ -16,9 +16,8 @@
 
 #include <stdarg.h>
 
-const int priority = 0x01;
-
 #include "print.h"
+#include "tracker.h"
 
 //--------------------------------------------------------------
 //--------------------------------------------------------------
@@ -33,11 +32,11 @@ const int priority = 0x01;
 #include <coroutine>
 
 template<typename T>
-class recursive_generator
+class recursive_generator : private coroutine_tracker
 {
 public:
 
-    class promise_type final
+    class promise_type final : private promise_type_tracker
     {
     public:
 

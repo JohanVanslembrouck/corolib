@@ -22,15 +22,14 @@ const boost::asio::ip::tcp::endpoint ep{ boost::asio::ip::make_address("127.0.0.
 
 #include <coroutine>
 
-const int priority = 0x0F;
-
 #include "print.h"
+#include "tracker.h"
 #include "csemaphore.h"
 
 // -----------------------------------------------------------------
 
 template<typename T>
-struct async_task {
+struct async_task : private coroutine_tracker {
 
     struct promise_type;
     friend struct promise_type;
@@ -73,7 +72,7 @@ struct async_task {
         return coro.promise().value;
     }
 
-    struct promise_type {
+    struct promise_type : private promise_type_tracker {
 
         friend struct async_task;
 
@@ -1293,6 +1292,8 @@ async_task<int> mainflowAll(CommClient& c1, CommClient& c2, CommClient& c3)
 
 int main(int argc, char* argv[])
 {
+    priority = 0x0F;
+
     boost::asio::io_context ioContext;
 
     print(PRI2, "main: CommClient c(ioContext);\n");

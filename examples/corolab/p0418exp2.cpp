@@ -1,5 +1,5 @@
 /** 
- *  Filename: p0416.cpp
+ *  Filename: p0418.cpp
  *  Description: 
  *        Illustrates the use of co_await.
  *
@@ -35,56 +35,121 @@
 //--------------------------------------------------------------
 
 template<typename T>
-struct eager : private coroutine_tracker {
+struct eager_base : private coroutine_tracker {
 
     struct promise_type;
-    friend struct promise_type;
+
     using handle_type = std::coroutine_handle<promise_type>;
 
-    eager(const eager& s) = delete;
+    eager_base(const eager_base& s) = delete;
 
-    eager(eager&& s)
+    eager_base(eager_base&& s)
         : coro(s.coro) {
-        print("%p: eager::eager(eager&& s)\n", this);
+        print("%p: eager_base::eager_base(eager&& s)\n", this);
         s.coro = nullptr;
     }
 
-    ~eager() {
-        print("%p: eager::~eager()\n", this);
+    ~eager_base() {
+        print("%p: eager_base::~eager_base()\n", this);
         if (coro) {
-            print("%p: eager::~eager(): coro.done() = %d\n", this, coro.done());
-            if (coro.done())
+            print("%p: eager_base::~eager_base(): coro.done() = %d\n", this, coro.done());
+            if (coro.done())        // Do not destroy if not yet done
                 coro.destroy();
         }
     }
 
-    eager(handle_type h)
+    eager_base(handle_type h)
         : coro(h) {
-        print("%p: eager::eager(handle_type h)\n", this);
+        print("%p: eager_base::eager_base(handle_type h)\n", this);
     }
 
-    eager& operator = (const eager&) = delete;
+    eager_base& operator = (const eager_base&) = delete;
 
-    eager& operator = (eager&& s) {
-        print("%p: eager::eager = (eager&& s)\n", this);
+    eager_base& operator = (eager_base&& s) {
+        print("%p: eager_base::eager_base = (eager_base&& s)\n", this);
         coro = s.coro;
         s.coro = nullptr;
         return *this;
     }
 
     T get() {
-        print("%p: eager::get(); coro.done() = %d\n", this, coro.done());
+        print("%p: eager_base::get(); coro.done() = %d\n", this, coro.done());
         if (!coro.done()) {
             coro.promise().m_wait_for_signal = true;
             coro.promise().m_sema.wait();
         }
         return coro.promise().m_value;
     }
-    
-#if 1
-    // Alternative 1: define operator co_await and an awaiter type
-    // that defines await_ready(), await_suspend() and await_resume().
-    
+
+    struct promise_type : private promise_type_tracker {
+
+        friend struct eager_base;
+
+        promise_type() :
+            m_value{},
+            m_ready{ false },
+            m_awaiting(nullptr),
+            m_wait_for_signal(false) {
+            print("%p: eager_base::promise_type::promise_type()\n", this);
+        }
+
+        ~promise_type() {
+            print("%p: eager_base::promise_type::~promise_type()\n", this);
+        }
+
+        void return_value(T v) {
+            print("%p: eager_base::promise_type::return_value(T v): begin\n", this);
+            m_value = v;
+            m_ready = true;
+            if (m_awaiting) {
+                print("%p: eager_base::promise_type::return_value(T v): before m_awaiting.resume();\n", this);
+                m_awaiting.resume();
+                print("%p: eager_base::promise_type::return_value(T v): after m_awaiting.resume();\n\n", this);
+            }
+            if (m_wait_for_signal) {
+                print("%p: eager_base::promise_type::return_value(T v): before m_sema.signal();\n", this);
+                m_sema.signal();
+                print("%p: eager_base::promise_type::return_value(T v): after m_sema.signal();\n", this);
+            }
+            print("%p: eager_base::promise_type::return_value(T v): end\n", this);
+        }
+
+        auto get_return_object() {
+            print("%p: eager_base::promise_type::get_return_object()\n", this);
+            return eager_base<T>{handle_type::from_promise(*this)};
+        }
+
+        void unhandled_exception() {
+            print("%p: eager_base::promise_type::unhandled_exception()\n", this);
+            std::exit(1);
+        }
+
+    public:
+        T m_value;
+        bool m_ready;
+        CSemaphore m_sema;
+        std::coroutine_handle<> m_awaiting;
+        bool m_wait_for_signal;
+    };
+
+    handle_type coro;
+};
+
+//--------------------------------------------------------------
+
+template<typename T>
+struct eager : public eager_base<T> {
+
+    struct promise_type;
+   
+    //using handle_type = std::coroutine_handle<promise_type>;
+    using handle_type = typename eager_base<T>::handle_type;
+
+    eager(handle_type h)
+        : eager_base<T>(h) {
+        print("%p: eager::eager(handle_type h)\n", this);
+    }
+
     auto operator co_await() noexcept
     {
         class awaiter
@@ -118,105 +183,54 @@ struct eager : private coroutine_tracker {
 
         return awaiter{*this};
     }
-#else
-    // Alternative 2: define await_ready(), await_suspend() and await_resume()
-    // in the coroutine type.
-    
-    bool await_ready() {
-        const bool ready = coro.done();
-        print("%p: eager::await_ready(): return %d;\n", this, ready);
-        return ready;
-    }
 
-    void await_suspend(std::coroutine_handle<> awaiting) {
-        print("%p: eager::await_suspend(std::coroutine_handle<> awaiting)\n", this);
-        coro.promise().m_awaiting = awaiting;
-    }
-
-    T await_resume() {
-        print("%p: eager::await_resume()\n", this);
-        const T r = coro.promise().m_value;
-        return r;
-    }
-#endif
-
-    struct promise_type : private promise_type_tracker {
+    struct promise_type : public eager_base<T>::promise_type {
 
         friend struct eager;
 
-        promise_type() :
-            m_value{},
-            m_awaiting(nullptr),
-            m_wait_for_signal(false) {
-            print("%p: eager::promise_type::promise_type()\n", this);
-        }
-
-        ~promise_type() {
-            print("%p: eager::promise_type::~promise_type()\n", this);
-        }
-
-        void return_value(T v) {
-            print("%p: eager::promise_type::return_value(T v): begin\n", this);
-            m_value = v;
-            if (m_awaiting) {
-                print("%p: eager::promise_type::return_value(T v): before m_awaiting.resume();\n", this);
-                m_awaiting.resume();
-                print("%p: eager::promise_type::return_value(T v): after m_awaiting.resume();\n\n", this);
-            }
-            if (m_wait_for_signal) {
-                print("%p: eager::promise_type::return_value(T v): before m_sema.signal();\n", this);
-                m_sema.signal();
-                print("%p: eager::promise_type::return_value(T v): after m_sema.signal();\n", this);
-            }
-            print("%p: eager::promise_type::return_value(T v): end\n", this);
-        }
-
-        auto get_return_object() {
-            print("%p: eager::promise_type::get_return_object()\n", this);
+        auto get_return_object()
+        {
+            print("%p: eager<T>::promise_type::get_return_object()\n");
             return eager<T>{handle_type::from_promise(*this)};
         }
 
-        auto initial_suspend() {
-            print("%p: eager::promise_type::initial_suspend()\n", this);
+        auto initial_suspend()
+        {
+            print("%p: eager<<T>::promise_type::initial_suspend()\n");
             return std::suspend_never{};
         }
 
         auto final_suspend() noexcept {
-            print("%p: eager::promise_type::final_suspend()\n", this);
+            print("%p: eager<T>::promise_type::final_suspend()\n", this);
             return std::suspend_always{};
         }
-
-        void unhandled_exception() {
-            print("%p: eager::promise_type::unhandled_exception()\n", this);
-            std::exit(1);
-        }
-
-    private:
-        T m_value;
-        CSemaphore m_sema;
-        std::coroutine_handle<> m_awaiting;
-        bool m_wait_for_signal;
     };
-
-    handle_type coro;
 };
 
 //--------------------------------------------------------------
 
-struct resume_same_thread {
+struct resume_new_thread {
     bool await_ready() noexcept {
-        print("resume_same_thread ::await_ready()\n");
+        print("resume_new_thread ::await_ready()\n");
         return false;
     }
 
     void await_suspend(std::coroutine_handle<> handle) noexcept {
-        print("resume_same_thread ::await_suspend(...): before handle.resume();\n");
-        handle.resume();
-        print("resume_same_thread ::await_suspend(...): after handle.resume();\n\n");
+        print("resume_new_thread ::await_suspend(...)\n");
+        std::thread(
+            [handle] {
+                print("std::thread: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                print("std::thread: before handle.resume();\n");
+                handle.resume();
+                print("std::thread: after handle.resume();\n\n");
+            }
+        ).detach();
+        //std::thread(handle).detach();
     }
 
     void await_resume() noexcept {
-        print("resume_same_thread ::await_resume()\n");
+        print("resume_new_thread ::await_resume()\n");
     }
 };
 
@@ -224,7 +238,7 @@ struct resume_same_thread {
 
 eager<int> coroutine5() {
     print("coroutine5(): resume_new_thread\n");
-    co_await resume_same_thread();
+    co_await resume_new_thread();
     int v = 42;
     print("coroutine5(): co_return %d;\n", v+1);
     co_return v+1;

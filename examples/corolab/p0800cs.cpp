@@ -17,9 +17,8 @@
 #include <thread>
 #include <string>
 
-const int priority = 0x01;
-
 #include "print.h"
+#include "tracker.h"
 #include "csemaphore.h"
 
 // -----------------------------------------------------------------
@@ -36,7 +35,7 @@ const int priority = 0x01;
 //--------------------------------------------------------------
 
 template<typename T>
-struct eager {
+struct eager : private coroutine_tracker {
 
     struct promise_type;
     friend struct promise_type;
@@ -142,7 +141,7 @@ struct eager {
     }
 #endif
 
-    struct promise_type {
+    struct promise_type : private promise_type_tracker {
 
         friend struct eager;
 

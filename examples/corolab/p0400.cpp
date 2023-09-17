@@ -14,14 +14,15 @@
 #include <thread>
 #include <string>
 
-#include "print0.h"
+#include "print.h"
+#include "tracker.h"
 
 //--------------------------------------------------------------
 
 #include <assert.h>
 #include <coroutine>
 
-class resumable {
+class resumable : private coroutine_tracker {
 
 public:
     struct promise_type;
@@ -69,7 +70,7 @@ public:
         }
     }
 
-    struct promise_type {
+    struct promise_type : private promise_type_tracker {
 
         using coro_handle = std::coroutine_handle<promise_type>;
 

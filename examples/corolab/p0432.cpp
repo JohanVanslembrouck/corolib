@@ -28,13 +28,14 @@
 #include <thread>
 #include <coroutine>
 
-#include "print0.h"
+#include "print.h"
+#include "tracker.h"
 #include "csemaphore.h"
 
 // -------------------------------------------------------------
 
 template<typename T>
-struct lazy {
+struct lazy : private coroutine_tracker {
 
     struct promise_type;
     friend struct promise_type;
@@ -108,7 +109,7 @@ struct lazy {
         return r;
     }
 
-    struct promise_type {
+    struct promise_type : private promise_type_tracker {
 
         friend struct lazy;
 
@@ -235,4 +236,3 @@ int main() {
     print("main(): return 0;\n");
     return 0;
 }
-
