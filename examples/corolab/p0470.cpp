@@ -22,15 +22,15 @@
 #include <thread>
 
 #include "print.h"
+#include "tracker.h"
 #include "csemaphore.h"
 
 //--------------------------------------------------------------
-#if 1
 
 #include <coroutine>
 
 template<typename T>
-struct syncr {
+struct syncr : private coroutine_tracker {
 
     struct promise_type;
     friend struct promise_type;
@@ -94,7 +94,7 @@ struct syncr {
         return r;
     }
 
-    struct promise_type {
+    struct promise_type : private promise_type_tracker {
         friend struct syncr;
 
         promise_type()
@@ -141,137 +141,6 @@ struct syncr {
 
     handle_type coro;
 };
-
-#else
-
-#include <coroutine>
-
-template<typename T>
-struct syncr {
-
-    struct promise_type;
-    friend struct promise_type;
-    using handle_type = std::coroutine_handle<promise_type>;
-
-    void* address() { return this; }
-
-    T get() {
-        print("%p: T syncr::get()\n", this);
-        if (!coro.promise().set)
-            coro.promise().psema->wait();
-        print("%p: T syncr::get(): coro.promise().psema = %p: return r;\n", this, coro.promise().psema);
-        return 42;
-    }
-
-    void wait() {
-        print("%p: T syncr::wait(): coro.promise().psema = %p: coro.promise().psema->wait();\n", this, coro.promise().psema);
-        coro.promise().psema->wait();
-        print("%p: T syncr::wait(): coro.promise().psema = %p: return;\n", this, coro.promise().psema);
-    }
-
-    syncr(handle_type h)
-        : coro(h) {
-        print("%p: syncr::syncr(handle_type h): h.address() = %p, coro.address() = %p\n", this, h.address(), coro.address());
-    }
-
-    ~syncr() {
-        print("%p: syncr::~syncr()\n", this);
-        if (coro) {
-            print("%p: syncr::~syncr(): coro.done() = %d\n", this, coro.done());
-            if (coro.done())
-                coro.destroy();
-        }
-    }
-
-    bool await_ready() {
-        print("%p: syncr::await_ready()\n", this);
-        const auto ready = false;  // coro.done();
-        print("%p: syncr::await_ready(): ready = %s\n", this, (ready ? "is ready" : "isn't ready"));
-        //return coro.done();
-        print("%p: syncr::await_ready(): return false\n", this);
-        return ready;
-    }
-
-    void await_suspend(std::coroutine_handle<> awaiting) {
-        print("%p: syncr::await_suspend(...): entry\n", this);
-        //print("%p: syncr::await_suspend(...): awaiting.address() = %p: entry\n", this, awaiting.address());
-        m_awaitingCoroutine = awaiting;
-
-        std::thread thread1([=]() {
-            print("%p: syncr::await_suspend(...): thread1: this->wait();\n", this);
-            this->wait();
-            print("%p: syncr::await_suspend(...): thread1: awaiting.resume();\n", this);
-            awaiting.resume();
-            print("%p: syncr::await_suspend(...): thread1: return;\n", this);
-            });
-        thread1.detach();
-
-        print("%p: syncr::await_suspend(...): exit\n", this);
-        //print("%p: syncr::await_suspend(...): awaiting.address() = %p: exit\n", this, awaiting.address());
-    }
-
-    auto await_resume() {
-        //print("%p: syncr::await_resume(): coro.address() = %p\n", this, this->coro.address());
-        print("%p: syncr::await_resume(): auto r = get()\n", this);
-        auto r = get();
-        //print("Await value is returned: \n");
-        print("%p: syncr::await_resume(): return r;\n", this);
-        return r;
-    }
-
-    struct promise_type {
-        friend struct syncr;
-
-        promise_type() :
-            psema(nullptr),
-            set(false)
-        {
-            this->psema = new CSemaphore;
-            print("%p: syncr::promise_type::promise_type(); psema = %p\n", this, psema);
-        }
-
-        ~promise_type() {
-            print("%p: syncr::promise::~promise()\n", this);
-        }
-
-        auto get_return_object() {
-            print("%p: syncr::promise_type::get_return_object()\n", this);
-            //print("%p: syncr::promise_type::get_return_object(): this->psema = %p\n", this, this->psema);
-            return syncr<T>(handle_type::from_promise(*this));
-        }
-
-        auto initial_suspend() {
-            print("%p: syncr::promise_type::initial_suspend()\n", this);
-            return std::suspend_never{};
-        }
-
-        auto final_suspend() {
-            print("%p: syncr::promise_type::final_suspend()\n", this);
-            return std::suspend_always{};
-        }
-
-        void unhandled_exception() {
-            print("%p: syncr::promise_type::unhandled_exception()\n", this);
-            //std::exit(1);
-        }
-
-        void return_value(T v) {
-            print("%p: void syncr::promise_type::return_value(T V): psema = %p, psema->signal()\n", this, this->psema);
-            psema->signal();
-            set = true;
-        }
-
-    private:
-        CSemaphore* psema;
-        bool set;
-        T value;
-    };
-
-    std::coroutine_handle<> m_awaitingCoroutine;
-
-    handle_type coro;
-};
-#endif
 
 //--------------------------------------------------------------
 

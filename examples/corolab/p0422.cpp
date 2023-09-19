@@ -192,6 +192,7 @@ struct eager : private coroutine_tracker {
 
         promise_type() :
             m_value{},
+            m_ready{false},
             m_awaiting(nullptr),
             m_wait_for_signal(false) {
             print("%p: eager::promise_type::promise_type()\n", this);
@@ -204,6 +205,7 @@ struct eager : private coroutine_tracker {
         auto return_value(T v) {
             print("%p: eager::promise_type::return_value(T v): begin\n", this);
             m_value = v;
+            m_ready = true;
             if (m_awaiting) {
                 print("%p: eager::promise_type::return_value(T v): before m_awaiting.resume();\n", this);
                 m_awaiting.resume();
@@ -227,9 +229,31 @@ struct eager : private coroutine_tracker {
             return std::suspend_never{};
         }
 
+        struct final_awaiter {
+            bool await_ready() const noexcept {
+                print("%p: eager::promise_type::final_awaiter::await_ready()\n", this);
+                return false;
+            }
+
+            bool await_suspend(handle_type h) noexcept {
+                print("%p: eager::promise_type::final_awaiter::await_suspend()\n", this);
+                promise_type& promise = h.promise();
+
+                if (promise.m_ready) {
+                    print("%p: eager::promise_type::final_awaiter::await_suspend(): value ready\n", this);
+                    print("%p: eager::promise_type::final_awaiter::await_suspend(): m_value = %d\n", this, promise.m_value);
+                }
+                return !promise.m_ready;
+            }
+
+            void await_resume() noexcept {
+                print("%p: eager::promise_type::final_awaiter::await_resume()\n", this);
+            }
+        };
+
         auto final_suspend() noexcept {
             print("%p: eager::promise_type::final_suspend()\n", this);
-            return std::suspend_always{};
+            return final_awaiter{};
         }
 
         void unhandled_exception() {
@@ -239,6 +263,7 @@ struct eager : private coroutine_tracker {
 
     private:
         T m_value;
+        bool m_ready;
         CSemaphore m_sema;
         std::coroutine_handle<> m_awaiting;
         bool m_wait_for_signal;

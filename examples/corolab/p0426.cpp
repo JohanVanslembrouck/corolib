@@ -253,7 +253,7 @@ struct eager : private coroutine_tracker {
 
 //--------------------------------------------------------------
 
-struct oneway_task
+struct oneway_task : private coroutine_tracker
 {
     struct promise_type
     {

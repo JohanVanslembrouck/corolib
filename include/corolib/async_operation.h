@@ -24,6 +24,7 @@
 #include <coroutine>
 
 #include "print.h"
+#include "tracker.h"
 #include "async_base.h"
 #include "when_all_counter.h"
 #include "when_any_one.h"
@@ -32,7 +33,7 @@ namespace corolib
 {
     class CommService;
 
-    class async_operation_base : public async_base
+    class async_operation_base : public async_base, operation_tracker
     {
     public:
         async_operation_base(CommService* s = nullptr, int index = -1, bool timestamp = false);

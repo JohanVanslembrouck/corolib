@@ -21,6 +21,7 @@
 
 #include <coroutine>
 #include "print.h"
+#include "tracker.h"
 #include "semaphore.h"
 #include "async_base.h"
 #include "when_all_counter.h"
@@ -29,7 +30,7 @@
 namespace corolib
 {
     template<typename TYPE>
-    class async_task_base : public async_base
+    class async_task_base : public async_base, private coroutine_tracker
     {
     public:
 	
@@ -49,10 +50,12 @@ namespace corolib
         {
             print(PRI2, "%p: async_task_base::~async_task_base()\n", this);
             if (m_coro)
+            {
                 if (m_coro.done())
                     m_coro.destroy();
                 else
                     print(PRI1, "%p: async_task_base::~async_task_base(): m_coro.done() returned false\n", this);
+            }
         }
 
         async_task_base(handle_type h)
@@ -142,7 +145,7 @@ namespace corolib
             m_coro.promise().m_waitany = waitany;
         }
 
-        struct promise_type
+        struct promise_type: private promise_type_tracker
         {
             friend class async_task_base;
 
@@ -394,7 +397,7 @@ namespace corolib
     };
 
 
-    class async_task_void : public async_base
+    class async_task_void : public async_base, private coroutine_tracker
     {
     public:
 
@@ -414,10 +417,12 @@ namespace corolib
         {
             print(PRI2, "%p: async_task_void::~async_task_void()\n", this);
             if (m_coro)
+            {
                 if (m_coro.done())
                     m_coro.destroy();
                 else
                     print(PRI1, "%p: async_task_void::~async_task_void(): m_coro.done() returned false\n", this);
+            }
         }
 
         async_task_void(handle_type h)
@@ -487,7 +492,7 @@ namespace corolib
             m_coro.promise().m_waitany = waitany;
         }
 
-        struct promise_type
+        struct promise_type: private promise_type_tracker
         {
             friend class async_task_void;
 

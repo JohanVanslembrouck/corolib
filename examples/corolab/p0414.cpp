@@ -203,7 +203,7 @@ struct eager : private coroutine_tracker {
 //--------------------------------------------------------------
 
 eager<int> coroutine5() {
-    print("coroutine5(): resume_new_thread\n");
+    print("coroutine5(): int v = 42;\n");
     int v = 42;
     print("coroutine5(): co_return %d;\n", v+1);
     co_return v+1;
