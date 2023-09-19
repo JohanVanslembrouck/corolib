@@ -18,11 +18,22 @@ struct tracker
     int nr_currently_present_promise_types = 0;
     int nr_max_simultaneously_present_promise_types = 0;
 
+    int nr_dying_promises_detecting_live_coroutine = 0;
+    int nr_dying_promises_detecting_dead_coroutine = 0;
+
+
     int nr_coroutines_constructed = 0;
     int nr_coroutines_destructed = 0;
     int nr_currently_present_coroutines = 0;
     int nr_max_simultaneously_present_coroutines = 0;
+
+    int nr_dying_coroutines_detecting_live_promise = 0;
+    int nr_dying_coroutines_detecting_dead_promise = 0;
+
+    int nr_access_errors = 0;
 };
+
+extern tracker tracker_obj;
 
 struct promise_type_tracker
 {

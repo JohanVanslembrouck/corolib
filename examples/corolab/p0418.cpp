@@ -32,6 +32,12 @@
 #include "tracker.h"
 #include "csemaphore.h"
 
+#define USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN 1
+
+#if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
+#include <assert.h>
+#endif
+
 //--------------------------------------------------------------
 
 template<typename T>
@@ -47,12 +53,21 @@ struct eager : private coroutine_tracker {
         : coro(s.coro) {
         print("%p: eager::eager(eager&& s)\n", this);
         s.coro = nullptr;
+#if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
+        m_promise_type = s.m_promise_type;
+        m_promise_valid = s.m_promise_valid;
+        s.m_promise_type = nullptr;
+        s.m_promise_valid = false;
+#endif
     }
 
     ~eager() {
-        print("%p: eager::~eager()\n", this);
+        print("%p: <<< eager::~eager()\n", this);
+#if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
+        coroutine_destructor_admin();
+#endif
         if (coro) {
-            print("%p: eager::~eager(): coro.done() = %d\n", this, coro.done());
+            print("%p: <<< eager::~eager(): coro.done() = %d\n", this, coro.done());
             if (coro.done())        // Do not destroy if not yet done
                 coro.destroy();
         }
@@ -60,7 +75,10 @@ struct eager : private coroutine_tracker {
 
     eager(handle_type h)
         : coro(h) {
-        print("%p: eager::eager(handle_type h)\n", this);
+        print("%p: >>> eager::eager(handle_type h): promise = %p\n", this, &coro.promise());
+#if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
+        coro.promise().link_coroutine_object(this);
+#endif
     }
 
     eager& operator = (const eager&) = delete;
@@ -69,11 +87,20 @@ struct eager : private coroutine_tracker {
         print("%p: eager::eager = (eager&& s)\n", this);
         coro = s.coro;
         s.coro = nullptr;
+#if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
+        m_promise_type = s.m_promise_type;
+        m_promise_valid = s.m_promise_valid;
+        s.m_promise_type = nullptr;
+        s.m_promise_valid = false;
+#endif
         return *this;
     }
 
     T get() {
-        print("%p: eager::get(); coro.done() = %d\n", this, coro.done());
+#if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
+        get_admin();
+#endif
+        print("%p: eager::get(): coro.done() = %d\n", this, coro.done());
         if (!coro.done()) {
             coro.promise().m_wait_for_signal = true;
             coro.promise().m_sema.wait();
@@ -81,7 +108,36 @@ struct eager : private coroutine_tracker {
         return coro.promise().m_value;
     }
     
-#if 1
+#if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
+    void link_promise_type(promise_type* pt) {
+        m_promise_type = pt;
+        m_promise_valid = true;
+    }
+
+    void unlink_promise_type() {
+        m_promise_valid = false;
+    }
+
+    void coroutine_destructor_admin() {
+        print("%p: <<< eager::~eager(): promise = %p (valid = %d)\n", this, m_promise_type, m_promise_valid);
+        if (m_promise_valid) {
+            m_promise_type->unlink_coroutine_object();
+            ++tracker_obj.nr_dying_coroutines_detecting_live_promise;
+            assert(&coro.promise() == m_promise_type);
+        }
+        else
+            ++tracker_obj.nr_dying_coroutines_detecting_dead_promise;
+    }
+
+    void get_admin() {
+        if (!m_promise_valid) {
+            print("%p: eager::get(): retrieving value from destructed promise %p!!!\n", this, m_promise_type);
+            ++tracker_obj.nr_access_errors;
+        }
+    }
+#endif
+
+
     // Alternative 1: define operator co_await and an awaiter type
     // that defines await_ready(), await_suspend() and await_resume().
     
@@ -118,27 +174,6 @@ struct eager : private coroutine_tracker {
 
         return awaiter{*this};
     }
-#else
-    // Alternative 2: define await_ready(), await_suspend() and await_resume()
-    // in the coroutine type.
-    
-    bool await_ready() {
-        const bool ready = coro.done();
-        print("%p: eager::await_ready(): return %d;\n", this, ready);
-        return ready;
-    }
-
-    void await_suspend(std::coroutine_handle<> awaiting) {
-        print("%p: eager::await_suspend(std::coroutine_handle<> awaiting)\n", this);
-        coro.promise().m_awaiting = awaiting;
-    }
-
-    T await_resume() {
-        print("%p: eager::await_resume()\n", this);
-        const T r = coro.promise().m_value;
-        return r;
-    }
-#endif
 
     struct promise_type : private promise_type_tracker {
 
@@ -146,14 +181,17 @@ struct eager : private coroutine_tracker {
 
         promise_type() :
             m_value{},
-            m_ready{false},
+            m_ready{ false },
             m_awaiting(nullptr),
             m_wait_for_signal(false) {
-            print("%p: eager::promise_type::promise_type()\n", this);
+            print("%p: >>> eager::promise_type::promise_type()\n", this);
         }
 
         ~promise_type() {
-            print("%p: eager::promise_type::~promise_type()\n", this);
+            print("%p: <<< eager::promise_type::~promise_type()\n", this);
+#if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
+            promise_destructor_admin();
+#endif
         }
 
         void return_value(T v) {
@@ -175,7 +213,11 @@ struct eager : private coroutine_tracker {
 
         auto get_return_object() {
             print("%p: eager::promise_type::get_return_object()\n", this);
-            return eager<T>{handle_type::from_promise(*this)};
+            auto ret = eager<T>{handle_type::from_promise(*this)};
+#if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
+            ret.link_promise_type(this);
+#endif
+            return ret;
         }
 
         auto initial_suspend() {
@@ -194,7 +236,7 @@ struct eager : private coroutine_tracker {
                 promise_type& promise = h.promise();
                 
                 if (promise.m_ready) {
-                    print("%p: eager::promise_type::final_awaiter::await_suspend(): value ready\n", this);
+                    print("%p: eager::promise_type::final_awaiter::await_suspend(): m_ready = %d\n", this, promise.m_ready);
                     print("%p: eager::promise_type::final_awaiter::await_suspend(): m_value = %d\n", this, promise.m_value);
                 }
                 return !promise.m_ready;
@@ -215,15 +257,45 @@ struct eager : private coroutine_tracker {
             std::exit(1);
         }
 
+#if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
+        void link_coroutine_object(eager* coroutine_object) {
+            m_coroutine_object = coroutine_object;
+            m_coroutine_valid = true;
+        }
+
+        void unlink_coroutine_object() {
+            m_coroutine_valid = false;
+        }
+
+        void promise_destructor_admin() {
+            print("%p: <<< eager::promise_type::~promise_type(): coroutine_object = %p (valid = %d)\n", this, m_coroutine_object, m_coroutine_valid);
+            if (m_coroutine_valid) {
+                m_coroutine_object->unlink_promise_type();
+                ++tracker_obj.nr_dying_promises_detecting_live_coroutine;
+            }
+            else {
+                ++tracker_obj.nr_dying_promises_detecting_dead_coroutine;
+            }
+        }
+#endif
+
     private:
         T m_value;
         bool m_ready;
         CSemaphore m_sema;
         std::coroutine_handle<> m_awaiting;
         bool m_wait_for_signal;
+#if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
+        eager* m_coroutine_object = nullptr;
+        bool m_coroutine_valid = false;
+#endif
     };
 
     handle_type coro;
+#if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
+    promise_type* m_promise_type = nullptr;
+    bool m_promise_valid = false;
+#endif
 };
 
 //--------------------------------------------------------------

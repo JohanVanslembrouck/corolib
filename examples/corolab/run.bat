@@ -35,14 +35,17 @@ p0416.exe
 p0418.exe
 p0420.exe
 p0422.exe
+p0423.exe
 p0424.exe
 p0426.exe
 
 p0435.exe
 p0440.exe
-p0460.exe
+# May hang
+#p0460.exe
 # Hangs
 #p0470.exe
+#p0472.exe
 
 p0500.exe
 p0510.exe

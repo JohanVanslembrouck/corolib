@@ -19,24 +19,38 @@ namespace corolib
     tracker::~tracker()
     {
         //print(PRI1, "tracker::~tracker\n");
-        print(PRI1, "--------------------------------------------\n");
-        print(PRI1, "\tcons\tdest\tdiff\tmax\n");
+        print(PRI1, "--------------------------------------------------------\n");
+        print(PRI1, "\tcons\tdest\tdiff\tmax\tc>p\tp>c\terr\n");
         print(PRI1, "ope\t%d\t%d\t%d\t%d\n",
             nr_operations_constructed,
             nr_operations_destructed,
             nr_operations_constructed - nr_operations_destructed,
             nr_max_simultaneously_present_operations);
-        print(PRI1, "cor\t%d\t%d\t%d\t%d\n",
+        print(PRI1, "cor\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
             nr_coroutines_constructed,
             nr_coroutines_destructed,
             nr_coroutines_constructed - nr_coroutines_destructed,
-            nr_max_simultaneously_present_coroutines);
-        print(PRI1, "pro\t%d\t%d\t%d\t%d\n",
+            nr_max_simultaneously_present_coroutines,
+            nr_dying_coroutines_detecting_dead_promise,
+            nr_dying_coroutines_detecting_live_promise,
+            nr_access_errors
+        );
+        print(PRI1, "pro\t%d\t%d\t%d\t%d\t%d\t%d\n",
             nr_promise_types_constructed,
             nr_promise_types_destructed,
             nr_promise_types_constructed - nr_promise_types_destructed,
-            nr_max_simultaneously_present_promise_types);
+            nr_max_simultaneously_present_promise_types,
+            nr_dying_promises_detecting_live_coroutine,
+            nr_dying_promises_detecting_dead_coroutine);
 
+        print(PRI1, "Legend:\n");
+        print(PRI1, "  ope = operation objects, cor = coroutine objects, pro = promise_type objects\n");
+        print(PRI1, "  cons = number of objects constructed, dest = number of objects destructed, diff = cons - dest\n");
+        print(PRI1, "  max = maximum number of objects alive at any time\n");
+        print(PRI1, "  c>p = number of coroutine objects with longer lifetime than the corresponding promise_type object\n");
+        print(PRI1, "  p>c = number of promise_type objects with longer lifetime than the corresponding coroutine object\n");
+        print(PRI1, "  err = number of attempts from a coroutine object to access the value in the promise_type object\n");
+        
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 

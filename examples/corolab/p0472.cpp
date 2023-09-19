@@ -80,7 +80,7 @@ struct syncr : private coroutine_tracker {
         //print("%p: syncr::await_suspend(...): awaiting.address() = %p: entry\n", this, awaiting.address());
         m_awaitingCoroutine = awaiting;
 
-        std::thread thread1([=]() {
+        std::thread thread1([=, this]() {
             print("%p: syncr::await_suspend(...): thread1: this->wait();\n", this);
             this->wait();
             print("%p: syncr::await_suspend(...): thread1: awaiting.resume();\n", this);

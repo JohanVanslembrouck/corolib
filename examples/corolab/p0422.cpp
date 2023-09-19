@@ -29,6 +29,21 @@
 #include "tracker.h"
 #include "csemaphore.h"
 
+#define USE_FINAL_AWAITER 1
+
+/**
+Without final_awaiter:
+
+00:     cons    dest    diff    max     c>p     p>c     err
+00: cor 7       7       0       7       0       0       0
+00: pro 7       2       5       7       0       0
+
+With final_awaiter:
+
+00:     cons    dest    diff    max     c>p     p>c     err
+00: cor 7       7       0       7       0       0       0
+00: pro 7       7       0       7       0       0
+*/
 //--------------------------------------------------------------
 
 template<typename T>
@@ -133,7 +148,6 @@ struct eager : private coroutine_tracker {
         return coro.promise().m_value;
     }
 
-#if 1
     auto operator co_await() noexcept
     {
         class awaiter
@@ -167,24 +181,6 @@ struct eager : private coroutine_tracker {
 
         return awaiter{*this};
     }
-#else
-    bool await_ready() {
-        bool ready = coro.done();
-        print("%p: eager::await_ready(): return %d;\n", this, ready);
-        return ready;
-    }
-
-    void await_suspend(std::coroutine_handle<> awaiting) {
-        print("%p: eager::await_suspend(std::coroutine_handle<> awaiting)\n", this);
-        coro.promise().m_awaiting = awaiting;
-    }
-
-    T await_resume() {
-        print("%p: eager::await_resume()\n", this);
-        const T r = coro.promise().m_value;
-        return r;
-    }
-#endif
 
     struct promise_type : private promise_type_tracker {
 
@@ -240,7 +236,7 @@ struct eager : private coroutine_tracker {
                 promise_type& promise = h.promise();
 
                 if (promise.m_ready) {
-                    print("%p: eager::promise_type::final_awaiter::await_suspend(): value ready\n", this);
+                    print("%p: eager::promise_type::final_awaiter::await_suspend(): m_ready = %d\n", this, promise.m_ready);
                     print("%p: eager::promise_type::final_awaiter::await_suspend(): m_value = %d\n", this, promise.m_value);
                 }
                 return !promise.m_ready;
@@ -253,7 +249,11 @@ struct eager : private coroutine_tracker {
 
         auto final_suspend() noexcept {
             print("%p: eager::promise_type::final_suspend()\n", this);
+#if USE_FINAL_AWAITER
             return final_awaiter{};
+#else
+            return std::suspend_always{};
+#endif
         }
 
         void unhandled_exception() {

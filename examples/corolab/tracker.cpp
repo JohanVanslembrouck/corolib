@@ -16,18 +16,26 @@ tracker::tracker()
 tracker::~tracker()
 {
     //print("tracker::~tracker\n");
-    print("--------------------------------------------\n");
-    print("\tcons\tdest\tdiff\tmax\n");
-    print("cor\t%d\t%d\t%d\t%d\n",
+    print("--------------------------------------------------------\n");
+    print("\tcons\tdest\tdiff\tmax\tc>p\tp>c\terr\n");
+    print("cor\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
         nr_coroutines_constructed,
         nr_coroutines_destructed,
         nr_coroutines_constructed - nr_coroutines_destructed,
-        nr_max_simultaneously_present_coroutines);
-    print("pro\t%d\t%d\t%d\t%d\n",
+        nr_max_simultaneously_present_coroutines,
+        nr_dying_coroutines_detecting_dead_promise,
+        nr_dying_coroutines_detecting_live_promise,
+        nr_access_errors
+        );
+    print("pro\t%d\t%d\t%d\t%d\t%d\t%d\n",
         nr_promise_types_constructed,
         nr_promise_types_destructed,
         nr_promise_types_constructed - nr_promise_types_destructed,
-        nr_max_simultaneously_present_promise_types);
+        nr_max_simultaneously_present_promise_types,
+        nr_dying_promises_detecting_live_coroutine,
+        nr_dying_promises_detecting_dead_coroutine);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
 
 tracker tracker_obj;

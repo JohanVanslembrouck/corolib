@@ -81,7 +81,6 @@ struct eager : private coroutine_tracker {
         return coro.promise().m_value;
     }
     
-#if 1
     // Alternative 1: define operator co_await and an awaiter type
     // that defines await_ready(), await_suspend() and await_resume().
     
@@ -118,27 +117,6 @@ struct eager : private coroutine_tracker {
 
         return awaiter{*this};
     }
-#else
-    // Alternative 2: define await_ready(), await_suspend() and await_resume()
-    // in the coroutine type.
-    
-    bool await_ready() {
-        const bool ready = coro.done();
-        print("%p: eager::await_ready(): return %d;\n", this, ready);
-        return ready;
-    }
-
-    void await_suspend(std::coroutine_handle<> awaiting) {
-        print("%p: eager::await_suspend(std::coroutine_handle<> awaiting)\n", this);
-        coro.promise().m_awaiting = awaiting;
-    }
-
-    T await_resume() {
-        print("%p: eager::await_resume()\n", this);
-        const T r = coro.promise().m_value;
-        return r;
-    }
-#endif
 
     struct promise_type : private promise_type_tracker {
 
