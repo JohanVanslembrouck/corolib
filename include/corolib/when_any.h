@@ -28,6 +28,12 @@
 
 namespace corolib
 {
+    struct when_any_info
+    {
+        when_any_one* m_wait_any;   // TODO: replace with shared_ptr
+        async_base* m_element;
+    };
+
     class when_any
     {
     public:
@@ -53,10 +59,11 @@ namespace corolib
                 // Only place the object in m_elements if it has not yet been completed.
                 if (!async_op->is_ready())
                 {
-                    when_any_one* q = new when_any_one();
-                    m_wait_any.push_back(q);
-                    async_op->setWaitAny(q);
-                    m_elements.push_back(async_op);
+                    when_any_info info;
+                    info.m_wait_any = new when_any_one();
+                    async_op->setWaitAny(info.m_wait_any);
+                    info.m_element = async_op;
+                    m_wait_any_vector.push_back(info);
                 }
             }
         }
@@ -71,13 +78,14 @@ namespace corolib
             for (int i = 0; i < size; i++)
             {
                 // Only place the object in m_elements if it has not yet been completed.
-                async_base* op = pasync_ops[i];
-                if (!op->is_ready())
+                async_base* async_op = pasync_ops[i];
+                if (!async_op->is_ready())
                 {
-                    when_any_one* q = new when_any_one();
-                    m_wait_any.push_back(q);
-                    op->setWaitAny(q);
-                    m_elements.push_back(op);
+                    when_any_info info;
+                    info.m_wait_any = new when_any_one();
+                    info.m_element = async_op;
+                    async_op->setWaitAny(info.m_wait_any);
+                    m_wait_any_vector.push_back(info);
                 }
             }
         }
@@ -89,14 +97,24 @@ namespace corolib
             print(PRI2, "%p: when_any::when_any(when_any&& s)\n", this);
         }
 
+        void cleanup()
+        {
+            for (std::size_t i = 0; i < m_wait_any_vector.size(); i++)
+            {
+                m_wait_any_vector[i].m_element->setWaitAny(nullptr);
+                delete m_wait_any_vector[i].m_wait_any;
+            }
+        }
+
         ~when_any()
         {
             print(PRI2, "%p: when_any::~when_any()\n", this);
-            for (std::size_t i = 0; i < m_wait_any.size(); i++)
-            {
-                m_elements[i]->setWaitAny(nullptr);
-                delete m_wait_any[i];
-            }
+            // Do not call cleanup() from here.
+            // The when_any object may go out-of-scope at a place where
+            // (the addresses of) its elements are used by another when_any object:
+            // the original when_any object has no right anymore to reset the counters in these objects.
+            // FFS
+            // cleanup();
         }
 
         when_any& operator = (const when_any&) = delete;
@@ -118,9 +136,9 @@ namespace corolib
             print(PRI2, "%p: when_any:start_all(): m_first = %d\n", this, m_first);
             if (m_first)
             {
-                for (std::size_t i = 0; i < m_elements.size(); i++)
+                for (std::size_t i = 0; i < m_wait_any_vector.size(); i++)
                 {
-                    m_elements[i]->start();
+                    m_wait_any_vector[i].m_element->start();
                 }
                 m_first = false;
             }
@@ -140,9 +158,9 @@ namespace corolib
                 bool await_ready()
                 {
                     print(PRI2, "%p: when_any::awaiter::await_ready()\n", this);
-                    for (std::size_t i = 0; i < m_when_any.m_wait_any.size(); i++)
+                    for (std::size_t i = 0; i < m_when_any.m_wait_any_vector.size(); i++)
                     {
-                        if (m_when_any.m_wait_any[i]->get_completed())
+                        if (m_when_any.m_wait_any_vector[i].m_wait_any->get_completed())
                         {
                             print(PRI2, "%p: when_any::awaiter::await_ready(): return true for i = %d;\n", this, i);
                             return true;
@@ -156,9 +174,9 @@ namespace corolib
                 {
                     print(PRI2, "%p: when_any::awaiter::await_suspend(...)\n", this);
                     m_when_any.start_all();    // Will have no effect in case of an eager start
-                    for (auto el : m_when_any.m_wait_any)
+                    for (auto el : m_when_any.m_wait_any_vector)
                     {
-                        el->set_awaiting(awaiting);
+                        el.m_wait_any->set_awaiting(awaiting);
                     }
                 }
 
@@ -166,25 +184,44 @@ namespace corolib
                 {
                     // Find out which one has completed
                     print(PRI2, "%p: when_any::awaiter::await_resume()\n", this);
-                    for (std::size_t i = 0; i < m_when_any.m_wait_any.size(); i++)
+                    int ret = -1;
+                    for (std::size_t i = 0; i < m_when_any.m_wait_any_vector.size(); i++)
                     {
-                        if (m_when_any.m_wait_any[i]->get_and_reset_completed())
+                        if (m_when_any.m_wait_any_vector[i].m_wait_any->get_and_mark_as_completed())
                         {
                             print(PRI2, "%p: when_any::awaiter::await_resume(): return i = %d\n", i);
-                            // TODO: possibly remove i-th element from m_wait_any and m_elements
-                            // or otherwise mark them as not having to be reconsidered again in await_ready
-                            return i;
+                            ret = i;
+                            break;
                         }
                     }
+                    // TODO: remove i-th element from m_wait_any and m_elements to avoid memory leak
+                    //       if cleanup does not happen in destructor
+                    // or otherwise mark them as not having to be reconsidered again in await_ready
+                    //m_when_any.display_status();
 
-                    print(PRI1, "%p: when_any::awaiter::await_resume(): Error, none has completed, yet the coroutine has been resumed\n", this);
-                    return -1;
+                    if (ret == -1)
+                        print(PRI1, "%p: when_any::awaiter::await_resume(): Error, none has completed, yet the coroutine has been resumed\n", this);
+                    return ret;
                 }
             private:
                 when_any& m_when_any;
             };
 
             return awaiter{ *this };
+        }
+
+        void display_status()
+        {
+            for (int i = 0; i < m_wait_any_vector.size(); i++)
+            {
+                when_any_info* p = &m_wait_any_vector[i];
+                printf("%d: %p %p: completion = %d, completion_status = %d\n",
+                    i,
+                    p->m_wait_any,
+                    p->m_element,
+                    p->m_wait_any ? static_cast<int>(p->m_wait_any->get_completed()) : -1,
+                    p->m_wait_any ? static_cast<int>(p->m_wait_any->get_completion_status()) : -1);
+            }
         }
 
     protected:
@@ -199,10 +236,11 @@ namespace corolib
             // Only place the object in m_elements if it has not yet been completed.
             if (!async_op->is_ready())
             {
-                when_any_one* q = new when_any_one();
-                m_wait_any.push_back(q);
-                async_op->setWaitAny(q);
-                m_elements.push_back(async_op);
+                when_any_info info;
+                info.m_wait_any = new when_any_one();
+                async_op->setWaitAny(info.m_wait_any);
+                info.m_element = async_op;
+                m_wait_any_vector.push_back(info);
             }
             make_when_any(others...);
         };
@@ -212,11 +250,12 @@ namespace corolib
         };
 
     private:
-        std::vector<when_any_one*> m_wait_any;
-        std::vector<async_base*> m_elements;
+        std::vector<when_any_info> m_wait_any_vector;
         bool m_first{ true };
     };
 
+
+#if 1
     /**
     * @brief when_anyT is the original implementation of when_any (which has been renamed to when_anyT).
     * Its implementation is here for historical/backup/reference reasons only.
@@ -382,7 +421,9 @@ namespace corolib
         std::vector<TYPE*> m_elements;
         bool m_first{true};
     };
+#endif
 
 }
+
 
 #endif

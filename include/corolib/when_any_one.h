@@ -14,6 +14,13 @@
 
 namespace corolib
 {
+    enum class when_any_one_status
+    {
+        NOT_COMPLETED = 0,
+        NEWLY_COMPLETED,
+        COMPLETED_PROCESSED,
+    };
+
     class when_any_one
     {
     public:
@@ -21,6 +28,7 @@ namespace corolib
         when_any_one()
             : m_awaiting(nullptr)
             , m_completed(false)
+            , m_completion_status(when_any_one_status::NOT_COMPLETED)
         {
             print(PRI2, "%p: when_any_one::when_any_one()\n", this);
         }
@@ -30,6 +38,7 @@ namespace corolib
             print(PRI2, "%p: when_any_one::~when_any_one()\n", this);
             m_awaiting = nullptr;
             m_completed = false;
+            m_completion_status = when_any_one_status::NOT_COMPLETED;
         }
 
         /**
@@ -53,6 +62,16 @@ namespace corolib
         }
 
         /**
+         * @brief called from await_ready in when_any
+         *
+         */
+        when_any_one_status get_completion_status()
+        {
+            print(PRI2, "%p: when_any_one::get_completion_status()\n", this);
+            return m_completion_status;
+        }
+
+        /**
          * @brief called from await_resume in when_any
          *
          */
@@ -64,6 +83,13 @@ namespace corolib
             return completed;
         }
 
+        bool get_and_mark_as_completed()
+        {
+            print(PRI2, "%p: when_any_one::get_and_mark_as_completed()\n", this);
+            m_completion_status = when_any_one_status::COMPLETED_PROCESSED;
+            return get_and_reset_completed();
+        }
+
 		/**
          * @brief called from async_operation_base::completed and 
          * from return_value and return_void in the promise_type of async_task
@@ -73,6 +99,7 @@ namespace corolib
         {
             print(PRI2, "%p: when_any_one::completed()\n", this);
             m_completed = true;
+            m_completion_status = when_any_one_status::NEWLY_COMPLETED;
             // Resume the awaiting coroutine
             m_awaiting.resume();
         }
@@ -80,6 +107,7 @@ namespace corolib
     private:
         std::coroutine_handle<> m_awaiting;
         bool m_completed;
+        when_any_one_status m_completion_status;
     };
 }
 

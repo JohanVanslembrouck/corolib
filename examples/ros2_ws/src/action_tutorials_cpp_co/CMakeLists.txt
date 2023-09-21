@@ -62,6 +62,7 @@ install(TARGETS
 add_library(corolib_library SHARED
   ${COROLIB_ROOT_DIR}/lib/async_operation.cpp
   ${COROLIB_ROOT_DIR}/lib/commservice.cpp
+  ${COROLIB_ROOT_DIR}/lib/tracker.cpp
   ${COROLIB_ROOT_DIR}/lib/print.cpp)
 
 add_library(action_client_co SHARED

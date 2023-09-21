@@ -86,13 +86,23 @@ namespace corolib
         when_all(const when_all& s) = delete;
         when_all(when_all&& s) = delete;
 
-        ~when_all()
+        void cleanup()
         {
-            print(PRI2, "%p: when_all::~when_all()\n", this);
             for (std::size_t i = 0; i < m_elements.size(); i++)
             {
                 m_elements[i]->setCounter(nullptr);
             }
+        }
+
+        ~when_all()
+        {
+            print(PRI2, "%p: when_all::~when_all()\n", this);
+            // Do not call cleanup() from here.
+            // The when_all object may go out-of-scope at a place where
+            // (the addresses of) its elements are used by another when_all object:
+            // the original when_all object has no right anymore to reset the counters in these objects.
+            // FFS
+            //cleanup();
         }
 
         when_all& operator = (const when_all&) = delete;
@@ -141,6 +151,7 @@ namespace corolib
                 void await_resume()
                 {
                     print(PRI2, "%p: when_all::awaiter::await_resume()\n", this);
+                    //m_when_all.cleanup();
                 }
             private:
                 when_all& m_when_all;
@@ -177,6 +188,8 @@ namespace corolib
         std::vector<async_base*> m_elements;
     };
 
+
+#if 0
     /**
      * @brief when_allT is the original implementation of when_all (which has been renamed to when_allT).
      * Its implementation is here for historical/backup/reference reasons only.
@@ -306,7 +319,9 @@ namespace corolib
     private:
         when_all_counter m_counter;
         std::vector<TYPE*> m_elements;
-    };
+    }
+#endif
+
 
 }
 

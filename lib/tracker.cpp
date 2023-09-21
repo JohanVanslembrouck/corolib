@@ -42,7 +42,7 @@ namespace corolib
             nr_max_simultaneously_present_promise_types,
             nr_dying_promises_detecting_live_coroutine,
             nr_dying_promises_detecting_dead_coroutine);
-
+#if 1
         print(PRI1, "Legend:\n");
         print(PRI1, "  ope = operation objects, cor = coroutine objects, pro = promise_type objects\n");
         print(PRI1, "  cons = number of objects constructed, dest = number of objects destructed, diff = cons - dest\n");
@@ -50,7 +50,8 @@ namespace corolib
         print(PRI1, "  c>p = number of coroutine objects with longer lifetime than the corresponding promise_type object\n");
         print(PRI1, "  p>c = number of promise_type objects with longer lifetime than the corresponding coroutine object\n");
         print(PRI1, "  err = number of attempts from a coroutine object to access the value in the promise_type object\n");
-        
+#endif
+        print(PRI1, "Waiting 1 second before exiting\n");
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 

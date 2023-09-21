@@ -67,6 +67,7 @@ custom_executable(parameters set_and_get_parameters_async)
 add_library(corolib_library SHARED
   ${COROLIB_ROOT_DIR}/lib/async_operation.cpp
   ${COROLIB_ROOT_DIR}/lib/commservice.cpp
+  ${COROLIB_ROOT_DIR}/lib/tracker.cpp
   ${COROLIB_ROOT_DIR}/lib/print.cpp)
 
 add_library(timers_library SHARED

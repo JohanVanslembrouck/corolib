@@ -17,6 +17,7 @@ INCLUDEPATH += \
 				
 SOURCES += async_operation.cpp \
         commservice.cpp \
+        tracker.cpp \
         print.cpp
 
 TARGET = corolib

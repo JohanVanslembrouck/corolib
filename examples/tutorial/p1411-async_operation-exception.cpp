@@ -44,7 +44,7 @@ void completionflow()
 
 int main()
 {
-    set_print_level(0x03);        // Use 0x03 to follow the flow in corolib
+    set_print_level(0x01);        // Use 0x03 to follow the flow in corolib
 
     print(PRI1, "main(): async_task<int> a = coroutine1();\n");
     async_task<int> a = coroutine1();
