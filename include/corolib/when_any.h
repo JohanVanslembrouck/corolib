@@ -2,16 +2,26 @@
  * @file when_any.h
  * @brief
  * when_any waits for any of the async_operation or async_task objects passed to it in its constructor
- * to complete. These objects are placed in a vector m_elements.
+ * to complete. 
  * 
- * For every async_operation or async_task object in m_elements, when_any creates a wait_any_on
- * object and places it in a second vector m_wait_any.
- * It associates each element in m_elements with the corresponding element in m_wait_any.
- * This way the async_operation or async_task object in m_elements can
- * inform when_any via the corresponding element in m_wait_any that it has completed.
+ * when_any uses an auxiliary type when_any_info with two fields
+ * and it defines
+    std::vector<when_any_info> m_wait_any_vector;
+ * 
+ * The vector contains an when_any_info item for every async_operation or async_task object that is
+ * passed to it.
+ * 
+ * The m_element field points to the async_operation or async_task object object.
+ * 
+ * For every async_operation or async_task object, when_any also allocates a wait_any_one object and 
+ * places it in the field m_wait_any.
+ * 
+ * Using setWaitAny(), when_any passes the m_wait_any object pointer to the
+ * async_operation or async_task object object.
  *
- * TODO1: verify instantiation of when_any with an appropriate type using C++20 concepts.
- * TODO2: implement other ways to pass the async_operation or async_task objects.
+ * This way the async_operation or async_task object can inform when_any via m_wait_any that it has completed.
+ *
+ * TODO: verify instantiation of when_any with an appropriate type using C++20 concepts.
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
@@ -30,8 +40,8 @@ namespace corolib
 {
     struct when_any_info
     {
-        when_any_one* m_wait_any;   // TODO: replace with shared_ptr
         async_base* m_element;
+        when_any_one* m_wait_any;
     };
 
     class when_any
@@ -101,20 +111,23 @@ namespace corolib
         {
             for (std::size_t i = 0; i < m_wait_any_vector.size(); i++)
             {
-                m_wait_any_vector[i].m_element->setWaitAny(nullptr);
+                //m_wait_any_vector[i].m_element->setWaitAny(nullptr);
                 delete m_wait_any_vector[i].m_wait_any;
+                m_wait_any_vector[i].m_wait_any = nullptr;
             }
         }
 
         ~when_any()
         {
             print(PRI2, "%p: when_any::~when_any()\n", this);
-            // Do not call cleanup() from here.
+            // Do not call 
+            //      m_wait_any_vector[i].m_element->setWaitAny(nullptr);
+            // in cleanup() from here.
             // The when_any object may go out-of-scope at a place where
             // (the addresses of) its elements are used by another when_any object:
             // the original when_any object has no right anymore to reset the counters in these objects.
             // FFS
-            // cleanup();
+            cleanup();
         }
 
         when_any& operator = (const when_any&) = delete;
@@ -194,9 +207,7 @@ namespace corolib
                             break;
                         }
                     }
-                    // TODO: remove i-th element from m_wait_any and m_elements to avoid memory leak
-                    //       if cleanup does not happen in destructor
-                    // or otherwise mark them as not having to be reconsidered again in await_ready
+
                     //m_when_any.display_status();
 
                     if (ret == -1)
@@ -212,7 +223,7 @@ namespace corolib
 
         void display_status()
         {
-            for (int i = 0; i < m_wait_any_vector.size(); i++)
+            for (unsigned int i = 0; i < m_wait_any_vector.size(); i++)
             {
                 when_any_info* p = &m_wait_any_vector[i];
                 printf("%d: %p %p: completion = %d, completion_status = %d\n",
@@ -255,7 +266,7 @@ namespace corolib
     };
 
 
-#if 1
+#if 0
     /**
     * @brief when_anyT is the original implementation of when_any (which has been renamed to when_anyT).
     * Its implementation is here for historical/backup/reference reasons only.

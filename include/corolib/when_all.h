@@ -5,11 +5,11 @@
  * to complete.
  *
  * when_all passes its m_counter data member object to every async_operation or async_task object.
+ * 
  * When an async_operation or async_task completes, it decrements the counter in the m_counter object.
  * When that counter reaches 0, the coroutines co_awaiting the when_all object will be resumed.
  *
- * TODO1: verify instantiation of when_all with an appropriate type using C++20 concepts.
- * TODO2: implement other ways to pass the async_operation or async_task objects.
+ * TODO: verify instantiation of when_all with an appropriate type using C++20 concepts.
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */

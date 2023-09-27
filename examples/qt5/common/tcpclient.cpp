@@ -259,7 +259,7 @@ void TcpClient::disconnectedServer()
         if (m_autoConnect)
         {
             // Start timer to reconnect to server
-            qDebug() << Q_FUNC_INFO << "Starting timer" << endl;
+            qDebug() << Q_FUNC_INFO << "Starting timer" << Qt::endl;
             m_timer.start(m_reconnectTimeoutAfterDisconnect);
         }
 

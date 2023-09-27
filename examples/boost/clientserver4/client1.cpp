@@ -93,8 +93,6 @@ public:
 		print(PRI1, "performAction: async_operation<void> st = start_timer(client_timer, timeout);\n");
 		async_operation<void> st = start_timer(client_timer, timeout);
 
-		//print(PRI1, "performAction: when_anyT<async_operation_base> war( { &sr, &st } ) ;\n");
-		//when_anyT<async_operation_base> war({ &sr, &st });
         print(PRI1, "performAction: when_any war( { &sr, &st } ) ;\n");
         when_any war({ &sr, &st });
 

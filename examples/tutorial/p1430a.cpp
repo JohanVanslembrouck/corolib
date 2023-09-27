@@ -5,7 +5,7 @@
  * coroutineI (I = 1..4) co_awaits coroutineI+1.
  * coroutine3 calls coroutine4 twice.
  * coroutine4 calls coroutine5a and coroutine5b and awaits the completion of both coroutines.
- * p1430a.cpp uses wait_any instead of wait_all (in p1430.cpp).
+ * p1430a.cpp uses when_any instead of when_all (in p1430.cpp).
  * coroutine5a starts an asynchronous operation on object01 and awaits its completion.
  * coroutine5b starts an asynchronous operation on object02 and awaits its completion.
  *
