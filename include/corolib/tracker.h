@@ -33,6 +33,9 @@ namespace corolib
         int nr_dying_coroutines_detecting_live_promise = 0;
         int nr_dying_coroutines_detecting_dead_promise = 0;
 
+        int nr_dying_coroutines_handle_done = 0;
+        int nr_dying_coroutines_handle_not_done = 0;
+
         int nr_access_errors = 0;
 
         // operation related
@@ -40,6 +43,15 @@ namespace corolib
         int nr_operations_destructed = 0;
         int nr_currently_present_operations = 0;
         int nr_max_simultaneously_present_operations = 0;
+
+        // final_awaiter related
+        int nr_final_awaiters_constructed = 0;
+        int nr_final_awaiters_destructed = 0;
+        int nr_currently_present_final_awaiters = 0;
+        int nr_max_simultaneously_present_final_awaiters = 0;
+
+        int nr_final_awaiters_await_suspend_returning_true = 0;
+        int nr_final_awaiters_await_suspend_returning_false = 0;
     };
 
     extern tracker tracker_obj;
@@ -60,6 +72,12 @@ namespace corolib
     {
         operation_tracker();
         ~operation_tracker();
+    };
+
+    struct final_awaiter_tracker
+    {
+        final_awaiter_tracker();
+        ~final_awaiter_tracker();
     };
 }
 
