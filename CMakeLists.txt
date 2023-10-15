@@ -42,6 +42,8 @@ add_subdirectory(examples/why-coroutines)
 
 add_subdirectory(examples/corolab)
 
+add_subdirectory(examples/transform)
+
 if (NOT googletest)
 	include(FetchContent)
 	FetchContent_Declare(
