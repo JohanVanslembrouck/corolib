@@ -680,9 +680,9 @@ task g(int x) {
 #endif
 
 int main() {
-    printf("main(): g(5)\n");
+    printf("main(): task t = g(5)\n");
     task t = g(5);
-    printf("main(): return 0\n");
+    printf("main(): return 0;\n");
     return 0;
 }
 

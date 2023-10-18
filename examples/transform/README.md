@@ -11,7 +11,8 @@ The program does not do anything useful (yet).
 
 The following convention is used:
 
-* p0XXX.cpp contains a coroutine program that #include <coroutine> (which is the coroutine header file that comes with the compiler).
+* p0XX0.h contains the task coroutine type that is used in the .cpp files below.
+* p0XXX.cpp contains a coroutine program that #include \<coroutine> (which is the coroutine header file that comes with the compiler).
 * p0XXXlb.cpp is exactly the same program, but instead it #include "lbcoroutine.h" (which is the coroutine header file by Lewis Baker).
 * p0XXXtrf.cpp contains the same program with manually transformed coroutines.
 

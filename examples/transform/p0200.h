@@ -11,9 +11,10 @@
 using namespace std;
 
 #include "print.h"
+#include "tracker.h"
 
-struct task
-{
+struct task : private coroutine_tracker {
+
     struct promise_type;
     using coro_handle = std::coroutine_handle<promise_type>;
 
@@ -86,8 +87,7 @@ struct task
     }
 
     // defined in template<typename T> struct task
-    struct promise_type
-    {
+    struct promise_type : private promise_type_tracker {
         using coro_handle = std::coroutine_handle<promise_type>;
 
         promise_type()
@@ -140,6 +140,5 @@ struct task
 
     coro_handle m_coroutine;
 };
-
 
 #endif

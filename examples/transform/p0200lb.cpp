@@ -38,5 +38,6 @@ int main() {
     print(PRI1, "main(): int i = gt.get();\n");
     int i = gt.get();
     print(PRI1, "main(): i = %d\n", i);
+    print(PRI1, "main(): return 0;\n");
     return 0;
 }
