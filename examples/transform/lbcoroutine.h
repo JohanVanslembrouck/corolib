@@ -93,7 +93,7 @@ namespace std
         friend bool operator==(coroutine_handle a, coroutine_handle b) noexcept {
             return a.state_ == b.state_;
         }
-#if 0
+#if USE_ORIGINAL_RESUME_IMPLEMENTATION
         void resume() const {
             __coroutine_state* s = state_;
             do {

@@ -1,16 +1,17 @@
 /**
- *  Filename: p0200lb.cpp
+ *  Filename: p0210.cpp
  *  Description:
  *
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
-#define USE_LBCOROUTINE 1
 #include "config.h"
 
 #include "print.h"
 
 #include "auto_reset_event.h"
+
+#define USE_FINAL_AWAITER 1
 #include "p0200.h"
 
 auto_reset_event are1;

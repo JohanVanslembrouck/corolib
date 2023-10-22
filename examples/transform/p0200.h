@@ -32,21 +32,21 @@ struct task : private coroutine_tracker {
         }
     }
 
-    task() = default;
+    task() = delete;
     task(task const&) = delete;
     task& operator= (task const&) = delete;
 
-    task(task&& other)
+    task(task&& other) noexcept
         : m_coroutine(other.m_coroutine) {
         print(PRI2, "task::task(task&& other)\n");
-        //other.m_coroutine = nullptr;
+        other.m_coroutine = {};
     }
 
-    task& operator= (task&& other) {
+    task& operator= (task&& other) noexcept {
         print(PRI2, "task::operator= (task&& other)\n");
         if (&other != this) {
             m_coroutine = other.m_coroutine;
-            //other.m_coroutine = nullptr;
+            other.m_coroutine = {};
         }
         return *this;
     }
@@ -86,7 +86,6 @@ struct task : private coroutine_tracker {
         return task::awaiter{ m_coroutine };
     }
 
-    // defined in template<typename T> struct task
     struct promise_type : private promise_type_tracker {
         using coro_handle = std::coroutine_handle<promise_type>;
 
@@ -116,9 +115,40 @@ struct task : private coroutine_tracker {
             return std::suspend_never{};
         }
 
+        struct final_awaiter : public final_awaiter_tracker {
+            final_awaiter(promise_type& pr)
+                : m_pr(pr)
+            {}
+            
+            bool await_ready() const noexcept {
+                print("task::promise_type::final_awaiter::await_ready()\n");
+                return m_pr.m_ready;
+            }
+
+            bool await_suspend(coro_handle h) noexcept {
+                print("task::promise_type::final_awaiter::await_suspend()\n");
+                //promise_type& promise = h.promise();
+                if (m_pr.m_ready) {
+                    print("task::promise_type::final_awaiter::await_suspend(): m_ready = %d\n", m_pr.m_ready);
+                    print("task::promise_type::final_awaiter::await_suspend(): m_value = %d\n", m_pr.m_value);
+                }
+                return !m_pr.m_ready;
+            }
+
+            void await_resume() noexcept {
+                print("task::promise_type::final_awaiter::await_resume()\n");
+            }
+
+            promise_type& m_pr;
+        };
+
         auto final_suspend() noexcept {
             print(PRI2, "task::promise_type::final_suspend()\n");
+#if USE_FINAL_AWAITER
+            return final_awaiter{ *this };
+#else
             return std::suspend_always{};
+#endif
         }
 
         void unhandled_exception() {

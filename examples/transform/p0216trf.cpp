@@ -1,20 +1,27 @@
 /**
- *  Filename: p0206lb.cpp
- *  Description:
- *
+ *  Filename: p0216trf.cpp
+ *  Description
+ * 
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
-#define USE_LBCOROUTINE 1
 #include "config.h"
 
 #include "print.h"
-
 #include "auto_reset_event.h"
+
+#define USE_FINAL_AWAITER 1
 #include "p0200.h"
+
+#include "helpers.h"
 
 auto_reset_event are1;
 
+#include "p0210-f.h"
+#include "p0210-g.h"
+#include "p0210-h.h"
+
+#if 0
 task f(int x) {
     print(PRI1, "f(%d): co_await are1;\n", x);
     co_await are1;
@@ -35,6 +42,7 @@ task h(int x, int y) {
     print(PRI1, "h(%d, %d): co_return y + i (= %d);\n", x, y, y + i);
     co_return y + i;
 }
+#endif
 
 int main() {
     priority = 0x0F;

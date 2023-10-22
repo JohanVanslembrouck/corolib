@@ -30,3 +30,17 @@ echo Running ./tr-p0206lb
 ./tr-p0206lb
 echo Running ./tr-p0206trf
 ./tr-p0206trf
+
+echo Running ./tr-p0210
+./tr-p0210
+echo Running ./tr-p0210lb
+./tr-p0210lb
+echo Running ./tr-p0210trf
+./tr-p0210trf
+
+echo Running ./tr-p0216
+./tr-p0216
+echo Running ./tr-p0216lb
+./tr-p0216lb
+echo Running ./tr-p0216trf
+./tr-p0216trf

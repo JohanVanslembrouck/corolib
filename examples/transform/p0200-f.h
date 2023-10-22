@@ -1,17 +1,15 @@
 /**
- *  Filename: p0202lb.cpp
- *  Description:
- *
+ *  Filename: p0200-f.h
+ *  Description
+ * 
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
+#ifndef _P0200_F_H_
+#define _P0200_F_H_
+
 #include "config.h"
-
-#include "print.h"
 #include "p0200.h"
-#include "helpers.h"
-
- // =========================================================================
 
 task f(int x);
 
@@ -19,6 +17,7 @@ __coroutine_state* __f_resume(__coroutine_state* s);
 void __f_destroy(__coroutine_state* s);
 
 using __f_promise_t = std::coroutine_traits<task, int>::promise_type;
+
 
 /////
 // The coroutine-state definition
@@ -58,7 +57,7 @@ task f(int x) {
     std::unique_ptr<__f_state> state(new __f_state(static_cast<int&&>(x)));
     decltype(auto) return_value = state->__promise.get_return_object();
 
-    print(PRI3, "f(%d): co_await promise.final_suspend();\n", x);
+    print(PRI3, "f(%d): co_await initial_suspend();\n", x);
     state->__tmp1.construct_from([&]() -> decltype(auto) {
         return state->__promise.initial_suspend();
         });
@@ -86,17 +85,36 @@ __coroutine_state* __f_resume(__coroutine_state* s) {
     try {
         switch (state->__suspend_point) {
         case 0: goto suspend_point_0;
-        //default: std::unreachable();       // 'unreachable': is not a member of 'std'     // JVS
+        case 1: goto suspend_point_1;
+ //     default: std::unreachable();       // 'unreachable': is not a member of 'std'     // JVS
         default:;
         }
 
- suspend_point_0:
+    suspend_point_0:
         {
             destructor_guard tmp1_dtor{ state->__tmp1 };
             state->__tmp1.get().await_resume();
         }
 
-        print(PRI1, "f(%d): co_return 42 + x (= %d);\n", state->x, 42 + state->x);
+        print(PRI1, "f(%d): co_await are1;\n", state->x);
+        {
+            auto_reset_event::awaiter aw = are1.operator co_await();
+
+            if (!aw.await_ready()) {
+                state->__suspend_point = 1;
+
+                aw.await_suspend(
+                    std::coroutine_handle<__f_promise_t>::from_promise(state->__promise));
+
+                return static_cast<__coroutine_state*>(std::noop_coroutine().address());
+            }
+        }
+
+    suspend_point_1:
+        auto_reset_event::awaiter aw = are1.operator co_await();
+        aw.await_resume();
+
+        print(PRI1, "f(%d): co_return 42 + i (= %d);\n", state->x, 42 + state->x);
         state->__promise.return_value(42 + state->x);
         goto final_suspend;
     }
@@ -141,9 +159,10 @@ void __f_destroy(__coroutine_state* s) {
 
     switch (state->__suspend_point) {
     case 0: goto suspend_point_0;
+    case 1: goto suspend_point_1;
     case 2: goto suspend_point_2;
-    //default: std::unreachable();       // 'unreachable': is not a member of 'std'     // JVS
-    default:;  // JVS
+//  default: std::unreachable();       // 'unreachable': is not a member of 'std'     // JVS
+    default:;
     }
 
 suspend_point_0:
@@ -161,29 +180,4 @@ destroy_state:
     delete state;
 }
 
-#include "p0200-g.h"
-
-#if 0
-task f(int x) {
-    print(PRI1, "f(%d): co_return 42 + x (= %d);\n", x, 42 + x);
-    co_return 42 + x;
-}
-
-task g(int x) {
-    print(PRI1, "g(%d): int i = co_await f(%d);\n", x, x);
-    int i = co_await f(x);
-    print(PRI1, "g(%d): co_return 42 + i (= %d);\n", x, 42 + i);
-    co_return 42 + i;
-}
 #endif
-
-int main() {
-    priority = 0x0F;
-    print(PRI1, "main(): task gt = g(5);\n");
-    task gt = g(5);
-    print(PRI1, "main(): int i = gt.get();\n");
-    int i = gt.get();
-    print(PRI1, "main(): i = %d\n", i);
-    print(PRI1, "main(): return 0;\n");
-    return 0;
-}

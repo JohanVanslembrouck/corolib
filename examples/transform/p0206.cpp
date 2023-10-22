@@ -5,7 +5,6 @@
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
-#define USE_LBCOROUTINE 0
 #include "config.h"
 
 #include "print.h"
