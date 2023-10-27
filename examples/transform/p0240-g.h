@@ -1,15 +1,15 @@
 /**
- *  Filename: p0200-g.h
+ *  Filename: p0240-g.h
  *  Description
  *
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
-#ifndef _P0200_G_H_
-#define _P0200_G_H_
+#ifndef _P0240_G_H_
+#define _P0240_G_H_
 
 #include "config.h"
-#include "p0200.h"
+#include "p0240.h"
 
 task g(int x);
 
@@ -120,8 +120,10 @@ __coroutine_state* __g_resume(__coroutine_state* s) {
             if (!state->__s1.__tmp3.get().await_ready()) {
                 state->__suspend_point = 1;
 
-                state->__s1.__tmp3.get().await_suspend(
+                std::coroutine_handle<> h = state->__s1.__tmp3.get().await_suspend(
                     std::coroutine_handle<__g_promise_t>::from_promise(state->__promise));
+
+                h.resume();
 
                 // A coroutine suspends without exiting scopes - so cancel the destructor-guards.
                 tmp3_dtor.cancel();

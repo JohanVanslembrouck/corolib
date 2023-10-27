@@ -1,12 +1,12 @@
 /**
- *  Filename: p0200.h
+ *  Filename: p0240.h
  *  Description
  * 
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
-#ifndef _P0200_H
-#define _P0200_H
+#ifndef _P0240_H
+#define _P0240_H
 
 using namespace std;
 
@@ -69,9 +69,11 @@ struct task : private coroutine_tracker {
             print(PRI2, "task::awaiter::await_ready()\n");
             return m_coroutine.promise().m_ready;
         }
-        void await_suspend(std::coroutine_handle<> awaiting) noexcept {
-            print(PRI2, "task::awaiter::await_suspend(std::coroutine_handle<> awaiting)\n");
-            m_coroutine.promise().m_awaiting = awaiting;
+        std::coroutine_handle<> await_suspend(std::coroutine_handle<> awaiting) noexcept {
+            print(PRI2, "task::awaiter::await_suspend(...): before m_awaitable.m_coroutine.resume();\n");
+            m_coroutine.resume();
+            print(PRI2, "task::awaiter::await_suspend(...): after m_awaitable.m_coroutine.resume();\n");
+            return awaiting;
         }
         int await_resume() {
             print(PRI2, "task::awaiter::await_resume()\n");

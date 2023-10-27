@@ -44,3 +44,63 @@ echo Running ./tr-p0216lb
 ./tr-p0216lb
 echo Running ./tr-p0216trf
 ./tr-p0216trf
+
+
+
+echo Running ./tr-p0220
+./tr-p0220
+echo Running ./tr-p0220lb
+./tr-p0220lb
+echo Running ./tr-p0220trf
+./tr-p0220trf
+
+echo Running ./tr-p0226
+./tr-p0226
+echo Running ./tr-p0226lb
+./tr-p0226lb
+echo Running ./tr-p0226trf
+./tr-p0226trf
+
+echo Running ./tr-p0230
+./tr-p0230
+echo Running ./tr-p0230lb
+./tr-p0230lb
+echo Running ./tr-p0230trf
+./tr-p0230trf
+
+echo Running ./tr-p0236
+./tr-p0236
+echo Running ./tr-p0236lb
+./tr-p0236lb
+echo Running ./tr-p0236trf
+./tr-p0236trf
+
+
+
+echo Running ./tr-p0240
+./tr-p0240
+echo Running ./tr-p0240lb
+./tr-p0240lb
+echo Running ./tr-p0240trf
+./tr-p0240trf
+
+echo Running ./tr-p0246
+./tr-p0246
+echo Running ./tr-p0246lb
+./tr-p0246lb
+echo Running ./tr-p0246trf
+./tr-p0246trf
+
+echo Running ./tr-p0250
+./tr-p0250
+echo Running ./tr-p0250lb
+./tr-p0250lb
+echo Running ./tr-p0250trf
+./tr-p0250trf
+
+echo Running ./tr-p0256
+./tr-p0256
+echo Running ./tr-p0256lb
+./tr-p0256lb
+echo Running ./tr-p0256trf
+./tr-p0256trf

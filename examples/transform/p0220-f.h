@@ -1,17 +1,15 @@
 /**
- *  Filename: p0210-f.h
+ *  Filename: p0220-f.h
  *  Description
- *
+ * 
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
-#ifndef _P0210_F_H_
-#define _P0210_F_H_
+#ifndef _P0220_F_H_
+#define _P0220_F_H_
 
 #include "config.h"
-
-#define USE_FINAL_AWAITER 1
-#include "p0200.h"
+#include "p0220.h"
 
 task f(int x);
 
@@ -19,6 +17,7 @@ __coroutine_state* __f_resume(__coroutine_state* s);
 void __f_destroy(__coroutine_state* s);
 
 using __f_promise_t = std::coroutine_traits<task, int>::promise_type;
+
 
 /////
 // The coroutine-state definition
@@ -47,7 +46,11 @@ struct __f_state : __coroutine_state_with_promise<__f_promise_t> {
 
     union {
         manual_lifetime<std::suspend_never> __tmp1;
+#if USE_FINAL_AWAITER
         manual_lifetime<task::promise_type::final_awaiter> __tmp2;
+#else
+        manual_lifetime<std::suspend_always> __tmp2;
+#endif
     };
 };
 
@@ -58,7 +61,7 @@ task f(int x) {
     std::unique_ptr<__f_state> state(new __f_state(static_cast<int&&>(x)));
     decltype(auto) return_value = state->__promise.get_return_object();
 
-    print(PRI3, "f(%d): co_await initial_suspend();\n", x);
+    print(PRI4, "f(%d): co_await initial_suspend();\n", x);
     state->__tmp1.construct_from([&]() -> decltype(auto) {
         return state->__promise.initial_suspend();
         });
@@ -87,7 +90,7 @@ __coroutine_state* __f_resume(__coroutine_state* s) {
         switch (state->__suspend_point) {
         case 0: goto suspend_point_0;
         case 1: goto suspend_point_1;
-//      default: std::unreachable();       // 'unreachable': is not a member of 'std'     // JVS
+ //     default: std::unreachable();       // 'unreachable': is not a member of 'std'     // JVS
         default:;
         }
 
@@ -125,7 +128,7 @@ __coroutine_state* __f_resume(__coroutine_state* s) {
     }
 
 final_suspend:
-    print(PRI3, "f(%d): co_await promise.final_suspend();\n", state->x);
+    print(PRI4, "f(%d): co_await promise.final_suspend();\n", state->x);
     {
         state->__tmp2.construct_from([&]() noexcept {
             return state->__promise.final_suspend();

@@ -1,47 +1,49 @@
 /**
- *  Filename: p0200-g.h
+ *  Filename: p0220-h.h
  *  Description
  *
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
-#ifndef _P0200_G_H_
-#define _P0200_G_H_
+#ifndef _P0220_H_H_
+#define _P0220_H_H_
 
 #include "config.h"
-#include "p0200.h"
+#include "p0220.h"
 
-task g(int x);
+task h(int x, int y);
 
-__coroutine_state* __g_resume(__coroutine_state* s);
-void __g_destroy(__coroutine_state* s);
+__coroutine_state* __h_resume(__coroutine_state* s);
+void __h_destroy(__coroutine_state* s);
 
-using __g_promise_t = std::coroutine_traits<task, int>::promise_type;
+using __h_promise_t = std::coroutine_traits<task, int, int>::promise_type;
 
 /////
 // The coroutine-state definition
 
-struct __g_state : __coroutine_state_with_promise<__g_promise_t> {
-    __g_state(int&& x)
-        : x(static_cast<int&&>(x)) {
+struct __h_state : __coroutine_state_with_promise<__h_promise_t> {
+    __h_state(int&& x, int&& y)
+        : x(static_cast<int&&>(x))
+        , y(static_cast<int&&>(y)) {
         // Initialise the function-pointers used by coroutine_handle::resume/destroy/done().
-        this->__resume = &__g_resume;
-        this->__destroy = &__g_destroy;
+        this->__resume = &__h_resume;
+        this->__destroy = &__h_destroy;
 
         // Use placement-new to initialise the promise object in the base-class
         // after we've initialised the argument copies.
         ::new ((void*)std::addressof(this->__promise))
-            __g_promise_t(construct_promise<__g_promise_t>(this->x));
+            __h_promise_t(construct_promise<__h_promise_t>(this->x, this->y));
     }
 
-    ~__g_state() {
-        this->__promise.~__g_promise_t();
+    ~__h_state() {
+        this->__promise.~__h_promise_t();
     }
 
     int __suspend_point = 0;
 
     // Argument copies
     int x;
+    int y;
 
     // Local variables/temporaries
     struct __scope1 {
@@ -62,11 +64,11 @@ struct __g_state : __coroutine_state_with_promise<__g_promise_t> {
 /////
 // The "ramp" function
 
-task g(int x) {
-    std::unique_ptr<__g_state> state(new __g_state(static_cast<int&&>(x)));
+task h(int x, int y) {
+    std::unique_ptr<__h_state> state(new __h_state(static_cast<int&&>(x), static_cast<int&&>(y)));
     decltype(auto) return_value = state->__promise.get_return_object();
 
-    print(PRI4, "g(%d): co_await initial_suspend();\n", x);
+    print(PRI4, "h(%d, %d): co_await initial_suspend();\n", x, y);
     state->__tmp1.construct_from([&]() -> decltype(auto) {
         return state->__promise.initial_suspend();
         });
@@ -78,7 +80,7 @@ task g(int x) {
     }
     else {
         // Coroutine did not suspend. Start executing the body immediately.
-        __g_resume(state.release());
+        __h_resume(state.release());
     }
     return return_value;
 }
@@ -86,8 +88,8 @@ task g(int x) {
 /////
 //  The "resume" function
 
-__coroutine_state* __g_resume(__coroutine_state* s) {
-    auto* state = static_cast<__g_state*>(s);
+__coroutine_state* __h_resume(__coroutine_state* s) {
+    auto* state = static_cast<__h_state*>(s);
 
     std::coroutine_handle<void> coro_to_resume;
 
@@ -105,10 +107,10 @@ __coroutine_state* __g_resume(__coroutine_state* s) {
             state->__tmp1.get().await_resume();
         }
 
-        print(PRI1, "g(%d): int i = co_await f(%d);\n", state->x, state->x);
+        print(PRI1, "h(%d, %d): int i = co_await g(%d);\n", state->x, state->y, state->x);
         {
             state->__s1.__tmp2.construct_from([&] {
-                return f(state->x);
+                return g(state->x);
                 });
             destructor_guard tmp2_dtor{ state->__s1.__tmp2 };
 
@@ -117,15 +119,19 @@ __coroutine_state* __g_resume(__coroutine_state* s) {
                 });
             destructor_guard tmp3_dtor{ state->__s1.__tmp3 };
 
+            bool await_suspend_result = false;
             if (!state->__s1.__tmp3.get().await_ready()) {
                 state->__suspend_point = 1;
 
-                state->__s1.__tmp3.get().await_suspend(
+                await_suspend_result = state->__s1.__tmp3.get().await_suspend(
                     std::coroutine_handle<__g_promise_t>::from_promise(state->__promise));
 
                 // A coroutine suspends without exiting scopes - so cancel the destructor-guards.
                 tmp3_dtor.cancel();
                 tmp2_dtor.cancel();
+
+                if (!await_suspend_result)
+                    goto suspend_point_1;
 
                 return static_cast<__coroutine_state*>(std::noop_coroutine().address());
             }
@@ -145,8 +151,8 @@ __coroutine_state* __g_resume(__coroutine_state* s) {
             return state->__s1.__tmp3.get().await_resume();
             }();
 
-            print(PRI1, "g(%d): co_return 42 + i (= %d);\n", state->x, 42 + i);
-            state->__promise.return_value(42 + i);
+            print(PRI1, "h(%d, %d): co_return y + i (= %d);\n", state->x, state->y, state->y + i);
+            state->__promise.return_value(state->y + i);
             goto final_suspend;
     }
     catch (...) {
@@ -155,7 +161,7 @@ __coroutine_state* __g_resume(__coroutine_state* s) {
     }
 
 final_suspend:
-    print(PRI4, "g(%d): co_await promise.final_suspend();\n", state->x);
+    print(PRI4, "h(%d, %d): co_await promise.final_suspend();\n", state->x, state->y);
     {
         state->__tmp4.construct_from([&]() noexcept {
             return state->__promise.final_suspend();
@@ -167,7 +173,7 @@ final_suspend:
             state->__resume = nullptr; // mark as final suspend-point
 
             state->__tmp4.get().await_suspend(
-                std::coroutine_handle<__g_promise_t>::from_promise(state->__promise));
+                std::coroutine_handle<__h_promise_t>::from_promise(state->__promise));
 
             tmp4_dtor.cancel();
             return static_cast<__coroutine_state*>(std::noop_coroutine().address());
@@ -185,14 +191,14 @@ final_suspend:
 /////
 // The "destroy" function
 
-void __g_destroy(__coroutine_state* s) {
-    auto* state = static_cast<__g_state*>(s);
+void __h_destroy(__coroutine_state* s) {
+    auto* state = static_cast<__h_state*>(s);
 
     switch (state->__suspend_point) {
     case 0: goto suspend_point_0;
     case 1: goto suspend_point_1;
     case 2: goto suspend_point_2;
-//  default: std::unreachable();       // 'unreachable': is not a member of 'std'     // JVS
+ // default: std::unreachable();       // 'unreachable': is not a member of 'std'     // JVS
     default:;
     }
 
@@ -211,6 +217,7 @@ suspend_point_2:
 
 destroy_state:
     delete state;
+
 }
 
 #endif

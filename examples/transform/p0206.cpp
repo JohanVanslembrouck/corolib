@@ -36,7 +36,7 @@ task h(int x, int y) {
 }
 
 int main() {
-    priority = 0x0F;
+    priority = 0x07;
     print(PRI1, "main(): task ht = h(5, 10);\n");
     task ht = h(5, 10);
     print(PRI1, "main(): are1.resume();\n");

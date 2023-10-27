@@ -63,25 +63,6 @@ void print()
     fprintf(stderr, "\n");
 }
 
-void print(const char* fmt, ...)
-{
-    va_list arg;
-    char msg[256];
-
-    va_start(arg, fmt);
-#if defined(_WIN32)
-    int n = vsprintf_s(msg, fmt, arg);
-#else
-    vsprintf(msg, fmt, arg);
-#endif
-    va_end(arg);
-
-    int threadid = (sizeof(std::thread::id) == sizeof(uint32_t)) ?
-        get_thread_number32((uint32_t)get_thread_id()) :
-        get_thread_number64(get_thread_id());
-    fprintf(stderr, "%02d: %s", threadid, msg);
-}
-
 void print(int pri, const char* fmt, ...)
 {
     va_list arg;

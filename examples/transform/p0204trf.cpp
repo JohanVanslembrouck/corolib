@@ -8,6 +8,7 @@
 #include "config.h"
 
 #include "print.h"
+
 #include "auto_reset_event.h"
 #include "p0200.h"
 #include "helpers.h"
@@ -26,7 +27,7 @@ task f(int x) {
 #endif
 
 int main() {
-    priority = 0x0F;
+    priority = 0x07;
     print(PRI1, "main(): task ft = f(5);\n");
     task ft = f(5);
     print(PRI1, "main(): are1.resume();\n");

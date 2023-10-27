@@ -1,17 +1,15 @@
 /**
- *  Filename: p0210-h.h
+ *  Filename: p0240-h.h
  *  Description
  *
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
-#ifndef _P0210_H_H_
-#define _P0210_H_H_
+#ifndef _P0240_H_H_
+#define _P0240_H_H_
 
 #include "config.h"
-
-#define USE_FINAL_AWAITER 1
-#include "p0200.h"
+#include "p0240.h"
 
 task h(int x, int y);
 
@@ -55,7 +53,11 @@ struct __h_state : __coroutine_state_with_promise<__h_promise_t> {
     union {
         manual_lifetime<std::suspend_never> __tmp1;
         __scope1 __s1;
+#if USE_FINAL_AWAITER
         manual_lifetime<task::promise_type::final_awaiter> __tmp4;
+#else
+        manual_lifetime<std::suspend_always> __tmp4;
+#endif
     };
 };
 
@@ -66,7 +68,7 @@ task h(int x, int y) {
     std::unique_ptr<__h_state> state(new __h_state(static_cast<int&&>(x), static_cast<int&&>(y)));
     decltype(auto) return_value = state->__promise.get_return_object();
 
-    print(PRI3, "h(%d, %d): co_await initial_suspend();\n", x, y);
+    print(PRI4, "h(%d, %d): co_await initial_suspend();\n", x, y);
     state->__tmp1.construct_from([&]() -> decltype(auto) {
         return state->__promise.initial_suspend();
         });
@@ -120,8 +122,10 @@ __coroutine_state* __h_resume(__coroutine_state* s) {
             if (!state->__s1.__tmp3.get().await_ready()) {
                 state->__suspend_point = 1;
 
-                state->__s1.__tmp3.get().await_suspend(
+                std::coroutine_handle<> h = state->__s1.__tmp3.get().await_suspend(
                     std::coroutine_handle<__g_promise_t>::from_promise(state->__promise));
+
+                h.resume();
 
                 // A coroutine suspends without exiting scopes - so cancel the destructor-guards.
                 tmp3_dtor.cancel();
@@ -155,7 +159,7 @@ __coroutine_state* __h_resume(__coroutine_state* s) {
     }
 
 final_suspend:
-    print(PRI3, "h(%d, %d): co_await promise.final_suspend();\n", state->x, state->y);
+    print(PRI4, "h(%d, %d): co_await promise.final_suspend();\n", state->x, state->y);
     {
         state->__tmp4.construct_from([&]() noexcept {
             return state->__promise.final_suspend();
@@ -192,7 +196,7 @@ void __h_destroy(__coroutine_state* s) {
     case 0: goto suspend_point_0;
     case 1: goto suspend_point_1;
     case 2: goto suspend_point_2;
-//  default: std::unreachable();       // 'unreachable': is not a member of 'std'     // JVS
+ // default: std::unreachable();       // 'unreachable': is not a member of 'std'     // JVS
     default:;
     }
 
@@ -211,6 +215,7 @@ suspend_point_2:
 
 destroy_state:
     delete state;
+
 }
 
 #endif

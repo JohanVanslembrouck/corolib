@@ -8,8 +8,8 @@
 #include "config.h"
 
 #include "print.h"
-#include "auto_reset_event.h"
 
+#include "auto_reset_event.h"
 #define USE_FINAL_AWAITER 1
 #include "p0200.h"
 
@@ -17,9 +17,9 @@
 
 auto_reset_event are1;
 
-#include "p0210-f.h"
-#include "p0210-g.h"
-#include "p0210-h.h"
+#include "p0200-f.h"
+#include "p0200-g.h"
+#include "p0200-h.h"
 
 #if 0
 task f(int x) {
@@ -45,7 +45,7 @@ task h(int x, int y) {
 #endif
 
 int main() {
-    priority = 0x0F;
+    priority = 0x07;
     print(PRI1, "main(): task ht = h(5, 10);\n");
     task ht = h(5, 10);
     print(PRI1, "main(): are1.resume();\n");

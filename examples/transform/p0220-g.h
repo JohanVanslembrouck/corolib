@@ -1,17 +1,15 @@
 /**
- *  Filename: p0210-g.h
+ *  Filename: p0220-g.h
  *  Description
  *
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
-#ifndef _P0210_G_H_
-#define _P0210_G_H_
+#ifndef _P0220_G_H_
+#define _P0220_G_H_
 
 #include "config.h"
-
-#define USE_FINAL_AWAITER 1
-#include "p0200.h"
+#include "p0220.h"
 
 task g(int x);
 
@@ -53,7 +51,11 @@ struct __g_state : __coroutine_state_with_promise<__g_promise_t> {
     union {
         manual_lifetime<std::suspend_never> __tmp1;
         __scope1 __s1;
+#if USE_FINAL_AWAITER
         manual_lifetime<task::promise_type::final_awaiter> __tmp4;
+#else
+        manual_lifetime<std::suspend_always> __tmp4;
+#endif
     };
 };
 
@@ -64,7 +66,7 @@ task g(int x) {
     std::unique_ptr<__g_state> state(new __g_state(static_cast<int&&>(x)));
     decltype(auto) return_value = state->__promise.get_return_object();
 
-    print(PRI3, "g(%d): co_await initial_suspend();\n", x);
+    print(PRI4, "g(%d): co_await initial_suspend();\n", x);
     state->__tmp1.construct_from([&]() -> decltype(auto) {
         return state->__promise.initial_suspend();
         });
@@ -115,15 +117,19 @@ __coroutine_state* __g_resume(__coroutine_state* s) {
                 });
             destructor_guard tmp3_dtor{ state->__s1.__tmp3 };
 
+            bool await_suspend_result = false;
             if (!state->__s1.__tmp3.get().await_ready()) {
                 state->__suspend_point = 1;
 
-                state->__s1.__tmp3.get().await_suspend(
+                await_suspend_result = state->__s1.__tmp3.get().await_suspend(
                     std::coroutine_handle<__g_promise_t>::from_promise(state->__promise));
 
                 // A coroutine suspends without exiting scopes - so cancel the destructor-guards.
                 tmp3_dtor.cancel();
                 tmp2_dtor.cancel();
+
+                if (!await_suspend_result)
+                    goto suspend_point_1;
 
                 return static_cast<__coroutine_state*>(std::noop_coroutine().address());
             }
@@ -153,7 +159,7 @@ __coroutine_state* __g_resume(__coroutine_state* s) {
     }
 
 final_suspend:
-    print(PRI3, "g(%d): co_await promise.final_suspend();\n", state->x);
+    print(PRI4, "g(%d): co_await promise.final_suspend();\n", state->x);
     {
         state->__tmp4.construct_from([&]() noexcept {
             return state->__promise.final_suspend();

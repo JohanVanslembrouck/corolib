@@ -29,7 +29,7 @@ task g(int x) {
 }
 
 int main() {
-    priority = 0x0F;
+    priority = 0x07;
     print(PRI1, "main(): task gt = g(5);\n");
     task gt = g(5);
     print(PRI1, "main(): are1.resume();\n");

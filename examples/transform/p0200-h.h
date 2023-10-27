@@ -53,7 +53,11 @@ struct __h_state : __coroutine_state_with_promise<__h_promise_t> {
     union {
         manual_lifetime<std::suspend_never> __tmp1;
         __scope1 __s1;
+#if USE_FINAL_AWAITER
+        manual_lifetime<task::promise_type::final_awaiter> __tmp4;
+#else
         manual_lifetime<std::suspend_always> __tmp4;
+#endif
     };
 };
 
@@ -64,7 +68,7 @@ task h(int x, int y) {
     std::unique_ptr<__h_state> state(new __h_state(static_cast<int&&>(x), static_cast<int&&>(y)));
     decltype(auto) return_value = state->__promise.get_return_object();
 
-    print(PRI3, "h(%d, %d): co_await initial_suspend();\n", x, y);
+    print(PRI4, "h(%d, %d): co_await initial_suspend();\n", x, y);
     state->__tmp1.construct_from([&]() -> decltype(auto) {
         return state->__promise.initial_suspend();
         });
@@ -153,7 +157,7 @@ __coroutine_state* __h_resume(__coroutine_state* s) {
     }
 
 final_suspend:
-    print(PRI3, "h(%d, %d): co_await promise.final_suspend();\n", state->x, state->y);
+    print(PRI4, "h(%d, %d): co_await promise.final_suspend();\n", state->x, state->y);
     {
         state->__tmp4.construct_from([&]() noexcept {
             return state->__promise.final_suspend();

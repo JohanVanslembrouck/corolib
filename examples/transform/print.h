@@ -10,10 +10,6 @@
 #ifndef _PRINT_H_
 #define _PRINT_H_
 
-//#pragma once
-
-//using namespace std;
-
 #include <stdio.h>
 #include <stdarg.h>
 #include <time.h>
@@ -40,7 +36,6 @@ int get_thread_number32(uint32_t id);
 uint64_t get_thread_id();
 
 void print();
-void print(const char* fmt, ...);
 void print(int pri, const char* fmt, ...);
 
 #endif

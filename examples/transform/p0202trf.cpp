@@ -58,7 +58,7 @@ task f(int x) {
     std::unique_ptr<__f_state> state(new __f_state(static_cast<int&&>(x)));
     decltype(auto) return_value = state->__promise.get_return_object();
 
-    print(PRI3, "f(%d): co_await promise.final_suspend();\n", x);
+    print(PRI4, "f(%d): co_await promise.initial_suspend();\n", x);
     state->__tmp1.construct_from([&]() -> decltype(auto) {
         return state->__promise.initial_suspend();
         });
@@ -106,7 +106,7 @@ __coroutine_state* __f_resume(__coroutine_state* s) {
     }
 
 final_suspend:
-    print(PRI3, "f(%d): co_await promise.final_suspend();\n", state->x);
+    print(PRI4, "f(%d): co_await promise.final_suspend();\n", state->x);
     {
         state->__tmp2.construct_from([&]() noexcept {
             return state->__promise.final_suspend();
@@ -178,7 +178,7 @@ task g(int x) {
 #endif
 
 int main() {
-    priority = 0x0F;
+    priority = 0x07;
     print(PRI1, "main(): task gt = g(5);\n");
     task gt = g(5);
     print(PRI1, "main(): int i = gt.get();\n");
