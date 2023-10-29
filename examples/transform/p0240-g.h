@@ -1,6 +1,16 @@
 /**
  *  Filename: p0240-g.h
- *  Description
+ *  Description:
+ *  This file contains the manual transformation of 
+ * 
+ *  task g(int x) {
+ *      print(PRI1, "g(%d): int i = co_await f(%d);\n", x, x);
+ *      int i = co_await f(x);
+ *      print(PRI1, "g(%d): co_return 42 + i (= %d);\n", x, 42 + i);
+ *      co_return 42 + i;
+ *  }
+ *
+ *  for AWAIT_SUSPEND_RETURNS_COROUTINE_HANDLE = 1
  *
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
@@ -9,7 +19,9 @@
 #define _P0240_G_H_
 
 #include "config.h"
-#include "p0240.h"
+#include "p0200.h"
+
+#define USE_IMPLEMENTATION_FROM_PANICSOFTWARE_BLOG 1
 
 task g(int x);
 
@@ -122,14 +134,17 @@ __coroutine_state* __g_resume(__coroutine_state* s) {
 
                 std::coroutine_handle<> h = state->__s1.__tmp3.get().await_suspend(
                     std::coroutine_handle<__g_promise_t>::from_promise(state->__promise));
-
+#if USE_IMPLEMENTATION_FROM_PANICSOFTWARE_BLOG
                 h.resume();
-
+#endif
                 // A coroutine suspends without exiting scopes - so cancel the destructor-guards.
                 tmp3_dtor.cancel();
                 tmp2_dtor.cancel();
-
+#if USE_IMPLEMENTATION_FROM_PANICSOFTWARE_BLOG
                 return static_cast<__coroutine_state*>(std::noop_coroutine().address());
+#else
+                return static_cast<__coroutine_state*>(h.address());
+#endif
             }
 
             // Don't exit the scope here.

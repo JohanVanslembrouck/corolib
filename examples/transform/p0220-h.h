@@ -1,6 +1,16 @@
 /**
  *  Filename: p0220-h.h
- *  Description
+ *  Description:
+ *  This file contains the manual transformation of
+ *
+ *  task h(int x, int y) {
+ *      print(PRI1, "h(%d, %d): int i = co_await g(%d);\n", x, y, x);
+ *      int i = co_await g(x);
+ *      print(PRI1, "h(%d, %d): co_return y + i (= %d);\n", x, y, y + i);
+ *      co_return y + i;
+ *  }
+ *
+ *  for AWAIT_SUSPEND_RETURNS_BOOL = 1
  *
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
@@ -9,7 +19,7 @@
 #define _P0220_H_H_
 
 #include "config.h"
-#include "p0220.h"
+#include "p0200.h"
 
 task h(int x, int y);
 

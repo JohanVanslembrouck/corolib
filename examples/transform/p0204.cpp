@@ -1,7 +1,8 @@
 /**
  *  Filename: p0204.cpp
  *  Description:
- *
+ *  Simplified variant of p0200.cpp with only coroutine f.
+ * 
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
@@ -10,6 +11,8 @@
 #include "print.h"
 
 #include "auto_reset_event.h"
+#define AWAIT_SUSPEND_RETURNS_VOID 1
+#define USE_FINAL_AWAITER 0
 #include "p0200.h"
 
 auto_reset_event are1;

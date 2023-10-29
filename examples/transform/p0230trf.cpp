@@ -1,6 +1,7 @@
 /**
  *  Filename: p0230trf.cpp
- *  Description
+ *  Description:
+ *  Manually transformed version of p0230.cpp.
  * 
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
@@ -10,14 +11,14 @@
 #include "print.h"
 
 #include "auto_reset_event.h"
+#define AWAIT_SUSPEND_RETURNS_BOOL 1
 #define USE_FINAL_AWAITER 1
-#include "p0220.h"
-
+#include "p0200.h"
 #include "helpers.h"
 
 auto_reset_event are1;
 
-#include "p0220-f.h"
+#include "p0200-f.h"
 #include "p0220-g.h"
 
 #if 0

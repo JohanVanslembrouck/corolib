@@ -1,6 +1,14 @@
 /**
  *  Filename: p0200-f.h
- *  Description
+ *  Description:
+ *  This file contains the manual transformation of 
+ * 
+ *  task f(int x) {
+ *      print(PRI1, "f(%d): co_await are1;\n", x);
+ *      co_await are1;
+ *      print(PRI1, "f(%d): co_return 42 + x (= %d);\n", x, 42 + x);
+ *      co_return 42 + x;
+ *  }
  * 
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */

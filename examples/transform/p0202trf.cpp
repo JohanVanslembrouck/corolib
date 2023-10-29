@@ -1,13 +1,16 @@
 /**
  *  Filename: p0202lb.cpp
  *  Description:
- *
+ *  Manually transformed version of p0202.cpp.
+ * 
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include "config.h"
 
 #include "print.h"
+#define AWAIT_SUSPEND_RETURNS_VOID 1
+#define USE_FINAL_AWAITER 0
 #include "p0200.h"
 #include "helpers.h"
 

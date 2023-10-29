@@ -1,6 +1,7 @@
 /**
  *  Filename: p0256trf.cpp
- *  Description
+ *  Description:
+ *  Manually transformed version of p0256.cpp.
  * 
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
@@ -10,14 +11,15 @@
 #include "print.h"
 
 #include "auto_reset_event.h"
+#define AWAIT_SUSPEND_RETURNS_COROUTINE_HANDLE 1
 #define USE_FINAL_AWAITER 1
-#include "p0240.h"
+#include "p0200.h"
 
 #include "helpers.h"
 
 auto_reset_event are1;
 
-#include "p0240-f.h"
+#include "p0200-f.h"
 #include "p0240-g.h"
 #include "p0240-h.h"
 

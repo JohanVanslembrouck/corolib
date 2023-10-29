@@ -1,13 +1,17 @@
 /**
  *  Filename: p0202.cpp
  *  Description:
- *
+ *  Simplified variant of p0200.cpp without use of auto_reset_event.
+ *  The coroutines behave like functions, i.e. there is no suspend/resume.
+ * 
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include "config.h"
 
 #include "print.h"
+#define AWAIT_SUSPEND_RETURNS_VOID 1
+#define USE_FINAL_AWAITER 0
 #include "p0200.h"
 
 task f(int x) {

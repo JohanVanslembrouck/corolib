@@ -1,7 +1,15 @@
 /**
  *  Filename: auto_reset_event.h
  *  Description:
- *
+ *  This file defines a type that is used to resume the coroutine (typically) at the top of the call stack.
+ *  This coroutine has to co_await an object of type auto_reset_event.
+ *  When another function (or coroutine) calls resume() on the object, the awaiting coroutine will be resumed.
+ *  This function will typically be the main() function.
+ * 
+ *  The name "auto_reset" comes from the fact that the ready flag is set to false in funcion await_resume().
+ *  This means that every co_await on an object of this type requires the resume() function to be called
+ *  to allow the awaiting coroutine to resume.
+ * 
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 

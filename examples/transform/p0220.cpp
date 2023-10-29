@@ -1,7 +1,8 @@
 /**
  *  Filename: p0220.cpp
  *  Description:
- *
+ *  Same as p0200.cpp apart from the use of AWAIT_SUSPEND_RETURNS_BOOL = 1.
+ * 
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
@@ -10,7 +11,9 @@
 #include "print.h"
 
 #include "auto_reset_event.h"
-#include "p0220.h"
+#define AWAIT_SUSPEND_RETURNS_BOOL 1
+#define USE_FINAL_AWAITER 0
+#include "p0200.h"
 
 auto_reset_event are1;
 

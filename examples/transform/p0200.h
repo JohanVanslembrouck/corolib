@@ -1,6 +1,20 @@
 /**
  *  Filename: p0200.h
- *  Description
+ *  Description:
+ *  This file defines a coroutine type 'task' that will be used in all p02XX.cpp and p02XXtrf.cpp examples.
+ * 
+ *  The definition has to be tailored in two ways:
+ * 
+ *  1) By setting exactly one of the following three compiler directives to 1 in the .cpp files:
+ *          AWAIT_SUSPEND_RETURNS_VOID
+ *          AWAIT_SUSPEND_RETURNS_BOOL
+ *          AWAIT_SUSPEND_RETURNS_COROUTINE_HANDLE
+ *     This will select one of the three implementations of await_suspend(std::coroutine_handle<>).
+ * 
+ *  2) By setting (or not) the following compiler directive to 1:
+ *          USE_FINAL_AWAITER
+ *     If set to 1, final_supend() will return final_awaiter, otherwise it will return std::suspend_always.
+ *     The use of final_awaiter is necessary to make sure that all taak and promise_type objects are destructed.
  * 
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
@@ -69,10 +83,27 @@ struct task : private coroutine_tracker {
             print(PRI2, "task::awaiter::await_ready()\n");
             return m_coroutine.promise().m_ready;
         }
+#if AWAIT_SUSPEND_RETURNS_VOID
         void await_suspend(std::coroutine_handle<> awaiting) noexcept {
             print(PRI2, "task::awaiter::await_suspend(std::coroutine_handle<> awaiting)\n");
             m_coroutine.promise().m_awaiting = awaiting;
         }
+#endif
+#if AWAIT_SUSPEND_RETURNS_BOOL
+        bool await_suspend(std::coroutine_handle<> awaiting) noexcept {
+            print(PRI2, "task::awaiter::await_suspend(std::coroutine_handle<> awaiting)\n");
+            m_coroutine.promise().m_awaiting = awaiting;
+            return !m_coroutine.promise().m_ready;
+        }
+#endif
+#if AWAIT_SUSPEND_RETURNS_COROUTINE_HANDLE
+        std::coroutine_handle<> await_suspend(std::coroutine_handle<> awaiting) noexcept {
+            print(PRI2, "task::awaiter::await_suspend(...): before m_awaitable.m_coroutine.resume();\n");
+            m_coroutine.resume();
+            print(PRI2, "task::awaiter::await_suspend(...): after m_awaitable.m_coroutine.resume();\n");
+            return awaiting;
+        }
+#endif
         int await_resume() {
             print(PRI2, "task::awaiter::await_resume()\n");
             return m_coroutine.promise().m_value;

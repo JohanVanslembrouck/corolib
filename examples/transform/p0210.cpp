@@ -1,7 +1,8 @@
 /**
  *  Filename: p0210.cpp
  *  Description:
- *
+ *  Same as p0200.cpp apart from the use of USE_FINAL_AWAITER = 1.
+ * 
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
@@ -10,6 +11,7 @@
 #include "print.h"
 
 #include "auto_reset_event.h"
+#define AWAIT_SUSPEND_RETURNS_VOID 1
 #define USE_FINAL_AWAITER 1
 #include "p0200.h"
 

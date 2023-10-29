@@ -23,8 +23,8 @@ tracker::~tracker()
     //print(PRI1, "tracker::~tracker\n");
     print(PRI1, "---------------------------------------------------------------\n");
     //print(PRI1, "\tcons\tdest\tdiff\tmax\tc>p\tp>c\terr\n");
-    print(PRI1, "\tcons\tdest\tdiff\tmax\tc>p\tc<p\tc>h\tc<h\n");
 #if 0
+    print(PRI1, "\tcons\tdest\tdiff\tmax\tc>p\tc<p\tc>h\tc<h\n");
     print(PRI1, "cor\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
         nr_coroutines_constructed,
         nr_coroutines_destructed,
@@ -35,6 +35,7 @@ tracker::~tracker()
         nr_access_errors
     );
 #endif
+#if 0
     print(PRI1, "cor\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
         nr_coroutines_constructed,
         nr_coroutines_destructed,
@@ -59,6 +60,25 @@ tracker::~tracker()
         nr_max_simultaneously_present_final_awaiters,
         nr_final_awaiters_await_suspend_returning_true,
         nr_final_awaiters_await_suspend_returning_false);
+#else
+    print(PRI1, "\tcons\tdest\tdiff\tmax\n");
+    print(PRI1, "cor\t%d\t%d\t%d\t%d\n",
+        nr_coroutines_constructed,
+        nr_coroutines_destructed,
+        nr_coroutines_constructed - nr_coroutines_destructed,
+        nr_max_simultaneously_present_coroutines
+    );
+    print(PRI1, "pro\t%d\t%d\t%d\t%d\n",
+        nr_promise_types_constructed,
+        nr_promise_types_destructed,
+        nr_promise_types_constructed - nr_promise_types_destructed,
+        nr_max_simultaneously_present_promise_types);
+    print(PRI1, "fin\t%d\t%d\t%d\t%d\n",
+        nr_final_awaiters_constructed,
+        nr_final_awaiters_destructed,
+        nr_final_awaiters_constructed - nr_final_awaiters_destructed,
+        nr_max_simultaneously_present_final_awaiters);
+#endif
     print(PRI1, "---------------------------------------------------------------\n");
 #if 0
     print(PRI1, "Legend:\n");

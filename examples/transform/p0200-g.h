@@ -1,7 +1,17 @@
 /**
  *  Filename: p0200-g.h
- *  Description
+ *  Description:
+ *  This file contains the manual transformation of 
+ * 
+ *  task g(int x) {
+ *      print(PRI1, "g(%d): int i = co_await f(%d);\n", x, x);
+ *      int i = co_await f(x);
+ *      print(PRI1, "g(%d): co_return 42 + i (= %d);\n", x, 42 + i);
+ *      co_return 42 + i;
+ *  }
  *
+ *  for AWAIT_SUSPEND_RETURNS_VOID = 1
+ * 
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 

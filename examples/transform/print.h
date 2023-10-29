@@ -2,8 +2,6 @@
  *  Filename: print.h
  *  Description:
  *
- *  Tested with Visual Studio 2019.
- *
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)/
  */
 

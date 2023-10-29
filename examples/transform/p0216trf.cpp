@@ -1,6 +1,7 @@
 /**
  *  Filename: p0216trf.cpp
- *  Description
+ *  Description:
+ *  Manually transformed version of p0216.cpp.
  * 
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
@@ -10,6 +11,7 @@
 #include "print.h"
 
 #include "auto_reset_event.h"
+#define AWAIT_SUSPEND_RETURNS_VOID 1
 #define USE_FINAL_AWAITER 1
 #include "p0200.h"
 
