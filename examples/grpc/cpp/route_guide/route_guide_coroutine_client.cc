@@ -1,3 +1,16 @@
+/**
+ * @file route_guide_coroutine_client.cc
+ * @brief Added coroutine implementation.
+ *
+ * The code is this file is based upon the implementation in route_guide_callback_client.cc.
+ * The helper classes (Reader, Recorder; Chatter) that were orginally defined inside the functions that use them,
+ * are now defined at the global level. This makes the functions shorter.
+ *
+ * A coroutine version has been added for ListFeatures; it is called ListFeaturesCo.
+ *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+*/
+
 /*
  *
  * Copyright 2021 gRPC authors.
@@ -14,17 +27,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- */
- /**
- * @brief Added coroutine implementation.
- * 
- * The code is this file is based upon the implementation in route_guide_callback_client.cc.
- * The helper classes (Reader, Recorder; Chatter) that were orginally defined inside the functions that use them,
- * are now defined at the global level. This makes the functions shorter.
- *
- * A coroutine version has been added for ListFeatures; it is called ListFeaturesCo.
- *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <chrono>
@@ -154,7 +156,7 @@ public:
     void OnDone(const Status& s) override {
         status_ = s;
         done_ = true;
-        eventHandler(status_);
+        eventHandler(status_);      // Added for the use of coroutines
         std::unique_lock<std::mutex> l(mu_);
         cv_.notify_one();
     }
@@ -174,7 +176,7 @@ private:
     std::condition_variable cv_;
     bool done_ = false;
 public:
-    std::function<void(Status)> eventHandler;
+    std::function<void(Status)> eventHandler;       // Added for the use of coroutines
 };
 
 class Recorder : public grpc::ClientWriteReactor<Point> {

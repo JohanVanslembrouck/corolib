@@ -1,3 +1,18 @@
+/**
+ * @file route_guide_coroutine_client2.cc
+ * @brief Added coroutine implementation.
+ *
+ * The code in this file is based upon the implementation in route_guide_callback_client.cc.
+ * The helper classes (Reader, Recorder; Chatter) that were orginally defined inside the functions that use them,
+ * are now defined at the global level. This makes the functions shorter.
+ *
+ * A coroutine version has been added for ListFeatures; it is called ListFeaturesCo.
+ * In contrast to the version in route_guide_coroutine_client.cc, ListFeaturesCo now contains a loop that prints
+ * the received features inside this loop instead of in the callback function ReaderCo::OnReadDone.
+ *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ */
+
 /*
  *
  * Copyright 2021 gRPC authors.
@@ -14,19 +29,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- */
-/**
- * @brief Added coroutine implementation. 
- * 
- * The code in this file is based upon the implementation in route_guide_callback_client.cc.
- * The helper classes (Reader, Recorder; Chatter) that were orginally defined inside the functions that use them,
- * are now defined at the global level. This makes the functions shorter.
- * 
- * A coroutine version has been added for ListFeatures; it is called ListFeaturesCo.
- * In contrast to the version in route_guide_coroutine_client.cc, ListFeaturesCo now contains a loop that prints
- * the received features inside this loop instead of in the callback function ReaderCo::OnReadDone.
- * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include <chrono>
