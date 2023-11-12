@@ -8,4 +8,4 @@ Original source code: https://github.com/grpc/grpc/tree/master/examples/cpp/hell
 
 Launch the applications in the following order:
 * greeter_async_server(.exe) or greeter_callback_server(.exe) or greeter_server(.exe)
-* greeter_async_client(.exe) or greeter_async_client2(.exe) or greeter_callback_client(.exe) or greeter_coroutine_client(.exe) or greeter_coroutine_client2(.exe) or greeter_coroutine_client2a(.exe)
+* greeter_async_client(.exe) or greeter_async_client2(.exe) or greeter_callback_client(.exe) or greeter_coroutine_client(.exe) or greeter_coroutine_client2(.exe) or greeter_coroutine_client2a(.exe) or greeter_cb_coroutine_client(.exe) or greeter_cb_coroutine_client2.(exe)

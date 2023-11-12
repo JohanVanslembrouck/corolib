@@ -70,6 +70,8 @@ foreach(_target
   greeter_coroutine_client
   greeter_coroutine_client2
   greeter_coroutine_client2a
+  greeter_cb_coroutine_client
+  greeter_cb_coroutine_client2
   greeter_async_server)
   add_executable(${_target} "${_target}.cc")
   target_link_libraries(${_target}
