@@ -11,62 +11,97 @@
  * The TYPE in async_task<TYPE> or async_ltask<TYPE> corresponds to the "real" return type of the coroutine
  * (the type the user is interested in).
  * 
- * Note:
+ * Eager versus lazy
  * 1) In an eager start coroutine, the coroutine passes the initial suspension point
  *    and enters immediately the user-written part of the coroutine.
  * 2) In a lazy start coroutine, the coroutine is suspended at the initial suspension point;
- *    the application has to call co_await on the coroutine return object to enter the the user-written part of the coroutine.
+ *    the application has to call co_await on the coroutine return object to enter the user-written part of the coroutine.
  * 
- * Implementation:
+ * Class hierarchy
  * 
  * async_task<TYPE> and async_ltask<TYPE> are derived from a common base class async_task_base<TYPE>.
  * async_task<void> and async_ltask<void> are derived from a common base class async_task_void.
  * 
- * The original promise_type implementation defined final_supend() as follows:
+ * Avoiding memory leaks
  * 
- *      auto final_suspend() noexcept
- *      {
- *          return std::suspend_always{};
- *      }
+ * In the default implementation of async_task::promise_type, final_suspend() returns std::suspend_always:
  * 
- * The drawback of this simple "default" implementation is that the promise_type objects
- * are not released by the application: the release has to be done by the OS when leaving the application.
- * This implementation consequently suffers from memory leaks.
- * The promise_type objects always survive the coroutine objects they created and are thus
- * a "safe" environment to hold the return values of the coroutines (see functions return_value and return_void);
- * The application can access the result from a non-coroutine function (such as main) 
- * by calling the member functions get_result or wait on the coroutine return object.
+ * auto final_suspend() noexcept
+ * {
+ *     return std::suspend_always{};
+ * }
  * 
- * When limiting the lifetime of the promise_type objects using a dedicated final_awaiter type
+ * where suspend_always can be defined as follows:
  * 
- *      struct final_awaiter
- *      {
- *          bool await_ready() const noexcept
- *          {
- *              return false;
- *          }
+ * struct suspend_always {
+ *     constexpr suspend_always() noexcept = default;
+ *     constexpr bool await_ready() const noexcept { return false; }
+ *     constexpr void await_suspend(coroutine_handle<>) const noexcept {}
+ *     constexpr void await_resume() const noexcept {}
+ * };
  *
- *          bool await_suspend(handle_type_own h) noexcept
- *          {
- *              // See source code for the implementation
- *          }
- *
- *          void await_resume() noexcept
- *          {    
- *          }
- *       };
- *
- *      auto final_suspend() noexcept
- *      {
- *          return final_awaiter{};
- *      }
+ * The coroutine unconditionally suspends at the final suspend point:
+ * the coroutine frame and the promise_type object inside it are not (yet) destroyed.
  * 
- * ... the coroutine return object may survive the promise_type object that created it.
- * This is e.g. the case if the coroutine return object is used in a non-coroutine function (such as main).
- * To deal with this case, the return value has been moved to the coroutine return object.
- * IMO this is a more natural location, because a normal (non-coroutine) function would directly
- * return this value. Now it is stored in the "auxiliary" object that is required
- * by the C++ coroutine specification.
+ * The advantage of this approach is that the coroutine return object 
+ * (that was created by the promise_type object by calling the function get_return_object())
+ * can still access the result of the coroutine that is stored in the promise_type object,
+ * e.g. by calling a library function get_result().
+ * Such an access is necessary in the main() function that cannot call co_await.
+ * 
+ * However, there is no resume() call anywhere that will eventually force the coroutine to proceed to the end:
+ * this will lead to memory leaks.
+ * 
+ * To (try to) avoid this, the destructor of the coroutine return object must call the destroy() function as follows:
+ * 
+ * ~async_task_base()
+ * {
+ *     if (m_coro_handle) {     // Does the coroutine_handle still contain a valid pointer to the coroutine frame/state?
+ *         if (m_coro_handle.done()) {     // Has the coroutine reached the final suspend point (and cleared the "resume" function pointer)?
+ *             m_coro_handle.destroy();    // Call "destroy" function
+ *          }
+ *     }
+ * }
+ * 
+ * In the async_task variants, a coroutine G typically resumes its calling coroutine F in its co_return statement
+ * (that translates to return_value(...) or return_void().
+ * Note that there are many cases, see the implementation below.
+ * 
+ * Unfortunately, in these flows the destructor of the coroutine return object (returned by G and used by F) 
+ * will be called *before* coroutine G has reached the final suspend point: 
+ * consequently m_coro_handle.done() returns false and destroy() is not called.
+ * Calling destroy() would lead to program misbehavior.
+ * 
+ * A solution could be to use std::suspend_never at the final suspend point.
+ * However, this leads to problems when calling get_result() from main():
+ * at that point, the coroutine frame (with the promise_type object inside) has been deleted
+ * and get_result() may return random results (if not worse).
+ * 
+ * To remedy these problems, I experimented with an approach where a coroutine promise_type object
+ * "pushes" the result to the coroutine return object, so that afterwards
+ * the coroutine can use a final_awaiter object that allows it to proceed at the final suspend point.
+ * 
+ * This allows the coroutine return object to go out of scope without being able to call destroy()).
+ * The lifetime of the coroutine's "intended" return value is the same as that of the coroutine return object
+ * because the intended value is now a data member of the coroutine return object.
+ * IMO this is also the logical place of this return value (it is closer to the return behavior of an ordinary function).
+ * The lifetime of the promise_type object can be longer or shorter than that of the coroutine return
+ * object ic created; this has become irrelevant.
+ * 
+ * The final_awaiter object is a custom type that suspends the coroutine
+ * if the result has not arrived yet. This should not happen, and a message is printed if it does.
+ * 
+ * To use the adapted final_awaiter, set the compiler directive USE_FINAL_AWAITER (see below) to 1.
+ * 
+ * To have the promise_type object "push" the result to the coroutine return object, 
+ * set USE_RESULT_FROM_COROUTINE_OBJECT to 1.
+ * 
+ * For this to be possible, some additional "linking" between the promise_type object
+ * and its coroutine return object has to be in place.
+ * The reason is that a promise_type object does normally not have any pointer or reference
+ * to the coroutine return object it creates when calling get_return_object().
+ * 
+ * To eable this additional linking, set USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN to 1.
  * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
@@ -88,6 +123,15 @@
 #define USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN 1
 #define USE_FINAL_AWAITER 1
 #define USE_RESULT_FROM_COROUTINE_OBJECT 1
+
+// Possible combinations:                           1   2   3   4   5   6
+// ----------------------------------------------------------------------
+// #define USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN    0   0   1   1   1   1
+// #define USE_FINAL_AWAITER                        0   1   0   1   0   1
+// #define USE_RESULT_FROM_COROUTINE_OBJECT         0   0   0   0   1   1
+// The combinations with USE_FINAL_AWAITER enabled display unreliable behavior 
+// in multi-threaded applications. (Currently corolib does not use any atomics...)
+// USE_RESULT_FROM_COROUTINE_OBJECT = 1 requires USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN = 1
 
 #if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
 #include <assert.h>
@@ -132,11 +176,12 @@ namespace corolib
 #if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
             coroutine_destructor_admin();
 #endif
-            if (m_coro_handle)
+            if (m_coro_handle)  // Does the coroutine_handle still contain a valid pointer to the coroutine frame/state?
             {
-                if (m_coro_handle.done()) {
+                if (m_coro_handle.done()) {     // Has the coroutine reached the final suspend point (and cleared the "resume" function pointer)?
+                    // Yes
                     ++tracker_obj.nr_dying_coroutines_handle_done;
-                    m_coro_handle.destroy();
+                    m_coro_handle.destroy();    // Call "destroy" function
                 }
                 else {
                     print(PRI2, "%p: async_task_base::~async_task_base(): m_coro_handle.done() returned false\n", this);
@@ -222,10 +267,10 @@ namespace corolib
             {
                 if (waitIfNotReady)
                 {
-                    print(PRI1, "%p: async_task_base::get_result(): before m_coro_handle.promise().m_sema.wait();\n", this);
+                    print(PRI2, "%p: async_task_base::get_result(): before m_coro_handle.promise().m_sema.wait();\n", this);
                     m_coro_handle.promise().m_wait_for_signal = true;
                     m_coro_handle.promise().m_sema.wait();
-                    print(PRI1, "%p: async_task_base::get_result(): after m_coro_handle.promise().m_sema.wait();\n", this);
+                    print(PRI2, "%p: async_task_base::get_result(): after m_coro_handle.promise().m_sema.wait();\n", this);
                 }
                 else
                 {
@@ -313,7 +358,7 @@ namespace corolib
 #else
             if (!m_promise_valid)
             {
-                print(PRI1, "%p: async_task_base::get_result_admin(): note: promise %p invalid\n", 
+                print(PRI1, "%p: async_task_base::get_result_admin(): promise %p invalid!!!\n", 
                             this, m_promise_type);
             }
 #endif
@@ -384,9 +429,9 @@ namespace corolib
                 }
                 if (m_wait_for_signal)
                 {
-                    print(PRI1, "%p: async_task_base::promise_type::return_value(TYPE v): before sema.signal();\n", this);
+                    print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): before m_sema.signal();\n", this);
                     m_sema.signal();
-                    print(PRI1, "%p: async_task_base::promise_type::return_value(TYPE v): after sema.signal();\n", this);
+                    print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): after m_sema.signal();\n", this);
                 }
                 print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): end\n", this);
             }
@@ -512,7 +557,7 @@ namespace corolib
                 bool await_ready()
                 {
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
-                    const bool ready = m_async_task.m_coro_handle.done();
+                    const bool ready = m_async_task.m_coro_handle.promise().m_ready;
 #else
                     const bool ready = m_async_task.m_ready;
 #endif
@@ -596,6 +641,9 @@ namespace corolib
 #endif
                     result ? ++tracker_obj.nr_final_awaiters_await_suspend_returning_true :
                              ++tracker_obj.nr_final_awaiters_await_suspend_returning_false;
+
+                    if (result)
+                        print(PRI1, "%p: async_task<TYPE>::promise_type::final_awaiter::await_suspend() suspends the coroutine\n", this);
                     return result;
                 }
 
@@ -651,7 +699,7 @@ namespace corolib
                 bool await_ready()
                 {
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
-                    const bool ready = m_async_ltask.m_coro_handle.done();
+                    const bool ready = m_async_ltask.m_coro_handle.promise().m_ready;
 #else
                     const bool ready = m_async_ltask.m_ready;
 #endif
@@ -737,6 +785,9 @@ namespace corolib
 #endif
                     result ? ++tracker_obj.nr_final_awaiters_await_suspend_returning_true : 
                              ++tracker_obj.nr_final_awaiters_await_suspend_returning_false;
+
+                    if (result)
+                        print(PRI1, "%p: async_ltask<TYPE>::promise_type::final_awaiter::await_suspend() suspends the coroutine\n", this);
                     return result;
                 }
 
@@ -793,11 +844,12 @@ namespace corolib
 #if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
             coroutine_destructor_admin();
 #endif
-            if (m_coro_handle)
+            if (m_coro_handle)  // Does the coroutine_handle still contain a valid pointer to the coroutine frame/state?
             {
-                if (m_coro_handle.done()) {
+                if (m_coro_handle.done()) {     // Has the coroutine reached the final suspend point (and cleared the "resume" function pointer)?
+                    // Yes
                     ++tracker_obj.nr_dying_coroutines_handle_done;
-                    m_coro_handle.destroy();
+                    m_coro_handle.destroy();    // Call the "destroy" function
                 }
                 else {
                     print(PRI2, "%p: async_task_void::~async_task_void(): m_coro_handle.done() returned false\n", this);
@@ -869,10 +921,10 @@ namespace corolib
             {
                 if (waitIfNotReady)
                 {
-                    print(PRI1, "%p: async_task_void::wait(): before m_coro_handle.promise().m_sema.wait();\n", this);
+                    print(PRI2, "%p: async_task_void::wait(): before m_coro_handle.promise().m_sema.wait();\n", this);
                     m_coro_handle.promise().m_wait_for_signal = true;
                     m_coro_handle.promise().m_sema.wait();
-                    print(PRI1, "%p: async_task_void::wait(): after m_coro_handle.promise().m_sema.wait();\n", this);
+                    print(PRI2, "%p: async_task_void::wait(): after m_coro_handle.promise().m_sema.wait();\n", this);
                 }
                 else
                 {
@@ -1007,9 +1059,9 @@ namespace corolib
                 }
                 if (m_wait_for_signal)
                 {
-                    print(PRI2, "%p: async_task_void::promise_type::return_void(): before sema.signal();\n", this);
+                    print(PRI2, "%p: async_task_void::promise_type::return_void(): before m_sema.signal();\n", this);
                     m_sema.signal();
-                    print(PRI2, "%p: async_task_void::promise_type::return_void(): after sema.signal();\n", this);
+                    print(PRI2, "%p: async_task_void::promise_type::return_void(): after m_sema.signal();\n", this);
                 }
                 print(PRI2, "%p: async_task_void::promise_type::return_void(): end\n", this);
             }
@@ -1128,7 +1180,7 @@ namespace corolib
                 bool await_ready()
                 {
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
-                    const bool ready = m_async_task.m_coro_handle.done();
+                    const bool ready = m_async_task.m_coro_handle.promise().m_ready;
 #else
                     const bool ready = m_async_task.m_ready;
 #endif
@@ -1206,6 +1258,9 @@ namespace corolib
 #endif
                     result ? ++tracker_obj.nr_final_awaiters_await_suspend_returning_true :
                              ++tracker_obj.nr_final_awaiters_await_suspend_returning_false;
+
+                    if (result)
+                        print(PRI1, "%p: async_task<void>::promise_type::final_awaiter::await_suspend() suspends the coroutine\n", this);
                     return result;
                 }
 
@@ -1259,7 +1314,7 @@ namespace corolib
                 bool await_ready()
                 {
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
-                    const bool ready = m_async_ltask.m_coro_handle.done();
+                    const bool ready = m_async_ltask.m_coro_handle.promise().m_ready;
 #else
                     const bool ready = m_async_ltask.m_ready;
 #endif
@@ -1331,13 +1386,16 @@ namespace corolib
                     if (coroutine_valid)
                     {
                         bool is_ready = coroutine_object->is_ready();
-                        print(PRI2, "%p: async_task<TYPE>::promise_type::final_awaiter::await_suspend(): m_ready = %d\n", this, is_ready);
+                        print(PRI2, "%p: async_ltask<void>::promise_type::final_awaiter::await_suspend(): m_ready = %d\n", this, is_ready);
                         result = !is_ready;
                     }
 #endif
 #endif
                     result ? ++tracker_obj.nr_final_awaiters_await_suspend_returning_true :
                              ++tracker_obj.nr_final_awaiters_await_suspend_returning_false;
+
+                    if (result)
+                        print(PRI1, "%p: async_ltask<void>::promise_type::final_awaiter::await_suspend() suspends the coroutine\n", this);
                     return result;
                 }
 

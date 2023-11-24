@@ -27,58 +27,67 @@ namespace corolib
         print(PRI1, "---------------------------------------------------------------\n");
         //print(PRI1, "\tcons\tdest\tdiff\tmax\tc>p\tp>c\terr\n");
         print(PRI1, "\tcons\tdest\tdiff\tmax\tc>p\tc<p\tc>h\tc<h\n");
+
         print(PRI1, "ope\t%d\t%d\t%d\t%d\n",
-            nr_operations_constructed,
-            nr_operations_destructed,
-            nr_operations_constructed - nr_operations_destructed,
-            nr_max_simultaneously_present_operations);
+            nr_operations_constructed,                                      // cons
+            nr_operations_destructed,                                       // dest
+            nr_operations_constructed - nr_operations_destructed,           // diff
+            nr_max_simultaneously_present_operations                        // max
+        );
 #if 0
         print(PRI1, "cor\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
-            nr_coroutines_constructed,
-            nr_coroutines_destructed,
-            nr_coroutines_constructed - nr_coroutines_destructed,
-            nr_max_simultaneously_present_coroutines,
-            nr_dying_coroutines_detecting_dead_promise,
+            nr_coroutines_constructed,                                      // cons
+            nr_coroutines_destructed,                                       // dest
+            nr_coroutines_constructed - nr_coroutines_destructed,           // diff
+            nr_max_simultaneously_present_coroutines,                       // max
+            nr_dying_coroutines_detecting_dead_promise,                     // c>p
             nr_dying_coroutines_detecting_live_promise,
             nr_access_errors
         );
 #endif
          print(PRI1, "cor\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
-            nr_coroutines_constructed,
-            nr_coroutines_destructed,
-            nr_coroutines_constructed - nr_coroutines_destructed,
-            nr_max_simultaneously_present_coroutines,
-            nr_dying_coroutines_detecting_dead_promise,
-            nr_dying_coroutines_detecting_live_promise,
-            nr_dying_coroutines_handle_done,
-            nr_dying_coroutines_handle_not_done
+            nr_coroutines_constructed,                                      // cons
+            nr_coroutines_destructed,                                       // dest
+            nr_coroutines_constructed - nr_coroutines_destructed,           // diff
+            nr_max_simultaneously_present_coroutines,                       // max
+            nr_dying_coroutines_detecting_dead_promise,                     // c>p
+            nr_dying_coroutines_detecting_live_promise,                     // c>p
+            nr_dying_coroutines_handle_done,                                // c>h
+            nr_dying_coroutines_handle_not_done                             // c<h
         );
         print(PRI1, "pro\t%d\t%d\t%d\t%d\t%d\t%d\n",
-            nr_promise_types_constructed,
-            nr_promise_types_destructed,
-            nr_promise_types_constructed - nr_promise_types_destructed,
-            nr_max_simultaneously_present_promise_types,
-            nr_dying_promises_detecting_live_coroutine,
-            nr_dying_promises_detecting_dead_coroutine);
+            nr_promise_types_constructed,                                   // cons
+            nr_promise_types_destructed,                                    // dest
+            nr_promise_types_constructed - nr_promise_types_destructed,     // diff
+            nr_max_simultaneously_present_promise_types,                    // max
+            nr_dying_promises_detecting_live_coroutine,                     // c>p
+            nr_dying_promises_detecting_dead_coroutine                      // c<h
+            //
+            //
+        );
         print(PRI1, "fin\t%d\t%d\t%d\t%d\t\t\t%d\t%d\n",
-            nr_final_awaiters_constructed,
-            nr_final_awaiters_destructed,
-            nr_final_awaiters_constructed - nr_final_awaiters_destructed,
-            nr_max_simultaneously_present_final_awaiters,
-            nr_final_awaiters_await_suspend_returning_true,
-            nr_final_awaiters_await_suspend_returning_false);
+            nr_final_awaiters_constructed,                                  // cons
+            nr_final_awaiters_destructed,                                   // dest
+            nr_final_awaiters_constructed - nr_final_awaiters_destructed,   // diff
+            nr_max_simultaneously_present_final_awaiters,                   // max
+            //
+            //
+            nr_final_awaiters_await_suspend_returning_true,                 // c>h
+            nr_final_awaiters_await_suspend_returning_false                 // c<h
+        );
         print(PRI1, "---------------------------------------------------------------\n");
-#if 1
+#if 0
         print(PRI1, "Legend:\n");
-        print(PRI1, "  ope = # operation objects, cor = # coroutine objects, pro = # promise_type objects, fin = # final_awaiter objects\n");
+        print(PRI1, "  ope = # async_operation objects, cor = # async_task objects, pro = # async_task::promise_type objects\n");
+        print(PRI1, "  fin = # async_task::promise_type::final_awaiter objects\n");
         print(PRI1, "  cons = # objects constructed, dest = # objects destructed, diff = cons - dest\n");
         print(PRI1, "  max = maximum # objects alive at any time\n");
-        print(PRI1, "  c>p = # coroutine objects with a longer lifetime than its promise_type object\n");
-        print(PRI1, "  c<p = # coroutine objects with a shorter lifetime than its promise_type object\n");
+        print(PRI1, "  c>p = # async_task objects with a longer  lifetime than the promise_type object in called coroutine\n");
+        print(PRI1, "  c<p = # async_task objects with a shorter lifetime than the promise_type object in called coroutine\n");
 //      print(PRI1, "  err = # attempts from a coroutine object to access the value in an invalid promise_type object\n");
-        print(PRI1, "  c>h = # coroutine objects with a longer lifetime than the coroutine handle (handle.done())\n");
+        print(PRI1, "  c>h = # async_task objects with a longer  lifetime than the called coroutine (handle.done())\n");
         print(PRI1, "      = or: # final_awaiter::await_suspend() calls returning true\n");
-        print(PRI1, "  c<h = # coroutine objects with a shorter lifetime than the coroutine handle (!handle.done())\n");
+        print(PRI1, "  c<h = # async_task objects with a shorter lifetime than the called coroutine (!handle.done())\n");
         print(PRI1, "      = or: # final_awaiter::await_suspend() calls returning false\n");
 #endif
         print(PRI1, "Waiting 1 second before exiting\n");
