@@ -107,8 +107,8 @@ async_task<int> mainflowWA0(CommClient& c1, CommClient& c2, CommClient& c3)
         print(PRI1, "mainflowWA0: c3.stop();\n");
         c3.stop();
 
-        print(PRI1, "mainflowWA0: std::this_thread::sleep_for(std::chrono::seconds(1))\n");
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        print(PRI1, "mainflow1: std::this_thread::sleep_for(std::chrono::milliseconds(100))\n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
     print(PRI1, "mainflowWA0: co_return 0;\n");
@@ -220,8 +220,8 @@ async_task<int> mainflowWA1(std::initializer_list<CommClient*> clients)
             _clients[j]->stop();
         }
 
-        print(PRI1, "mainflowWA1: std::this_thread::sleep_for(std::chrono::seconds(1))\n");
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        print(PRI1, "mainflowWA1: std::this_thread::sleep_for(std::chrono::milliseconds(100))\n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
     print(PRI1, "mainflowWA1: co_return 0;\n");
@@ -316,8 +316,8 @@ async_task<int> mainflowWA2(std::initializer_list<CommClient*> clients)
             _clients[j]->stop();
         }
 
-        print(PRI1, "mainflowWA2: std::this_thread::sleep_for(std::chrono::seconds(1))\n");
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        print(PRI1, "mainflowWA2: std::this_thread::sleep_for(std::chrono::milliseconds(100))\n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
     print(PRI1, "mainflowWA2: co_return 0;\n");
@@ -397,8 +397,8 @@ async_task<int> mainflowWA3(CommClient& c1, CommClient& c2, CommClient& c3)
         print(PRI1, "mainflowWA3: co_await wat;\n");
         co_await wat;
 
-        print(PRI1, "mainflowWA3: std::this_thread::sleep_for(std::chrono::seconds(1))\n");
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        print(PRI1, "mainflowWA3: std::this_thread::sleep_for(std::chrono::milliseconds(100))\n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     print(PRI1, "mainflowWA3: co_return 0;\n");
     co_return 0;
@@ -434,8 +434,8 @@ async_task<int> mainflowWA4(CommClient& c1, CommClient& c2, CommClient& c3)
         print(PRI1, "mainflowWA4: co_await wat;\n");
         co_await wat;
 
-        print(PRI1, "mainflowWA4: std::this_thread::sleep_for(std::chrono::seconds(1))\n");
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        print(PRI1, "mainflowWA4: std::this_thread::sleep_for(std::chrono::milliseconds(100))\n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     print(PRI1, "mainflowWA4: co_return 0;\n");
     co_return 0;
@@ -443,47 +443,58 @@ async_task<int> mainflowWA4(CommClient& c1, CommClient& c2, CommClient& c3)
 
 /**
  * @brief
- * mainflowX selects one of the 4 mainflowWA implementations (mainflowWA0 till mainflowWA3) to be used
+ * mainflowX selects one of the 4 mainflowWA implementations (mainflowWA0 till mainflowWA4) to be used
  *
  * @param c1 is the first client
  * @param c2 is the second client
  * @param c3 is the third client
  * @param selected is the mainflowWA variant (defined above) to be used
  */
-void mainflowX(CommClient& c1, CommClient& c2, CommClient& c3, int selected)
+async_task<int> mainflowX(CommClient& c1, CommClient& c2, CommClient& c3, int selected)
 {
     switch (selected) {
     case 0:
     {
         print(PRI1, "mainflowX: async_task<int> si0 = mainflowWA0(c1, c2, c3);\n");
         async_task<int> si0 = mainflowWA0(c1, c2, c3);
+        print(PRI1, "mainflowX: co_await si0;\n");
+        co_await si0;
     }
     break;
     case 1:
     {
         print(PRI1, "mainflowX: async_task<int> si1 = mainflowWA1( {&c1, &c2, &c3} )\n");
         async_task<int> si1 = mainflowWA1({ &c1, &c2, &c3 });
+        print(PRI1, "mainflowX: co_await si1;\n");
+        co_await si1;
     }
     break;
     case 2:
     {
         print(PRI1, "mainflowX: async_task<int> si2 = mainflowWA2( {&c1, &c2, &c3} )\n");
         async_task<int> si2 = mainflowWA2({ &c1, &c2, &c3 });
+        print(PRI1, "mainflowX: co_await si2;\n");
+        co_await si2;
     }
     break;
     case 3:
     {
         print(PRI1, "mainflowX: async_task<int> si3 = mainflowWA3(c1, c2, c3)\n");
         async_task<int> si3 = mainflowWA3(c1, c2, c3);
+        print(PRI1, "mainflowX: co_await si3;\n");
+        co_await si3;
     }
     break;
     case 4:
     {
         print(PRI1, "mainflowX: async_task<int> si4 = mainflowWA4(c1, c2, c3)\n");
         async_task<int> si4 = mainflowWA4(c1, c2, c3);
+        print(PRI1, "mainflowX: co_await si4;\n");
+        co_await si4;
     }
     break;
     }
+    co_return 0;
 }
 
 /**
@@ -549,18 +560,28 @@ int main(int argc, char* argv[])
             return 0;
         }
         print(PRI1, "main: mainflowX(c1, c2, c3, selected);\n");
-        mainflowX(c1, c2, c3, selected);
+        async_task<int> si = mainflowX(c1, c2, c3, selected);
+
+        // Keep mainflowX in the same scope as ioContext.run() to
+        // ensure that all promise_type objects and final_awaiter objects
+        // are released.
+        print(PRI1, "main: before ioContext.run();\n");
+        ioContext.run();
+        print(PRI1, "main: after ioContext.run();\n");
     }
     else
     {
         print(PRI1, "main: async_task<int> si = mainflowAll(c1, c2, c3);\n");
         async_task<int> si = mainflowAll(c1, c2, c3);
+
+        // Keep mainflowAll in the same scope as ioContext.run() to
+        // ensure that all promise_type objects and final_awaiter objects
+        // are released.
+        print(PRI1, "main: before ioContext.run();\n");
+        ioContext.run();
+        print(PRI1, "main: after ioContext.run();\n");
     }
     
-    print(PRI1, "main: before ioContext.run();\n");
-    ioContext.run();
-    print(PRI1, "main: after ioContext.run();\n");
-
     print(PRI1, "main: std::this_thread::sleep_for(std::chrono::seconds(1))\n");
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
