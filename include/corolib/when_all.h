@@ -38,6 +38,7 @@ namespace corolib
         when_all(AsyncBaseTypes&... others)
             : m_counter(0)
         {
+            print(PRI2, "%p: when_all::when_all(AsyncBaseTypes&... others)\n", this);
             make_when_all(others...);
         }
 
@@ -88,6 +89,7 @@ namespace corolib
 
         void cleanup()
         {
+            print(PRI2, "%p: when_all::cleanup()\n", this);
             for (std::size_t i = 0; i < m_elements.size(); i++)
             {
                 m_elements[i]->setCounter(nullptr);
@@ -169,6 +171,7 @@ namespace corolib
                  typename std::enable_if<std::is_base_of_v<async_base, T>, int>::type = 0>
         void make_when_all(T& t, AsyncBaseTypes&... others) {
             async_base* async_op = static_cast<async_base*>(&t);
+            print(PRI2, "%p: make_when_all()\n", this);
             // Only place the object in m_elements if it has not yet been completed.
             if (!async_op->is_ready())
             {
@@ -189,7 +192,7 @@ namespace corolib
     };
 
 
-#if 0
+#if 1
     /**
      * @brief when_allT is the original implementation of when_all (which has been renamed to when_allT).
      * Its implementation is here for historical/backup/reference reasons only.
@@ -207,7 +210,7 @@ namespace corolib
         when_allT(std::initializer_list<TYPE*> async_ops)
             : m_counter(0)
         {
-            print(PRI2, "%p: when_allT::when_all(std::initializer_list<TYPE*> async_ops)\n", this);
+            print(PRI2, "%p: when_allT::when_allT(std::initializer_list<TYPE*> async_ops)\n", this);
             for (TYPE* async_op : async_ops)
             {
                 // Only place the object in m_elements if it has not yet been completed.
@@ -227,7 +230,7 @@ namespace corolib
         when_allT(TYPE* async_ops, int size)
             : m_counter(0)
         {
-            print(PRI2, "%p: when_allT::when_all(TYPE* async_ops, size = %d)\n", this, size);
+            print(PRI2, "%p: when_allT::when_allT(TYPE* async_ops, size = %d)\n", this, size);
             for (int i = 0; i < size; i++)
             {
                 // Only place the object in m_elements if it has not yet been completed.
@@ -244,12 +247,12 @@ namespace corolib
 
         when_allT(when_allT&& s)
         {
-            print(PRI2, "%p: when_allT::when_all(when_all&& s)\n", this);
+            print(PRI2, "%p: when_allT::when_allT(when_all&& s)\n", this);
         }
 
         ~when_allT()
         {
-            print(PRI2, "%p: when_all::~when_all()\n", this);
+            print(PRI2, "%p: when_allT::~when_allT()\n", this);
             for (std::size_t i = 0; i < m_elements.size(); i++)
             {
                 m_elements[i]->setCounter(nullptr);
@@ -260,7 +263,7 @@ namespace corolib
 
         when_allT& operator = (when_allT&& s)
         {
-            print(PRI2, "%p: when_all::when_all = (when_all&& s)\n", this);
+            print(PRI2, "%p: when_allT::when_allT = (when_all&& s)\n", this);
             s.coro = nullptr;
             return *this;
         }
@@ -291,23 +294,23 @@ namespace corolib
 
                 bool await_ready()
                 {
-                    print(PRI2, "%p: when_all::awaiter::await_ready(): m_when_all.m_counter.get_counter() = %d;\n", 
+                    print(PRI2, "%p: when_allT::awaiter::await_ready(): m_when_all.m_counter.get_counter() = %d;\n", 
                             this, m_when_all.m_counter.get_counter());
                     bool ready = (m_when_all.m_counter.get_counter() == 0);
-                    print(PRI2, "%p: when_all::awaiter::await_ready(): return %d;\n", this, ready);
+                    print(PRI2, "%p: when_allT::awaiter::await_ready(): return %d;\n", this, ready);
                     return ready;
                 }
 
                 void await_suspend(std::coroutine_handle<> awaiting)
                 {
-                    print(PRI2, "%p: when_all::awaiter::await_suspend(...)\n", this);
+                    print(PRI2, "%p: when_allT::awaiter::await_suspend(...)\n", this);
                     m_when_all.start_all();    // Will have no effect in case of an eager start
                     m_when_all.m_counter.set_awaiting(awaiting);
                 }
 
                 void await_resume()
                 {
-                    print(PRI2, "%p: when_all::awaiter::await_resume()\n", this);
+                    print(PRI2, "%p: when_allT::awaiter::await_resume()\n", this);
                 }
             private:
                 when_allT& m_when_all;
@@ -319,9 +322,8 @@ namespace corolib
     private:
         when_all_counter m_counter;
         std::vector<TYPE*> m_elements;
-    }
+    };
 #endif
-
 
 }
 

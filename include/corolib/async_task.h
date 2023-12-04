@@ -22,93 +22,8 @@
  * async_task<TYPE> and async_ltask<TYPE> are derived from a common base class async_task_base<TYPE>.
  * async_task<void> and async_ltask<void> are derived from a common base class async_task_void.
  * 
- * 
  * Avoiding memory leaks using the asymmetric transfer approach
- * 
- * In the default implementation of async_task::promise_type, final_suspend() returns std::suspend_always:
- * 
- * auto final_suspend() noexcept
- * {
- *     return std::suspend_always{};
- * }
- * 
- * where suspend_always can be defined as follows:
- * 
- * struct suspend_always {
- *     constexpr suspend_always() noexcept = default;
- *     constexpr bool await_ready() const noexcept { return false; }
- *     constexpr void await_suspend(coroutine_handle<>) const noexcept {}
- *     constexpr void await_resume() const noexcept {}
- * };
- *
- * The coroutine unconditionally suspends at the final suspend point:
- * the coroutine frame and the promise_type object inside it are not (yet) destroyed.
- * 
- * The advantage of this approach is that the coroutine return object 
- * (that was created by the promise_type object by calling the function get_return_object())
- * can still access the result of the coroutine that is stored in the promise_type object,
- * e.g. by calling a library function get_result().
- * Such an access is necessary in the main() function that cannot call co_await.
- * 
- * However, there is no resume() call anywhere that will eventually force the coroutine to proceed to the end:
- * this will lead to memory leaks.
- * 
- * To (try to) avoid this, the destructor of the coroutine return object must call the destroy() function as follows:
- * 
- * ~async_task_base()
- * {
- *     if (m_coro_handle) {     // Does the coroutine_handle still contain a valid pointer to the coroutine frame/state?
- *         if (m_coro_handle.done()) {     // Has the coroutine reached the final suspend point (and cleared the "resume" function pointer)?
- *             m_coro_handle.destroy();    // Call "destroy" function
- *          }
- *     }
- * }
- * 
- * In the async_task variants, a coroutine G typically resumes its calling coroutine F in its co_return statement
- * (that translates to return_value(...) or return_void().
- * Note that there are many cases, see the implementation below.
- * 
- * Unfortunately, in these flows the destructor of the coroutine return object (returned by G and used by F) 
- * will be called *before* coroutine G has reached the final suspend point: 
- * consequently m_coro_handle.done() returns false and destroy() is not called.
- * Calling destroy() would lead to program misbehavior.
- * 
- * A solution could be to use std::suspend_never at the final suspend point.
- * However, this leads to problems when calling get_result() from main():
- * at that point, the coroutine frame (with the promise_type object inside) has been deleted
- * and get_result() may return random results (if not worse).
- * 
- * To remedy these problems, I experimented with an approach where a coroutine promise_type object
- * "pushes" the result to the coroutine return object, so that afterwards
- * the coroutine can use a final_awaiter1 object that allows it to proceed at the final suspend point.
- * 
- * This allows the coroutine return object to go out of scope without being able to call destroy()).
- * The lifetime of the coroutine's "intended" return value is the same as that of the coroutine return object
- * because the intended value is now a data member of the coroutine return object.
- * IMO this is also the logical place of this return value (it is closer to the return behavior of an ordinary function).
- * The lifetime of the promise_type object can be longer or shorter than that of the coroutine return
- * object ic created; this has become irrelevant.
- * 
- * The final_awaiter1 object is a custom type that suspends the coroutine
- * if the result has not arrived yet. This should not happen, and a message is printed if it does.
- * 
- * To use the adapted final_awaiter1, set the compiler directive USE_FINAL_AWAITER1 (see below) to 1.
- * 
- * To have the promise_type object "push" the result to the coroutine return object, 
- * set USE_RESULT_FROM_COROUTINE_OBJECT to 1.
- * 
- * For this to be possible, some additional "linking" between the promise_type object
- * and its coroutine return object has to be in place.
- * The reason is that a promise_type object does normally not have any pointer or reference
- * to the coroutine return object it creates when calling get_return_object().
- * 
- * To enable this additional linking, set USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN to 1.
- * 
- * 
- * Using the symmetric transfer approach
- * 
- * To use symmetric transfer, set USE_FINAL_AWAITER2 to 1.
- * In addition, USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN can also be set to 1.
+ * The reader is referred to ../../reading/Avoiding_memory_leaks.md for further info on this subject.
  * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
@@ -124,9 +39,8 @@
 #include "when_all_counter.h"
 #include "when_any_one.h"
 
-// Put the following variables to 0 to return to the original implementation
-// and observe that many promise_type objects are still present
-// when leaving the application.
+// Note: The reader is referred to ../../reading/Avoiding_memory_leaks.md for further info.
+
 #define USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN 1
 #define USE_FINAL_AWAITER1 0
 #define USE_RESULT_FROM_COROUTINE_OBJECT 0
@@ -139,9 +53,20 @@
 // #define USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN    0   0   1   1   1   1
 // #define USE_FINAL_AWAITER1                       0   1   0   1   0   1
 // #define USE_RESULT_FROM_COROUTINE_OBJECT         0   0   0   0   1   1
+//
+// #define USE_FINAL_AWAITER1                       0   0   0   0   0   0
+// 
+// To use the original implementation, set all 4 compiler directives to 0.
+// Observe that many promise_type objects are still present when leaving the application.
+// 
 // The combinations with USE_FINAL_AWAITER1 enabled display unreliable behavior 
-// in multi-threaded applications. (Currently corolib does not use any atomics...)
+// in multi-threaded applications. (Currently corolib does not use any atomics.)
+// 
 // USE_RESULT_FROM_COROUTINE_OBJECT = 1 requires USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN = 1
+// 
+// To use symmetric transfer, set USE_FINAL_AWAITER2 to 1 and USE_FINAL_AWAITER1 to 0.
+// In addition, USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN can be set to 1.
+// There is no need to set USE_RESULT_FROM_COROUTINE_OBJECT to 1.
 
 #if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
 #include <assert.h>
@@ -284,7 +209,7 @@ namespace corolib
                 }
                 else
                 {
-                    print(PRI1, "%p: async_task_base::get_result(): returning NULL value!\n", this);
+                    print(PRI1, "%p: async_task_base::get_result(): m_ready == false: returning {} value!\n", this);
                     return {};
                 }
             }
@@ -420,14 +345,20 @@ namespace corolib
                 if (m_ctr)
                 {
                     print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): before m_ctr->completed();\n", this);
-                    m_ctr->completed();
+                    m_awaiting = m_ctr->completed();
+#if !USE_FINAL_AWAITER2
+                    m_awaiting.resume();
+#endif
                     print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): after m_ctr->completed();\n", this);
                     return;
                 }
                 if (m_waitany)
                 {
                     print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): before m_waitany->completed();\n", this);
-                    m_waitany->completed();
+                    m_awaiting = m_waitany->completed();
+#if !USE_FINAL_AWAITER2
+                    m_awaiting.resume();
+#endif
                     print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): after m_waitany->completed();\n", this);
                     return;
                 }
@@ -1001,7 +932,7 @@ namespace corolib
                 }
                 else
                 {
-                    print(PRI1, "%p: async_task_void::wait(): returning without waiting for ready\n", this);
+                    print(PRI1, "%p: async_task_void::wait(): m_ready == false: returning without waiting for ready!\n", this);
                 }
             }
         }
@@ -1113,14 +1044,20 @@ namespace corolib
                 if (m_ctr)
                 {
                     print(PRI2, "%p: async_task_void::promise_type::return_void(): before m_ctr->completed();\n", this);
-                    m_ctr->completed();
+                    m_awaiting = m_ctr->completed();
+#if !USE_FINAL_AWAITER2
+                    m_awaiting.resume();
+#endif
                     print(PRI2, "%p: async_task_void::promise_type::return_void(): after m_ctr->completed();\n", this);
                     return;
                 }
                 if (m_waitany)
                 {
                     print(PRI2, "%p: async_task_void::promise_type::return_void(): before m_waitany->completed();\n", this);
-                    m_waitany->completed();
+                    m_awaiting = m_waitany->completed();
+#if !USE_FINAL_AWAITER2
+                    m_awaiting.resume();
+#endif
                     print(PRI2, "%p: async_task_void::promise_type::return_void(): after m_waitany->completed();\n", this);
                     return;
                 }

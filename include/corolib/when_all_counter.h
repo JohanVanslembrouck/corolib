@@ -1,7 +1,7 @@
 /**
  * @file when_all_counter.h
  * @brief
- * Auxiliary class used in the implementation of when_all, async_opteration and async_task.
+ * Auxiliary class used in the implementation of when_all, async_operation and async_task.
  *
  * when_all_counter is passed a counter (of type int) to decrement and the coroutine_handle of a coroutine
  * that it has to resume when the counter drops to 0.
@@ -38,6 +38,7 @@ namespace corolib
          */
         void set_awaiting(std::coroutine_handle<> awaiting)
         {
+            print(PRI2, "%p: when_all_counter::set_awaiting()\n", this);
             m_awaiting = awaiting;
         }
 
@@ -47,11 +48,13 @@ namespace corolib
          */
         int get_counter()
         {
+            print(PRI2, "%p: when_all_counter::get_counter(): returns %d\n", this, m_nr);
             return m_nr;
         }
 
         void increment()
         {
+            print(PRI2, "%p: when_all_counter::increment(): m_nr = %d\n", this, m_nr);
             m_nr++;
         }
 
@@ -60,15 +63,16 @@ namespace corolib
          * from return_value and return_void in the promise_type of async_task
          *
          */
-        void completed()
+        std::coroutine_handle<> completed()
         {
             print(PRI2, "%p: when_all_counter::completed(): m_nr = %d\n", this, m_nr);
             m_nr--;
             if (m_nr == 0)
             {
                 print(PRI2, "%p: when_all_counter::completed(): all replies received\n", this);
-                m_awaiting.resume();
+                return m_awaiting;
             }
+            return std::noop_coroutine();
         }
 
     private:

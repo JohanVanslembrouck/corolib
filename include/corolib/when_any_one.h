@@ -95,13 +95,12 @@ namespace corolib
          * from return_value and return_void in the promise_type of async_task
          *
          */
-        void completed()
+        std::coroutine_handle<> completed()
         {
             print(PRI2, "%p: when_any_one::completed()\n", this);
             m_completed = true;
             m_completion_status = when_any_one_status::NEWLY_COMPLETED;
-            // Resume the awaiting coroutine
-            m_awaiting.resume();
+            return m_awaiting;
         }
 
     private:

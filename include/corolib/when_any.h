@@ -54,6 +54,7 @@ namespace corolib
         template<typename... AsyncBaseTypes>
         when_any(AsyncBaseTypes&... others)
         {
+            print(PRI2, "%p: when_any::make_when_any(AsyncBaseTypes&... others)\n", this);
             make_when_any(others...);
         }
 
@@ -109,6 +110,7 @@ namespace corolib
 
         void cleanup()
         {
+            print(PRI2, "%p: when_any::cleanup()\n", this);
             for (std::size_t i = 0; i < m_wait_any_vector.size(); i++)
             {
                 //m_wait_any_vector[i].m_element->setWaitAny(nullptr);
@@ -244,6 +246,7 @@ namespace corolib
                  typename std::enable_if<std::is_base_of_v<async_base, T>, int>::type = 0>
         void make_when_any(T& t, AsyncBaseTypes&... others) {
             async_base* async_op = static_cast<async_base*>(&t);
+            print(PRI2, "%p: make_when_any()\n", this);
             // Only place the object in m_elements if it has not yet been completed.
             if (!async_op->is_ready())
             {
@@ -266,7 +269,7 @@ namespace corolib
     };
 
 
-#if 0
+#if 1
     /**
     * @brief when_anyT is the original implementation of when_any (which has been renamed to when_anyT).
     * Its implementation is here for historical/backup/reference reasons only.
@@ -282,7 +285,7 @@ namespace corolib
          */
         when_anyT(std::initializer_list<TYPE*> aws)
         {
-            print(PRI2, "%p: when_anyT::when_any(std::initializer_list<TYPE*> aws)\n", this);
+            print(PRI2, "%p: when_anyT::when_anyT(std::initializer_list<TYPE*> aws)\n", this);
             for (TYPE* a : aws)
             {
                 // Only place the object in m_elements if it has not yet been completed.
@@ -302,7 +305,7 @@ namespace corolib
          */
         when_anyT(TYPE* aws, int size)
         {
-            print(PRI2, "%p: when_any::when_any(TYPE* aws, int size)\n", this);
+            print(PRI2, "%p: when_anyT::when_anyT(TYPE* aws, int size)\n", this);
             for (int i = 0; i < size; i++)
             {
                 // Only place the object in m_elements if it has not yet been completed.
@@ -320,12 +323,12 @@ namespace corolib
 
         when_anyT(when_any&& s)
         {
-            print(PRI2, "%p: when_anyT::when_any(when_any&& s)\n", this);
+            print(PRI2, "%p: when_anyT::when_anyT(when_any&& s)\n", this);
         }
 
         ~when_anyT()
         {
-            print(PRI2, "%p: when_anyT::~when_any()\n", this);
+            print(PRI2, "%p: when_anyT::~when_anyT()\n", this);
             for (std::size_t i = 0; i < m_wait_any.size(); i++)
             {
                 m_elements[i]->setWaitAny(nullptr);
@@ -337,7 +340,7 @@ namespace corolib
 
         when_anyT& operator = (when_anyT&& s)
         {
-            print(PRI2, "%p: when_anyT::when_anyT = (when_anyT&& s)\n", this);
+            print(PRI2, "%p: when_anyT::operator = (when_anyT&& s)\n", this);
             s.coro = nullptr;
             return *this;
         }

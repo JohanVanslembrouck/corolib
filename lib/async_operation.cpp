@@ -222,13 +222,15 @@ namespace corolib
         else if (m_ctr)
         {
             print(PRI2, "%p: async_operation_base::completed(): m_index = %d, before m_ctr->completed();\n", this, m_index);
-            m_ctr->completed();
+            std::coroutine_handle<> handle = m_ctr->completed();
+            handle.resume();
             print(PRI2, "%p: async_operation_base::completed(): m_index = %d, after m_ctr->completed();\n", this, m_index);
         }
         else if (m_waitany)
         {
             print(PRI2, "%p: async_operation_base::completed(): m_index = %d, before m_waitany->completed();\n", this, m_index);
-            m_waitany->completed();
+            std::coroutine_handle<> handle = m_waitany->completed();
+            handle.resume();
             print(PRI2, "%p: async_operation_base::completed(): m_index = %d, after m_waitany->completed();\n", this, m_index);
         }
         else
