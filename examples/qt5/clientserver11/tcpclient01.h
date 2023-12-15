@@ -33,22 +33,19 @@ class TcpClient01 : public QObject, public CommService
 public:
     explicit TcpClient01(QObject *parent = nullptr, MessageCheck check = NO_CHECK);
 
+    async_task<int> mainTask();
+
 signals:
     void responseReceivedSig(QByteArray msg);
 
 public slots:
-    void start();
     void quit();
-
-    void connectToServer();
     void acceptError(QAbstractSocket::SocketError socketError);
     void stateChanged(QAbstractSocket::SocketState socketState);
-    void connected();
     void errorOccurred(QAbstractSocket::SocketError socketError);
     void hostFound();
 
 private slots:
-    void sendTCPStart();
     void noResponseReceived();
     void readyReadTcp(QByteArray& data);
     void addErrorMessage(const QString &message);
@@ -56,28 +53,33 @@ private slots:
     void addInfoMessage(const QString &message);
 
 private:    // functions
-    void connectToServerDelayed();
-    void connectToTCPServer(QString& serverIPaddress, quint16 serverPort);
+    void connectToServer(QString& serverIPaddress, quint16 serverPort);
     QByteArray prepareMessage(int selection);
     void calculateElapsedTime(std::chrono::high_resolution_clock::time_point start);
     void configureTCP();
 
     // Coroutine related
     async_operation<QByteArray> start_reading();
+    async_operation<void> start_timer(QTimer& timer, int ms);
+    async_operation<void> start_connecting(QString& serverIpAddress, quint16 port);
+
     void start_reading_impl(const int idx);
-	
+    void start_timer_impl(const int idx, QTimer& tmr, int ms);
+    void start_connecting_impl(const int idx, QString& serverIpAddress, quint16 port);
+
     // The following are all coroutines
-    async_task<int> measurementLoop0();
-    async_task<int> measurementLoop1();
-    async_task<int> measurementLoop2();
-    async_task<int> measurementLoop3();
-    async_task<int> measurementLoop4();
+    async_task<int> connectToServerAsync();
+
+    async_task<int> measurementLoop0(int selection);
+    async_task<int> measurementLoop1(int selection);
+    async_task<int> measurementLoop2(int selection);
+    async_task<int> measurementLoop3(int selection);
+    async_task<int> measurementLoop4(int selection);
 
     IPaddressAndPort        m_server;
 
     int                     m_counter;
     int                     m_errorCounter;
-    int                     m_selection;
     int                     m_loop;
 
     QTimer                  m_timerConnectToServer;

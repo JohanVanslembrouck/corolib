@@ -23,7 +23,7 @@ class Timer02 : public QObject, public CommService
 
 public:
     explicit Timer02(QObject *parent = nullptr);
-    void start();
+    async_task<int> mainTask();
 
 protected:
     async_operation<void> start_timer(QTimer& timer, int ms, bool doDisconnect = false);
@@ -31,7 +31,6 @@ protected:
     
     void connect_to_timer(async_operation_base& async_op, QTimer& tmr, QMetaObject::Connection& conn, bool doDisconnect = false);
    
-    async_task<int> mainTask();
     async_task<int> timerTask01();
     async_task<int> timerTask02();
     async_task<int> timerTask03();

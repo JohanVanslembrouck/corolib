@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
         QLoggingCategory::setFilterRules(QStringLiteral("*.info=false"));
 
     TcpServer02 tcpServer02(0, USE_CRC);
-    tcpServer02.start();
+    async_task<int> t = tcpServer02.mainTask();
 
     return app.exec();
 }

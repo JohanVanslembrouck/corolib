@@ -44,8 +44,7 @@ public slots:
     void receiveTimed();
 
 public:
-    TcpClientCo(bool useCoroutines = true,
-                qint32 selectImplementation = 1,
+    TcpClientCo(qint32 selectImplementation = 1,
                 const QString& name = "",
                 bool autoConnect = true,
                 qint32 waitForConnectionTimeout = 1000,
@@ -78,7 +77,6 @@ protected:    // functions
     void readyReadTcpCo2(QByteArray& data);
 
 private:
-    bool        m_useCoroutines;
     qint32      m_selectImplementation;
 
     QList<ConnectionInfo *> m_connectionInfoList;

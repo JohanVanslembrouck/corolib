@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
     QCoreApplication app(argc, argv);
 
     Timer03 timer03(0);
-    timer03.start();
+    async_task<int> t = timer03.mainTask();
 
     return app.exec();
 }

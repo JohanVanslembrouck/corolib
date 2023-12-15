@@ -14,6 +14,8 @@ that allow selecting several run-time options.
 The two .bat files start tcpserver02.exe with a different configuration. tcpclient02.exe and tcpclient03.exe expect two running tcpserver02 servers.
 Copy the .cfg and the .bat files to the corresponding build folders (if different from this folder). 
 On Windows, copy also Qt5Core.dll and Qt5Network.dll (or Qt5Cored.dll and Qt5Networkd.dll for the debug version) to the build folder.
+Alternatively, place the original location of these files in the Path environment variable. 
+For example, on my computer this is: C:\Qt\5.15.2\msvc2019_64\bin
 
 The applications are usually built in separate directories. We assume 5 release build directories:
 * the tcpserver01 build directory contains tcpserver01.exe and requires the following additional files: tcpserver01.cfg, Qt5Core.dll, Qt5Network.dll

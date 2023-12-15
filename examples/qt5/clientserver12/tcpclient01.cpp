@@ -76,7 +76,8 @@ void TcpClient01::configureTCP()
 void TcpClient01::start()
 {
     qInfo() << Q_FUNC_INFO;
-    connectToServerDelayed();
+    //connectToServerDelayed();
+    connectToServer();
 }
 
 /**
@@ -112,13 +113,14 @@ void TcpClient01::addInfoMessage(const QString &message)
 void TcpClient01::connectToServerDelayed()
 {
     qInfo() << Q_FUNC_INFO;
-
+/*
     if (configuration.m_startupDelay > 0)
     {
         m_timerConnectToServer.start(configuration.m_startupDelay);
     }
     else
         connectToServer();
+*/
 }
 
 /**

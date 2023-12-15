@@ -6,6 +6,8 @@
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
+#include <QCoreApplication>
+
 #include "tcpclient01.h"
 #include "tcpconfig.h"
 
@@ -28,8 +30,6 @@ TcpClient01::TcpClient01(QObject *parent, MessageCheck check)
     , m_server(configuration.m_server)
 
     , m_errorCounter(0)
-    , m_selection(0)
-    , m_loop(configuration.m_selectMeasurementLoop)
 
     , m_timerConnectToServer(this)
     , m_timerStartSending(this)
@@ -49,10 +49,7 @@ TcpClient01::TcpClient01(QObject *parent, MessageCheck check)
     m_timerStartSending.setSingleShot(true);
     m_timerNoResponse.setSingleShot(true);
 
-    connect(&m_timerConnectToServer,&QTimer::timeout, this, &TcpClient01::connectToServer);
-    connect(&m_timerStartSending,   &QTimer::timeout, this, &TcpClient01::sendTCPStart);
     connect(&m_timerNoResponse,     &QTimer::timeout, this, &TcpClient01::noResponseReceived);
-    connect(&m_tcpClient,           &TcpClient::connectedSig, this, &TcpClient01::connected);
 
     nr_message_lengths = configuration.m_numberMessages;
 
@@ -68,15 +65,6 @@ void TcpClient01::configureTCP()
 
     m_tcpClient.configure();
     connect(&m_tcpClient, &TcpClient::readyReadTcpSig, this, &TcpClient01::readyReadTcp);
-}
-
-/**
- * @brief TcpClient01::start
- */
-void TcpClient01::start()
-{
-    qInfo() << Q_FUNC_INFO;
-    connectToServerDelayed();
 }
 
 /**
@@ -107,115 +95,11 @@ void TcpClient01::addInfoMessage(const QString &message)
 }
 
 /**
- * @brief TcpClient01::connectToServerDelayed
- */
-void TcpClient01::connectToServerDelayed()
-{
-    qInfo() << Q_FUNC_INFO;
-
-    if (configuration.m_startupDelay > 0)
-    {
-        m_timerConnectToServer.start(configuration.m_startupDelay);
-    }
-    else
-        connectToServer();
-}
-
-/**
- * @brief TcpClient01::connectToServer
- */
-void TcpClient01::connectToServer()
-{
-    qInfo() << "";
-    qInfo() << Q_FUNC_INFO;
-
-    qInfo() << "m_server.m_ipAddress = " << m_server.m_ipAddress << ", m_server.m_port = " << m_server.m_port;
-
-    bool result = m_tcpClient.connectToServer(m_server.m_ipAddress, m_server.m_port);
-    if (!result)
-        qDebug() << Q_FUNC_INFO << "immediate connection failed";
-}
-
-/**
- * @brief TcpClient01::connected
- */
-void TcpClient01::connected()
-{
-    qDebug() << Q_FUNC_INFO;
-    sendTCPStart();
-}
-
-/**
  * @brief TcpClient01::noResponseReceived
  */
 void TcpClient01::noResponseReceived()
 {
     qDebug() << Q_FUNC_INFO;
-}
-
-/**
- * @brief selectNextLoop
- * @param loop
- * @return
- */
-int selectNextLoop(int loop)
-{
-    switch (loop)
-    {
-    case -10: return 0;
-    case 0: return 1;
-    case 1: return 2;
-    case 2: return 3;
-    case 3: return 4;
-    case 4: return -1;
-
-    default: return -1;
-    }
-    return -1;
-}
-/**
- * @brief TcpClient01::sendTCPStart
- */
-void TcpClient01::sendTCPStart()
-{
-    m_selection++;
-    qInfo() << Q_FUNC_INFO << m_loop << m_selection;
-
-    m_counter = 0;
-
-    if (!configuration.m_useCoroutines)
-    {
-        if (m_selection < nr_message_lengths)
-        {
-            m_start = chrono::high_resolution_clock::now();
-            QByteArray data = prepareMessage(m_selection);
-            m_tcpClient.sendMessage(data);
-            m_timerNoResponse.start(10 * data.length());
-        }
-    }
-    else
-    {
-        if (m_selection >= nr_message_lengths)
-        {
-           m_selection = 0;
-           m_loop = selectNextLoop(m_loop);
-           qDebug() << "next loop = " << m_loop;
-           if (m_loop == -1)
-               return;
-        }
-
-        switch (m_loop)
-        {
-        case 0: { async_task<int> si = measurementLoop0(); } break;
-        case 1: { async_task<int> si = measurementLoop1(); } break;
-        case 2: { async_task<int> si = measurementLoop2(); } break;
-        case 3: { async_task<int> si = measurementLoop3(); } break;
-        case 4: { async_task<int> si = measurementLoop4(); } break;
-
-        default:
-             qDebug() << "Please select a valid measurement loop";
-        }
-    }
 }
 
 /**
@@ -303,28 +187,10 @@ void TcpClient01::readyReadTcp(QByteArray& data)
             qWarning() << Q_FUNC_INFO << "received incorrect message";
         }
 
-        if (configuration.m_useCoroutines)
-        {
-            QByteArray msg = m_message.content();
-            emit responseReceivedSig(msg);
-            m_timerNoResponse.stop();
-        }
-        else
-        {
-            qInfo() << "counter:" << m_counter << "received message:" << m_message.content();
-            if (++m_counter < configuration.m_numberTransactions)
-            {
-                QByteArray data2 = prepareMessage(m_selection);
-                qInfo() << "sending message:" << data2;
-                m_tcpClient.sendMessage(data2);
-                m_timerNoResponse.start(10 * data2.length());
-            }
-            else
-            {
-                calculateElapsedTime(m_start);
-                m_timerStartSending.start(100);
-            }
-        }
+        QByteArray msg = m_message.content();
+        emit responseReceivedSig(msg);
+        m_timerNoResponse.stop();
+
     } // while
 }
 
@@ -408,16 +274,158 @@ void TcpClient01::start_reading_impl(const int idx)
 }
 
 /**
- * @brief TcpClient01::measurementLoop0
+ * @brief TcpClient01::start_timer
+ * @param timer
+ * @param ms
  * @return
  */
-async_task<int> TcpClient01::measurementLoop0()
+async_operation<void> TcpClient01::start_timer(QTimer& timer, int ms)
+{
+    int index = get_free_index();
+    print(PRI2, "%p: TcpClient01::start_timer(): index = %d\n", this, index);
+    async_operation<void> ret{ this, index };
+    start_timer_impl(index, timer, ms);
+    return ret;
+}
+
+/**
+ * @brief TcpClient01::start_timer_impl uses Qt's connect to associate
+ * the QTimer::timeout signal function emitted by tmr
+ * with a lambda that is used as slot functor.
+ * The lambda uses Qt's disconnect to break the association with the signal
+ * at the end of its invocation.
+ * @param idx
+ * @param tmr
+ * @param ms
+ */
+void TcpClient01::start_timer_impl(const int idx, QTimer& tmr, int ms)
+{
+    print(PRI2, "%p: TcpClient01::start_timer_impl(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
+
+    tmr.start(ms);
+
+    m_connections[idx] = connect(&tmr, &QTimer::timeout,
+         [this, idx]()
+         {
+             print(PRI2, "%p: TcpClient01::handle_timer() lambda: idx = %d\n", this, idx);
+
+             async_operation_base* om_async_operation = m_async_operations[idx];
+             async_operation<void>* om_async_operation_t =
+                 dynamic_cast<async_operation<void>*>(om_async_operation);
+
+             if (om_async_operation_t)
+             {
+                 om_async_operation_t->completed();
+             }
+             else
+             {
+                 // This can occur when the async_operation_base has gone out of scope.
+                 print(PRI2, "%p: TcpClientCo::handle_timer(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
+             }
+
+             if (!disconnect(m_connections[idx]))
+             {
+                 print(PRI1, "%p: TcpClient::handle_timer(): idx = %d, Warning: disconnect failed\n", this, idx);
+             }
+         }
+         );
+}
+
+void TcpClient01::connectToServer(QString& serverIPaddress, quint16 serverPort)
+{
+    qInfo() << "";
+    qInfo() << Q_FUNC_INFO;
+
+    qInfo() << "serverIPaddress = " << serverIPaddress << ", serverPort = " << serverPort;
+
+    bool result = m_tcpClient.connectToServer(serverIPaddress, serverPort);
+    if (!result)
+        qDebug() << Q_FUNC_INFO << "immediate connection failed";
+}
+
+/**
+ * @brief TcpClient01::start_connecting
+ * @param serverIpAddress
+ * @param port
+ * @return
+ */
+async_operation<void> TcpClient01::start_connecting(QString& serverIpAddress, quint16 port)
+{
+    int index = get_free_index();
+    print(PRI2, "%p: TcpClient01::start_connecting(): index = %d\n", this, index);
+    async_operation<void> ret{ this, index };
+    start_connecting_impl(index, serverIpAddress, port);
+    return ret;
+}
+
+/**
+ * @brief TcpClient01::start_connecting_impl uses Qt's connect to associate
+ * the TcpClientCo::connectedSig signal function emitted by itself
+ * with a lambda that is used as slot functor.
+ * The lambda uses Qt's disconnect to break the association with the signal function.
+ * @param idx
+ * @param serverIpAddress
+ * @param port
+ */
+void TcpClient01::start_connecting_impl(const int idx, QString& serverIpAddress, quint16 port)
+{
+    print(PRI2, "%p: TcpClient::start_connecting_impl(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
+
+    m_connections[idx] = connect(&m_tcpClient, &TcpClient::connectedSig,
+         [this, idx]()
+         {
+             print(PRI2, "%p: TcpClient01::handle_connect() lambda: idx = %d\n", this, idx);
+
+             async_operation_base* om_async_operation = m_async_operations[idx];
+             async_operation<void>* om_async_operation_t =
+                 dynamic_cast<async_operation<void>*>(om_async_operation);
+
+             if (om_async_operation_t)
+             {
+                 om_async_operation_t->completed();
+             }
+             else
+             {
+                 // This can occur when the async_operation_base has gone out of scope.
+                 print(PRI2, "%p: TcpClient::handle_connect(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
+             }
+
+             if (!disconnect(m_connections[idx]))
+             {
+                 print(PRI1, "%p: TcpClient01::handle_connect(): idx = %d, Warning: disconnect failed\n", this, idx);
+             }
+         }
+         );
+
+    connectToServer(serverIpAddress, port);
+}
+
+/**
+ * @brief TcpClient01::connectToServerAsync
+ */
+async_task<int> TcpClient01::connectToServerAsync()
+{
+    qInfo() << "";
+    qInfo() << Q_FUNC_INFO;
+
+    async_operation<void> c = start_connecting(m_server.m_ipAddress, m_server.m_port);
+    co_await c;
+
+    co_return 0;
+}
+
+/**
+ * @brief TcpClient01::measurementLoop0
+ * @param selection
+ * @return
+ */
+async_task<int> TcpClient01::measurementLoop0(int selection)
 {
     qInfo() << Q_FUNC_INFO;
     std::chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
     for (int i = 0; i < configuration.m_numberTransactions; i++)
     {
-        QByteArray data1 = prepareMessage(m_selection);
+        QByteArray data1 = prepareMessage(selection);
         m_tcpClient.sendMessage(data1);
         m_timerNoResponse.start(10 * data1.length());
         async_operation<QByteArray> op = start_reading();
@@ -425,45 +433,45 @@ async_task<int> TcpClient01::measurementLoop0()
         qInfo() << dataOut.length() << ":" << dataOut;
     }
     calculateElapsedTime(start);
-    m_timerStartSending.start(100);
     co_return 0;
 }
 
 /**
  * @brief TcpClient01::measurementLoop1
+ * @param selection
  * @return
  */
-async_task<int> TcpClient01::measurementLoop1()
+async_task<int> TcpClient01::measurementLoop1(int selection)
 {
     qInfo() << Q_FUNC_INFO;
     std::chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
     for (int i = 0; i < configuration.m_numberTransactions; i++)
     {
         async_operation<QByteArray> op = start_reading();
-        QByteArray data1 = prepareMessage(m_selection);
+        QByteArray data1 = prepareMessage(selection);
         m_tcpClient.sendMessage(data1);
         m_timerNoResponse.start(10 * data1.length());
         QByteArray dataOut = co_await op;
         qInfo() << dataOut.length() << ":" << dataOut;
     }
     calculateElapsedTime(start);
-    m_timerStartSending.start(100);
     co_return 0;
 }
 
 /**
  * @brief TcpClient01::measurementLoop2
+ * @param selection
  * @return
  */
-async_task<int> TcpClient01::measurementLoop2()
+async_task<int> TcpClient01::measurementLoop2(int selection)
 {
     qInfo() << Q_FUNC_INFO;
     std::chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
     for (int i = 0; i < configuration.m_numberTransactions; i++)
     {
-        QByteArray data1 = prepareMessage(m_selection);
+        QByteArray data1 = prepareMessage(selection);
         m_tcpClient.sendMessage(data1);
-        QByteArray data2 = prepareMessage(m_selection);
+        QByteArray data2 = prepareMessage(selection);
         m_tcpClient.sendMessage(data2);
 
         async_operation<QByteArray> op1 = start_reading();
@@ -475,23 +483,23 @@ async_task<int> TcpClient01::measurementLoop2()
         qInfo() << dataOut2.length() << ":" << dataOut2;
     }
     calculateElapsedTime(start);
-    m_timerStartSending.start(100);
     co_return 0;
 }
 
 /**
  * @brief TcpClient01::measurementLoop3
+ * @param selection
  * @return
  */
-async_task<int> TcpClient01::measurementLoop3()
+async_task<int> TcpClient01::measurementLoop3(int selection)
 {
     qInfo() << Q_FUNC_INFO;
     std::chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
     for (int i = 0; i < configuration.m_numberTransactions; i++)
     {
-        QByteArray data1 = prepareMessage(m_selection);
+        QByteArray data1 = prepareMessage(selection);
         m_tcpClient.sendMessage(data1);
-        QByteArray data2 = prepareMessage(m_selection);
+        QByteArray data2 = prepareMessage(selection);
         m_tcpClient.sendMessage(data2);
 
         async_operation<QByteArray> op1 = start_reading();
@@ -503,23 +511,23 @@ async_task<int> TcpClient01::measurementLoop3()
         qInfo() << dataOut2.length() << ":" << dataOut2;
     }
     calculateElapsedTime(start);
-    m_timerStartSending.start(100);
     co_return 0;
 }
 
 /**
  * @brief TcpClient01::measurementLoop4
+ * @param selection
  * @return
  */
-async_task<int> TcpClient01::measurementLoop4()
+async_task<int> TcpClient01::measurementLoop4(int selection)
 {
     qInfo() << Q_FUNC_INFO;
     std::chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
     for (int i = 0; i < configuration.m_numberTransactions; i++)
     {
-        QByteArray data1 = prepareMessage(m_selection);
+        QByteArray data1 = prepareMessage(selection);
         m_tcpClient.sendMessage(data1);
-        QByteArray data2 = prepareMessage(m_selection);
+        QByteArray data2 = prepareMessage(selection);
         m_tcpClient.sendMessage(data2);
 
         async_operation<QByteArray> op1 = start_reading();
@@ -535,6 +543,43 @@ async_task<int> TcpClient01::measurementLoop4()
         qInfo() << dataOut2.length() << ":" << dataOut2;
     }
     calculateElapsedTime(start);
-    m_timerStartSending.start(100);
+    co_return 0;
+}
+
+/**
+ * @brief TcpClient01::mainTask
+ * @return
+ */
+async_task<int> TcpClient01::mainTask()
+{
+    qInfo() << Q_FUNC_INFO;
+    int selection = 0;
+
+    print(PRI1, "--- mainTask: co_await connectToServerAsync();\n");
+    co_await connectToServerAsync();
+
+    print(PRI1, "--- mainTask: measurementLoop0();\n");
+    for (selection = 0; selection < nr_message_lengths; ++selection)
+        co_await measurementLoop0(selection);
+
+    print(PRI1, "--- mainTask: measurementLoop1();\n");
+    for (selection = 0; selection < nr_message_lengths; ++selection)
+        co_await measurementLoop1(selection);
+
+    print(PRI1, "--- mainTask: measurementLoop2();\n");
+    for (selection = 0; selection < nr_message_lengths; ++selection)
+        co_await measurementLoop2(selection);
+
+    print(PRI1, "--- mainTask: measurementLoop3();\n");
+    for (selection = 0; selection < nr_message_lengths; ++selection)
+        co_await measurementLoop3(selection);
+
+    print(PRI1, "--- mainTask: measurementLoop4();\n");
+    for (selection = 0; selection < nr_message_lengths; ++selection)
+        co_await measurementLoop4(selection);
+
+    QCoreApplication::quit();
+
+    print(PRI1, "--- mainTask: co_return 0;\n");
     co_return 0;
 }

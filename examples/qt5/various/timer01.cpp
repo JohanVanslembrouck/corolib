@@ -7,6 +7,7 @@
 
 #include <QThread>
 #include <QDebug>
+#include <QCoreApplication>
 
 #include <corolib/when_all.h>
 
@@ -20,17 +21,6 @@ Timer01::Timer01(QObject *parent)
     : QObject(parent)
 {
     qDebug() << Q_FUNC_INFO;
-}
-
-/**
- * @brief Timer01::start
- * called from main() after having created a Timer01 object
- */
-void Timer01::start()
-{
-    qInfo() << Q_FUNC_INFO;
-  
-    mainTask();
 }
 
 // Coroutine related
@@ -352,6 +342,7 @@ async_task<int> Timer01::mainTask()
     print(PRI1, "--- mainTask: co_await wa;\n");
     co_await wa;
 
+    QCoreApplication::quit();
     print(PRI1, "--- mainTask: co_return 0;\n");
     co_return 0;
 }

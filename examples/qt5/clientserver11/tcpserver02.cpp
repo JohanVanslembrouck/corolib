@@ -37,34 +37,7 @@ void TcpServer02::configureTCP()
 {
     qInfo() << Q_FUNC_INFO;
 
-    m_tcpServer.configure();
-    if (!configuration.m_useCoroutines)
-    {
-        connect(&m_tcpServer, &TcpServer::readyReadTcpSig,       this, &TcpServer02::readyReadTcp);
-        connect(&m_tcpServer, &TcpServer::newTCPConnectionSig,   this, &TcpServer02::newTCPConnection);
-        connect(&m_tcpServer, &TcpServer::disconnectedClientSig, this, &TcpServer02::disconnectedTCPClient);
-    }
-}
-
-/**
- * @brief TcpServer02::start
- * called from main() after having created a TcpServer02 object
- *
- * @note
- * server.listen(QHostAddress::LocalHost, port);
- * accepts only connections from clients using "localhost" or "127.0.0.1",
- * not even if the IP address is the same as that of the computer.
- *
- */
-void TcpServer02::start()
-{
-    qInfo() << Q_FUNC_INFO;
-    m_tcpServer.startListening(m_serverPort);
-
-    if (configuration.m_useCoroutines)
-    {
-        mainTask();
-    }
+    m_tcpServer.configure();  
 }
 
 /**
@@ -566,6 +539,8 @@ async_task<int> TcpServer02::disconnectTask()
 async_task<int> TcpServer02::mainTask()
 {
     qDebug() << Q_FUNC_INFO;
+
+    m_tcpServer.startListening(m_serverPort);
 
     async_task<int> t1 = acceptTask();
     async_task<int> t2 = readTask();

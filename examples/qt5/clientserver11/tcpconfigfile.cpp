@@ -73,13 +73,6 @@ bool TcpConfigFile::readConfigurationFile(QString fileName)
 
                 // Timers
                 // ------
-                if (QString::compare(key, "startupDelay", Qt::CaseInsensitive) == 0)
-                {
-                    bool ok;
-                    qint32 startupDelay = value.toInt(&ok);
-                    if (ok)
-                        configuration.m_startupDelay = startupDelay;
-                }
 
                 if (QString::compare(key, "delayBeforeReply", Qt::CaseInsensitive) == 0)
                 {
@@ -138,36 +131,12 @@ bool TcpConfigFile::readConfigurationFile(QString fileName)
                     configuration.m_step = value.toInt();
                 }
 
-                if (QString::compare(key, "useCoroutines", Qt::CaseInsensitive) == 0)
-                {
-                    if (QString::compare(value, "y", Qt::CaseInsensitive) == 0)
-                        configuration.m_useCoroutines = true;
-                    else
-                        configuration.m_useCoroutines = false;
-                }
-
-                if (QString::compare(key, "useAsyncConnect", Qt::CaseInsensitive) == 0)
-                {
-                    if (QString::compare(value, "y", Qt::CaseInsensitive) == 0)
-                        configuration.m_useAsyncConnect = true;
-                    else
-                        configuration.m_useAsyncConnect = false;
-                }
-
                 if (QString::compare(key, "selectImplementation", Qt::CaseInsensitive) == 0)
                 {
                     bool ok;
                     qint32 selectImplementation = value.toInt(&ok);
                     if (ok)
                         configuration.m_selectImplementation = selectImplementation;
-                }
-
-                if (QString::compare(key, "selectMeasurementLoop", Qt::CaseInsensitive) == 0)
-                {
-                    bool ok;
-                    qint32 selectMeasurementLoop = value.toInt(&ok);
-                    if (ok)
-                        configuration.m_selectMeasurementLoop = selectMeasurementLoop;
                 }
             }
         } // while (!in.atEnd())

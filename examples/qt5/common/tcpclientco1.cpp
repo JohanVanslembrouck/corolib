@@ -17,15 +17,13 @@
  * @param reconnectTimeout
  * @param reconnectTimeoutAfterDisconnect
  */
-TcpClientCo1::TcpClientCo1(bool useCoroutines,
-                          qint32 selectImplementation,
+TcpClientCo1::TcpClientCo1(qint32 selectImplementation,
                           const QString& name,
                           bool autoConnect,
                           qint32 waitForConnectionTimeout,
                           qint32 reconnectTimeout,
                           qint32 reconnectTimeoutAfterDisconnect)
-    : m_useCoroutines(useCoroutines)
-    , m_selectImplementation(selectImplementation)
+    : m_selectImplementation(selectImplementation)
     , m_timer(this)
     , m_receiveTimer(this)
     , m_autoConnect(autoConnect)
@@ -291,10 +289,7 @@ void TcpClientCo1::readyReadTcp()
     if (socket)
     {
         QByteArray data = socket->readAll();
-        if (m_useCoroutines)
-            readyReadTcpCo(data);
-        else
-            emit readyReadTcpSig(data);
+        readyReadTcpCo(data);
     }
     else
     {

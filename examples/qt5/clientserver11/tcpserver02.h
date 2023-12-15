@@ -42,11 +42,11 @@ class TcpServer02 : public QObject, public CommService
 
 public:
     explicit TcpServer02(QObject *parent = nullptr, MessageCheck check = NO_CHECK);
+    async_task<int> mainTask();
 
 signals:
 
 public slots:
-    void start();
     void quit();
 
     void acceptError(QAbstractSocket::SocketError socketError);
@@ -78,8 +78,6 @@ private:    // functions
     async_operation<int> start_disconnecting(bool doDisconnect = false);
     void start_disconnecting_impl(const int idx, bool doDisconnect);
 
-    // The following are all coroutines
-    async_task<int> mainTask();
     async_task<int> acceptTask();
     async_task<int> readTask();
     async_task<int> disconnectTask();

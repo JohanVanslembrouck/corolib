@@ -36,17 +36,13 @@ struct TcpConfiguration
     int              m_indexLastValidConfiguration = -1;
     IPaddressAndPort m_servers[32];
 
-    qint32          m_startupDelay = 0;
     qint32          m_delayBeforeReply = 2;
 
     qint32          m_waitForConnectionTimeout = 1000;
     qint32          m_reconnectTimeout = 5000;
     qint32          m_reconnectTimeoutAfterDisconnect = 500;
 
-    bool            m_useCoroutines = false;
-    bool            m_useAsyncConnect = false;
     qint32          m_selectImplementation = 1;
-    qint32          m_selectMeasurementLoop = 0;
 };
 
 extern TcpConfiguration configuration;

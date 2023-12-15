@@ -33,12 +33,11 @@ class TcpClient03 : public QObject
     Q_OBJECT
 public:
     explicit TcpClient03(QObject *parent = nullptr, MessageCheck check = NO_CHECK);
+    async_task<int> mainTask();
 
 public slots:
-    void start();
     void quit();
 
-    void connectToServer();
     void acceptError(QAbstractSocket::SocketError socketError);
     void stateChanged(QAbstractSocket::SocketState socketState);
     void connected();
@@ -46,7 +45,6 @@ public slots:
     void hostFound();
 
 private slots:
-    void sendTCPStart();
     void noResponseReceived();
     void readyReadTcp(QByteArray& data);
     void addErrorMessage(const QString &message);
@@ -54,8 +52,7 @@ private slots:
     void addInfoMessage(const QString &message);
 
 private:    // functions
-    void connectToServerDelayed();
-    void connectToTCPServer(QString& serverIPaddress, quint16 serverPort);
+    //void connectToTCPServer(QString& serverIPaddress, quint16 serverPort);
     QByteArray prepareMessage(int selection, int repetition = 1);
     void calculateElapsedTime(std::chrono::high_resolution_clock::time_point start,
                               int messageLength);
@@ -64,17 +61,17 @@ private:    // functions
     // The following are all coroutines
     async_task<int> connectToServerAsync();
 
-    async_task<int> measurementLoop0();
-    async_task<int> measurementLoop1();
-    async_task<int> measurementLoop2();
+    async_task<int> measurementLoop0(int selection);
+    async_task<int> measurementLoop1(int selection);
+    async_task<int> measurementLoop2(int selection);
 
-    async_task<int> measurementLoop10();
-    async_task<int> measurementLoop11();
-    async_task<int> measurementLoop12();
-    async_task<int> measurementLoop13();
-    async_task<int> measurementLoop14();
-    async_task<int> measurementLoop15();
-    async_task<int> measurementLoop16();
+    async_task<int> measurementLoop10(int selection);
+    async_task<int> measurementLoop11(int selection);
+    async_task<int> measurementLoop12(int selection);
+    async_task<int> measurementLoop13(int selection);
+    async_task<int> measurementLoop14(int selection);
+    async_task<int> measurementLoop15(int selection);
+    async_task<int> measurementLoop16(int selection);
 
     async_task<int> measurementLoop20();
     async_task<int> measurementLoop21();
@@ -126,12 +123,7 @@ private:
 
     int                     m_counter;
     int                     m_errorCounter;
-    int                     m_selection;
-    int                     m_loop;
-    int                     m_nrConnectedClients;
 
-    QTimer                  m_timerConnectToServer;
-    QTimer                  m_timerStartSending;
     QTimer                  m_timerNoResponse;
 
     TcpClientCo1            m_tcpClient1;
