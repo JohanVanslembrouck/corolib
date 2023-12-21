@@ -1,8 +1,8 @@
 p1000.exe
 p1001-recursive.exe
-p1002-no-coroutines.exe
-p1010-thread.exe
-p1011-thread-recursive.exe
+REM p1002-no-coroutines.exe
+REM p1010-thread.exe
+REM p1011-thread-recursive.exe
 p1050-resume_same_thread.exe
 p1052-resume_same_thread.exe
 p1054-resume_same_thread.exe

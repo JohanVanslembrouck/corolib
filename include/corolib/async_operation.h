@@ -14,11 +14,7 @@
 #ifndef _ASYNC_OPERATION_H_
 #define _ASYNC_OPERATION_H_
 
-#define RESUME_MULTIPLE_COROUTINES 1
-
-#if RESUME_MULTIPLE_COROUTINES
-#include <vector>
-#endif
+#include <vector>           // RESUME_MULTIPLE_COROUTINES
 
 #include <system_error>
 #include <coroutine>
@@ -32,6 +28,9 @@
 namespace corolib
 {
     class CommService;
+  
+    void resume_multiple_coroutines(bool allow = false);
+    extern bool _resume_multiple_coroutines;
 
     class async_operation_base : public async_base, operation_tracker
     {
@@ -91,11 +90,11 @@ namespace corolib
         void reset()
         {
             m_ready = false;
-#if RESUME_MULTIPLE_COROUTINES
-            //m_awaitings.clear();  // make empty??? Should only do it for a single coroutine
-#else
-            m_awaiting = nullptr;
-#endif
+
+            if (corolib::_resume_multiple_coroutines)
+                ;  //m_awaitings.clear();      // make empty??? Should only do it for a single coroutine
+            else
+                m_awaiting = nullptr;
         }
 
         void auto_reset(bool autoreset)
@@ -116,11 +115,8 @@ namespace corolib
 
     protected:
         CommService* m_service;
-#if RESUME_MULTIPLE_COROUTINES
-        std::vector<std::coroutine_handle<>> m_awaitings;
-#else
-        std::coroutine_handle<> m_awaiting;
-#endif
+        std::vector<std::coroutine_handle<>> m_awaitings;       // RESUME_MULTIPLE_COROUTINES
+        std::coroutine_handle<> m_awaiting;                     // !RESUME_MULTIPLE_COROUTINES
         when_all_counter* m_ctr;
         when_any_one* m_waitany;
         int m_index;
@@ -219,11 +215,10 @@ namespace corolib
                 void await_suspend(std::coroutine_handle<> awaiting)
                 {
                     print(PRI2, "%p: m_async = %p: async_operation<TYPE>::awaiter::await_suspend(...)\n", this, &m_async);
-#if RESUME_MULTIPLE_COROUTINES
-                    m_async.m_awaitings.push_back(awaiting);
-#else
-                    m_async.m_awaiting = awaiting;
-#endif
+                    if (corolib::_resume_multiple_coroutines)
+                        m_async.m_awaitings.push_back(awaiting);
+                    else
+                        m_async.m_awaiting = awaiting;
                 }
 
                 TYPE await_resume()
@@ -275,11 +270,10 @@ namespace corolib
                 void await_suspend(std::coroutine_handle<> awaiting)
                 {
                     print(PRI2, "%p: m_async = %p: async_operation<void>::await_suspend(...)\n", this, &m_async);
-#if RESUME_MULTIPLE_COROUTINES
-                    m_async.m_awaitings.push_back(awaiting);
-#else
-                    m_async.m_awaiting = awaiting;
-#endif
+                    if (corolib::_resume_multiple_coroutines)
+                        m_async.m_awaitings.push_back(awaiting);
+                    else
+                        m_async.m_awaiting = awaiting;
                 }
 
                 void await_resume()

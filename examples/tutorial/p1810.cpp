@@ -1,7 +1,11 @@
 /**
  * @file p1810.cpp
  * @brief
- *
+ * 
+ * Because async_operation<int> op is co_awaited by two coroutines,
+ * both coroutines have to be resumed when op is completed.
+ * To accomplish this, call resume_multiple_coroutines(true); in the maun() function.
+ * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 

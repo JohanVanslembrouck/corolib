@@ -4,12 +4,12 @@ echo Running ./p1000
 ./p1000
 echo Running ./p1001-recursive
 ./p1001-recursive
-echo Running ./p1002-no-coroutines
-./p1002-no-coroutines
-echo Running ./p1010-thread
-./p1010-thread
-echo Running ./p1011-thread-recursive
-./p1011-thread-recursive
+#echo Running ./p1002-no-coroutines
+#./p1002-no-coroutines
+#echo Running ./p1010-thread
+#./p1010-thread
+#echo Running ./p1011-thread-recursive
+#./p1011-thread-recursive
 echo Running ./p1050-resume_same_thread
 ./p1050-resume_same_thread
 echo Running ./p1052-resume_same_thread

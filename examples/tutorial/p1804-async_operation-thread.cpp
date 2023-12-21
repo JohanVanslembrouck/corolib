@@ -40,7 +40,8 @@ int main()
 {
     useMode = UseMode::USE_THREAD;
 
-    set_priority(0x01);        // Use 0x03 to follow the flow in corolib
+    set_priority(0x01);                     // Use 0x03 to follow the flow in corolib
+    resume_multiple_coroutines(true);       // Needed for the executable produced from p1810.cpp
 
     print(PRI1, "main(): async_ltask<int> a = coroutine1();\n");
     async_task<int> a = coroutine1();

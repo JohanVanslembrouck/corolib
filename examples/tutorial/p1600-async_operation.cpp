@@ -43,7 +43,8 @@ void completionflow()
 
 int main()
 {
-    set_priority(0x01);        // Use 0x03 to follow the flow in corolib
+    set_priority(0x01);                     // Use 0x03 to follow the flow in corolib
+    resume_multiple_coroutines(true);       // See header of p1600.cpp for explanation.
 
     print(PRI1, "main(): async_task<int> a = coroutine1();\n");
     async_task<int> a = coroutine1();

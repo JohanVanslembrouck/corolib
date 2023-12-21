@@ -178,6 +178,7 @@ protected:
 int main()
 {
     set_priority(0x01);
+    resume_multiple_coroutines(true);
 
     boost::asio::io_context ioContext;
 

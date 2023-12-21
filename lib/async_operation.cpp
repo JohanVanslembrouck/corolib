@@ -23,11 +23,8 @@ namespace corolib
      */
     async_operation_base::async_operation_base(CommService* s, int index, bool timestamp)
         : m_service(s)
-#if RESUME_MULTIPLE_COROUTINES
-        , m_awaitings{}
-#else
-        , m_awaiting(nullptr)           // initialized in await_suspend()
-#endif
+        , m_awaitings{}                 // RESUME_MULTIPLE_COROUTINES
+        , m_awaiting(nullptr)           // !RESUME_MULTIPLE_COROUTINES
         , m_ctr(nullptr)
         , m_waitany(nullptr)
         , m_index(index)
@@ -57,11 +54,8 @@ namespace corolib
         }
         m_index = -1;
 
-#if RESUME_MULTIPLE_COROUTINES
-        // m_awaitings
-#else
-        m_awaiting = nullptr;
-#endif
+        // m_awaitings          // RESUME_MULTIPLE_COROUTINES
+        m_awaiting = nullptr;   // !RESUME_MULTIPLE_COROUTINES
         m_ctr = nullptr;
         m_waitany = nullptr;
         m_service = nullptr;
@@ -76,11 +70,8 @@ namespace corolib
      */
     async_operation_base::async_operation_base(async_operation_base&& s) noexcept
         : m_service(s.m_service)
-#if RESUME_MULTIPLE_COROUTINES
-        , m_awaitings(std::move(s.m_awaitings))
-#else
-        , m_awaiting(s.m_awaiting)
-#endif
+        , m_awaitings(std::move(s.m_awaitings))         // RESUME_MULTIPLE_COROUTINES
+        , m_awaiting(s.m_awaiting)                      // !RESUME_MULTIPLE_COROUTINES
         , m_ctr(s.m_ctr)
         , m_waitany(s.m_waitany)
         , m_index(s.m_index)
@@ -127,11 +118,8 @@ namespace corolib
         }
 
         m_service = s.m_service;
-#if RESUME_MULTIPLE_COROUTINES
-        m_awaitings = std::move(s.m_awaitings);
-#else
-        m_awaiting = s.m_awaiting;
-#endif
+        m_awaitings = std::move(s.m_awaitings);     // RESUME_MULTIPLE_COROUTINES
+        m_awaiting = s.m_awaiting;                  // !RESUME_MULTIPLE_COROUTINES
  
         // The following 2 tests allow an async_operation that takes part in
         // a when_all or when_any to be re-assigned.
@@ -168,11 +156,8 @@ namespace corolib
     void async_operation_base::cleanup()
     {
         m_service = nullptr;
-#if RESUME_MULTIPLE_COROUTINES
-        m_awaitings.clear();
-#else
-        m_awaiting = nullptr;
-#endif
+        m_awaitings.clear();            // RESUME_MULTIPLE_COROUTINES
+        m_awaiting = nullptr;           // !RESUME_MULTIPLE_COROUTINES
         m_ctr = nullptr;
         m_waitany = nullptr;
         m_index = -1;        // indicates move
@@ -187,38 +172,50 @@ namespace corolib
     void async_operation_base::completed()
     {
         print(PRI2, "%p: async_operation_base::completed(): m_index = %d\n", this, m_index);
-#if RESUME_MULTIPLE_COROUTINES
-        if (m_awaitings.size())
+
+        bool hasCompleted = false;
+        if (corolib::_resume_multiple_coroutines)
         {
-            std::vector<std::coroutine_handle<>> tmp;
-
-            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, m_awaitings.size() = %d\n", this, m_index, m_awaitings.size());
-
-            for (std::size_t i = 0; i < m_awaitings.size(); i++)
+            if (m_awaitings.size())
             {
-                tmp.push_back(m_awaitings[i]);
+                std::vector<std::coroutine_handle<>> tmp;
+
+                print(PRI2, "%p: async_operation_base::completed(): m_index = %d, m_awaitings.size() = %d\n", this, m_index, m_awaitings.size());
+
+                for (std::size_t i = 0; i < m_awaitings.size(); i++)
+                {
+                    tmp.push_back(m_awaitings[i]);
+                }
+
+                m_awaitings.clear();
+
+                print(PRI2, "%p: async_operation_base::completed(): m_index = %d, tmp.size() = %d\n", this, m_index, tmp.size());
+
+                for (std::size_t i = 0; i < tmp.size(); i++)
+                {
+                    print(PRI2, "%p: async_operation_base::completed(): before tmp[%d].resume();\n", this, i);
+                    tmp[i].resume();
+                    print(PRI2, "%p: async_operation_base::completed(): after tmp[%d].resume();\n", this, i);
+                }
+                m_ready = true;
+
+                hasCompleted = true;
             }
-
-            m_awaitings.clear();
-
-            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, tmp.size() = %d\n", this, m_index, tmp.size());
-
-            for (std::size_t i = 0; i < tmp.size(); i++)
-            {
-                print(PRI2, "%p: async_operation_base::completed(): before tmp[%d].resume();\n", this, i);
-                tmp[i].resume();
-                print(PRI2, "%p: async_operation_base::completed(): after tmp[%d].resume();\n", this, i);
-            }
-            m_ready = true;
         }
-#else
-        if (m_awaiting)
+        else
         {
-            print(PRI2, "%p: async_operation_base::completed(): : m_index = %d, before m_awaiting.resume();\n", this, m_index);
-            m_awaiting.resume();
-            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, after m_awaiting.resume();\n", this, m_index);
+            if (m_awaiting)
+            {
+                print(PRI2, "%p: async_operation_base::completed(): : m_index = %d, before m_awaiting.resume();\n", this, m_index);
+                m_awaiting.resume();
+                print(PRI2, "%p: async_operation_base::completed(): m_index = %d, after m_awaiting.resume();\n", this, m_index);
+
+                hasCompleted = true;
+            }
         }
-#endif
+        
+        if (hasCompleted)
+            ; // already handled above
         else if (m_ctr)
         {
             print(PRI2, "%p: async_operation_base::completed(): m_index = %d, before m_ctr->completed();\n", this, m_index);
@@ -240,4 +237,11 @@ namespace corolib
             m_ready = true;     // Set to completed.
         }
     }
+   
+    void resume_multiple_coroutines(bool allow)
+    {
+        _resume_multiple_coroutines = allow;
+    }
+    
+    bool _resume_multiple_coroutines = false;
 }
