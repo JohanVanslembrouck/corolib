@@ -1,15 +1,7 @@
 /**
- * @file p1100-auto_reset_event.cpp
+ * @file p1100-auto_reset_event-1.cpp
  * @brief
- * Example with two coroutines coroutine1 and coroutine2 and 
- * awaitable type auto_reset_event from corolib.
- *
- * coroutine2 co_awaits a global auto_reset_event object are1.
- * Because the object is not yet ready at this point, 
- * coroutine2 suspends and returns control to coroutine1, which will suspend on its turn and return control to main.
- * The main function will then "resume" are1, so that coroutine2 and coroutine1 are resumed and 
- * run until their co_return statement.
- * Finally, main() will get and print the result.
+ * Uses 1 auto_reset_event object that will be resumed from main().
  * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
@@ -22,12 +14,28 @@ using namespace corolib;
 
 auto_reset_event are1;
 
+async_task<int> coroutine4()
+{
+    print(PRI1, "coroutine4(): co_await are1;\n");
+    co_await are1;
+    print(PRI1, "coroutine4(): co_return 1;\n");
+    co_return 1;
+}
+
+async_task<int> coroutine3()
+{
+    print(PRI1, "coroutine3(): int v = co_await coroutine4();\n");
+    int v = co_await coroutine4();
+    print(PRI1, "coroutine3(): co_return v+1 = %d;\n", v + 1);
+    co_return v + 1;
+}
+
 async_task<int> coroutine2()
 {
-    print(PRI1, "coroutine2(): co_await are1;\n");
-    co_await are1;
-    print(PRI1, "coroutine2(): co_return 1;\n");
-    co_return 1;
+    print(PRI1, "coroutine2(): int v = co_await coroutine3();\n");
+    int v = co_await coroutine3();
+    print(PRI1, "coroutine2(): co_return v+1 = %d;\n", v+1);
+    co_return v+1;
 }
 
 async_task<int> coroutine1()
@@ -45,6 +53,8 @@ int main()
     print(PRI1, "main(): async_task<int> a = coroutine1();\n");
     async_task<int> a = coroutine1();
 	
+    print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     print(PRI1, "main(): are1.resume();\n");
     are1.resume();
 	

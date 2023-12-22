@@ -1,5 +1,5 @@
 /**
- * @file p1110-auto_reset_event-oneway_task.cpp
+ * @file p1120-auto_reset_event-oneway_task.cpp
  * @brief
  * Example with 6 coroutines.
  * coroutineI (I = 1..6) co_awaits coroutineI+1.

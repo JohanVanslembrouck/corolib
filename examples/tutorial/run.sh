@@ -22,14 +22,46 @@ echo Running ./p1062-resume_new_thread
 ./p1062-resume_new_thread
 echo Running ./p1064-resume_new_thread
 ./p1064-resume_new_thread
-echo Running ./p1100-auto_reset_event
-./p1100-auto_reset_event
-echo Running ./p1105-auto_reset_event
-./p1105-auto_reset_event
-echo Running ./p1110-auto_reset_event-oneway_task
-./p1110-auto_reset_event-oneway_task
-echo Running ./p1120-auto_reset_event-thread
-./p1120-auto_reset_event-thread
+
+echo Running ./p1100-auto_reset_event-1
+./p1100-auto_reset_event-1
+echo Running ./p1101-auto_reset_event-1-when_all
+./p1101-auto_reset_event-1-when_all
+echo Running ./p1102-auto_reset_event-1-when_any
+./p1102-auto_reset_event-1-when_any
+echo Running ./p1103-auto_reset_event-2
+./p1103-auto_reset_event-2
+echo Running ./p1104-auto_reset_event-2-when_all
+./p1104-auto_reset_event-2-when_all
+echo Running ./p1105-auto_reset_event-2-when_any
+./p1105-auto_reset_event-2-when_any
+echo Running ./p1106-auto_reset_event-3
+./p1106-auto_reset_event-3
+echo Running ./p1107-auto_reset_event-3-when_all
+./p1107-auto_reset_event-3-when_all
+echo Running ./p1108-auto_reset_event-3-when_any
+./p1108-auto_reset_event-3-when_any
+echo Running ./p1110-auto_reset_event-thread-1
+./p1110-auto_reset_event-thread-1
+echo Running ./p1111-auto_reset_event-thread-1-when_all
+./p1111-auto_reset_event-thread-1-when_all
+echo Running ./p1112-auto_reset_event-thread-1-when_any
+./p1112-auto_reset_event-thread-1-when_any
+echo Running ./p1113-auto_reset_event-thread-2
+./p1113-auto_reset_event-thread-2
+echo Running ./p1114-auto_reset_event-thread-2-when_all
+./p1114-auto_reset_event-thread-2-when_all
+echo Running ./p1115-auto_reset_event-thread-2-when_any
+./p1115-auto_reset_event-thread-2-when_any
+echo Running ./p1116-auto_reset_event-thread-3
+./p1116-auto_reset_event-thread-3
+echo Running ./p1117-auto_reset_event-thread-3-when_all
+./p1117-auto_reset_event-thread-3-when_all
+echo Running ./p1118-auto_reset_event-thread-3-when_any
+./p1118-auto_reset_event-thread-3-when_any
+echo Running ./p1120-auto_reset_event-oneway_task
+./p1120-auto_reset_event-oneway_task
+
 echo Running ./p1200-mini0
 ./p1200-mini0
 echo Running ./p1210-mini1-thread
@@ -37,6 +69,7 @@ echo Running ./p1210-mini1-thread
 echo Running ./p1220-mini1-oneway_task-thread
 ./p1220-mini1-oneway_task-thread
 # ./p1300-future
+
 echo Running ./p1400-async_operation
 ./p1400-async_operation
 echo Running ./p1402-async_operation-eventqueue
@@ -147,6 +180,7 @@ echo Running ./p1484-async_operation-thread
 ./p1484-async_operation-thread
 echo Running ./p1485-async_operation-thread-queue
 ./p1485-async_operation-thread-queue
+
 echo Running ./p1500-async_operation
 ./p1500-async_operation
 echo Running ./p1600-async_operation
@@ -205,6 +239,7 @@ echo Running ./p1910-async_queue
 ./p1910-async_queue
 echo Running ./p1912-async_queue-fibonacci
 ./p1912-async_queue-fibonacci
+
 echo Running ./p2000-async_operation
 ./p2000-async_operation
 echo Running ./p2002-async_operation-eventqueue

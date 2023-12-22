@@ -55,20 +55,63 @@ The following gives a brief description of all examples in this tutorial.
   await_ready, await_suspend and await_resume.
   This example is the equivalent of p1054-resume_same_thread.cpp.
 
-* p1100-auto_reset_event.cpp uses the auto_reset_event class from corolib.
-  An object 'are1' of this type is created at the global level.
-  Coroutine coroutine2 co_await-s this object that is resumed from main.
+The p11XX examples use the auto_reset_event class from corolib.
 
-* p1110-auto_reset_event-one_way_tasks.cpp uses a oneway_task and 4 auto_reset_event objects.
+* p1100-auto_reset_event-1.cpp uses 1 auto_reset_event object that will be resumed from main().
+
+* p1101-auto_reset_event-1-when_all.cpp uses 1 auto_reset_event object that will be resumed from main().
+  Coroutine coroutine4 is co_awaited in coroutine3 using when_all.
+  
+* p1102-auto_reset_event-1-when_any.cpp uses 1 auto_reset_event object that will be resumed from main().
+  Coroutine coroutine4 is co_awaited in coroutine3 using when_any.
+
+* p1103-auto_reset_event-2.cpp uses 2 auto_reset_event objects that will be resumed from main().
+  
+* p1104-auto_reset_event-2-when_all.cpp uses 2 auto_reset_event objects that will be resumed from main().
+  Coroutines coroutine4a and coroutine4b are co_awaited in coroutine3 using when_all.
+  
+* p1105-auto_reset_event-2-when_any.cpp uses 2 auto_reset_event objects that will be resumed from main().
+  Coroutines coroutine4a and coroutine4b are co_awaited in coroutine3 using when_any.
+  
+* p1106-auto_reset_event-3.cpp uses 3 auto_reset_event objects that will be resumed from main().
+
+* p1107-auto_reset_event-3-when_all.cpp uses 3 auto_reset_event objects that will be resumed from main().
+  Coroutines coroutine4a, coroutine4b and coroutine4c are co_awaited in coroutine3 using when_all.
+  
+* p1108-auto_reset_event-3-when_any.cpp uses 3 auto_reset_event objects that will be resumed from main().
+  Coroutines coroutine4a, coroutine4b and coroutine4c are co_awaited in coroutine3 using when_any.
+
+* p1110-auto_reset_event-thread-1.cpp uses 1 auto_reset_event object that will be resumed from a thread.
+
+* p1111-auto_reset_event-thread-1-when_all.cpp uses 1 auto_reset_event object that will be resumed from a thread.
+  Coroutine coroutine4 is co_awaited in coroutine3 using when_all.
+  
+* p1112-auto_reset_event-thread-1-when_any.cpp uses 1 auto_reset_event object that will be resumed from a thread.
+  Coroutine coroutine4 is co_awaited in coroutine3 using when_any.
+  
+* p1113-auto_reset_event-thread-2.cpp uses 2 auto_reset_event objects that will be resumed from 2 threads.
+
+* p1114-auto_reset_event-thread-2-when_all.cpp uses 2 auto_reset_event objects that will be resumed from 2 threads.
+  Coroutines coroutine4a and coroutine4b are co_awaited in coroutine3 using when_all.
+  
+* p1115-auto_reset_event-thread-2-when_any.cpp uses 2 auto_reset_event objects that will be resumed from 2 threads.
+  Coroutines coroutine4a and coroutine4b are co_awaited in coroutine3 using when_any.
+  
+* p1116-auto_reset_event-thread-3.cpp uses 3 auto_reset_event objects that will be resumed from 3 threads.
+
+* p1117-auto_reset_event-thread-3-when_all.cpp uses 3 auto_reset_event objects that will be resumed from 3 threads.
+  Coroutines coroutine4a, coroutine4b and coroutine4c are co_awaited in coroutine3 using when_all.
+  
+* p1118-auto_reset_event-thread-3-when_any.cpp uses 3 auto_reset_event objects that will be resumed from 3 threads.
+  Coroutines coroutine4a, coroutine4b and coroutine4c are co_awaited in coroutine3 using when_any.
+
+* p1120-auto_reset_event-one_way_tasks.cpp uses a oneway_task and 4 auto_reset_event objects.
   It is not possible to co_await the completion of a oneway_task: once a oneway_task is started, it runs
   until completion.
   However, using auto_reset_event objects, it is possible to wait for the completion of a oneway_task 
   in an indirect way.
   It is also possible to "advance" a oneway_task that co_await-s one or more auto_reset_event objects 
   in its body.
-
-* p1120-auto_reset_event-thread.cpp resumes an auto_reset_event from a thread created by the leaf coroutine,
-  coroutine5, instead of from the main function as in p1100-auto_reset_event.cpp.
 
 * p1200-mini0.cpp uses mini0 that is defined in the tutorial directory.
   The class mini0 can be considered to be a simplification of async_operation<void>.

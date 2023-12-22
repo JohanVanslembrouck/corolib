@@ -9,14 +9,32 @@ p1054-resume_same_thread.exe
 p1060-resume_new_thread.exe
 p1062-resume_new_thread.exe
 p1064-resume_new_thread.exe
-p1100-auto_reset_event.exe
-p1105-auto_reset_event.exe
-p1110-auto_reset_event-oneway_task.exe
-p1120-auto_reset_event-thread.exe
+
+p1100-auto_reset_event-1.exe
+p1101-auto_reset_event-1-when_all.exe
+p1102-auto_reset_event-1-when_any.exe
+p1103-auto_reset_event-2.exe
+p1104-auto_reset_event-2-when_all.exe
+p1105-auto_reset_event-2-when_any.exe
+p1106-auto_reset_event-3.exe
+p1107-auto_reset_event-3-when_all.exe
+p1108-auto_reset_event-3-when_any.exe
+p1110-auto_reset_event-thread-1.exe
+p1111-auto_reset_event-thread-1-when_all.exe
+p1112-auto_reset_event-thread-1-when_any.exe
+p1113-auto_reset_event-thread-2.exe
+p1114-auto_reset_event-thread-2-when_all.exe
+p1115-auto_reset_event-thread-2-when_any.exe
+p1116-auto_reset_event-thread-3.exe
+p1117-auto_reset_event-thread-3-when_all.exe
+p1118-auto_reset_event-thread-3-when_any.exe
+p1120-auto_reset_event-oneway_task.exe
+
 p1200-mini0.exe
 p1210-mini1-thread.exe
 p1220-mini1-oneway_task-thread.exe
 REM p1300-future.exe
+
 p1400-async_operation.exe
 p1402-async_operation-eventqueue.exe
 p1404-async_operation-thread.exe
@@ -72,6 +90,7 @@ REM p1476-async_operation-immediate.exe
 p1482-async_operation-eventqueue.exe
 p1484-async_operation-thread.exe
 p1485-async_operation-thread-queue.exe
+
 p1500-async_operation.exe
 p1600-async_operation.exe
 p1700-async_operation.exe
@@ -99,6 +118,7 @@ p1845-async_operation-thread-queue.exe
 REM p1900-resume_in_middle.exe
 p1910-async_queue.exe
 p1912-async_queue-fibonacci.exe
+
 p2000-async_operation.exe
 p2002-async_operation-eventqueue.exe
 p2004-async_operation-thread.exe
