@@ -78,6 +78,7 @@ foreach(_target multiplex_client
                 multiplex_client2 
                 multiplex_coroutine_client2
                 multiplex_coroutine_client3
+                multiplex_coroutine_client3-when_any
                 multiplex_server)
   add_executable(${_target} "${_target}.cc")
   target_link_libraries(${_target}

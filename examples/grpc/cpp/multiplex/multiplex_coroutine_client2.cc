@@ -148,11 +148,11 @@ public:
         std::stringstream strstr;
         // Act upon the status of the actual RPC.
         if (hello_status.ok()) {
-            std::cout << "Greeter received: " << hello_response.message() << std::endl;
+            //std::cout << "Greeter received: " << hello_response.message() << std::endl;
             strstr << "Greeter received: " << hello_response.message() << std::endl;
         }
         else {
-            std::cerr << "Greeter failed: " << hello_status.error_message() << std::endl;
+            //std::cerr << "Greeter failed: " << hello_status.error_message() << std::endl;
             strstr << "Greeter failed: " << hello_status.error_message() << std::endl;
         }
         co_return strstr.str();
@@ -192,11 +192,11 @@ public:
 
         std::stringstream strstr;
         if (feature_status.ok()) {
-            std::cout << "Found feature: " << feature_response.name() << std::endl;
+            //std::cout << "Found feature: " << feature_response.name() << std::endl;
             strstr << "Found feature: " << feature_response.name() << std::endl;
         }
         else {
-            std::cerr << "Getting feature failed: " << feature_status.error_message() << std::endl;
+            //std::cerr << "Getting feature failed: " << feature_status.error_message() << std::endl;
             strstr << "Getting feature failed: " << feature_status.error_message() << std::endl;
         }
         co_return strstr.str();
@@ -236,16 +236,23 @@ int main(int argc, char** argv) {
   // the argument "--target=" which is the only expected argument.
   std::string target_str = absl::GetFlag(FLAGS_target);
 
+  set_print_level(0x01);        // Use 0x03 to follow the flow in corolib
+
   GreeterClient greeter(
       grpc::CreateChannel(target_str, grpc::InsecureChannelCredentials()));
 
 #if USE_ORIGINAL
   greeter.SayHello_GetFeature();
 #else
-  async_task<void> t = greeter.SayHello_GetFeatureCo();
-  print(PRI1, "Before wait\n");
-  t.wait();
-  print(PRI1, "after wait\n");
+  for (int i = 0; i < 10; ++i) {
+      async_task<void> t = greeter.SayHello_GetFeatureCo();
+      print(PRI2, "Before wait\n");
+      t.wait();
+      print(PRI2, "after wait\n");
+
+      print(PRI2, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
 #endif
  
   return 0;

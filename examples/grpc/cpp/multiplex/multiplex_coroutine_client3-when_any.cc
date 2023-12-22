@@ -49,6 +49,7 @@
 #include <corolib/commservice.h>
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
+#include <corolib/when_any.h>
 
 ABSL_FLAG(std::string, target, "localhost:50051", "Server address");
 
@@ -68,10 +69,15 @@ public:
     async_task<void> SayHello_GetFeatureCo() {
         async_task<std::string> t1 = SayHelloAsync();
         async_task<std::string> t2 = GetFeatureAsync();
-        std::string helloReply = co_await t1;
-        std::string featureReply = co_await t2;
-        std::cout << helloReply;
-        std::cout << featureReply;
+        when_any wa(t1, t2);
+        for (int i = 0; i < 2; ++i) {
+            int s = co_await wa;
+            switch (s) {
+                case 0: std::cout << t1.get_result(); break;
+                case 1: std::cout << t2.get_result(); break;
+                default: std::cout << "SayHello_GetFeatureCo:Unexpected reply " << s << std::endl;
+            }
+        }
         co_return;
     }
 
