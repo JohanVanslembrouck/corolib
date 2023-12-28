@@ -29,14 +29,6 @@ Timer03::Timer03(
 }
 
 /**
- * @brief Timer03::start
- */
-void Timer03::start()
-{
-    mainTask();
-}
-
-/**
  * @brief Timer03::start_timer
  * @param idx
  * @param tmr

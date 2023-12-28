@@ -94,8 +94,9 @@ int main()
 {
     std::cout << "main: entering\n";
     io_service ioSvc;
-    mainflow(ioSvc);
+    async_task<int> t = mainflow(ioSvc);
     ioSvc.process_events();
+    int v = t.get_result();
     std::cout << "main: leaving\n";
     return 0;
 }

@@ -23,13 +23,12 @@ class Timer01 : public CommService
 {
 public:
     Timer01(boost::asio::io_context& ioContext);
-    void start();
+    async_task<int> mainTask();
 
 protected:
     async_operation<void> start_timer(steady_timer& timer, int ms);
     void start_timer_impl(const int idx, steady_timer& tmr, int ms);
 
-    async_task<int> mainTask();
     async_task<int> timerTask01();
     async_task<int> timerTask02();
     async_task<int> timerTask03();

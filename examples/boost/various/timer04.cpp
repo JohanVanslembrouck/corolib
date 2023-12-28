@@ -31,14 +31,6 @@ Timer04::Timer04(
 }
 
 /**
- * @brief Timer04::start
- */
-void Timer04::start()
-{
-    mainTask();
-}
-
-/**
  * @brief Timer04::start_timer
  * @param idx
  * @param tmr

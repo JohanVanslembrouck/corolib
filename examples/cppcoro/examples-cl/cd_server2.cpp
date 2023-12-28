@@ -57,8 +57,9 @@ int main()
 {
     std::cout << "main: entering\n";
     io_service ioSvc;
-	mainflow(ioSvc);
+    async_task<void> t = mainflow(ioSvc);
     ioSvc.process_events();
+    t.wait();
     std::cout << "main: leaving\n";
-	return 0;
+    return 0;
 }

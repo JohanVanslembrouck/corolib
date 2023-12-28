@@ -21,14 +21,6 @@ Timer02::Timer02(
 }
 
 /**
- * @brief Timer02::start
- */
-void Timer02::start()
-{
-    mainTask();
-}
-
-/**
  * @brief Timer02::start_timer
  * @param idx
  * @param tmr

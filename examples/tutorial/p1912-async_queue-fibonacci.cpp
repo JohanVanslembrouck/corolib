@@ -93,7 +93,7 @@ async_task<void> start2()
 
 int main()
 {
-    set_priority(0x00);
+    set_priority(0x01);
  
     print(PRI1, "main(): async_task<void> t1 = start1();\n");
     async_task<void> t1 = start1();

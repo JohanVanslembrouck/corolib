@@ -6,7 +6,7 @@
  * 
  * server8a.cpp is a variant of server8.cpp.
  * 
- * Thvariant uses the chain of responsibility design pattern, where the observer coroutines decide if they handle a request or not.
+ * This variant uses the chain of responsibility design pattern, where the observer coroutines decide if they handle a request or not.
  * This variant is less efficient than the original implementation because the decision is taken deeper in the call tree.
  * The main objective is to illustrate the use of the chain of responsibility design pattern.
  *

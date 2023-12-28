@@ -23,7 +23,7 @@ class Timer06 : public CommService
 {
 public:
     Timer06(boost::asio::io_context& ioContext);
-    void start();
+    async_task<void> mainTask();
 
 protected:
     async_operation<void> start_timer(steady_timer& timer, int ms);
@@ -31,8 +31,6 @@ protected:
 
     async_task<void> subTask1(int instance, int timeout);
     async_task<void> subTask2(int instance, int timeout);
-
-    async_task<void> mainTask();
 
 private:
     boost::asio::io_context& m_ioContext;

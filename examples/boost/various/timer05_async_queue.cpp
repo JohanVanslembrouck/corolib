@@ -18,11 +18,6 @@ Timer05::Timer05(
     print(PRI1, "Timer05::Timer05(...)\n");
 }
 
-void Timer05::start()
-{
-    mainTasks();
-}
-
 /**
  * @brief Timer05::start_timer
  * @param timer

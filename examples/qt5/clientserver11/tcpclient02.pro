@@ -17,7 +17,9 @@ SOURCES += \
         tcpconfig.cpp \
         tcpconfigfile.cpp \
         tcpclient02.cpp \
-        tcpclientmain02.cpp
+        tcpclientmain02.cpp \
+        ../common/tcpclient.cpp \
+        ../common/tcpclientco.cpp
 
 HEADERS += \
         ../../../include/corolib/async_operation.h \
