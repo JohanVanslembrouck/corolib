@@ -97,7 +97,7 @@ namespace corolib
             print(PRI2, "%p: CommService::completionHandler(om_async_operation = %p)\n", this, om_async_operation);
 
             async_operation<TYPE>* om_async_operation_t =
-                dynamic_cast<async_operation<TYPE>*>(om_async_operation);
+                static_cast<async_operation<TYPE>*>(om_async_operation);
 
             if (om_async_operation_t)
             {
@@ -163,7 +163,7 @@ namespace corolib
 
             async_operation_base* om_async_operation = m_async_operation_info[idx].async_operation;
             async_operation<TYPE>* om_async_operation_t =
-                dynamic_cast<async_operation<TYPE>*>(om_async_operation);
+                static_cast<async_operation<TYPE>*>(om_async_operation);
 
             print(PRI2, "%p: CommService::completionHandler_ts(idx = %d): om_async_operation_t = %p\n", this, idx, om_async_operation_t);
 
@@ -204,7 +204,7 @@ namespace corolib
 
             async_operation_base* om_async_operation = m_async_operation_info[idx].async_operation;
             //async_operation<void>* om_async_operation_t =
-            //    dynamic_cast<async_operation<void>*>(om_async_operation);
+            //    static_cast<async_operation<void>*>(om_async_operation);
 
             print(PRI2, "%p: CommService::completionHandler_ts_v(idx = %d): om_async_operation = %p\n", this, idx, om_async_operation);
 

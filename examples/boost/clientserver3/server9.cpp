@@ -8,6 +8,8 @@
  * In contrast to cs3-server8.cpp, cs3-server9.cpp uses a coroutine "chain" from read_client_request to serverRequest.operationX,
  * i.e. all functions in between (in server8.cpp) have been turned into coroutines.
  * 
+ * Prerequisite: call resume_multiple_coroutines(true); in main().
+ * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
  
@@ -130,7 +132,7 @@ public:
         async_operation_base* om_async_operation = m_async_operations[idx];
 
         async_operation<std::string>* om_async_operation_t =
-            dynamic_cast<async_operation<std::string>*>(om_async_operation);
+            static_cast<async_operation<std::string>*>(om_async_operation);
 
         if (om_async_operation_t)
         {
@@ -300,10 +302,10 @@ public:
             print(PRI1, "read_client_request: after dispatcher.dispatch(sr);\n");
         }
 
-        print(PRI1, "mainflow_one_client: commClient->stop();\n");
+        print(PRI1, "read_client_request: commClient->stop();\n");
         commClient->stop();
 
-        print(PRI1, "mainflow_one_client: co_return 0;\n");
+        print(PRI1, "read_client_request: co_return 0;\n");
         co_return 0;
     }
     
@@ -419,6 +421,7 @@ void asyncSignal(boost::asio::io_context& ioContext)
 int main()
 {
     set_priority(0x01);
+    resume_multiple_coroutines(true);
 
     boost::asio::io_context ioContextSignal;
     boost::asio::io_context ioContextServer;

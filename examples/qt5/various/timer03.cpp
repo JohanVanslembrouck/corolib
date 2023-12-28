@@ -41,7 +41,7 @@ void Timer03::connect_to_timer(async_operation_base& async_op, QTimer& tmr, QMet
             print(PRI1, "%p: Timer03::handle_timer() lambda\n", this);
 
             async_operation<void>* om_async_operation_t =
-                dynamic_cast<async_operation<void>*>(p_async_op);
+                static_cast<async_operation<void>*>(p_async_op);
 
             if (om_async_operation_t)
             {

@@ -134,7 +134,7 @@ bool TcpClientCo1::connectToServer(QString& serverIPaddress, quint16 serverPort)
 
                         async_operation_base* om_async_operation = m_async_operations[idx];
                         async_operation<QByteArray>* om_async_operation_t =
-                            dynamic_cast<async_operation<QByteArray>*>(om_async_operation);
+                            static_cast<async_operation<QByteArray>*>(om_async_operation);
 
                         if (om_async_operation_t)
                         {
@@ -158,7 +158,7 @@ bool TcpClientCo1::connectToServer(QString& serverIPaddress, quint16 serverPort)
 
                         async_operation_base* om_async_operation = m_async_operations[idx];
                         async_operation<void>* om_async_operation_t =
-                            dynamic_cast<async_operation<void>*>(om_async_operation);
+                            static_cast<async_operation<void>*>(om_async_operation);
 
                         if (om_async_operation_t)
                         {
@@ -181,7 +181,7 @@ bool TcpClientCo1::connectToServer(QString& serverIPaddress, quint16 serverPort)
 
                         async_operation_base* om_async_operation = m_async_operations[idx];
                         async_operation<void>* om_async_operation_t =
-                            dynamic_cast<async_operation<void>*>(om_async_operation);
+                            static_cast<async_operation<void>*>(om_async_operation);
 
                         if (om_async_operation_t)
                         {
@@ -559,7 +559,7 @@ void TcpClientCo1::start_timer_impl(const int idx, QTimer& tmr, int ms)
 
             async_operation_base* om_async_operation = m_async_operations[idx];
             async_operation<void>* om_async_operation_t =
-                dynamic_cast<async_operation<void>*>(om_async_operation);
+                static_cast<async_operation<void>*>(om_async_operation);
 
             if (om_async_operation_t)
             {

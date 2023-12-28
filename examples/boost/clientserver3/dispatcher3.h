@@ -61,7 +61,7 @@ public:
             co_await t;
 
             async_operation<std::string>* om_async_operation = 
-                dynamic_cast<async_operation<std::string>*>(m_async_operations[idx]);
+                static_cast<async_operation<std::string>*>(m_async_operations[idx]);
             if (om_async_operation)
             {
                 om_async_operation->set_result(str);
