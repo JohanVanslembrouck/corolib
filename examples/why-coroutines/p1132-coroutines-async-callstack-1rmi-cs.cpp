@@ -258,8 +258,8 @@ EventQueue eventQueue;
 
 int main() {
     printf("main()\n");
-    eventQueue.push([]() { layer03co.coroutine1(2); });
-    eventQueue.push([]() { layer03co.coroutine2(3); });
+    async_task<int> t1 = layer03co.coroutine1(2);
+    async_task<int> t2 = layer03co.coroutine2(3);
     printf("main(): eventQueue.run();\n");
     eventQueue.run();
     return 0;

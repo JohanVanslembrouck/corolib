@@ -74,10 +74,10 @@ EventQueue eventQueue;
 int main()
 {
     printf("main();\n");
-    eventQueue.push([]() { class01a.coroutine1(); });
-    eventQueue.push([]() { class01a.coroutine1a(); });
-    eventQueue.push([]() { class01.coroutine1(); });
-    eventQueue.push([]() { class01.coroutine1a(); });
+    async_task<int> t1 = class01a.coroutine1();
+    async_task<int> t2 = class01a.coroutine1a();
+    async_task<int> t3 = class01.coroutine1();
+    async_task<int> t4 = class01.coroutine1a();
     eventQueue.run();
     return 0;
 }

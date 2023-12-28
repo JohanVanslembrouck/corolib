@@ -159,7 +159,7 @@ async_task<int> coroutine1()
 void task1()
 {
     print(PRI1, "task1: enter\n");
-    []() -> async_task<int> {
+    async_task<int> res = []() -> async_task<int> {
         print(PRI1, "task1: async_task<int> a1 = coroutine1();\n");
         async_task<int> a1 = coroutine1();
         print(PRI1, "task1: int v1 = co_await a1;\n");
@@ -167,13 +167,16 @@ void task1()
         print(PRI1, "task1: co_return v1 = %d\n", v1);
         co_return v1;
     }();
+
+    print(PRI1, "task1: int v = res.get_result();\n");
+    int v = res.get_result();
     print(PRI1, "task1: exit\n");
 }
 
 void task2()
 {
     print(PRI1, "task2: enter\n");
-    []() -> async_task<int> {
+    async_task<int> res = []() -> async_task<int> {
         print(PRI1, "task2: async_task<int> a2 = coroutine2();\n");
         async_task<int> a2 = coroutine2();
         print(PRI1, "task2: int v2 = co_await a2;\n");
@@ -181,13 +184,16 @@ void task2()
         print(PRI1, "task2: co_return v2 = %d\n", v2);
         co_return v2;
     }();
+
+    print(PRI1, "task2: int v = res.get_result();\n");
+    int v = res.get_result();
     print(PRI1, "task2: exit\n");
 }
 
 void task3()
 {
     print(PRI1, "task3: enter\n");
-    []() -> async_task<int> {
+    async_task<int> res =  []() -> async_task<int> {
         print(PRI1, "task3: async_task<int> a3 = coroutine3();\n");
         async_task<int> a3 = coroutine3();
         print(PRI1, "task3: int v3 = co_await a3;\n");
@@ -195,5 +201,8 @@ void task3()
         print(PRI1, "task3: co_return v3 = %d\n", v3);
         co_return v3;
     }();
+
+    print(PRI1, "task3: int v = res.get_result();\n");
+    int v = res.get_result();
     print(PRI1, "task3: exit\n");
 }

@@ -72,8 +72,8 @@ EventQueue eventQueue;
 
 int main() {
     printf("main2();\n");
-    eventQueue.push([]() { class01.function1(); });
-    eventQueue.push([]() { class01.function1(); });
+    class01.function1();
+    class01.function1();
     eventQueue.run();
     return 0;
 }

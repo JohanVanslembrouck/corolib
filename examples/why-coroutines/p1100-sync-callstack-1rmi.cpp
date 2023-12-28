@@ -97,8 +97,8 @@ EventQueue eventQueue;
 
 int main() {
     printf("main();\n");
-    eventQueue.push([]() { layer03.function1(2); });
-    eventQueue.push([]() { layer03.function2(3); });
+    layer03.function1(2);
+    layer03.function2(3);
     eventQueue.run();
     return 0;
 }

@@ -173,7 +173,7 @@ void RemoteObject1Co::start_op1d_impl(const int idx, int in11, int in12)
 
             async_operation_base* om_async_operation = m_async_operations[idx];
             async_operation<op1_ret_t>* om_async_operation_t =
-                dynamic_cast<async_operation<op1_ret_t>*>(om_async_operation);
+                static_cast<async_operation<op1_ret_t>*>(om_async_operation);
 
             if (om_async_operation_t)
             {
@@ -324,9 +324,9 @@ int main()
 {
     printf("main();\n");
     // Downstream example
-    eventQueue.push([]() { layer03.coroutine1d(2); });
+    async_task<int> t1 = layer03.coroutine1d(2);
     // Upstream example
-    eventQueue.push([]() { remoteObj1co.start_op1u(3, 4); });
+    async_task<int> t2 = remoteObj1co.start_op1u(3, 4);
     eventQueue.run();
     return 0;
 }

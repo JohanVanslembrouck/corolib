@@ -47,8 +47,8 @@ EventQueue eventQueue;
 int main()
 {
     printf("main();\n");
-    eventQueue.push([]() { std::thread th(&Class01::function1, &class01); th.join(); });
-    eventQueue.push([]() { std::thread th(&Class01::function1, &class01); th.join(); });
+    std::thread th1(&Class01::function1, &class01); th1.join();
+    std::thread th2(&Class01::function1, &class01); th2.join();
     eventQueue.run();
     return 0;
 }

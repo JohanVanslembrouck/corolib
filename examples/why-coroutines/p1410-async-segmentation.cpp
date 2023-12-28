@@ -159,8 +159,7 @@ EventQueue eventQueue;
 int main()
 {
     printf("main();\n");
-    eventQueue.push([]() { class01.function1(); });
-    //eventQueue.push([]() { remoteObj1.sendc_op1(gmsg1, [](Msg msg) { printf("received message\n"); }););
+    class01.function1();
     eventQueue.run();
     return 0;
 }

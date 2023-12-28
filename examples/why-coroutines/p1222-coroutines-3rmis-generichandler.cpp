@@ -118,8 +118,8 @@ EventQueue eventQueue;
 
 int main() {
     printf("main();\n");
-    eventQueue.push([]() { class01.coroutine1(); });
-    eventQueue.push([]() { class01.coroutine1(); });
+    async_task<void> t1 = class01.coroutine1();
+    async_task<void> t2 = class01.coroutine1();
     eventQueue.run();
     return 0;
 }
