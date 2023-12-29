@@ -13,7 +13,23 @@ I added a main() function to make an executable.
 All modifications to the original code have been commented with // JVS.
 The program does not do anything useful (yet).
 
-Starting from p02XX, the following convention is used:
+## Dealing with the 3 variants of await_suspend(std::coroutine_handle<>)
+
+The await_suspend(std::coroutine_handle<>) function can return
+* void
+* a bool
+* a std::coroutine_handle<>
+
+https://blog.panicsoftware.com/co_awaiting-coroutines/ shows the kind of code a compiler generates for these three variants.
+The code in the just mentioned article has been used as a guidance to tailor the manually transformed code 
+in the p02X0-g.h and p02X0-h.h files.
+(It is not applicable to the p02X0-h.h files.)
+
+### awaiter::await_suspend
+
+This section describes the p02XX series of exaamples.
+
+The following convention is used:
 
 * p0200.h contains the task coroutine type that is used in all p02XX.cpp and p02XXtrf.cpp files.
 * p02XX.cpp contains a coroutine program that is transformed and compiled by the C++ compiler.
@@ -28,19 +44,7 @@ Finally
 
 * p02XXtrf(.exe) is produced by using #include "lbcoroutine.h".
 
-# Dealing with the 3 variants of await_suspend(std::coroutine_handle<>)
-
-The await_suspend(std::coroutine_handle<>) function can return
-* void
-* a bool
-* a std::coroutine_handle<>
-
-https://blog.panicsoftware.com/co_awaiting-coroutines/ shows the kind of code a compiler generates for these three variants.
-The code in the just mentioned article has been used as a guidance to tailor the manually transformed code 
-in the p02X0-g.h and p02X0-h.h files.
-(It is not applicable to the p02X0-h.h files.)
-
-A high-level view of the transformation of a coroutine using an await_suspend() function that returns
+A high-level view of the transformation of a coroutine using an await_suspend() function that returns ...
 
 * void can be found in ../corolab/p0403at.cpp (and ../corolab/p0403dt.cpp)
 * a bool can be found in ../corolab/p0403bt.cpp
@@ -49,7 +53,7 @@ A high-level view of the transformation of a coroutine using an await_suspend() 
 The transformation does not only depend on the content of the coroutine,
 but also on the return type of the await_suspend() function.
 
-### await_suspend(std::coroutine_handle<>) returns void
+#### await_suspend(std::coroutine_handle<>) returns void
 
 The file p0200.h compiled with directive AWAIT_SUSPEND_RETURNS_VOID = 1
 defines a coroutine type with an awaiter type whose await_suspend() function returns void:
@@ -75,10 +79,10 @@ defines a coroutine type with an awaiter type whose await_suspend() function ret
 
 This variant of p0200.h is used in the p020X.cpp and p21X.cpp program files.
 
-The files p0200-g.h and p0200-h.h contain the transformation 
-of the g and h coroutines used in the program files just mentioned.
+The files p0200-f.h, p0200-g.h and p0200-h.h contain the transformation 
+of the f, g and h coroutines used in the program files just mentioned.
 
-### await_suspend(std::coroutine_handle<>) returns bool
+#### await_suspend(std::coroutine_handle<>) returns bool
 
 The file p0200.h compiled with directive AWAIT_SUSPEND_RETURNS_BOOL = 1
 defines a coroutine type with an awaiter type whose await_suspend() function returns a bool:
@@ -109,7 +113,7 @@ This variant of p0200.h is used in the p022X.cpp and p23X.cpp program files.
 The files p0220-g.h and p0220-h.h contain the transformation 
 of the g and h coroutines used in the program files just mentioned.
 
-### await_suspend(std::coroutine_handle<>) returns std::coroutine_handle<>
+#### await_suspend(std::coroutine_handle<>) returns std::coroutine_handle<>
 
 The file p0200.h compiled with directive AWAIT_SUSPEND_RETURNS_COROUTINE_HANDLE = 1
 defines a coroutine type with an awaiter type whose await_suspend() function returns 
@@ -139,6 +143,82 @@ This variant of p0200.h is used in the p024X.cpp and p25X.cpp program files.
 
 The files p0240-g.h and p0240-h.h contain the transformation 
 of the g and h coroutines used in the program files just mentioned.
+
+### final_awaiter::await_suspend
+
+This section describes the p03XX series of exaamples.
+
+The naming convention is the same as the one in the p02XXX series (see higher).
+
+awaiter::await_suspend always returns void. Instead, final_awaiter::await_suspend will have 3 variants.
+
+task::promise_type::return_value will *not* resume the awaiting coroutine in case FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_COROUTINE_HANDLE = 1.
+In this case the coroutine will be resumed from the final suspend section.
+
+#### await_suspend(std::coroutine_handle<>) returns void
+
+The file p0300.h compiled with directive FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_VOID = 1
+defines a coroutine type with an final_awaiter type whose await_suspend() function returns void:
+
+```cpp
+    struct final_awaiter {
+        bool await_ready() const noexcept {
+            return false;
+        }
+        void await_suspend(coro_handle h) noexcept {
+        }
+        void await_resume() noexcept {
+        }
+
+    };
+```
+
+This variant of p0300.h is used in the p030X.cpp program files.
+
+#### await_suspend(std::coroutine_handle<>) returns bool
+
+The file p0300.h compiled with directive FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL = 1
+defines a coroutine type with an final_awaiter type whose await_suspend() function returns bool:
+
+```cpp
+    struct final_awaiter {
+        bool await_ready() const noexcept {
+            return false;
+        }
+        bool await_suspend(coro_handle h) noexcept {
+            return !h.promise().m_ready;
+        }
+        void await_resume() noexcept {
+        }
+
+    };
+```
+
+This variant of p0300.h is used in the p032X.cpp program files.
+
+#### await_suspend(std::coroutine_handle<>) returns std::coroutine_handle<>
+
+The file p0300.h compiled with directive FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_COROUTINE_HANDLE = 1
+defines a coroutine type with an final_awaiter type whose await_suspend() function returns void:
+
+```cpp
+    struct final_awaiter {
+        bool await_ready() const noexcept {
+            return false;
+        }
+        std::coroutine_handle<> await_suspend(coro_handle h) noexcept {
+            if (h.promise().m_awaiting)
+                return h.promise().m_awaiting;
+            else
+                return std::noop_coroutine();
+        }
+        void await_resume() noexcept {
+        }
+
+    };
+```
+
+This variant of p0300.h is used in the p034X.cpp program files.
 
 ## Notes
 

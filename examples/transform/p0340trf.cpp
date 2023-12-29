@@ -1,25 +1,23 @@
 /**
- *  Filename: p0200trf.cpp
+ *  Filename: p0340trf.cpp
  *  Description:
- *  Manually transformed version of p0200.cpp.
+ *  Manually transformed version of p0340.cpp.
  * 
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include "config.h"
-
 #include "print.h"
-
 #include "auto_reset_event.h"
-#define AWAIT_SUSPEND_RETURNS_VOID 1
-#define USE_FINAL_AWAITER 0
 
+#define FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_COROUTINE_HANDLE 1
+#include "p0300.h"
 #include "helpers.h"
 
 auto_reset_event are1;
 
-#include "p0200-f.h"
-#include "p0200-g.h"
+#include "p0300-f.h"
+#include "p0300-g.h"
 
 #if 0
 task f(int x) {
@@ -49,4 +47,3 @@ int main() {
     print(PRI1, "main(): return 0;\n");
     return 0;
 }
-

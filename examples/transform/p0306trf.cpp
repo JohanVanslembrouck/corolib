@@ -1,25 +1,24 @@
 /**
- *  Filename: p0200trf.cpp
+ *  Filename: p0306trf.cpp
  *  Description:
- *  Manually transformed version of p0200.cpp.
+ *  Manually transformed version of p0206.cpp.
  * 
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include "config.h"
-
 #include "print.h"
-
 #include "auto_reset_event.h"
-#define AWAIT_SUSPEND_RETURNS_VOID 1
-#define USE_FINAL_AWAITER 0
 
+#define FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_VOID 1
+#include "p0300.h"
 #include "helpers.h"
 
 auto_reset_event are1;
 
-#include "p0200-f.h"
-#include "p0200-g.h"
+#include "p0300-f.h"
+#include "p0300-g.h"
+#include "p0300-h.h"
 
 #if 0
 task f(int x) {
@@ -35,18 +34,24 @@ task g(int x) {
     print(PRI1, "g(%d): co_return 42 + i (= %d);\n", x, 42 + i);
     co_return 42 + i;
 }
+
+task h(int x, int y) {
+    print(PRI1, "h(%d, %d): int i = co_await g(%d);\n", x, y, x);
+    int i = co_await g(x);
+    print(PRI1, "h(%d, %d): co_return y + i (= %d);\n", x, y, y + i);
+    co_return y + i;
+}
 #endif
 
 int main() {
     priority = 0x07;
-    print(PRI1, "main(): task gt = g(5);\n");
-    task gt = g(5);
+    print(PRI1, "main(): task ht = h(5, 10);\n");
+    task ht = h(5, 10);
     print(PRI1, "main(): are1.resume();\n");
     are1.resume();
-    print(PRI1, "main(): int i = gt.get();\n");
-    int i = gt.get();
+    print(PRI1, "main(): int i = ht.get();\n");
+    int i = ht.get();
     print(PRI1, "main(): i = %d\n", i);
     print(PRI1, "main(): return 0;\n");
     return 0;
 }
-

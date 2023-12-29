@@ -1,5 +1,5 @@
 /**
- *  Filename: p0200-f.h
+ *  Filename: p0300-f.h
  *  Description:
  *  This file contains the manual transformation of 
  * 
@@ -13,13 +13,15 @@
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
-#ifndef _P0200_F_H_
-#define _P0200_F_H_
+#ifndef _P0300_F_H_
+#define _P0300_F_H_
 
 #include "config.h"
 #include "print.h"
 
-#include "p0200.h"
+#include "p0300.h"
+
+#define USE_IMPLEMENTATION_FROM_PANICSOFTWARE_BLOG 0
 
 task f(int x);
 
@@ -144,7 +146,7 @@ final_suspend:
             return state->__promise.final_suspend();
             });
         destructor_guard tmp2_dtor{ state->__tmp2 };
-
+#if FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_VOID
         if (!state->__tmp2.get().await_ready()) {
             state->__suspend_point = 2;
             state->__resume = nullptr; // mark as final suspend-point
@@ -155,7 +157,42 @@ final_suspend:
             tmp2_dtor.cancel();
             return static_cast<__coroutine_state*>(std::noop_coroutine().address());
         }
+#endif
+#if FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL
+        bool await_suspend_result = false;
+        if (!state->__tmp2.get().await_ready()) {
+            state->__suspend_point = 2;
+            state->__resume = nullptr; // mark as final suspend-point
 
+            await_suspend_result = state->__tmp2.get().await_suspend(
+                std::coroutine_handle<__f_promise_t>::from_promise(state->__promise));
+
+            tmp2_dtor.cancel();
+
+            print(PRI1, "f(%d): await_suspend_result = %d\n", state->x, await_suspend_result);
+            if (await_suspend_result)
+                return static_cast<__coroutine_state*>(std::noop_coroutine().address());
+        }
+#endif
+#if FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_COROUTINE_HANDLE
+        if (!state->__tmp2.get().await_ready()) {
+            state->__suspend_point = 2;
+            state->__resume = nullptr; // mark as final suspend-point
+
+            std::coroutine_handle<> h = state->__tmp2.get().await_suspend(
+                std::coroutine_handle<__f_promise_t>::from_promise(state->__promise));
+#if USE_IMPLEMENTATION_FROM_PANICSOFTWARE_BLOG
+            h.resume();
+#endif
+            tmp2_dtor.cancel();
+
+#if USE_IMPLEMENTATION_FROM_PANICSOFTWARE_BLOG
+            return static_cast<__coroutine_state*>(std::noop_coroutine().address());
+#else
+            return static_cast<__coroutine_state*>(h.address());
+#endif
+        }
+#endif
         state->__tmp2.get().await_resume();
     }
 
