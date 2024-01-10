@@ -3,6 +3,7 @@
 echo Running ./tr-p0100trf
 ./tr-p0100trf
 
+
 echo Running ./tr-p0200
 ./tr-p0200
 echo Running ./tr-p0200lb
@@ -46,7 +47,6 @@ echo Running ./tr-p0216trf
 ./tr-p0216trf
 
 
-
 echo Running ./tr-p0220
 ./tr-p0220
 echo Running ./tr-p0220lb
@@ -76,7 +76,6 @@ echo Running ./tr-p0236trf
 ./tr-p0236trf
 
 
-
 echo Running ./tr-p0240
 ./tr-p0240
 echo Running ./tr-p0240lb
@@ -104,6 +103,7 @@ echo Running ./tr-p0256lb
 ./tr-p0256lb
 echo Running ./tr-p0256trf
 ./tr-p0256trf
+
 
 
 echo Running ./tr-p0300
@@ -164,6 +164,35 @@ echo Running ./tr-p0326trf
 ./tr-p0326trf
 
 
+echo Running ./tr-p0330
+./tr-p0330
+echo Running ./tr-p0330lb
+./tr-p0330lb
+echo Running ./tr-p0330trf
+./tr-p0330trf
+
+echo Running ./tr-p0332
+./tr-p0332
+echo Running ./tr-p0332lb
+./tr-p0332lb
+echo Running ./tr-p0332trf
+./tr-p0332trf
+
+echo Running ./tr-p0334
+./tr-p0334
+echo Running ./tr-p0334lb
+./tr-p0334lb
+echo Running ./tr-p0334trf
+./tr-p0334trf
+
+echo Running ./tr-p0336
+./tr-p0336
+echo Running ./tr-p0336lb
+./tr-p0336lb
+echo Running ./tr-p0336trf
+./tr-p0336trf
+
+
 echo Running ./tr-p0340
 ./tr-p0340
 echo Running ./tr-p0340lb
@@ -191,3 +220,93 @@ echo Running ./tr-p0346lb
 ./tr-p0346lb
 echo Running ./tr-p0346trf
 ./tr-p0346trf
+
+
+
+
+echo Running ./tr-p1200
+./tr-p1200
+echo Running ./tr-p1200lb
+./tr-p1200lb
+
+echo Running ./tr-p1204
+./tr-p1204
+echo Running ./tr-p1204lb
+./tr-p1204lb
+
+echo Running ./tr-p1206
+./tr-p1206
+echo Running ./tr-p1206lb
+./tr-p1206lb
+
+
+echo Running ./tr-p1220
+./tr-p1220
+echo Running ./tr-p1220lb
+./tr-p1220lb
+
+echo Running ./tr-p1226
+./tr-p1226
+echo Running ./tr-p1226lb
+./tr-p1226lb
+
+
+echo Running ./tr-p1240
+./tr-p1240
+echo Running ./tr-p0140lb
+./tr-p1240lb
+
+echo Running ./tr-p1246
+./tr-p1246
+echo Running ./tr-p1246lb
+./tr-p1246lb
+
+
+
+echo Running ./tr-p1300
+./tr-p1300
+echo Running ./tr-p1300lb
+./tr-p1300lb
+
+echo Running ./tr-p1304
+./tr-p1304
+echo Running ./tr-p1304lb
+./tr-p1304lb
+
+echo Running ./tr-p1306
+./tr-p1306
+echo Running ./tr-p1306lb
+./tr-p1306lb
+
+
+echo Running ./tr-p1320
+./tr-p1320
+echo Running ./tr-p1320lb
+./tr-p1320lb
+
+echo Running ./tr-p1324
+./tr-p1324
+echo Running ./tr-p1324lb
+./tr-p1324lb
+
+echo Running ./tr-p1326
+./tr-p1326
+echo Running ./tr-p1326lb
+./tr-p1326lb
+
+
+echo Running ./tr-p1340
+./tr-p1340
+echo Running ./tr-p1340lb
+./tr-p1340lb
+
+echo Running ./tr-p1344
+./tr-p1344
+echo Running ./tr-p1344lb
+./tr-p1344lb
+
+echo Running ./tr-p1346
+./tr-p1346
+echo Running ./tr-p1346lb
+./tr-p1346lb
+

@@ -1,25 +1,40 @@
 /**
- *  Filename: p0202trf.cpp
+ *  Filename: p1300.cpp
  *  Description:
- *  Manually transformed version of p0202.cpp.
- * 
+ *  Basic example with two coroutines f and g.
+ *
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include "config.h"
-
 #include "print.h"
+#include "auto_reset_event.h"
 
-#define AWAIT_SUSPEND_RETURNS_VOID 1
-#define USE_FINAL_AWAITER 0
-#include "p0200.h"
+#define FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_VOID 1
+#include "p1300.h"
+
+auto_reset_event are1;
+
+#if USE_TRANSFORMED_CODE
+
 #include "helpers.h"
+#include "p1300-f.h"
+#include "p0300-g.h"
 
-#include "p0202-F.h"
-#include "p0200-g.h"
+#else
 
-#if 0
 task f(int x) {
+    std::thread thread1([]() {
+        print(PRI1, "f(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        print(PRI1, "f(): thread1: are.resume();\n");
+        are1.resume();
+        print(PRI1, "f(): thread1: return;\n");
+        });
+    thread1.detach();
+
+    print(PRI1, "f(%d): co_await are1;\n", x);
+    co_await are1;
     print(PRI1, "f(%d): co_return 42 + x (= %d);\n", x, 42 + x);
     co_return 42 + x;
 }

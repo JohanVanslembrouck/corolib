@@ -19,7 +19,6 @@
 #define _P0200_H_H_
 
 #include "config.h"
-#include "p0200.h"
 
 task h(int x, int y);
 

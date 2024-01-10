@@ -70,8 +70,9 @@ struct task : private coroutine_tracker {
     int get() {
         print(PRI2, "task::get()\n");
         if (m_coroutine)
-            return m_coroutine.promise().m_value;
-        return -1;
+            if (m_coroutine.promise().m_ready)
+                return m_coroutine.promise().m_value;
+        return -3;
     }
 
     struct awaiter {
@@ -123,7 +124,7 @@ struct task : private coroutine_tracker {
         using coro_handle = std::coroutine_handle<promise_type>;
 
         promise_type()
-            : m_value(0)
+            : m_value(-1)
             , m_ready(false)
             , m_awaiting(nullptr) {
             print(PRI2, "task::promise_type::promise_type()\n");
@@ -131,6 +132,8 @@ struct task : private coroutine_tracker {
 
         ~promise_type() {
             print(PRI2, "task::promise_type::~promise_type()\n");
+            m_ready = false;
+            m_value = -2;
         }
 
         auto get_return_object() {
@@ -189,7 +192,8 @@ struct task : private coroutine_tracker {
             print(PRI2, "task::promise_type::return_value(int v)\n");
             m_value = v;
             m_ready = true;
-            if (m_awaiting) m_awaiting.resume();
+            if (m_awaiting)
+                m_awaiting.resume();
         }
 
         int m_value;

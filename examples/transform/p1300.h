@@ -1,5 +1,5 @@
 /**
- *  Filename: p0300.h
+ *  Filename: p1300.h
  *  Description:
  *  This file defines a coroutine type 'task' that will be used in all p03XX.cpp and p03XXtrf.cpp examples.
  * 
@@ -8,8 +8,10 @@
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
-#ifndef _P0300_H
-#define _P0300_H
+#ifndef _P1300_H
+#define _P1300_H
+
+#include <semaphore>
 
 using namespace std;
 
@@ -58,9 +60,15 @@ struct task : private coroutine_tracker {
 
     int get() {
         print(PRI2, "task::get()\n");
-        if (m_coroutine)
-            if (m_coroutine.promise().m_ready)
-                return m_coroutine.promise().m_value;
+        if (m_coroutine) {
+            if (!m_coroutine.promise().m_ready) {
+                print(PRI2, "task::get(): acquire semaphore\n");
+                m_coroutine.promise().m_wait_for_signal = true;
+                m_coroutine.promise().m_sema.acquire();
+            }
+            print(PRI2, "task::get(): return value\n");
+            return m_coroutine.promise().m_value;
+        }
         return -3;
     }
 
@@ -100,7 +108,9 @@ struct task : private coroutine_tracker {
         promise_type()
             : m_value(-1)
             , m_ready(false)
-            , m_awaiting(nullptr) {
+            , m_awaiting(nullptr)
+            , m_sema(0)
+            , m_wait_for_signal(false) {
             print(PRI2, "task::promise_type::promise_type()\n");
         }
 
@@ -108,6 +118,7 @@ struct task : private coroutine_tracker {
             print(PRI2, "task::promise_type::~promise_type()\n");
             m_ready = false;
             m_value = -2;
+            m_wait_for_signal = false;
         }
 
         auto get_return_object() {
@@ -172,18 +183,26 @@ struct task : private coroutine_tracker {
         }
 
         void return_value(int v) {
-            print(PRI2, "task::promise_type::return_value(int v)\n");
+            print(PRI2, "task::promise_type::return_value(int v): m_wait_for_signal = %d\n", m_wait_for_signal);
             m_value = v;
             m_ready = true;
+
 #if FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_VOID || FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL
-            if (m_awaiting)
+            if (m_awaiting) {
                 m_awaiting.resume();
+            }
 #endif
+            if (m_wait_for_signal) {
+                print(PRI2, "task::promise_type::return_value(int v): release semaphore\n");
+                m_sema.release();
+            }
         }
 
         int m_value;
         bool m_ready;
         std::coroutine_handle<> m_awaiting;
+        std::binary_semaphore m_sema;
+        bool m_wait_for_signal;
     };
 
     coro_handle m_coroutine;

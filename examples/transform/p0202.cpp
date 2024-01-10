@@ -8,11 +8,19 @@
  */
 
 #include "config.h"
-
 #include "print.h"
+
 #define AWAIT_SUSPEND_RETURNS_VOID 1
 #define USE_FINAL_AWAITER 0
 #include "p0200.h"
+
+#if USE_TRANSFORMED_CODE
+
+#include "helpers.h"
+#include "p0202-F.h"
+#include "p0200-g.h"
+
+#else
 
 task f(int x) {
     print(PRI1, "f(%d): co_return 42 + x (= %d);\n", x, 42 + x);
@@ -25,6 +33,7 @@ task g(int x) {
     print(PRI1, "g(%d): co_return 42 + i (= %d);\n", x, 42 + i);
     co_return 42 + i;
 }
+#endif
 
 int main() {
     priority = 0x07;

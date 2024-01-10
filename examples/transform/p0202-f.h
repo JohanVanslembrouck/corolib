@@ -17,8 +17,6 @@
 #include "config.h"
 #include "print.h"
 
-#include "p0200.h"
-
 task f(int x);
 
 __coroutine_state* __f_resume(__coroutine_state* s);

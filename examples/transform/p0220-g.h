@@ -19,7 +19,6 @@
 #define _P0220_G_H_
 
 #include "config.h"
-#include "p0200.h"
 
 task g(int x);
 

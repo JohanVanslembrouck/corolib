@@ -7,15 +7,21 @@
  */
 
 #include "config.h"
-
 #include "print.h"
-
 #include "auto_reset_event.h"
+
 #define AWAIT_SUSPEND_RETURNS_VOID 1
 #define USE_FINAL_AWAITER 0
 #include "p0200.h"
 
 auto_reset_event are1;
+
+#if USE_TRANSFORMED_CODE
+
+#include "helpers.h"
+#include "p0200-f.h"
+
+#else
 
 task f(int x) {
     print(PRI1, "f(%d): co_await are1;\n", x);
@@ -23,6 +29,7 @@ task f(int x) {
     print(PRI1, "f(%d): co_return 42 + x (= %d);\n", x, 42 + x);
     co_return 42 + x;
 }
+#endif
 
 int main() {
     priority = 0x07;

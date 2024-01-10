@@ -15,12 +15,20 @@
 
 auto_reset_event are1;
 
+#if USE_TRANSFORMED_CODE
+
+#include "helpers.h"
+#include "p0300-f.h"
+
+#else
+
 task f(int x) {
     print(PRI1, "f(%d): co_await are1;\n", x);
     co_await are1;
     print(PRI1, "f(%d): co_return 42 + x (= %d);\n", x, 42 + x);
     co_return 42 + x;
 }
+#endif
 
 int main() {
     priority = 0x07;

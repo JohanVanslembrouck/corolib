@@ -1,23 +1,40 @@
 /**
- *  Filename: p0342trf.cpp
+ *  Filename: p1340.cpp
  *  Description:
- *  anually transformed version of p0342.cpp.
+ *  Basic example with two coroutines f and g.
  * 
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
 #include "config.h"
 #include "print.h"
+#include "auto_reset_event.h"
 
 #define FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_COROUTINE_HANDLE 1
-#include "p0300.h"
-#include "helpers.h"
+#include "p1300.h"
 
-#include "p0302-f.h"
+auto_reset_event are1;
+
+#if USE_TRANSFORMED_CODE
+
+#include "helpers.h"
+#include "p1300-f.h"
 #include "p0300-g.h"
 
-#if 0
+#else
+
 task f(int x) {
+    std::thread thread1([]() {
+        print(PRI1, "f(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        print(PRI1, "f(): thread1: are.resume();\n");
+        are1.resume();
+        print(PRI1, "f(): thread1: return;\n");
+        });
+    thread1.detach();
+
+    print(PRI1, "f(%d): co_await are1;\n", x);
+    co_await are1;
     print(PRI1, "f(%d): co_return 42 + x (= %d);\n", x, 42 + x);
     co_return 42 + x;
 }

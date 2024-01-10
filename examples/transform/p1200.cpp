@@ -1,7 +1,7 @@
 /**
- *  Filename: p0340trf.cpp
+ *  Filename: p1200.cpp
  *  Description:
- *  Manually transformed version of p0340.cpp.
+ *  Basic example with two coroutines f and g.
  * 
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
@@ -10,17 +10,30 @@
 #include "print.h"
 #include "auto_reset_event.h"
 
-#define FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_COROUTINE_HANDLE 1
-#include "p0300.h"
-#include "helpers.h"
+#define AWAIT_SUSPEND_RETURNS_VOID 1
+#define USE_FINAL_AWAITER 0
+#include "p1200.h"
 
 auto_reset_event are1;
 
-#include "p0300-f.h"
-#include "p0300-g.h"
+#if USE_TRANSFORMED_CODE
 
-#if 0
+#include "helpers.h"
+#include "p1200-f.h"
+#include "p0200-g.h"
+
+#else
+
 task f(int x) {
+    std::thread thread1([]() {
+        print(PRI1, "f(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        print(PRI1, "f(): thread1: are.resume();\n");
+        are1.resume();
+        print(PRI1, "f(): thread1: return;\n");
+        });
+    thread1.detach();
+
     print(PRI1, "f(%d): co_await are1;\n", x);
     co_await are1;
     print(PRI1, "f(%d): co_return 42 + x (= %d);\n", x, 42 + x);
@@ -39,8 +52,6 @@ int main() {
     priority = 0x07;
     print(PRI1, "main(): task gt = g(5);\n");
     task gt = g(5);
-    print(PRI1, "main(): are1.resume();\n");
-    are1.resume();
     print(PRI1, "main(): int i = gt.get();\n");
     int i = gt.get();
     print(PRI1, "main(): i = %d\n", i);

@@ -25,6 +25,14 @@ foreach(_target
     p0246
     p0250
     p0256
+
+    p1200
+    p1204
+    p1206
+    p1220
+    p1226
+    p1240
+    p1246
   )
   add_executable(tr-${_target} ${_target}.cpp print.cpp tracker.cpp)
 endforeach()
@@ -40,10 +48,27 @@ foreach(_target
     p0324
     p0326
 
+    p0330
+    p0332
+    p0334
+    p0336
+
     p0340
     p0342
     p0344
     p0346
+
+    p1300
+    p1304
+    p1306
+
+    p1320
+    p1324
+    p1326
+
+    p1340
+    p1344
+    p1346
     )
     add_executable(tr-${_target} ${_target}.cpp print.cpp tracker.cpp)
 endforeach()
@@ -74,6 +99,14 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
         p0246
         p0250
         p0256
+
+        p1200
+        p1204
+        p1206
+        p1220
+        p1226
+        p1240
+        p1246
       )
       add_executable(tr-${_target}lb ${_target}.cpp print.cpp tracker.cpp)
     endforeach()
@@ -89,62 +122,90 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
         p0324
         p0326
 
+        p0330
+        p0332
+        p0334
+        p0336
+
         p0340
         p0342
         p0344
         p0346
+
+        p1300
+        p1304
+        p1306
+
+        p1320
+        p1324
+        p1326
+
+        p1340
+        p1344
+        p1346
        )
        add_executable(tr-${_target}lb ${_target}.cpp print.cpp tracker.cpp)
     endforeach()
 endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-    add_compile_options(/DUSE_LBCOROUTINE=1 /DUSE_ORIGINAL_RESUME_IMPLEMENTATION=1)
+    add_compile_options(/DUSE_LBCOROUTINE=1 /DUSE_TRANSFORMED_CODE=1 /DUSE_ORIGINAL_RESUME_IMPLEMENTATION=1)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    add_compile_options(-DUSE_LBCOROUTINE=1 -DUSE_ORIGINAL_RESUME_IMPLEMENTATION=1)
+    add_compile_options(-DUSE_LBCOROUTINE=1 -DUSE_TRANSFORMED_CODE=1 -DUSE_ORIGINAL_RESUME_IMPLEMENTATION=1)
 else()
     message("Unsupported compiler")
 endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     foreach(_target
-        p0200trf
-        p0202trf
-        p0204trf
-        p0206trf
-        p0210trf
-        p0216trf
+        p0200
+        p0202
+        p0204
+        p0206
+        p0210
+        p0216
 
-        p0220trf
-        p0226trf
-        p0230trf
-        p0236trf
+        p0220
+        p0226
+        p0230
+        p0236
 
-        p0240trf
-        p0246trf
-        p0250trf
-        p0256trf
+        p0240
+        p0246
+        p0250
+        p0256
+
+        p1200
+        p1240
       )
-      add_executable(tr-${_target} ${_target}.cpp print.cpp tracker.cpp)
+      add_executable(tr-${_target}trf ${_target}.cpp print.cpp tracker.cpp)
     endforeach()
 
      foreach(_target
-        p0300trf
-        p0302trf
-        p0304trf
-        p0306trf
+        p0300
+        p0302
+        p0304
+        p0306
 
-        p0320trf
-        p0322trf
-        p0324trf
-        p0326trf
+        p0320
+        p0322
+        p0324
+        p0326
 
-        p0340trf
-        p0342trf
-        p0344trf
-        p0346trf
+        p0330
+        p0332
+        p0334
+        p0336
+
+        p0340
+        p0342
+        p0344
+        p0346
+
+        p1300
+        p1340
       )
-      add_executable(tr-${_target} ${_target}.cpp print.cpp tracker.cpp)
+      add_executable(tr-${_target}trf ${_target}.cpp print.cpp tracker.cpp)
     endforeach()
 endif()
 

@@ -1,25 +1,32 @@
 /**
- *  Filename: p0302-f.h
+ *  Filename: p0200-f.h
  *  Description:
- *  This file contains the manual transformation of
- *
+ *  This file contains the manual transformation of 
+ * 
  *  task f(int x) {
+ *      std::thread thread1([]() {
+ *          print(PRI1, "f(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+ *          std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+ *          print(PRI1, "f(): thread1: are.resume();\n");
+ *          are1.resume();
+ *          print(PRI1, "f(): thread1: return;\n");
+ *      });
+ *      thread1.detach();
+ * 
+ *      print(PRI1, "f(%d): co_await are1;\n", x);
+ *      co_await are1;
  *      print(PRI1, "f(%d): co_return 42 + x (= %d);\n", x, 42 + x);
  *      co_return 42 + x;
  *  }
- *
+ * 
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
-#ifndef _P0302_F_H_
-#define _P0302_F_H_
+#ifndef _P1200_F_H_
+#define _P1200_F_H_
 
 #include "config.h"
 #include "print.h"
-
-//#include "p0300.h"
-
-#define USE_IMPLEMENTATION_FROM_PANICSOFTWARE_BLOG 0
 
 task f(int x);
 
@@ -71,7 +78,7 @@ task f(int x) {
     std::unique_ptr<__f_state> state(new __f_state(static_cast<int&&>(x)));
     decltype(auto) return_value = state->__promise.get_return_object();
 
-    print(PRI4, "f(%d): co_await promise.initial_suspend();\n", x);
+    print(PRI4, "f(%d): co_await initial_suspend();\n", x);
     state->__tmp1.construct_from([&]() -> decltype(auto) {
         return state->__promise.initial_suspend();
         });
@@ -99,15 +106,45 @@ __coroutine_state* __f_resume(__coroutine_state* s) {
     try {
         switch (state->__suspend_point) {
         case 0: goto suspend_point_0;
-        //default: std::unreachable();       // 'unreachable': is not a member of 'std'     // JVS
+        case 1: goto suspend_point_1;
+ //     default: std::unreachable();       // 'unreachable': is not a member of 'std'     // JVS
         default:;
         }
 
- suspend_point_0:
+    suspend_point_0:
         {
-            destructor_guard tmp1_dtor{ state->__tmp1 };
-            state->__tmp1.get().await_resume();
+            {
+                destructor_guard tmp1_dtor{ state->__tmp1 };
+                state->__tmp1.get().await_resume();
+            }
+
+            std::thread thread1([]() {
+                print(PRI1, "f(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+                std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                print(PRI1, "f(): thread1: are.resume();\n");
+                are1.resume();
+                print(PRI1, "f(): thread1: return;\n");
+                });
+            thread1.detach();
+
+            print(PRI1, "f(%d): co_await are1;\n", state->x);
+            {
+                auto_reset_event::awaiter aw = are1.operator co_await();
+
+                if (!aw.await_ready()) {
+                    state->__suspend_point = 1;
+
+                    aw.await_suspend(
+                        std::coroutine_handle<__f_promise_t>::from_promise(state->__promise));
+
+                    return static_cast<__coroutine_state*>(std::noop_coroutine().address());
+                }
+            }
         }
+
+    suspend_point_1:
+        auto_reset_event::awaiter aw = are1.operator co_await();
+        aw.await_resume();
 
         print(PRI1, "f(%d): co_return 42 + x (= %d);\n", state->x, 42 + state->x);
         state->__promise.return_value(42 + state->x);
@@ -125,7 +162,7 @@ final_suspend:
             return state->__promise.final_suspend();
             });
         destructor_guard tmp2_dtor{ state->__tmp2 };
-#if FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_VOID
+
         if (!state->__tmp2.get().await_ready()) {
             state->__suspend_point = 2;
             state->__resume = nullptr; // mark as final suspend-point
@@ -136,42 +173,7 @@ final_suspend:
             tmp2_dtor.cancel();
             return static_cast<__coroutine_state*>(std::noop_coroutine().address());
         }
-#endif
-#if FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL
-        bool await_suspend_result = false;
-        if (!state->__tmp2.get().await_ready()) {
-            state->__suspend_point = 2;
-            state->__resume = nullptr; // mark as final suspend-point
 
-            await_suspend_result = state->__tmp2.get().await_suspend(
-                std::coroutine_handle<__f_promise_t>::from_promise(state->__promise));
-
-            tmp2_dtor.cancel();
-
-            print(PRI1, "f(%d): await_suspend_result = %d\n", state->x, await_suspend_result);
-            if (await_suspend_result)
-                return static_cast<__coroutine_state*>(std::noop_coroutine().address());
-        }
-#endif
-#if FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_COROUTINE_HANDLE
-        if (!state->__tmp2.get().await_ready()) {
-            state->__suspend_point = 2;
-            state->__resume = nullptr; // mark as final suspend-point
-
-            std::coroutine_handle<> h = state->__tmp2.get().await_suspend(
-                std::coroutine_handle<__f_promise_t>::from_promise(state->__promise));
-#if USE_IMPLEMENTATION_FROM_PANICSOFTWARE_BLOG
-            h.resume();
-#endif
-            tmp2_dtor.cancel();
-
-#if USE_IMPLEMENTATION_FROM_PANICSOFTWARE_BLOG
-            return static_cast<__coroutine_state*>(std::noop_coroutine().address());
-#else
-            return static_cast<__coroutine_state*>(h.address());
-#endif
-        }
-#endif
         state->__tmp2.get().await_resume();
     }
 
@@ -189,9 +191,10 @@ void __f_destroy(__coroutine_state* s) {
 
     switch (state->__suspend_point) {
     case 0: goto suspend_point_0;
+    case 1: goto suspend_point_1;
     case 2: goto suspend_point_2;
-    //default: std::unreachable();       // 'unreachable': is not a member of 'std'     // JVS
-    default:;  // JVS
+//  default: std::unreachable();       // 'unreachable': is not a member of 'std'     // JVS
+    default:;
     }
 
 suspend_point_0:

@@ -13,6 +13,14 @@
 #define FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL 1
 #include "p0300.h"
 
+#if USE_TRANSFORMED_CODE
+
+#include "helpers.h"
+#include "p0302-f.h"
+#include "p0300-g.h"
+
+#else
+
 task f(int x) {
     print(PRI1, "f(%d): co_return 42 + x (= %d);\n", x, 42 + x);
     co_return 42 + x;
@@ -24,6 +32,7 @@ task g(int x) {
     print(PRI1, "g(%d): co_return 42 + i (= %d);\n", x, 42 + i);
     co_return 42 + i;
 }
+#endif
 
 int main() {
     priority = 0x07;
