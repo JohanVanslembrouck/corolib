@@ -9,19 +9,36 @@ For its communication, corolib currently uses any of the following frameworks:
 * Boost ASIO library
 * Qt (QTcpSocket, QTcpServer)
 * gRPC
-* ROS 2 (Humble)
+* ROS2 (Humble)
 * TAO (The ACE ORB)
-* cppcoro (WIN32 API)
+* cppcoro (WIN32 API) (included in corolib)
 
-Other publicly available asynchronous communication frameworks may follow in the future.
+You do not have to install Boost, Qt, gRPC, ROS2 or TAO on your computer before building corolib from the top-level CMakeLists.txt file.
+Without any of these libraries, you can still build and run many examples illustrating the use of corolib.
 
-These frameworks have to be installed on your computer before building corolib from the root CMakeLists.txt file.
-The installation steps are described below.
-
-However, without any of these libraries, there are still a large number of examples illustrating the use of corolib.
-None of them will involve communication, i.e. they are all stand-alone examples.
+You can install any of the mentioned communication libraries one by one and then include them in the build by setting a flag in the top-level CMakeLists.txt file.
+The installation of these libraries is described below.
 
 ### On Windows 10 or 11
+
+#### corolib
+
+Copy or clone corolib.git to your computer.
+
+I originally developed corolib with Visual Studio 2019 and Qt Creator 4.12.0 on a Windows 10 laptop.
+Now I am using Visual Studio 2022 and Qt Creator 10.0.1 on a Windows 11 laptop.
+
+Building the Visual Studio projects makes use of the CMake support of Visual Studio:
+
+	File -> Open -> CMake...
+	
+and select the CMakeLists.txt in the top-level folder.
+
+The Qt examples are not built from the top-level CMakeLists.txt file,
+but have to be built from the qt5.pro file in the top-level directory.
+
+Go to the examples/ subdirectories and start the executables.
+(See README.md files in the corresponding source directories.)
 
 #### Boost
 
@@ -48,6 +65,13 @@ b2.exe generates the libraries we will need. Its execution takes a while.
 The root directory for the include files is C:/local/boost/boost_1_82_0.
 
 The root directory for the libraries is C:/local/boost/boost_1_82_0/stage/lib.
+
+In examples/boost/CMakeLists.txt and examples/corolab/CMakeLists.txt, adapt the following variables to your own installation of the Boost library:
+
+	set(Boost_INCLUDE_DIR C:/local/boost/boost_1_82_0)
+	set(Boost_LIBRARY_DIR C:/local/boost/boost_1_82_0/stage/lib)
+
+After installing Boost ASIO, set the BOOST_INSTALLED flag to TRUE in the top-level CMakelists.txt file.
 
 #### Qt
 
@@ -83,6 +107,8 @@ Finally, I added the following folders to my PATH:
 
 	C:\local\vcpkg\installed\x64-windows\tools\protobuf
 	C:\local\vcpkg\installed\x64-windows\tools\grpc
+
+After installing gRPC, set the GRPC_INSTALLED flag to TRUE in the top-level CMakelists.txt file.
 
 #### ROS 2
 
@@ -134,29 +160,7 @@ The VERSION changes with every upgrade of Visual Studio (2022).
 The last line is needed if you want to run the TAO IDL compiler (tao_idl in C:\local\ACE_wrappers\bin) from the command line.
 If the last line is not present, running tao_idl will fail with the message that CL.exe is not found.
 
-#### corolib
-
-Copy or clone corolib.git to your computer.
-
-I originally developed corolib with Visual Studio 2019 and Qt Creator 4.12.0 on a Windows 10 laptop.
-Now I am using Visual Studio 2022 and Qt Creator 10.0.1 on a Windows 11 laptop.
-
-Building the Visual Studio projects makes use of the CMake support of Visual Studio:
-
-	File -> Open -> CMake...
-	
-and select the CMakeLists.txt in the top-level folder.
-
-In examples/boost/CMakeLists.txt and examples/corolab/CMakeLists.txt, adapt the following variables to your own installation of the Boost library:
-
-	set(Boost_INCLUDE_DIR C:/local/boost/boost_1_82_0)
-	set(Boost_LIBRARY_DIR C:/local/boost/boost_1_82_0/stage/lib)
-
-The Qt examples are not built from the top-level CMakeLists.txt file,
-but have to be built from the .pro files in the subdirectories of examples/qt5.
-
-Go to the examples/ subdirectories and start the executables.
-(See README.md files in the corresponding source directories.)
+After installing TAO, set the TAO_INSTALLED flag to TRUE in the top-level CMakelists.txt file.
 
 ### On Ubuntu 22.04 LTS
 
@@ -166,13 +170,31 @@ The g++ version was 11.2.0.
 Currently I am using Ubuntu 22.04 LTS in WSL on a Windows 11 laptop.
 The g++ version is 11.3.0.
 
-The g++ version should be >= 10 to have coroutine support.)
+The g++ version should be >= 10 to have coroutine support.
 
 #### CMake
 
 Install cmake (if not yet done):
 
 	sudo apt install -y cmake
+
+#### corolib
+
+Copy or clone corolib.git to your computer.
+
+I propose to build corolib as follows:
+
+	cd <path>/corolib
+	mkdir build
+	cd build
+	cmake ../
+	make -j 4
+
+The Qt examples are not built from the top-level CMakeLists.txt file,
+but have to be built from the qt5.pro file in the top-level directory.
+
+Go to the examples/ subdirectories and start the executables. 
+(See README.md files in the corresponding source directories.)
 
 #### Boost
 
@@ -193,6 +215,8 @@ In examples/boost/CMakeLists.txt and examples/corolab/CMakeLists.txt, adapt (if 
 
 	set(Boost_INCLUDE_DIR /usr/include/boost)
 	set(Boost_LIBRARY_DIR /usr/lib/x86_64-linux-gnu/)
+
+After installing Boost ASIO, set the BOOST_INSTALLED flag to TRUE in the top-level CMakelists.txt file.
 
 #### Qt
 
@@ -241,6 +265,8 @@ Add the following lines to .bashrc for future use:
 or, in my setup:
 
     export PATH=$HOME/grpcbin/bin:$PATH
+
+After installing gRPC, set the GRPC_INSTALLED flag to TRUE in the top-level CMakelists.txt file.
 
 #### ROS 2
 
@@ -314,23 +340,7 @@ Add the following lines to .bashrc:
     export PATH=$ACE_ROOT/bin:$PATH
     export LD_LIBRARY_PATH=$ACE_ROOT/lib:$LD_LIBRARY_PATH
 
-#### corolib
-
-Copy or clone corolib.git to your computer.
-
-I propose to build corolib as follows:
-
-	cd <path>/corolib
-	mkdir build
-	cd build
-	cmake ../
-	make -j 4
-
-The Qt examples are not built from the top-level CMakeLists.txt file,
-but have to be built from the .pro files in the subdirectories of examples/qt5.
-
-Go to the examples/ subdirectories and start the executables. 
-(See README.md files in the corresponding source directories.)
+After installing TAO, set the TAO_INSTALLED flag to TRUE in the top-level CMakelists.txt file.
 
 ## Organization of corolib
 
