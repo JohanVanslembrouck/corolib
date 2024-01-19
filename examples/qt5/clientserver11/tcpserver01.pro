@@ -26,3 +26,5 @@ INCLUDEPATH += \
     ../common
 
 LIBS += -L../../../ -lcommonqt
+
+TARGET = qt-tcpserver01

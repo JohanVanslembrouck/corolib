@@ -1,1 +1,1 @@
-tcpserver02.exe tcpserver02b.cfg
+qt-tcpserver02.exe tcpserver02b.cfg

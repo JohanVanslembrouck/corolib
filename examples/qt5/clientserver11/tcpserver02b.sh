@@ -1,1 +1,1 @@
-./tcpserver02 tcpserver02b.cfg
+./qt-tcpserver02 tcpserver02b.cfg

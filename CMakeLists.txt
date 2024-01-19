@@ -3,11 +3,14 @@ cmake_minimum_required(VERSION 3.14)
 project (corolib)
 
 # If you have installed Boost and you want to use it, set the following variable to TRUE:
-set(BOOST_INSTALLED TRUE)
+set(BOOST_INSTALLED FALSE)
 # If you heva installed gRPC and you want to use it, set the following variable to TRUE:
 set(GRPC_INSTALLED FALSE)
 # If you have installed TAO and you want to use it, set the following variable to TRUE:
 set(TAO_INSTALLED FALSE)
+# If you have installed Qt5 and you want to use it, set the following variable to TRUE:
+set(QT5_INSTALLED FALSE)
+
 # If you want to install and use GoogleTest, set the following variable to TRUE:
 set(USE_GOOGLETEST FALSE)
 
@@ -17,7 +20,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     set(CMAKE_CXX_FLAGS "/await:strict /EHsc")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    set(CMAKE_CXX_FLAGS "-Wall -fcoroutines")
+    set(CMAKE_CXX_FLAGS "-Wall -fPIC -fcoroutines")
 else()
     message("Unsupported compiler")
 endif()
@@ -47,6 +50,10 @@ add_subdirectory(examples/why-coroutines)
 add_subdirectory(examples/corolab)
 
 add_subdirectory(examples/transform)
+
+if (QT5_INSTALLED)
+    add_subdirectory(examples/qt5)
+endif()
 
 if (USE_GOOGLETEST)
     add_subdirectory(examples/tutorial/test)

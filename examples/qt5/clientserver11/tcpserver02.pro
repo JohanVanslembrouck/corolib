@@ -39,3 +39,5 @@ INCLUDEPATH += \
     ../../../include
 
 LIBS += -L../../../ -lcorolib -lcommonqt
+
+TARGET = qt-tcpserver02

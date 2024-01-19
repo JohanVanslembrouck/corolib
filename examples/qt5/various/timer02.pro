@@ -29,3 +29,5 @@ INCLUDEPATH += \
     ../../../include
 
 LIBS += -L../../../ -lcorolib
+
+TARGET = qt-timer02

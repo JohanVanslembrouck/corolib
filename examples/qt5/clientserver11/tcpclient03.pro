@@ -42,3 +42,5 @@ INCLUDEPATH += \
     ../../../include
 
 LIBS += -L../../../ -lcorolib -lcommonqt
+
+TARGET = qt-tcpclient03
