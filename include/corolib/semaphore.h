@@ -9,6 +9,42 @@
 #ifndef _CSEMAPHORE_H_
 #define _CSEMAPHORE_H_
 
+#define USE_CPP20SEMAPHORE 1
+
+#if USE_CPP20SEMAPHORE
+
+#include <semaphore>
+
+namespace corolib
+{
+    class Semaphore
+    {
+    public:
+        Semaphore(unsigned int count = 0) 
+            : m_binsema(count)
+        { }
+
+        void reset()
+        {
+        }
+
+        void signal()
+        {
+            m_binsema.release();
+        }
+
+        void wait()
+        {
+            m_binsema.acquire();
+        }
+
+    private:
+        std::binary_semaphore m_binsema;
+    };
+}
+
+#else
+
 #include <mutex>
 #include <condition_variable>
 
@@ -17,7 +53,9 @@ namespace corolib
     class Semaphore
     {
     public:
-        Semaphore(unsigned int count = 0) : m_count(count) { }
+        Semaphore(unsigned int count = 0)
+            : m_count(count)
+        { }
 
         void reset()
         {
@@ -49,3 +87,4 @@ namespace corolib
 
 #endif
 
+#endif

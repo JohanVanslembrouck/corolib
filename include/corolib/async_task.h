@@ -32,6 +32,8 @@
 #define _ASYNC_TASK_H_
 
 #include <coroutine>
+#include <exception>
+
 #include "print.h"
 #include "tracker.h"
 #include "semaphore.h"

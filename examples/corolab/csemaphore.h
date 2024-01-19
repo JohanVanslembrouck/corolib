@@ -9,6 +9,39 @@
 
 #pragma once
 
+#define USE_CPP20SEMAPHORE 1
+
+#if USE_CPP20SEMAPHORE
+
+#include <semaphore>
+
+class CSemaphore
+{
+public:
+    CSemaphore(unsigned int count = 0)
+        : m_binsema(count)
+    { }
+
+    void reset()
+    {
+    }
+
+    void signal()
+    {
+        m_binsema.release();
+    }
+
+    void wait()
+    {
+        m_binsema.acquire();
+    }
+
+private:
+    std::binary_semaphore m_binsema;
+};
+
+#else
+
 #include <mutex>
 #include <condition_variable>
 
@@ -39,3 +72,5 @@ public:
         --count_;
     }
 };
+
+#endif

@@ -7,6 +7,7 @@
  */
 
 #include <functional>
+#include <thread>
 
 #include <corolib/print.h>
 #include <corolib/async_task.h>

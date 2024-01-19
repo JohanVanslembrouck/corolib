@@ -6,6 +6,7 @@
  */
 
 #include <functional>
+#include <thread>
 
 #include "p2000.h"
 #include "eventqueue.h"

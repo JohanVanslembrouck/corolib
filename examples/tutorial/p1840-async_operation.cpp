@@ -6,6 +6,7 @@
  */
 
 #include <functional>
+#include <thread>
 
 #include "p1840.h"
 

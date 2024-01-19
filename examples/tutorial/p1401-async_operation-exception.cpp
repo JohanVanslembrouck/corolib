@@ -7,6 +7,7 @@
  */
 
 #include <functional>
+#include <thread>
 
 #include "p1400.h"
 #include "eventqueue.h"

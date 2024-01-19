@@ -8,6 +8,8 @@
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
+#include <thread>
+
 #include <corolib/print.h>
 #include <corolib/async_task.h>
 

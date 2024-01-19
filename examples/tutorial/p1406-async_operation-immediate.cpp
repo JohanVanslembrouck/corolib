@@ -6,6 +6,8 @@
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
+#include <thread>
+
 #include "p1400.h"
 
 using namespace corolib;

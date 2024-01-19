@@ -7,6 +7,7 @@
  */
 
 #include <functional>
+#include <thread>
 
 #include "p1700.h"
 
