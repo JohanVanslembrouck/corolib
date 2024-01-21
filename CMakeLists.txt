@@ -28,6 +28,9 @@ endif()
 add_subdirectory(lib)
 
 if (BOOST_INSTALLED)
+    if (WIN32)
+        set(BOOST_ROOT C:/local/boost/boost_1_82_0/)
+    endif()
     add_subdirectory(examples/boost)
 endif()
 

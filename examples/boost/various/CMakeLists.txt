@@ -1,8 +1,6 @@
 project (timers)
 
-include_directories(../../../include ../common ${Boost_INCLUDE_DIR})
-
-link_directories(${Boost_LIBRARY_DIR})
+include_directories(../../../include ../common)
 
 add_executable(timer01 timermain01.cpp timer01.cpp)
 target_link_libraries(timer01 corolib)

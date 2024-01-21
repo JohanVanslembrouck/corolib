@@ -1,6 +1,6 @@
 project(coroboostlibrary)
 
-include_directories(../../../include ${Boost_INCLUDE_DIR})
+include_directories(../../../include)
 
 add_library(corolib-boost commcore.cpp commclient.cpp commserver.cpp)
 

@@ -9,15 +9,15 @@ else()
     message("Unsupported compiler")
 endif()
 
-if (WIN32)
-    set(Boost_INCLUDE_DIR C:/local/boost/boost_1_82_0)
-    set(Boost_LIBRARY_DIR C:/local/boost/boost_1_82_0/stage/lib)
-elseif (UNIX)
-    set(Boost_INCLUDE_DIR /usr/include/boost)
-    set(Boost_LIBRARY_DIR /usr/lib/x86_64-linux-gnu/)
+find_package(Boost)
+
+if(Boost_FOUND)
+  include_directories(${Boost_INCLUDE_DIRS})
 else()
-    message("Unsupported operating system")
+   message("Boost not found")
 endif()
+
+link_directories(${Boost_LIBRARY_DIRS})
 
 add_subdirectory(common)
 add_subdirectory(clientserver1)

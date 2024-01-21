@@ -34,9 +34,6 @@ Building the Visual Studio projects makes use of the CMake support of Visual Stu
 	
 and select the CMakeLists.txt in the top-level folder.
 
-The Qt examples are not built from the top-level CMakeLists.txt file,
-but have to be built from the qt5.pro file in the top-level directory.
-
 Go to the examples/ subdirectories and start the executables.
 (See README.md files in the corresponding source directories.)
 
@@ -66,10 +63,9 @@ The root directory for the include files is C:/local/boost/boost_1_82_0.
 
 The root directory for the libraries is C:/local/boost/boost_1_82_0/stage/lib.
 
-In examples/boost/CMakeLists.txt and examples/corolab/CMakeLists.txt, adapt the following variables to your own installation of the Boost library:
+In the top-level CMakeLists.txt, adapt BOOST_ROOT to your own installation of the Boost library:
 
-	set(Boost_INCLUDE_DIR C:/local/boost/boost_1_82_0)
-	set(Boost_LIBRARY_DIR C:/local/boost/boost_1_82_0/stage/lib)
+    set(BOOST_ROOT C:/local/boost/boost_1_82_0/)
 
 After installing Boost ASIO, set the BOOST_INSTALLED flag to TRUE in the top-level CMakelists.txt file.
 
@@ -81,6 +77,11 @@ Download the Qt Online Installer for your operating system (macOS, Windows, Linu
 (e.g., for Windows: qt-unified-windows-x64-4.5.2-online.exe).
 
 Run the installer. I installed Qt in C:\Qt.
+
+After installing Qt5, set the QT5_INSTALLED flag to TRUE in the top-level CMakelists.txt file.
+
+You can build the Qt examples from the top-level CMakeLists.txt file.
+In addition, you can also build them from the qt5.pro file in the top-level directory.
 
 #### gRPC
 
@@ -190,9 +191,6 @@ I propose to build corolib as follows:
 	cmake ../
 	make -j 4
 
-The Qt examples are not built from the top-level CMakeLists.txt file,
-but have to be built from the qt5.pro file in the top-level directory.
-
 Go to the examples/ subdirectories and start the executables. 
 (See README.md files in the corresponding source directories.)
 
@@ -210,11 +208,6 @@ The Boost include files are in
 On my computer, the Boost libraries (version 1.74.0) are located in
 
 	/usr/lib/x86_64-linux-gnu/
-	
-In examples/boost/CMakeLists.txt and examples/corolab/CMakeLists.txt, adapt (if necessary) the following variables to your own installation of the Boost library:
-
-	set(Boost_INCLUDE_DIR /usr/include/boost)
-	set(Boost_LIBRARY_DIR /usr/lib/x86_64-linux-gnu/)
 
 After installing Boost ASIO, set the BOOST_INSTALLED flag to TRUE in the top-level CMakelists.txt file.
 
@@ -224,6 +217,11 @@ To install and configure qtcreator on Ubuntu 22.04, follow the instructions desc
 https://askubuntu.com/questions/1404263/how-do-you-install-qt-on-ubuntu22-04:
 
 	sudo apt install -y qtcreator qtbase5-dev qt5-qmake cmake
+
+After installing Qt5, set the QT5_INSTALLED flag to TRUE in the top-level CMakelists.txt file.
+
+You can build the Qt examples from the top-level CMakeLists.txt file.
+In addition, you can also build them from the qt5.pro file in the top-level directory.
 
 #### gRPC
 

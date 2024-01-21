@@ -29,18 +29,14 @@ if (BOOST_INSTALLED)
         message("Unsupported compiler")
     endif()
 
-    if (WIN32)
-        set(Boost_INCLUDE_DIR C:/local/boost/boost_1_82_0)
-        set(Boost_LIBRARY_DIR C:/local/boost/boost_1_82_0/stage/lib)
-    elseif (UNIX)
-        set(Boost_INCLUDE_DIR /usr/include/boost)
-        set(Boost_LIBRARY_DIR /usr/lib/x86_64-linux-gnu/)
-    else()
-        message("Unsupported operating system")
-    endif()
+    find_package(Boost)
 
-    include_directories(${Boost_INCLUDE_DIR})
-    link_directories(${Boost_LIBRARY_DIR})
+    if(Boost_FOUND)
+        include_directories(${Boost_INCLUDE_DIRS})
+        link_directories(${Boost_LIBRARY_DIR})
+    else()
+       message("Boost not found")
+    endif()
 
     foreach(_target
         p0700c p0700s p0710c
