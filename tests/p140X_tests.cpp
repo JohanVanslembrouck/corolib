@@ -7,8 +7,8 @@
 
 #include "gtest/gtest.h"
 
-#include "../p1400.h"
-#include "../eventqueue.h"
+#include "p1400.h"
+#include "eventqueue.h"
 
 using namespace corolib;
 
@@ -64,7 +64,7 @@ TEST(TutorialTest, p1404)
     ASSERT_EQ(v, 27);
 }
 
-#include "../eventqueuethr.h"
+#include "eventqueuethr.h"
 
 extern EventQueueThrFunctionVoidInt eventQueueThr;      // p1400.cpp
 

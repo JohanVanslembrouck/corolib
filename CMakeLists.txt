@@ -59,8 +59,6 @@ if (QT5_INSTALLED)
 endif()
 
 if (USE_GOOGLETEST)
-    add_subdirectory(examples/tutorial/test)
-
     if (NOT googletest)
         include(FetchContent)
         FetchContent_Declare(
@@ -72,4 +70,6 @@ if (USE_GOOGLETEST)
         set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
         FetchContent_MakeAvailable(googletest)
     endif()
+
+    add_subdirectory(tests)
 endif()
