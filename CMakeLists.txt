@@ -12,15 +12,15 @@ set(TAO_INSTALLED FALSE)
 set(QT5_INSTALLED FALSE)
 
 # If you want to install and use GoogleTest, set the following variable to TRUE:
-set(USE_GOOGLETEST FALSE)
+set(USE_GOOGLETEST TRUE)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-    set(CMAKE_CXX_FLAGS "/await:strict /EHsc")
+    set(CMAKE_CXX_FLAGS "/await:strict /EHsc /D USE_CPP20SEMAPHORE=1")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    set(CMAKE_CXX_FLAGS "-Wall -fPIC -fcoroutines")
+    set(CMAKE_CXX_FLAGS "-Wall -fPIC -fcoroutines -D USE_CPP20SEMAPHORE=1")
 else()
     message("Unsupported compiler")
 endif()

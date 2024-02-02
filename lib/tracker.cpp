@@ -90,12 +90,12 @@ namespace corolib
         print(PRI1, "  c<h = # async_task objects with a shorter lifetime than the called coroutine (!handle.done())\n");
         print(PRI1, "      = or: # final_awaiter::await_suspend() calls returning false\n");
 #endif
-        print(PRI1, "Waiting 1 second before exiting\n");
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        print(PRI1, "Waiting %d milliseconds before exiting\n", m_delay);
+        std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));
     }
 
     tracker tracker_obj;
-
+    int tracker::m_delay = 1000;
 
     /**
      * @brief promise_type_tracker

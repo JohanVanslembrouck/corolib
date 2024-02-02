@@ -52,6 +52,9 @@ namespace corolib
 
         int nr_final_awaiters_await_suspend_returning_true = 0;
         int nr_final_awaiters_await_suspend_returning_false = 0;
+
+        static void setDelay(int delay) { m_delay = delay; }
+        static int m_delay;
     };
 
     extern tracker tracker_obj;
@@ -79,6 +82,7 @@ namespace corolib
         final_awaiter_tracker();
         ~final_awaiter_tracker();
     };
+
 }
 
 #endif

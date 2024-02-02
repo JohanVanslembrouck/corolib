@@ -9,8 +9,6 @@
 #ifndef _CSEMAPHORE_H_
 #define _CSEMAPHORE_H_
 
-#define USE_CPP20SEMAPHORE 1
-
 #if USE_CPP20SEMAPHORE
 
 #include <semaphore>
