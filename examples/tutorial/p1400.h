@@ -14,16 +14,9 @@
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
 
-using namespace corolib;
+#include "use_mode.h"
 
-enum class UseMode
-{
-    USE_NONE,
-    USE_EVENTQUEUE,
-    USE_THREAD,
-    USE_THREAD_QUEUE,
-    USE_IMMEDIATE_COMPLETION
-};
+using namespace corolib;
 
 void start_operation_impl(UseMode useMode, async_operation<int>* op);
 
@@ -31,5 +24,7 @@ extern int queueSize;
 extern UseMode useMode;
 
 async_task<int> coroutine1();
+
+extern int delay;
 
 #endif

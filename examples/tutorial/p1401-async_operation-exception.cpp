@@ -28,7 +28,7 @@ void completionflow()
         print(PRI1, "completionflow(): after eventHandler(-1);\n");
     }
     catch(...) {
-        print(PRI1, "completionflow: caught exception after eventHandler(-1);\n");
+        print(PRI1, "completionflow(): caught exception after eventHandler(-1);\n");
     }
 
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");

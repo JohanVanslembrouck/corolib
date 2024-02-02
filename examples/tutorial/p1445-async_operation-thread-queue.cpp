@@ -11,14 +11,9 @@
 
 using namespace corolib;
 
-#include "class01.h"
+#include "p1440.h"
 
 EventQueueThrFunctionVoidInt eventQueueThr;
-Class01 object01(UseMode::USE_THREAD_QUEUE, nullptr, &eventQueueThr);
-Class01 object02(UseMode::USE_THREAD_QUEUE, nullptr, &eventQueueThr);
-
-// Uses coroutine1 implemented in p1440.cpp
-async_task<int> coroutine1();
 
 void completionflow()
 {
@@ -32,8 +27,10 @@ int main()
 {
     set_print_level(0x01);        // Use 0x03 to follow the flow in corolib
 
-    print(PRI1, "main(): async_task<int> a = coroutine1();\n");
-    async_task<int> a = coroutine1();
+    Class01 object01(UseMode::USE_THREAD_QUEUE, nullptr, &eventQueueThr);
+    Class01 object02(UseMode::USE_THREAD_QUEUE, nullptr, &eventQueueThr);
+    Class1440 obj1440{ object01, object02 };
+    async_task<int> a = obj1440.coroutine1();
 
     print(PRI1, "main(): completionflow();\n");
     completionflow();

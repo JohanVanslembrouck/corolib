@@ -10,13 +10,7 @@
 
 using namespace corolib;
 
-#include "class01.h"
-
-Class01 object01(UseMode::USE_IMMEDIATE_COMPLETION);
-Class01 object02(UseMode::USE_IMMEDIATE_COMPLETION);
-
-// Uses coroutine1 implemented in p1450.cpp
-async_task<int> coroutine1();
+#include "p1450.h"
 
 void completionflow()
 {
@@ -27,8 +21,10 @@ int main()
 {
     set_print_level(0x01);        // Use 0x03 to follow the flow in corolib
 
-    print(PRI1, "main(): async_task<int> a = coroutine1();\n");
-    async_task<int> a = coroutine1();
+    Class01 object01(UseMode::USE_IMMEDIATE_COMPLETION);
+    Class01 object02(UseMode::USE_IMMEDIATE_COMPLETION);
+    Class1450 obj1450{ object01, object02 };
+    async_task<int> a = obj1450.coroutine1();
 
     print(PRI1, "main(): completionflow();\n");
     completionflow();

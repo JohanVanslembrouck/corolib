@@ -19,7 +19,6 @@ async_operation<int> Class01::start_operation()
     return ret;
 }
 
-
 /**
  * @brief Class01::async_op
  * 
@@ -40,7 +39,9 @@ void Class01::async_op(std::function<void(int)>&& completionHandler)
     {
     case UseMode::USE_NONE:
         // Nothing to be done here: eventHandler should be called "manually" by the application
-        eventHandler = completionHandler;
+        ////eventHandler = completionHandler;
+        print(PRI2, "Class01::async_op(): eventHandler = std::move(completionHandler);\n");
+        eventHandler = std::move(completionHandler);
         break;
     case UseMode::USE_EVENTQUEUE:
         if (m_eventQueue)
@@ -48,9 +49,9 @@ void Class01::async_op(std::function<void(int)>&& completionHandler)
         break;
     case UseMode::USE_THREAD:
     {
-        std::thread thread1([completionHandler]() {
-            print(PRI1, "Class01::async_op(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        std::thread thread1([this, completionHandler]() {
+            print(PRI1, "Class01::async_op(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));\n");
+            std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));
 
             print(PRI1, "Class01::async_op(): thread1: completionHandler(10);\n");
             completionHandler(10);
@@ -64,8 +65,8 @@ void Class01::async_op(std::function<void(int)>&& completionHandler)
         m_queueSize++;
 
         std::thread thread1([this, completionHandler]() {
-            print(PRI1, "Class01::async_op(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            print(PRI1, "Class01::async_op(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));\n");
+            std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));
             
             std::function<void(int)> completionHandler1 = completionHandler;
             print(PRI1, "Class01::async_op(): thread1: m_eventQueueThr->push(std::move(completionHandler1));\n");

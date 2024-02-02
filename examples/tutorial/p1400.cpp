@@ -26,6 +26,8 @@ std::function<void(int)> eventHandler;        // Will be initialized in async_op
 
 UseMode useMode;
 
+int delay = 10;
+
 /**
  * @brief async_op
  *
@@ -47,8 +49,8 @@ void async_op(std::function<void(int)>&& completionHandler)
     case UseMode::USE_THREAD:
     {
         std::thread thread1([completionHandler]() {
-            print(PRI1, "async_op(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            print(PRI1, "async_op(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", delay);
+            std::this_thread::sleep_for(std::chrono::milliseconds(delay));
 
             print(PRI1, "async_op(): thread1: completionHandler(10);\n");
             completionHandler(10);
@@ -62,8 +64,8 @@ void async_op(std::function<void(int)>&& completionHandler)
         queueSize++;
 
         std::thread thread1([completionHandler]() {
-            print(PRI1, "async_op(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            print(PRI1, "async_op(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", delay);
+            std::this_thread::sleep_for(std::chrono::milliseconds(delay));
 
             //std::function<void(void)> completionHandler2 = [completionHandler]() { completionHandler(10); };    // Not used yet
             std::function<void(int)> completionHandler1 = completionHandler;

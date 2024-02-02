@@ -16,21 +16,18 @@
 
 using namespace corolib;
 
-#include "class01.h"
-
-extern Class01 object01;
-extern Class01 object02;
+#include "p1420.h"
 
 #define CATCH_EXCEPTION_IN_COROUTINE5 1
 #define THROW_EXCEPTION_FROM_COROUTINE5 0
 #define CATCH_EXCEPTION_IN_COROUTINE4 1
 
-async_task<int> coroutine5()
+async_task<int> Class1420::coroutine5()
 {
     print(PRI1, "coroutine5(): async_operation<int> op1 = object01.start_operation();\n");
-    async_operation<int> op1 = object01.start_operation();
+    async_operation<int> op1 = m_object01.start_operation();
     print(PRI1, "coroutine5(): async_operation<int> op2 = object02.start_operation();\n");
-    async_operation<int> op2 = object02.start_operation();
+    async_operation<int> op2 = m_object02.start_operation();
     print(PRI1, "coroutine5(): when_all wa(op1, op2);\n");
     when_all wa(op1, op2);
     int v = 0;
@@ -41,7 +38,7 @@ async_task<int> coroutine5()
     v = op1.get_result() + op2.get_result();
 #else
     try {
-       
+
         print(PRI1, "coroutine5(): int v = op1.get_result() + op2.get_result();\n");
         v = op1.get_result() + op2.get_result();
     }
@@ -60,7 +57,7 @@ async_task<int> coroutine5()
     co_return v + 1;
 }
 
-async_task<int> coroutine4()
+async_task<int> Class1420::coroutine4()
 {
     print(PRI1, "coroutine4(): async_task<int> a = coroutine5();\n");
     async_task<int> a = coroutine5();
@@ -85,7 +82,7 @@ async_task<int> coroutine4()
     co_return v + 1;
 }
 
-async_task<int> coroutine3()
+async_task<int> Class1420::coroutine3()
 {
     print(PRI1, "coroutine3(): async_task<int> a1 = coroutine4();\n");
     async_task<int> a1 = coroutine4();
@@ -103,7 +100,7 @@ async_task<int> coroutine3()
     co_return v1 + v2 + 1;
 }
 
-async_task<int> coroutine2()
+async_task<int> Class1420::coroutine2()
 {
     print(PRI1, "coroutine2(): async_task<int> a = coroutine3();\n");
     async_task<int> a = coroutine3();
@@ -113,7 +110,7 @@ async_task<int> coroutine2()
     co_return v + 1;
 }
 
-async_task<int> coroutine1()
+async_task<int> Class1420::coroutine1()
 {
     print(PRI1, "coroutine1(): async_task<int> a = coroutine2();\n");
     async_task<int> a = coroutine2();

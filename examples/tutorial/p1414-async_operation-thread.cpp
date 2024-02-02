@@ -11,12 +11,7 @@
 
 using namespace corolib;
 
-#include "class01.h"
-
-Class01 object01(UseMode::USE_THREAD);
-
-// Uses coroutine1 implemented in p1410.cpp
-async_task<int> coroutine1();
+#include "p1410.h"
 
 void completionflow()
 {
@@ -27,8 +22,9 @@ int main()
 {
     set_print_level(0x01);        // Use 0x03 to follow the flow in corolib
 
-    print(PRI1, "main(): async_task<int> a = coroutine1();\n");
-    async_task<int> a = coroutine1();
+    Class01 object01(UseMode::USE_THREAD);
+    Class1410 obj1410{ object01 };
+    async_task<int> a = obj1410.coroutine1();
 
     print(PRI1, "main(): completionflow();\n");
     completionflow();

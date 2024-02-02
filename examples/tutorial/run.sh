@@ -168,8 +168,8 @@ echo Running ./p1469-async_operation-thread-imm
 ./p1469-async_operation-thread-imm
 echo Running ./p1472-async_operation-eventqueue
 ./p1472-async_operation-eventqueue
-echo Running ./p1474-async_operation-thread
-./p1474-async_operation-thread
+#echo Running ./p1474-async_operation-thread
+#./p1474-async_operation-thread
 # echo Running ./p1475-async_operation-thread-queue
 # ./p1475-async_operation-thread-queue
 # echo Running ./p1476-async_operation-immediate

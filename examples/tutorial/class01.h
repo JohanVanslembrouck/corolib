@@ -16,17 +16,9 @@
 
 #include "eventqueue.h"
 #include "eventqueuethr.h"
+#include "use_mode.h"
 
 using namespace corolib;
-
-enum class UseMode
-{
-    USE_NONE,
-    USE_EVENTQUEUE,
-    USE_THREAD,
-    USE_THREAD_QUEUE,
-    USE_IMMEDIATE_COMPLETION
-};
 
 class Class01 : public CommService
 {
@@ -40,21 +32,30 @@ public:
         , m_queueSize(0)
     {
     }
-    
+    void setThreadDelay(int delay) { m_delay = delay; }
+
     async_operation<int> start_operation();
     
-    std::function<void(int)> eventHandler;
+    void runEventHandler(int val)
+    {
+        std::function<void(int)> eventHandler_ = eventHandler;
+        eventHandler_(val);
+    }
+
     EventQueueFunctionVoidInt* getEventQueue() { return m_eventQueue; }
 
 protected:
     void async_op(std::function<void(int)>&& completionHandler);
     void start_operation_impl(const int idx);
 
+public: // to be changed to private
+    std::function<void(int)> eventHandler;
 private:
     UseMode     m_useMode;
     EventQueueFunctionVoidInt* m_eventQueue;
     EventQueueThrFunctionVoidInt* m_eventQueueThr;
     int m_queueSize;
+    int m_delay = 10;
 };
 
 #endif

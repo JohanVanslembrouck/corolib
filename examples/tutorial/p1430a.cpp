@@ -19,32 +19,29 @@
 
 using namespace corolib;
 
-#include "class01.h"
+#include "p1430a.h"
 
-extern Class01 object01;
-extern Class01 object02;
-
-async_task<int> coroutine5a()
+async_task<int> Class1430a::coroutine5a()
 {
-    print(PRI1, "coroutine5a(): async_operation<int> op = object01.start_operation();\n");
-    async_operation<int> op = object01.start_operation();
+    print(PRI1, "coroutine5a(): async_operation<int> op = m_object01.start_operation();\n");
+    async_operation<int> op = m_object01.start_operation();
     print(PRI1, "coroutine5a(): int v = co_await op;\n");
     int v = co_await op;
     print(PRI1, "coroutine5a(): co_return v+1 = %d;\n", v + 1);
     co_return v + 1;
 }
 
-async_task<int> coroutine5b()
+async_task<int> Class1430a::coroutine5b()
 {
-    print(PRI1, "coroutine5b(): async_operation<int> op = object02.start_operation();\n");
-    async_operation<int> op = object02.start_operation();
+    print(PRI1, "coroutine5b(): async_operation<int> op = m_object02.start_operation();\n");
+    async_operation<int> op = m_object02.start_operation();
     print(PRI1, "coroutine5b(): int v = co_await op;\n");
     int v = co_await op;
     print(PRI1, "coroutine5b(): co_return v+1 = %d;\n", v + 1);
     co_return v + 1;
 }
 
-async_task<int> coroutine4()
+async_task<int> Class1430a::coroutine4()
 {
     print(PRI1, "coroutine4(): async_task<int> a = coroutine5a();\n");
     async_task<int> a = coroutine5a();
@@ -52,8 +49,8 @@ async_task<int> coroutine4()
     async_task<int> b = coroutine5b();
     print(PRI1, "coroutine4(): when_any wa(a, b);\n");
     when_any wa(a, b);
-	int idx = -1;
-    for (int i = 0; i < 2; i++) 
+    int idx = -1;
+    for (int i = 0; i < 2; i++)
     {
         print(PRI1, "coroutine4: idx : co_await wa;\n");
         idx = co_await wa;
@@ -65,7 +62,7 @@ async_task<int> coroutine4()
     co_return v + 1;
 }
 
-async_task<int> coroutine3()
+async_task<int> Class1430a::coroutine3()
 {
     print(PRI1, "coroutine3(): async_task<int> a1 = coroutine4();\n");
     async_task<int> a1 = coroutine4();
@@ -83,7 +80,7 @@ async_task<int> coroutine3()
     co_return v1 + v2 + 1;
 }
 
-async_task<int> coroutine2()
+async_task<int> Class1430a::coroutine2()
 {
     print(PRI1, "coroutine2(): async_task<int> a = coroutine3();\n");
     async_task<int> a = coroutine3();
@@ -93,7 +90,7 @@ async_task<int> coroutine2()
     co_return v + 1;
 }
 
-async_task<int> coroutine1() {
+async_task<int> Class1430a::coroutine1() {
     print(PRI1, "coroutine1(): async_task<int> a = coroutine2();\n");
     async_task<int> a = coroutine2();
     print(PRI1, "coroutine1(): int v = co_await a;\n");

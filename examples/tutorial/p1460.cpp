@@ -18,26 +18,23 @@
 
 using namespace corolib;
 
-#include "class02.h"
+#include "p1460.h"
 
-extern Class02 object01;
-extern Class02 object02;
-
-async_task<int> coroutine5a()
+async_task<int> Class1460::coroutine5a()
 {
     print(PRI1, "coroutine5a()\n");
     int v = 0;
     for (int i = 0; i < 2; i++)
     {
-        print(PRI1, "coroutine5a(): async_operation<int> op1 = object01.start_operation1();\n");
-        async_operation<int> op1 = object01.start_operation1();
+        print(PRI1, "coroutine5a(): async_operation<int> op1 = m_object01.start_operation1();\n");
+        async_operation<int> op1 = m_object01.start_operation1();
         print(PRI1, "coroutine5a(): v += co_await op1;\n");
         v += co_await op1;
 
-        print(PRI1, "coroutine5a(): async_operation<int> op2a = object01.start_operation2(1);\n");
-        async_operation<int> op2a = object01.start_operation2(1);
-        print(PRI1, "coroutine5a(): async_operation<int> op2a = object01.start_operation2(2);\n");
-        async_operation<int> op2b = object01.start_operation2(2);
+        print(PRI1, "coroutine5a(): async_operation<int> op2a = m_object01.start_operation2(1);\n");
+        async_operation<int> op2a = m_object01.start_operation2(1);
+        print(PRI1, "coroutine5a(): async_operation<int> op2a = m_object01.start_operation2(2);\n");
+        async_operation<int> op2b = m_object01.start_operation2(2);
         print(PRI1, "when_all wa(op2a, op2b);\n");
         when_all wa(op2a, op2b);
         print(PRI1, "coroutine5a(): co_await wa;\n");
@@ -49,21 +46,21 @@ async_task<int> coroutine5a()
     co_return v + 1;
 }
 
-async_task<int> coroutine5b()
+async_task<int> Class1460::coroutine5b()
 {
     print(PRI1, "coroutine5b()\n");
     int v = 0;
     for (int i = 0; i < 2; i++)
     {
-        print(PRI1, "coroutine5b(): async_operation<int> op1 = object02.start_operation1();\n");
-        async_operation<int> op1 = object02.start_operation1();
+        print(PRI1, "coroutine5b(): async_operation<int> op1 = m_object02.start_operation1();\n");
+        async_operation<int> op1 = m_object02.start_operation1();
         print(PRI1, "coroutine5b(): v += co_await op1;\n");
         v += co_await op1;
 
-        print(PRI1, "coroutine5b(): async_operation<int> op2a = object02.start_operation2(1);\n");
-        async_operation<int> op2a = object02.start_operation2(1);
-        print(PRI1, "coroutine5b(): async_operation<int> op2b = object02.start_operation2(2);\n");
-        async_operation<int> op2b = object02.start_operation2(2);
+        print(PRI1, "coroutine5b(): async_operation<int> op2a = m_object02.start_operation2(1);\n");
+        async_operation<int> op2a = m_object02.start_operation2(1);
+        print(PRI1, "coroutine5b(): async_operation<int> op2b = m_object02.start_operation2(2);\n");
+        async_operation<int> op2b = m_object02.start_operation2(2);
         print(PRI1, "when_all wa(op2a, op2b);\n");
         when_all wa(op2a, op2b);
         print(PRI1, "coroutine5b(): co_await wa;\n");
@@ -75,7 +72,7 @@ async_task<int> coroutine5b()
     co_return v + 1;
 }
 
-async_task<int> coroutine4()
+async_task<int> Class1460::coroutine4()
 {
     print(PRI1, "coroutine4(): async_task<int> a = coroutine5a();\n");
     async_task<int> a = coroutine5a();
@@ -91,7 +88,7 @@ async_task<int> coroutine4()
     co_return v + 1;
 }
 
-async_task<int> coroutine3()
+async_task<int> Class1460::coroutine3()
 {
     print(PRI1, "coroutine3(): async_task<int> a1 = coroutine4();\n");
     async_task<int> a1 = coroutine4();
@@ -109,7 +106,7 @@ async_task<int> coroutine3()
     co_return v1 + v2 + 1;
 }
 
-async_task<int> coroutine2()
+async_task<int> Class1460::coroutine2()
 {
     print(PRI1, "coroutine2(): async_task<int> a = coroutine3();\n");
     async_task<int> a = coroutine3();
@@ -119,7 +116,7 @@ async_task<int> coroutine2()
     co_return v + 1;
 }
 
-async_task<int> coroutine1() {
+async_task<int> Class1460::coroutine1() {
     print(PRI1, "coroutine1(): async_task<int> a = coroutine2();\n");
     async_task<int> a = coroutine2();
     print(PRI1, "coroutine1(): int v = co_await a;\n");

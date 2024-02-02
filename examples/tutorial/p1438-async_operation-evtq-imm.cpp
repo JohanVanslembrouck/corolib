@@ -11,14 +11,9 @@
 
 using namespace corolib;
 
-#include "class01.h"
+#include "p1430.h"
 
 EventQueueFunctionVoidInt eventQueue;
-Class01 object01(UseMode::USE_EVENTQUEUE, &eventQueue);
-Class01 object02(UseMode::USE_IMMEDIATE_COMPLETION);
-
-// Uses coroutine1 implemented in p1430.cpp
-async_task<int> coroutine1();
 
 void completionflow()
 {
@@ -30,8 +25,10 @@ int main()
 {
     set_print_level(0x01);        // Use 0x03 to follow the flow in corolib
 
-    print(PRI1, "main(): async_task<int> a = coroutine1();\n");
-    async_task<int> a = coroutine1();
+    Class01 object01(UseMode::USE_EVENTQUEUE, &eventQueue);
+    Class01 object02(UseMode::USE_IMMEDIATE_COMPLETION);
+    Class1430 obj1430{ object01, object02 };
+    async_task<int> a = obj1430.coroutine1();
 
     print(PRI1, "main(): completionflow();\n");
     completionflow();

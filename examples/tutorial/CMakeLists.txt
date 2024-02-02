@@ -120,7 +120,7 @@ add_executable(p1430-async_operation p1430-async_operation.cpp class01.cpp p1430
 target_link_libraries(p1430-async_operation corolib)
 add_executable(p1431-async_operation-exception p1431-async_operation-exception.cpp class01.cpp p1430.cpp)
 target_link_libraries(p1431-async_operation-exception corolib)
-add_executable(p1430a-async_operation p1430-async_operation.cpp class01.cpp p1430a.cpp)
+add_executable(p1430a-async_operation p1430a-async_operation.cpp class01.cpp p1430a.cpp)
 target_link_libraries(p1430a-async_operation corolib)
 add_executable(p1432-async_operation-eventqueue p1432-async_operation-eventqueue.cpp class01.cpp p1430.cpp eventqueue.cpp)
 target_link_libraries(p1432-async_operation-eventqueue corolib)
