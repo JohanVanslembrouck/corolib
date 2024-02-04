@@ -16,6 +16,11 @@
 #ifndef _WHEN_ALL_COUNTER_H_
 #define _WHEN_ALL_COUNTER_H_
 
+#define USE_ATOMIC_COUNTER 1
+
+#if USE_ATOMIC_COUNTER
+#include <atomic>
+#endif
 #include <coroutine>
 #include "print.h"
 
@@ -48,13 +53,21 @@ namespace corolib
          */
         int get_counter()
         {
+#if USE_ATOMIC_COUNTER
+            print(PRI2, "%p: when_all_counter::get_counter(): returns %d\n", this, m_nr.load());
+#else
             print(PRI2, "%p: when_all_counter::get_counter(): returns %d\n", this, m_nr);
+#endif
             return m_nr;
         }
 
         void increment()
         {
+#if USE_ATOMIC_COUNTER
+            print(PRI2, "%p: when_all_counter::increment(): m_nr = %d\n", this, m_nr.load());
+#else
             print(PRI2, "%p: when_all_counter::increment(): m_nr = %d\n", this, m_nr);
+#endif
             m_nr++;
         }
 
@@ -65,7 +78,11 @@ namespace corolib
          */
         std::coroutine_handle<> completed()
         {
+#if USE_ATOMIC_COUNTER
+            print(PRI2, "%p: when_all_counter::completed(): m_nr = %d\n", this, m_nr.load());
+#else
             print(PRI2, "%p: when_all_counter::completed(): m_nr = %d\n", this, m_nr);
+#endif
             m_nr--;
             if (m_nr == 0)
             {
@@ -77,7 +94,11 @@ namespace corolib
 
     private:
         std::coroutine_handle<> m_awaiting;
+#if USE_ATOMIC_COUNTER
+        std::atomic<int> m_nr;
+#else
         int m_nr;
+#endif
     };
 }
 

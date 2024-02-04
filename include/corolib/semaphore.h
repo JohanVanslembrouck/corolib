@@ -25,6 +25,18 @@ namespace corolib
         void reset()
         {
         }
+        
+        void release()
+        {
+            m_binsema.release();
+        }
+
+        void acquire()
+        {
+            m_binsema.acquire();
+        }
+
+        // Original interface
 
         void signal()
         {
@@ -60,6 +72,23 @@ namespace corolib
             std::unique_lock<std::mutex> lock(m_mutex);
             m_count = 0;
         }
+
+        void release()
+        {
+            std::unique_lock<std::mutex> lock(m_mutex);
+            ++m_count;
+            m_condition.notify_one();
+        }
+
+        void acquire()
+        {
+            std::unique_lock < std::mutex > lock(m_mutex);
+            while (!m_count)
+                m_condition.wait(lock);
+            --m_count;
+        }
+
+        // Original interface
 
         void signal()
         {

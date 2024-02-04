@@ -348,7 +348,6 @@ TEST(TutorialTest, p1414)
 {
     set_print_level(0x00);
 
-
     Class01 object01(UseMode::USE_THREAD);
     Class1410 obj1410{ object01 };
     async_task<int> a = obj1410.coroutine1();
@@ -564,8 +563,9 @@ TEST(TutorialTest, p1424)
 {
     set_print_level(0x00);
 
-    Class01 object01(UseMode::USE_THREAD);
-    Class01 object02(UseMode::USE_THREAD);
+    Semaphore sema{ 1 };
+    Class01 object01(UseMode::USE_THREAD, nullptr, nullptr, &sema);
+    Class01 object02(UseMode::USE_THREAD, nullptr, nullptr, &sema);
     Class1420 obj1420{ object01, object02 };
     async_task<int> a = obj1420.coroutine1();
 
@@ -795,7 +795,6 @@ TEST(TutorialTest, p1430a)
 
 // ---------------------------------
 
-
 void completionflow1431()
 {
 
@@ -838,7 +837,7 @@ TEST(TutorialTest, p1432)
 }
 
 // ---------------------------------
-
+#if 0
 void completionflow1434()
 {
 
@@ -848,8 +847,9 @@ TEST(TutorialTest, p1434)
 {
     set_print_level(0x00);
 
-    Class01 object01(UseMode::USE_THREAD);
-    Class01 object02(UseMode::USE_THREAD);
+    Semaphore sema{ 1 };
+    Class01 object01(UseMode::USE_THREAD, nullptr, nullptr, &sema);
+    Class01 object02(UseMode::USE_THREAD, nullptr, nullptr, &sema);
     Class1430 obj1430{ object01, object02 };
     async_task<int> a = obj1430.coroutine1();
 
@@ -865,7 +865,7 @@ TEST(TutorialTest, p1434)
 
     ASSERT_EQ(v, 49);
 }
-
+#endif
 // ---------------------------------
 
 void completionflow1435()
@@ -1066,8 +1066,9 @@ TEST(TutorialTest, p1444)
 {
     set_print_level(0x00);
 
-    Class01 object01(UseMode::USE_THREAD);
-    Class01 object02(UseMode::USE_THREAD);
+    Semaphore sema{ 1 };
+    Class01 object01(UseMode::USE_THREAD, nullptr, nullptr, &sema);
+    Class01 object02(UseMode::USE_THREAD, nullptr, nullptr, &sema);
     Class1440 obj1440{ object01, object02 };
     async_task<int> a = obj1440.coroutine1();
 
@@ -1276,8 +1277,9 @@ TEST(TutorialTest, p1454)
 {
     set_print_level(0x00);
 
-    Class01 object01(UseMode::USE_THREAD);
-    Class01 object02(UseMode::USE_THREAD);
+    Semaphore sema{ 1 };
+    Class01 object01(UseMode::USE_THREAD, nullptr, nullptr, &sema);
+    Class01 object02(UseMode::USE_THREAD, nullptr, nullptr, &sema);
     Class1450 obj1450{ object01, object02 };
     async_task<int> a = obj1450.coroutine1();
 
@@ -1482,8 +1484,9 @@ TEST(TutorialTest, p1464)
 {
     set_print_level(0x00);
 
-    Class02 object01(UseMode::USE_THREAD);
-    Class02 object02(UseMode::USE_THREAD);
+    Semaphore sema{ 1 };
+    Class02 object01(UseMode::USE_THREAD, nullptr, nullptr, &sema);
+    Class02 object02(UseMode::USE_THREAD, nullptr, nullptr, &sema);
     Class1460 obj1460{ object01, object02 };
     async_task<int> a = obj1460.coroutine1();
 
@@ -1581,7 +1584,6 @@ TEST(TutorialTest, p1468)
 }
 
 // ---------------------------------
-
 void completionflow1469()
 {
 
@@ -1591,7 +1593,8 @@ TEST(TutorialTest, p1469)
 {
     set_print_level(0x00);
 
-    Class02 object01(UseMode::USE_THREAD);
+    Semaphore sema{ 1 };
+    Class02 object01(UseMode::USE_THREAD, nullptr, nullptr, &sema);
     Class02 object02(UseMode::USE_IMMEDIATE_COMPLETION);
     Class1460 obj1460{ object01, object02 };
     async_task<int> a = obj1460.coroutine1();

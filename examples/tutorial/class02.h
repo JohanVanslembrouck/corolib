@@ -13,6 +13,7 @@
 
 #include <corolib/commservice.h>
 #include <corolib/async_operation.h>
+#include <corolib/semaphore.h>
 
 #include "eventqueue.h"
 #include "eventqueuethr.h"
@@ -24,15 +25,17 @@ class Class02 : public CommService
 {
 public:
     Class02(UseMode useMode = UseMode::USE_NONE,
-        EventQueueFunctionVoidInt* eventQueue = nullptr,
-        EventQueueThrFunctionVoidInt* eventQueueThr = nullptr)
+            EventQueueFunctionVoidInt* eventQueue = nullptr,
+            EventQueueThrFunctionVoidInt* eventQueueThr = nullptr,
+            Semaphore* semaphore = nullptr)
         : m_useMode(useMode)
         , m_eventQueue(eventQueue)
         , m_eventQueueThr(eventQueueThr)
+        , m_semaphore(semaphore)
         , m_queueSize(0)
     {
     }
-    
+
     void setThreadDelay(int delay) { m_delay = delay; }
 
     async_operation<int> start_operation1();
@@ -58,6 +61,7 @@ private:
     UseMode     m_useMode;
     EventQueueFunctionVoidInt* m_eventQueue;
     EventQueueThrFunctionVoidInt* m_eventQueueThr;
+    Semaphore* m_semaphore;
     int m_queueSize;
     int m_delay = 10;
 };

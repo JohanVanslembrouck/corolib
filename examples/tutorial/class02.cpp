@@ -54,7 +54,11 @@ void Class02::async_op1(const int idx, std::function<void(int)>&& completionHand
             std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));
 
             print(PRI1, "Class02::async_op1(): thread1: this->eventHandler[idx](10);\n", idx);
+            if (m_semaphore)
+                m_semaphore->acquire();
             completionHandler(10);
+            if (m_semaphore)
+                m_semaphore->release();
             print(PRI1, "Class02::async_op1(): thread1: return;\n");
             });
         thread1.detach();
@@ -165,7 +169,11 @@ void Class02::async_op2(int idx, int bias, std::function<void(int)>&& completion
             std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));
 
             print(PRI1, "Class02::async_op2(): thread1: completionHandler(10);\n");
+            if (m_semaphore)
+                m_semaphore->acquire();
             completionHandler(10);
+            if (m_semaphore)
+                m_semaphore->release();
             print(PRI1, "Class02::async_op2(): thread1: return;\n");
             });
         thread1.detach();

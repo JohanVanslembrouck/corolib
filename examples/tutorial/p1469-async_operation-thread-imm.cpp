@@ -13,9 +13,6 @@ using namespace corolib;
 
 #include "p1460.h"
 
-Class02 object01(UseMode::USE_THREAD);
-Class02 object02(UseMode::USE_IMMEDIATE_COMPLETION);
-
 void completionflow()
 {
 
@@ -25,7 +22,8 @@ int main()
 {
     set_print_level(0x01);        // Use 0x03 to follow the flow in corolib
 
-    Class02 object01(UseMode::USE_THREAD);
+    Semaphore sema{ 1 };
+    Class02 object01(UseMode::USE_THREAD, nullptr, nullptr, &sema);
     Class02 object02(UseMode::USE_IMMEDIATE_COMPLETION);
     Class1460 obj1460{ object01, object02 };
     async_task<int> a = obj1460.coroutine1();
