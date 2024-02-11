@@ -13,7 +13,7 @@ using namespace corolib;
 
 #include "p1450.h"
 
-void completionflow(Class1450& obj1450)
+void completionflow(Class1450& obj)
 {
     // Begin manual event completion
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
@@ -21,13 +21,13 @@ void completionflow(Class1450& obj1450)
 
     for (int i = 0; i < 4; i++)
     {
-        print(PRI1, "completionflow(): before obj1450.m_object01.eventHandler(10);\n");
-        obj1450.m_object01.eventHandler(10);
-        print(PRI1, "completionflow(): after obj1450.m_object01.eventHandler(10);\n");
+        print(PRI1, "completionflow(): before obj.m_object01.eventHandler(10);\n");
+        obj.m_object01.eventHandler(10);
+        print(PRI1, "completionflow(): after obj.m_object01.eventHandler(10);\n");
 
-        print(PRI1, "completionflow(): before obj1450.m_object02.eventHandler(10);\n");
-        obj1450.m_object02.eventHandler(10);
-        print(PRI1, "completionflow(): after obj1450.m_object02.eventHandler(10);\n");
+        print(PRI1, "completionflow(): before obj.m_object02.eventHandler(10);\n");
+        obj.m_object02.eventHandler(10);
+        print(PRI1, "completionflow(): after obj.m_object02.eventHandler(10);\n");
 
         print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
@@ -41,11 +41,11 @@ int main()
 
     Class01 object01;
     Class01 object02;
-    Class1450 obj1450{ object01, object02 };
-    async_task<int> a = obj1450.coroutine1();
+    Class1450 obj{ object01, object02 };
+    async_task<int> a = obj.coroutine1();
 
-    print(PRI1, "main(): completionflow(obj1450);\n");
-    completionflow(obj1450);
+    print(PRI1, "main(): completionflow(obj);\n");
+    completionflow(obj);
 
     print(PRI1, "main(): int v = a.get_result();\n");
     int v = a.get_result();

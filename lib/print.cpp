@@ -64,6 +64,13 @@ namespace corolib
         priority = pri;
     }
 
+    void print(int pri)
+    {
+        if (priority & pri)
+        {
+            fprintf(stderr, "\n");
+        }
+    }
     void print(int pri, const char* fmt, ...)
     {
         va_list arg;

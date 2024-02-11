@@ -270,9 +270,6 @@ target_link_libraries(p1910-async_queue corolib)
 add_executable(p1912-async_queue-fibonacci p1912-async_queue-fibonacci.cpp)
 target_link_libraries(p1912-async_queue-fibonacci corolib)
 
-if (WIN32)
-# Not supported with g++11 (?):
-# std::jthread
 add_executable(p2000-async_operation p2000-async_operation.cpp p2000.cpp)
 target_link_libraries(p2000-async_operation corolib)
 add_executable(p2002-async_operation-eventqueue p2002-async_operation-eventqueue.cpp p2000.cpp eventqueue.cpp)
@@ -281,7 +278,6 @@ add_executable(p2004-async_operation-thread p2004-async_operation-thread.cpp p20
 target_link_libraries(p2004-async_operation-thread corolib)
 add_executable(p2005-async_operation-thread-queue p2005-async_operation-thread-queue.cpp p2000.cpp eventqueuethr.cpp)
 target_link_libraries(p2005-async_operation-thread-queue corolib)
-endif()
 
 add_executable(p2010-async_operation p2010-async_operation.cpp p2010.cpp)
 target_link_libraries(p2010-async_operation corolib)
@@ -289,12 +285,8 @@ add_executable(p2012-async_operation-eventqueue p2012-async_operation-eventqueue
 target_link_libraries(p2012-async_operation-eventqueue corolib)
 add_executable(p2014-async_operation-thread p2014-async_operation-thread.cpp p2010.cpp)
 target_link_libraries(p2014-async_operation-thread corolib)
-if (WIN32)
-# Not supported with g++11 (?):
-# std::jthread
 add_executable(p2015-async_operation-thread-queue p2015-async_operation-thread-queue.cpp p2010.cpp eventqueuethr.cpp)
 target_link_libraries(p2015-async_operation-thread-queue corolib)
-endif()
 
 add_executable(p2100-async_operation p2100-async_operation.cpp class01.cpp p2100.cpp)
 target_link_libraries(p2100-async_operation corolib)

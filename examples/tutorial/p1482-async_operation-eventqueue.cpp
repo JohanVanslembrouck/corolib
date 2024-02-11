@@ -5,6 +5,8 @@
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
 
+#include <ranges>
+
 #include "p1480.h"
 
 int main()

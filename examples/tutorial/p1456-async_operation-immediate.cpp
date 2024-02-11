@@ -23,8 +23,8 @@ int main()
 
     Class01 object01(UseMode::USE_IMMEDIATE_COMPLETION);
     Class01 object02(UseMode::USE_IMMEDIATE_COMPLETION);
-    Class1450 obj1450{ object01, object02 };
-    async_task<int> a = obj1450.coroutine1();
+    Class1450 obj{ object01, object02 };
+    async_task<int> a = obj.coroutine1();
 
     print(PRI1, "main(): completionflow();\n");
     completionflow();

@@ -33,6 +33,7 @@ namespace corolib
     inline void set_print_level(int pri) { set_priority(pri); }
 
 	inline void print() { fprintf(stderr, "\n"); }
+    void print(int pri);
     void print(int pri, const char* fmt, ...);
 }
 

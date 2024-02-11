@@ -89,13 +89,13 @@ async_task<int> Class1420::coroutine3()
     print(PRI1, "coroutine3(): int v = co_await a1;\n");
     int v1 = co_await a1;
 
-    print();
+    print(PRI1);
     print(PRI1, "coroutine3(): async_task<int> a2 = coroutine4();\n");
     async_task<int> a2 = coroutine4();
     print(PRI1, "coroutine3(): int v = co_await a2;\n");
     int v2 = co_await a2;
 
-    print();
+    print(PRI1);
     print(PRI1, "coroutine3(): co_return v1+v2+1 = %d;\n", v1 + v2 + 1);
     co_return v1 + v2 + 1;
 }
@@ -117,7 +117,7 @@ async_task<int> Class1420::coroutine1()
     print(PRI1, "coroutine1(): int v = co_await a;\n");
     int v = co_await a;
 
-    print();
+    print(PRI1);
     print(PRI1, "coroutine1(): co_return v+1 = %d;\n", v + 1);
     co_return v + 1;
 }

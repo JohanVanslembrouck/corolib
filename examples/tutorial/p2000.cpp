@@ -170,6 +170,7 @@ void task1()
 
     print(PRI1, "task1: int v = res.get_result();\n");
     int v = res.get_result();
+    print(PRI1, "task1: v = %d;\n", v);
     print(PRI1, "task1: exit\n");
 }
 
@@ -187,6 +188,7 @@ void task2()
 
     print(PRI1, "task2: int v = res.get_result();\n");
     int v = res.get_result();
+    print(PRI1, "task2: v = %d;\n", v);
     print(PRI1, "task2: exit\n");
 }
 
@@ -204,5 +206,6 @@ void task3()
 
     print(PRI1, "task3: int v = res.get_result();\n");
     int v = res.get_result();
+    print(PRI1, "task3: v = %d\n", v);
     print(PRI1, "task3: exit\n");
 }

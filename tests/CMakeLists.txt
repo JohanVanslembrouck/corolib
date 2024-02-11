@@ -2,6 +2,9 @@ project (tutorialtests)
 
 include_directories(../include ../examples/tutorial)
 
+add_executable(p11XX_tests p11XX_tests.cpp)
+target_link_libraries(p11XX_tests corolib gtest_main)
+
 set(target_sources
     p1400.cpp
     p1410.cpp

@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <future>
+#include <thread>
 
 #include "p2010.h"
 #include "eventqueuethr.h"

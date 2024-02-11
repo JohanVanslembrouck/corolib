@@ -68,7 +68,7 @@ namespace corolib
 #else
             print(PRI2, "%p: when_all_counter::increment(): m_nr = %d\n", this, m_nr);
 #endif
-            m_nr++;
+            ++m_nr;
         }
 
         /**
@@ -83,8 +83,7 @@ namespace corolib
 #else
             print(PRI2, "%p: when_all_counter::completed(): m_nr = %d\n", this, m_nr);
 #endif
-            m_nr--;
-            if (m_nr == 0)
+            if (--m_nr == 0)
             {
                 print(PRI2, "%p: when_all_counter::completed(): all replies received\n", this);
                 return m_awaiting;
@@ -95,7 +94,8 @@ namespace corolib
     private:
         std::coroutine_handle<> m_awaiting;
 #if USE_ATOMIC_COUNTER
-        std::atomic<int> m_nr;
+        //std::atomic<int> m_nr;
+        std::atomic_int m_nr;
 #else
         int m_nr;
 #endif

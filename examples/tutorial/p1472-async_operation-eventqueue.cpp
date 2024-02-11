@@ -27,8 +27,8 @@ int main()
 
     Class02 object01(UseMode::USE_EVENTQUEUE, &eventQueue);
     Class02 object02(UseMode::USE_EVENTQUEUE, &eventQueue);
-    Class1470 obj1470{ object01, object02 };
-    async_task<int> a = obj1470.coroutine1();
+    Class1470 obj{ object01, object02 };
+    async_task<int> a = obj.coroutine1();
 
     print(PRI1, "main(): completionflow();\n");
     completionflow();
