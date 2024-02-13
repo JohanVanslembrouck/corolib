@@ -72,7 +72,7 @@ public:
     sum(2, 3);
 #else
     // With coroutines
-    mainflowco();
+    async_task<void> t = mainflowco();
 #endif
 
     printf("Leaving ClientNodeCo::ClientNodeCo\n");

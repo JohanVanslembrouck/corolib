@@ -261,8 +261,9 @@ int main(int argc, char ** argv)
 
     Add_two_ints_Client add_two_ints_Client(node, client);
     mainflow(add_two_ints_Client);
-    mainflowco(add_two_ints_Client);
+    async_task<void> t = mainflowco(add_two_ints_Client);
     add_two_ints_Client.handleEvent();
+    t.wait();
 
     rclcpp::shutdown();
     return 0;

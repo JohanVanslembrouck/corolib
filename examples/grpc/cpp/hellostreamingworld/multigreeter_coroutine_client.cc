@@ -26,8 +26,6 @@
 #include "hellostreamingworld.grpc.pb.h"
 #endif
 
-#define USE_ORIGINAL 0
-
 using grpc::Channel;
 using grpc::ClientContext;
 using grpc::CompletionQueue;
@@ -38,6 +36,8 @@ using grpc::ClientAsyncReaderInterface;
 using hellostreamingworld::MultiGreeter;
 using hellostreamingworld::HelloReply;
 using hellostreamingworld::HelloRequest;
+
+#define USE_ORIGINAL 0
 
 // Added for using corolib
 using namespace corolib;
