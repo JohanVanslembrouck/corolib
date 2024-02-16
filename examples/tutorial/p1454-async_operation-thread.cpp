@@ -20,11 +20,11 @@ void completionflow()
 
 int main()
 {
-    set_print_level(0x00);        // Use 0x03 to follow the flow in corolib
+    set_print_level(0x01);        // Use 0x03 to follow the flow in corolib
 
-    Semaphore sema{ 1 };
-    Class01 object01(UseMode::USE_THREAD, nullptr, nullptr, &sema);
-    Class01 object02(UseMode::USE_THREAD, nullptr, nullptr, &sema);
+    std::mutex mtx;
+    Class01 object01(UseMode::USE_THREAD, nullptr, nullptr, &mtx);
+    Class01 object02(UseMode::USE_THREAD, nullptr, nullptr, &mtx);
     Class1450 obj{ object01, object02 };
     async_task<int> a = obj.coroutine1();
 

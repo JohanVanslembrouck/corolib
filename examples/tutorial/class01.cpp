@@ -53,12 +53,16 @@ void Class01::async_op(std::function<void(int)>&& completionHandler)
             print(PRI1, "Class01::async_op(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));\n");
             std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));
 
-            print(PRI1, "Class01::async_op(): thread1: completionHandler(10);\n");
-            if (m_semaphore)
-                m_semaphore->acquire();
-            completionHandler(10);
-            if (m_semaphore)
-                m_semaphore->release();
+            if (m_mutex) {
+                std::lock_guard<std::mutex> guard(*m_mutex);
+                print(PRI1, "Class01::async_op(): thread1: completionHandler(10);\n");
+                completionHandler(10);
+            }
+            else {
+                print(PRI1, "Class01::async_op(): thread1: completionHandler(10);\n");
+                completionHandler(10);
+            }
+
             print(PRI1, "Class01::async_op(): thread1: return;\n");
             });
         thread1.detach();

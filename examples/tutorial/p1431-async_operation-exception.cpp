@@ -18,24 +18,24 @@ void completionflow(Class1430& obj)
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-    print(PRI1, "completionflow(): before obj.m_object01.eventHandler(-1);\n");
-    obj.m_object01.eventHandler(-1);
-    print(PRI1, "completionflow(): after obj.m_object01.eventHandler(-1);\n");
+    print(PRI1, "completionflow(): before obj.m_object01.runEventHandler(-1);\n");
+    obj.m_object01.runEventHandler(-1);
+    print(PRI1, "completionflow(): after obj.m_object01.runEventHandler(-1);\n");
 
-    print(PRI1, "completionflow(): before obj.m_object02.eventHandler(10);\n");
-    obj.m_object02.eventHandler(10);
-    print(PRI1, "completionflow(): after obj.m_object02.eventHandler(10);\n");
+    print(PRI1, "completionflow(): before obj.m_object02.runEventHandler(10);\n");
+    obj.m_object02.runEventHandler(10);
+    print(PRI1, "completionflow(): after obj.m_object02.runEventHandler(10);\n");
 
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-    print(PRI1, "completionflow(): before obj.m_object02.eventHandler(10);\n");
-    obj.m_object02.eventHandler(10);
-    print(PRI2, "completionflow(): after obj.m_object02.eventHandler(10);\n");
+    print(PRI1, "completionflow(): before obj.m_object02.runEventHandler(10);\n");
+    obj.m_object02.runEventHandler(10);
+    print(PRI2, "completionflow(): after obj.m_object02.runEventHandler(10);\n");
 
-    print(PRI1, "completionflow(): before obj.m_object01.eventHandler(10);\n");
-    obj.m_object01.eventHandler(10);
-    print(PRI1, "completionflow(): after obj.m_object01.eventHandler(10);\n");
+    print(PRI1, "completionflow(): before obj.m_object01.runEventHandler(10);\n");
+    obj.m_object01.runEventHandler(10);
+    print(PRI1, "completionflow(): after obj.m_object01.runEventHandler(10);\n");
 
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));

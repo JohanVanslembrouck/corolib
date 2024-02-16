@@ -22,8 +22,7 @@ int main()
 {
     set_print_level(0x01);        // Use 0x03 to follow the flow in corolib
 
-    Semaphore sema{ 1 };
-    Class02 object01(UseMode::USE_THREAD, nullptr, nullptr, &sema);
+    Class02 object01(UseMode::USE_THREAD);
     Class02 object02(UseMode::USE_IMMEDIATE_COMPLETION);
     Class1460 obj{ object01, object02 };
     async_task<int> a = obj.coroutine1();

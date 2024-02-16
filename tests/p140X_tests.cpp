@@ -236,16 +236,16 @@ void completionflow1410(Class1410& obj)
     print(PRI1, "completionflow1410(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1410(): before object01.eventHandler(10);\n");
-    obj.m_object01.eventHandler(10);
-    print(PRI1, "completionflow1410(): after object01.eventHandler(10);\n");
+    print(PRI1, "completionflow1410(): before object01.runEventHandler(10);\n");
+    obj.m_object01.runEventHandler(10);
+    print(PRI1, "completionflow1410(): after object01.runEventHandler(10);\n");
 
     print(PRI1, "completionflow1410(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1410(): before object01.eventHandler(10);\n");
-    obj.m_object01.eventHandler(10);
-    print(PRI1, "completionflow1410(): after object01.eventHandler(10);\n");
+    print(PRI1, "completionflow1410(): before object01.runEventHandler(10);\n");
+    obj.m_object01.runEventHandler(10);
+    print(PRI1, "completionflow1410(): after object01.runEventHandler(10);\n");
     // End manual event completion
 }
 
@@ -276,20 +276,20 @@ void completionflow1411(Class1410& obj)
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     try {
-        print(PRI1, "completionflow1411(): before obj.m_object01.eventHandler(-1);\n");
-        obj.m_object01.eventHandler(-1);
-        print(PRI1, "completionflow1411(): after obj.m_object01.eventHandler(-1);\n");
+        print(PRI1, "completionflow1411(): before obj.m_object01.runEventHandler(-1);\n");
+        obj.m_object01.runEventHandler(-1);
+        print(PRI1, "completionflow1411(): after obj.m_object01.runEventHandler(-1);\n");
     }
     catch (...) {
-        print(PRI1, "completionflow1411: caught exception after obj.m_object01.eventHandler(-1);\n");
+        print(PRI1, "completionflow1411: caught exception after obj.m_object01.runEventHandler(-1);\n");
     }
 
     print(PRI1, "completionflow1411(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1411(): before obj.m_object01.eventHandler(10);\n");
-    obj.m_object01.eventHandler(10);
-    print(PRI1, "completionflow1411(): after obj.m_object01.eventHandler(10);\n");
+    print(PRI1, "completionflow1411(): before obj.m_object01.runEventHandler(10);\n");
+    obj.m_object01.runEventHandler(10);
+    print(PRI1, "completionflow1411(): after obj.m_object01.runEventHandler(10);\n");
     // End manual event completion
 }
 
@@ -425,24 +425,24 @@ void completionflow1420(Class1420& obj)
     print(PRI1, "completionflow1420(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1420(): before obj.m_object02.eventHandler(10);\n");
-    obj.m_object02.eventHandler(10);
-    print(PRI1, "completionflow1420(): after obj.m_object02.eventHandler(10);\n");
+    print(PRI1, "completionflow1420(): before obj.m_object02.runEventHandler(10);\n");
+    obj.m_object02.runEventHandler(10);
+    print(PRI1, "completionflow1420(): after obj.m_object02.runEventHandler(10);\n");
 
-    print(PRI1, "completionflow1420(): before obj.m_object01.eventHandler(10);\n");
-    obj.m_object01.eventHandler(10);
-    print(PRI1, "completionflow1420(): after obj.m_object01.eventHandler(10);\n");
+    print(PRI1, "completionflow1420(): before obj.m_object01.runEventHandler(10);\n");
+    obj.m_object01.runEventHandler(10);
+    print(PRI1, "completionflow1420(): after obj.m_object01.runEventHandler(10);\n");
 
     print(PRI1, "completionflow1420(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1420(): before obj.m_object01.eventHandler(10);\n");
-    obj.m_object01.eventHandler(10);
-    print(PRI1, "completionflow1420(): after obj.m_object01.eventHandler(10);\n");
+    print(PRI1, "completionflow1420(): before obj.m_object01.runEventHandler(10);\n");
+    obj.m_object01.runEventHandler(10);
+    print(PRI1, "completionflow1420(): after obj.m_object01.runEventHandler(10);\n");
 
-    print(PRI1, "completionflow1420(): before obj.m_object02.eventHandler(10);\n");
-    obj.m_object02.eventHandler(10);
-    print(PRI1, "completionflow1420(): after obj.m_object02.eventHandler(10);\n");
+    print(PRI1, "completionflow1420(): before obj.m_object02.runEventHandler(10);\n");
+    obj.m_object02.runEventHandler(10);
+    print(PRI1, "completionflow1420(): after obj.m_object02.runEventHandler(10);\n");
 
     print(PRI1, "completionflow1420(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -476,14 +476,14 @@ void completionflow1421(Class1420& obj)
     print(PRI1, "completionflow1421(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1421(): before object02.eventHandler(10);\n");
-    obj.m_object02.eventHandler(10);
-    print(PRI1, "completionflow1421(): after object02.eventHandler(10);\n");
+    print(PRI1, "completionflow1421(): before object02.runEventHandler(10);\n");
+    obj.m_object02.runEventHandler(10);
+    print(PRI1, "completionflow1421(): after object02.runEventHandler(10);\n");
 
     try {
-        print(PRI1, "completionflow1421(): before object01.eventHandler(-1);\n");
-        obj.m_object01.eventHandler(-1);
-        print(PRI1, "completionflow1421(): after object01.eventHandler(-1);\n");
+        print(PRI1, "completionflow1421(): before object01.runEventHandler(-1);\n");
+        obj.m_object01.runEventHandler(-1);
+        print(PRI1, "completionflow1421(): after object01.runEventHandler(-1);\n");
     }
     catch (...) {
         print(PRI1, "completionflow1421: caught exception after object01.eventHandler(-1);\n");
@@ -492,13 +492,13 @@ void completionflow1421(Class1420& obj)
     print(PRI1, "completionflow1421(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1421(): before object01.eventHandler(10);\n");
-    obj.m_object01.eventHandler(10);
-    print(PRI1, "completionflow1421(): after object01.eventHandler(10);\n");
+    print(PRI1, "completionflow1421(): before object01.runEventHandler(10);\n");
+    obj.m_object01.runEventHandler(10);
+    print(PRI1, "completionflow1421(): after object01.runEventHandler(10);\n");
 
-    print(PRI1, "completionflow1421(): before object02.eventHandler(10);\n");
-    obj.m_object02.eventHandler(10);
-    print(PRI1, "completionflow1421(): after object02.eventHandler(10);\n");
+    print(PRI1, "completionflow1421(): before object02.runEventHandler(10);\n");
+    obj.m_object02.runEventHandler(10);
+    print(PRI1, "completionflow1421(): after object02.runEventHandler(10);\n");
 
     print(PRI1, "completionflow1421(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -562,9 +562,9 @@ TEST(TutorialTest, p1424)
 {
     set_print_level(0x00);
 
-    Semaphore sema{ 1 };
-    Class01 object01(UseMode::USE_THREAD, nullptr, nullptr, &sema);
-    Class01 object02(UseMode::USE_THREAD, nullptr, nullptr, &sema);
+    std::mutex mtx;
+    Class01 object01(UseMode::USE_THREAD, nullptr, nullptr, &mtx);
+    Class01 object02(UseMode::USE_THREAD, nullptr, nullptr, &mtx);
     Class1420 obj{ object01, object02 };
     async_task<int> a = obj.coroutine1();
 
@@ -574,6 +574,11 @@ TEST(TutorialTest, p1424)
     print(PRI1, "p1424(): int v = a.get_result();\n");
     int v = a.get_result();
     print(PRI1, "p1424(): v = %d\n", v);
+
+    // Added timer to avoid the following sporadic error:
+    // D:\a\_work\1\s\src\vctools\crt\github\stl\src\mutex.cpp(49): mutex destroyed while busy
+    print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     ASSERT_EQ(v, 47);
 }
@@ -696,24 +701,24 @@ void completionflow1430(Class1430& obj)
     print(PRI1, "completionflow1430(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1430(): before obj.m_object01.eventHandler(10);\n");
-    obj.m_object01.eventHandler(10);
-    print(PRI1, "completionflow1430(): after obj.m_object01.eventHandler(10);\n");
+    print(PRI1, "completionflow1430(): before obj.m_object01.runEventHandler(10);\n");
+    obj.m_object01.runEventHandler(10);
+    print(PRI1, "completionflow1430(): after obj.m_object01.runEventHandler(10);\n");
 
-    print(PRI1, "completionflow1430(): before obj.m_object02.eventHandler(10);\n");
-    obj.m_object02.eventHandler(10);
-    print(PRI1, "completionflow1430(): after obj.m_object02.eventHandler(10);\n");
+    print(PRI1, "completionflow1430(): before obj.m_object02.runEventHandler(10);\n");
+    obj.m_object02.runEventHandler(10);
+    print(PRI1, "completionflow1430(): after obj.m_object02.runEventHandler(10);\n");
 
     print(PRI1, "completionflow1430(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1430(): before obj.m_object02.eventHandler(10);\n");
-    obj.m_object02.eventHandler(10);
-    print(PRI2, "completionflow1430(): after obj.m_object02.eventHandler(10);\n");
+    print(PRI1, "completionflow1430(): before obj.m_object02.runEventHandler(10);\n");
+    obj.m_object02.runEventHandler(10);
+    print(PRI2, "completionflow1430(): after obj.m_object02.runEventHandler(10);\n");
 
-    print(PRI1, "completionflow1430(): before obj.m_object01.eventHandler(10);\n");
-    obj.m_object01.eventHandler(10);
-    print(PRI1, "completionflow1430(): after obj.m_object01.eventHandler(10);\n");
+    print(PRI1, "completionflow1430(): before obj.m_object01.runEventHandler(10);\n");
+    obj.m_object01.runEventHandler(10);
+    print(PRI1, "completionflow1430(): after obj.m_object01.runEventHandler(10);\n");
 
     print(PRI1, "completionflow1430(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -749,24 +754,24 @@ void completionflow1430a(Class1430a& obj)
     print(PRI1, "completionflow1430a(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1430a(): before obj.m_object01.eventHandler(10);\n");
-    obj.m_object01.eventHandler(10);
-    print(PRI1, "completionflow1430a(): after obj.m_object01.eventHandler(10);\n");
+    print(PRI1, "completionflow1430a(): before obj.m_object01.runEventHandler(10);\n");
+    obj.m_object01.runEventHandler(10);
+    print(PRI1, "completionflow1430a(): after obj.m_object01.runEventHandler(10);\n");
 
-    print(PRI1, "completionflow1430a(): before obj.m_object02.eventHandler(10);\n");
-    obj.m_object02.eventHandler(10);
-    print(PRI1, "completionflow1430a(): after obj.m_object02.eventHandler(10);\n");
+    print(PRI1, "completionflow1430a(): before obj.m_object02.runEventHandler(10);\n");
+    obj.m_object02.runEventHandler(10);
+    print(PRI1, "completionflow1430a(): after obj.m_object02.runEventHandler(10);\n");
 
     print(PRI1, "completionflow1430a(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1430a(): before obj.m_object02.eventHandler(10);\n");
-    obj.m_object02.eventHandler(10);
-    print(PRI2, "completionflow1430a(): after obj.m_object02.eventHandler(10);\n");
+    print(PRI1, "completionflow1430a(): before obj.m_object02.runEventHandler(10);\n");
+    obj.m_object02.runEventHandler(10);
+    print(PRI2, "completionflow1430a(): after obj.m_object02.runEventHandler(10);\n");
 
-    print(PRI1, "completionflow1430a(): before obj.m_object01.eventHandler(10);\n");
-    obj.m_object01.eventHandler(10);
-    print(PRI1, "completionflow1430a(): after obj.m_object01.eventHandler(10);\n");
+    print(PRI1, "completionflow1430a(): before obj.m_object01.runEventHandler(10);\n");
+    obj.m_object01.runEventHandler(10);
+    print(PRI1, "completionflow1430a(): after obj.m_object01.runEventHandler(10);\n");
 
     print(PRI1, "completionflow1430a(): std::this_thread::sleep_for(std::chrono::milliseconds(00));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -836,7 +841,7 @@ TEST(TutorialTest, p1432)
 }
 
 // ---------------------------------
-#if 0
+
 void completionflow1434()
 {
 
@@ -846,9 +851,9 @@ TEST(TutorialTest, p1434)
 {
     set_print_level(0x00);
 
-    Semaphore sema{ 1 };
-    Class01 object01(UseMode::USE_THREAD, nullptr, nullptr, &sema);
-    Class01 object02(UseMode::USE_THREAD, nullptr, nullptr, &sema);
+    std::mutex mtx;
+    Class01 object01(UseMode::USE_THREAD, nullptr, nullptr, &mtx);
+    Class01 object02(UseMode::USE_THREAD, nullptr, nullptr, &mtx);
     Class1430 obj{ object01, object02 };
     async_task<int> a = obj.coroutine1();
 
@@ -859,12 +864,14 @@ TEST(TutorialTest, p1434)
     int v = a.get_result();
     print(PRI1, "p1434(): v = %d\n", v);
 
+    // Added timer to avoid the following sporadic error:
+    // D:\a\_work\1\s\src\vctools\crt\github\stl\src\mutex.cpp(49): mutex destroyed while busy
     print(PRI1, "p1434(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     ASSERT_EQ(v, 49);
 }
-#endif
+
 // ---------------------------------
 
 void completionflow1435()
@@ -983,24 +990,24 @@ void completionflow1440(Class1440& obj)
     print(PRI1, "completionflow1440(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1440(): before obj.m_object01.eventHandler(10);\n");
-    obj.m_object01.eventHandler(10);
-    print(PRI1, "completionflow1440(): after obj.m_object01.eventHandler(10);\n");
+    print(PRI1, "completionflow1440(): before obj.m_object01.runEventHandler(10);\n");
+    obj.m_object01.runEventHandler(10);
+    print(PRI1, "completionflow1440(): after obj.m_object01.runEventHandler(10);\n");
 
-    print(PRI1, "completionflow1440(): before obj.m_object02.eventHandler(10);\n");
-    obj.m_object02.eventHandler(10);
-    print(PRI1, "completionflow1440(): after obj.m_object02.eventHandler(10);\n");
+    print(PRI1, "completionflow1440(): before obj.m_object02.runEventHandler(10);\n");
+    obj.m_object02.runEventHandler(10);
+    print(PRI1, "completionflow1440(): after obj.m_object02.runEventHandler(10);\n");
 
     print(PRI1, "completionflow1440(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1440(): before obj.m_object02.eventHandler(10);\n");
-    obj.m_object02.eventHandler(10);
-    print(PRI2, "completionflow1440(): after obj.m_object02.eventHandler(10);\n");
+    print(PRI1, "completionflow1440(): before obj.m_object02.runEventHandler(10);\n");
+    obj.m_object02.runEventHandler(10);
+    print(PRI2, "completionflow1440(): after obj.m_object02.runEventHandler(10);\n");
 
-    print(PRI1, "completionflow1440(): before obj.m_object01.eventHandler(10);\n");
-    obj.m_object01.eventHandler(10);
-    print(PRI1, "completionflow1440(): after obj.m_object01.eventHandler(10);\n");
+    print(PRI1, "completionflow1440(): before obj.m_object01.runEventHandler(10);\n");
+    obj.m_object01.runEventHandler(10);
+    print(PRI1, "completionflow1440(): after obj.m_object01.runEventHandler(10);\n");
 
     print(PRI1, "completionflow1440(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -1065,9 +1072,9 @@ TEST(TutorialTest, p1444)
 {
     set_print_level(0x00);
 
-    Semaphore sema{ 1 };
-    Class01 object01(UseMode::USE_THREAD, nullptr, nullptr, &sema);
-    Class01 object02(UseMode::USE_THREAD, nullptr, nullptr, &sema);
+    std::mutex mtx;
+    Class01 object01(UseMode::USE_THREAD, nullptr, nullptr, &mtx);
+    Class01 object02(UseMode::USE_THREAD, nullptr, nullptr, &mtx);
     Class1440 obj{ object01, object02 };
     async_task<int> a = obj.coroutine1();
 
@@ -1077,6 +1084,11 @@ TEST(TutorialTest, p1444)
     print(PRI1, "p1444(): int v = a.get_result();\n");
     int v = a.get_result();
     print(PRI1, "p1444(): v = %d\n", v);
+
+    // Added timer to avoid the following sporadic error:
+    // D:\a\_work\1\s\src\vctools\crt\github\stl\src\mutex.cpp(49): mutex destroyed while busy
+    print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     ASSERT_EQ(v, 46);
 }
@@ -1202,13 +1214,13 @@ void completionflow1450(Class1450& obj)
 
     for (int i = 0; i < 4; i++)
     {
-        print(PRI1, "completionflow1450(): before obj.m_object01.eventHandler(10);\n");
-        obj.m_object01.eventHandler(10);
-        print(PRI1, "completionflow1450(): after obj.m_object01.eventHandler(10);\n");
+        print(PRI1, "completionflow1450(): before obj.m_object01.runEventHandler(10);\n");
+        obj.m_object01.runEventHandler(10);
+        print(PRI1, "completionflow1450(): after obj.m_object01.runEventHandler(10);\n");
 
-        print(PRI1, "completionflow1450(): before obj.m_object02.eventHandler(10);\n");
-        obj.m_object02.eventHandler(10);
-        print(PRI1, "completionflow1450(): after obj.m_object02.eventHandler(10);\n");
+        print(PRI1, "completionflow1450(): before obj.m_object02.runEventHandler(10);\n");
+        obj.m_object02.runEventHandler(10);
+        print(PRI1, "completionflow1450(): after obj.m_object02.runEventHandler(10);\n");
 
         print(PRI1, "completionflow1450(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -1276,9 +1288,9 @@ TEST(TutorialTest, p1454)
 {
     set_print_level(0x00);
 
-    Semaphore sema{ 1 };
-    Class01 object01(UseMode::USE_THREAD, nullptr, nullptr, &sema);
-    Class01 object02(UseMode::USE_THREAD, nullptr, nullptr, &sema);
+    std::mutex mtx;
+    Class01 object01(UseMode::USE_THREAD, nullptr, nullptr, &mtx);
+    Class01 object02(UseMode::USE_THREAD, nullptr, nullptr, &mtx);
     Class1450 obj{ object01, object02 };
     async_task<int> a = obj.coroutine1();
 
@@ -1288,6 +1300,11 @@ TEST(TutorialTest, p1454)
     print(PRI1, "p1454(): int v = a.get_result();\n");
     int v = a.get_result();
     print(PRI1, "p1454(): v = %d\n", v);
+
+    // Added timer to avoid the following sporadic error:
+    // D:\a\_work\1\s\src\vctools\crt\github\stl\src\mutex.cpp(49): mutex destroyed while busy
+    print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     ASSERT_EQ(v, 89);
 }
@@ -1412,13 +1429,13 @@ void completionflow1460(Class1460& obj)
 
     for (int i = 0; i < 12; i++)
     {
-        print(PRI1, "completionflow1460(): before obj.m_object01.eventHandler[%d](10);\n", i);
-        obj.m_object01.eventHandler[i](10);
-        print(PRI1, "completionflow1460(): after obj.m_object01.eventHandler[%d](10);\n", i);
+        print(PRI1, "completionflow1460(): before obj.m_object01.eventHandler(%d, 10);\n", i);
+        obj.m_object01.runEventHandler(i, 10);
+        print(PRI1, "completionflow1460(): after obj.m_object01.eventHandler(%d, 10);\n", i);
 
-        print(PRI1, "completionflow1460(): before obj.m_object02.eventHandler[%d](10);\n", i);
-        obj.m_object02.eventHandler[i](10);
-        print(PRI1, "completionflow1460(): after obj.m_object02.eventHandler[%d](10);\n", i);
+        print(PRI1, "completionflow1460(): before obj.m_object02.eventHandler(%d, 10);\n", i);
+        obj.m_object02.runEventHandler(i, 10);
+        print(PRI1, "completionflow1460(): after obj.m_object02.eventHandler(%d, 10);\n", i);
 
         print(PRI1, "completionflow1460(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -1483,9 +1500,9 @@ TEST(TutorialTest, p1464)
 {
     set_print_level(0x00);
 
-    Semaphore sema{ 1 };
-    Class02 object01(UseMode::USE_THREAD, nullptr, nullptr, &sema);
-    Class02 object02(UseMode::USE_THREAD, nullptr, nullptr, &sema);
+    std::mutex mtx;
+    Class02 object01(UseMode::USE_THREAD, nullptr, nullptr, &mtx);
+    Class02 object02(UseMode::USE_THREAD, nullptr, nullptr, &mtx);
     Class1460 obj{ object01, object02 };
     async_task<int> a = obj.coroutine1();
 
@@ -1495,6 +1512,11 @@ TEST(TutorialTest, p1464)
     print(PRI1, "p1464(): int v = a.get_result();\n");
     int v = a.get_result();
     print(PRI1, "p1464(): v = %d\n", v);
+
+    // Added timer to avoid the following sporadic error:
+    // D:\a\_work\1\s\src\vctools\crt\github\stl\src\mutex.cpp(49): mutex destroyed while busy
+    print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     ASSERT_EQ(v, 249);
 }
@@ -1593,8 +1615,8 @@ TEST(TutorialTest, p1469)
 {
     set_print_level(0x00);
 
-    Semaphore sema{ 1 };
-    Class02 object01(UseMode::USE_THREAD, nullptr, nullptr, &sema);
+    std::mutex mtx;
+    Class02 object01(UseMode::USE_THREAD);
     Class02 object02(UseMode::USE_IMMEDIATE_COMPLETION);
     Class1460 obj{ object01, object02 };
     async_task<int> a = obj.coroutine1();

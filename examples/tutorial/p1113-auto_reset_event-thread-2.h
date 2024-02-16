@@ -21,8 +21,8 @@ using namespace corolib;
 class Class1113
 {
 public:
-    Class1113(std::mutex* mutx = nullptr)
-        : m_mutex(mutx)
+    Class1113(std::mutex* mtx = nullptr)
+        : m_mutex(mtx)
     {
     }
 
@@ -34,12 +34,16 @@ public:
             print(PRI1, "coroutine4a(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", m_delay);
             std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));
 
-            if (m_mutex)
-                m_mutex->lock();
-            print(PRI1, "coroutine4a(): thread1: are.resume();\n");
-            are.resume();
-            if (m_mutex)
-                m_mutex->unlock();
+            if (m_mutex) {
+                std::lock_guard<std::mutex> guard(*m_mutex);
+                print(PRI1, "coroutine4a(): thread1: are.resume();\n");
+                are.resume();
+            }
+            else {
+                print(PRI1, "coroutine4a(): thread1: are.resume();\n");
+                are.resume();
+            }
+           
             print(PRI1, "coroutine4a(): thread1: return;\n");
             });
         thread1.detach();
@@ -59,12 +63,16 @@ public:
             print(PRI1, "coroutine4b(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", m_delay);
             std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));
 
-            if (m_mutex)
-                m_mutex->lock();
-            print(PRI1, "coroutine4b(): thread1: are.resume();\n");
-            are.resume();
-            if (m_mutex)
-                m_mutex->unlock();
+            if (m_mutex) {
+                std::lock_guard<std::mutex> guard(*m_mutex);
+                print(PRI1, "coroutine4b(): thread1: are.resume();\n");
+                are.resume();
+            }
+            else {
+                print(PRI1, "coroutine4b(): thread1: are.resume();\n");
+                are.resume();
+            }
+
             print(PRI1, "coroutine4b(): thread1: return;\n");
             });
         thread1.detach();
@@ -108,7 +116,7 @@ public:
 
 private:
     int m_delay = 10;
-    std::mutex* m_mutex = nullptr;
+    std::mutex* m_mutex;
 };
 
 #endif

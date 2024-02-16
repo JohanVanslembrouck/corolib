@@ -27,7 +27,6 @@ public:
     }
 
     async_task<int> coroutine1();
-private:
     async_task<int> coroutine2();
     async_task<int> coroutine3();
     async_task<int> coroutine4();

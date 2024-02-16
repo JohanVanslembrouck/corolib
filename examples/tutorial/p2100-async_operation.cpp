@@ -21,16 +21,16 @@ void completionflow()
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-    print(PRI1, "completionflow(): before object01.eventHandler(10);\n");
-    thr_object01.eventHandler(10);
-    print(PRI1, "completionflow(): after object01.eventHandler(10);\n");
+    print(PRI1, "completionflow(): before object01.runEventHandler(10);\n");
+    thr_object01.runEventHandler(10);
+    print(PRI1, "completionflow(): after object01.runEventHandler(10);\n");
 
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-    print(PRI1, "completionflow(): before object01.eventHandler(10);\n");
-    thr_object01.eventHandler(10);
-    print(PRI1, "completionflow(): after object01.eventHandler(10);\n");
+    print(PRI1, "completionflow(): before object01.runEventHandler(10);\n");
+    thr_object01.runEventHandler(10);
+    print(PRI1, "completionflow(): after object01.runEventHandler(10);\n");
     // End manual event completion
 }
 

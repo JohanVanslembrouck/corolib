@@ -27,11 +27,11 @@ public:
     Class01(UseMode useMode = UseMode::USE_NONE,
             EventQueueFunctionVoidInt* eventQueue = nullptr,
             EventQueueThrFunctionVoidInt* eventQueueThr = nullptr,
-            Semaphore* semaphore = nullptr)
+            std::mutex* mtx = nullptr)
         : m_useMode(useMode)
         , m_eventQueue(eventQueue)
         , m_eventQueueThr(eventQueueThr)
-        , m_semaphore(semaphore)
+        , m_mutex(mtx)
         , m_queueSize(0)
     {
     }
@@ -51,14 +51,13 @@ public:
 protected:
     void async_op(std::function<void(int)>&& completionHandler);
     void start_operation_impl(const int idx);
-
-public: // to be changed to private
-    std::function<void(int)> eventHandler;
+    
 private:
+    std::function<void(int)> eventHandler;
     UseMode     m_useMode;
     EventQueueFunctionVoidInt* m_eventQueue;
     EventQueueThrFunctionVoidInt* m_eventQueueThr;
-    Semaphore* m_semaphore;
+    std::mutex* m_mutex;
     int m_queueSize;
     int m_delay = 10;
 };
