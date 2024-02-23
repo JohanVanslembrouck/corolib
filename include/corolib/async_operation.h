@@ -123,7 +123,8 @@ namespace corolib
         bool m_ready;
         bool m_autoreset;
         bool m_timestamp;
-    };
+    }; // class async_operation_base
+
 
     template<typename TYPE>
     class async_operation : public async_operation_base
@@ -240,7 +241,8 @@ namespace corolib
     private:
         TYPE m_result;
         int m_errorCode;
-    };
+    }; // template<typename TYPE> class async_operation
+
 
     template<>
     class async_operation<void> : public async_operation_base
@@ -290,8 +292,8 @@ namespace corolib
 
             return awaiter{ *this };
         }
-    };
+    }; // template<> class async_operation<void>
 
-}
+} // namespace corolib
 
 #endif

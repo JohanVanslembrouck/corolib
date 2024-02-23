@@ -355,28 +355,4 @@ The transformed code may now look as follows:
 
 ## Overview of the settings
 
-The following settings are defined and set in async_task.h.
-
-For the asymmetric approach, the following 6 combinations are possible:
-
-```c++
-// Asymmetric transfer
-// Possible combinations:                           1   2   3   4   5   6
-// ----------------------------------------------------------------------
-// #define USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN    0   0   1   1   1   1
-// #define USE_FINAL_AWAITER1                       0   1   0   1   0   1
-// #define USE_RESULT_FROM_COROUTINE_OBJECT         0   0   0   0   1   1
-//
-// #define USE_FINAL_AWAITER2                       0   0   0   0   0   0
-```
-
-To use the original implementation, set all 4 compiler directives to 0.
-
-The combinations with USE_FINAL_AWAITER1 enabled display unreliable behavior 
-in multi-threaded applications. (Currently corolib does not use any atomics.)
-
-USE_RESULT_FROM_COROUTINE_OBJECT = 1 requires USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN = 1
-
-To use symmetric transfer, set USE_FINAL_AWAITER2 to 1 and USE_FINAL_AWAITER1 to 0.
-In addition, USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN can be set to 1.
-There is no need to set USE_RESULT_FROM_COROUTINE_OBJECT to 1.
+Please see the comments in async_task.h.
