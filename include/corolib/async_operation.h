@@ -38,11 +38,11 @@ namespace corolib
         async_operation_base(CommService* s = nullptr, int index = -1, bool timestamp = false);
         virtual ~async_operation_base();
 		
-        async_operation_base(const async_operation_base& s) = delete;
-        async_operation_base(async_operation_base&& s) noexcept;
+        async_operation_base(const async_operation_base&) = delete;
+        async_operation_base(async_operation_base&&) noexcept;
 
         async_operation_base& operator = (const async_operation_base&) = delete;
-        async_operation_base& operator = (async_operation_base&& s) noexcept;
+        async_operation_base& operator = (async_operation_base&&) noexcept;
     
         /**
          * @brief completed is called from the callback function
@@ -141,6 +141,30 @@ namespace corolib
             , m_errorCode{ 0 }
         {
             print(PRI2, "%p: async_operation<TYPE>::async_operation()\n", this);
+        }
+
+        ~async_operation()
+        {
+            print(PRI2, "%p: async_operation<TYPE>::~async_operation()\n", this);
+        }
+
+        async_operation(const async_operation& other) = delete;
+        async_operation(async_operation&& other) noexcept
+            : async_operation_base(std::move(other))
+            , m_result(std::move(other.m_result))
+            , m_errorCode(other.m_errorCode)
+        {
+            print(PRI2, "%p: async_operation<TYPE>::async_operation((async_operation&& s)\n", this);
+        }
+
+        async_operation& operator = (const async_operation&) = delete;
+        async_operation& operator = (async_operation&& other) noexcept
+        {
+            print(PRI2, "%p: async_operation<TYPE>::operator = (async_operation&& s)\n", this);
+            async_operation_base::operator = (std::move(other));
+            m_result = std::move(other.m_result);
+            m_errorCode = other.m_errorCode;
+            return *this;
         }
 
         /**

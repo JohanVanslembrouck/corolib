@@ -41,6 +41,11 @@
 #include "when_all_counter.h"
 #include "when_any_one.h"
 
+// Some compilers require the copy or move constructor to be present
+// to be able to return an object from get_return_object().
+// For other compilers (MSVC, g++11) DECLARE_MOVE_CONSTRUCTORS_AS_DELETED can be set to 1
+#define DECLARE_MOVE_CONSTRUCTORS_AS_DELETED 0
+#define DECLARE_MOVE_ASSIGMENT_OPERATORS_AS_DELETED 1
 
 #define USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN 1
 #define USE_RESULT_FROM_COROUTINE_OBJECT 0
@@ -104,20 +109,41 @@ namespace corolib
             , m_exception{nullptr}
             , m_ready{false}
         {
+            print(PRI2, "%p: result_t::result_t();\n", this);
         }
 
         ~result_t()
         {
+            print(PRI2, "%p: result_t::~result_t();\n", this);
+
             m_value = {};
             m_exception = nullptr;
             m_ready = false;
         }
 
         result_t(const result_t&) = delete;
-        result_t(result_t&&) = default;
+ 
+        result_t(result_t&& other)
+            : m_value(other.m_value)
+            , m_exception(other.m_exception)
+            , m_ready(other.m_ready)
+        {
+            print(PRI2, "%p: result_t::result_t(result_t&& other);\n", this);
+            other.m_exception = nullptr;
+            other.m_ready = false;
+        }
 
         result_t& operator = (const result_t&) = delete;
-        result_t& operator = (result_t&&) = default;
+ 
+        result_t& operator = (result_t&& other) noexcept
+        {
+            print(PRI2, "%p: result_t::operator = (result_t&& other);\n", this);
+            m_value = other.m_value;
+            m_exception = other.m_exception;
+            m_ready = other.m_ready;
+            other.m_exception = nullptr;
+            other.m_ready = false;
+        }
 
         void set_value(const TYPE& value)
         {
@@ -159,27 +185,29 @@ namespace corolib
         struct promise_type;
         using handle_type = std::coroutine_handle<promise_type>;
 
-        async_task_base(const async_task_base& s) = delete;
-
-        async_task_base(async_task_base&& s)
-            : m_coro_handle{s.m_coro_handle}
+        async_task_base(const async_task_base&) = delete;
+#if DECLARE_MOVE_CONSTRUCTORS_AS_DELETED
+        async_task_base(async_task_base&&) = delete;
+#else
+        async_task_base(async_task_base&& other)
+            : m_coro_handle{ other.m_coro_handle}
 #if USE_RESULT_FROM_COROUTINE_OBJECT
-            , m_result{ std::move(s.m_result) }
+            , m_result{ std::move(other.m_result) }
 #endif
         {
-            print(PRI2, "%p: async_task_base::async_task_base(async_task_base&& s)\n", this);
-            s.m_coro_handle = nullptr;
+            print(PRI2, "%p: async_task_base::async_task_base(async_task_base&& other)\n", this);
+            other.m_coro_handle = nullptr;
 #if USE_RESULT_FROM_COROUTINE_OBJECT
-            s.m_result = { };
+            other.m_result = { };
 #endif
 #if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
-            m_promise_type = s.m_promise_type;
-            m_promise_valid = s.m_promise_valid;
-            s.m_promise_type = nullptr;
-            s.m_promise_valid = false;
+            m_promise_type = other.m_promise_type;
+            m_promise_valid = other.m_promise_valid;
+            other.m_promise_type = nullptr;
+            other.m_promise_valid = false;
 #endif
         }
-
+#endif
         ~async_task_base()
         {
             print(PRI2, "%p: async_task_base::~async_task_base()\n", this);
@@ -213,27 +241,29 @@ namespace corolib
         }
 
         async_task_base& operator = (const async_task_base&) = delete;
-
-        async_task_base& operator = (async_task_base&& s)
+#if DECLARE_MOVE_ASSIGMENT_OPERATORS_AS_DELETED
+        async_task_base& operator = (async_task_base&&) = delete;
+#else
+        async_task_base& operator = (async_task_base&& other)
         {
-            print(PRI2, "%p: async_task_base::async_task_base = (async_task_base&& s)\n", this);
-            m_coro_handle = s.m_coro_handle;
+            print(PRI2, "%p: async_task_base::async_task_base = (async_task_base&& other)\n", this);
+            m_coro_handle = other.m_coro_handle;
 #if USE_RESULT_FROM_COROUTINE_OBJECT
-            m_result = std::move(s.m_result);
+            m_result = std::move(other.m_result);
 #endif
-            s.m_coro_handle = nullptr;
+            other.m_coro_handle = nullptr;
 #if USE_RESULT_FROM_COROUTINE_OBJECT
-            s.m_result = { };
+            other.m_result = { };
 #endif
 #if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
-            m_promise_type = s.m_promise_type;
-            m_promise_valid = s.m_promise_valid;
-            s.m_promise_type = nullptr;
-            s.m_promise_valid = false;
+            m_promise_type = other.m_promise_type;
+            m_promise_valid = other.m_promise_valid;
+            other.m_promise_type = nullptr;
+            other.m_promise_valid = false;
 #endif
             return *this;
         }
-
+#endif
         /**
          * @brief Starts a lazy coroutine.
          * Should be a member function of async_ltask, but g++ does not find m_coro_handle.
@@ -477,6 +507,7 @@ namespace corolib
             {
                 m_coroutine_object = coroutine_object;
                 m_coroutine_valid = true;
+                m_coroutine_object->link_promise_type(this);
             }
 
             void unlink_coroutine_object()
@@ -601,11 +632,7 @@ namespace corolib
             auto get_return_object()
             {
                 print(PRI2, "%p: async_task<TYPE>::promise_type::get_return_object()\n", this);
-                auto ret = async_task<TYPE>{handle_type::from_promise(*this)};
-#if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
-                ret.link_promise_type(this);
-#endif
-                return ret;
+                return async_task<TYPE>{handle_type::from_promise(*this)};
             }
 
             auto initial_suspend()
@@ -776,11 +803,7 @@ namespace corolib
             auto get_return_object()
             {
                 print(PRI2, "%p: async_ltask<TYPE>::promise_type::get_return_object()\n", this);
-                auto ret = async_ltask<TYPE>{handle_type::from_promise(*this)};
-#if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
-                ret.link_promise_type(this);
-#endif
-                return ret;
+                return async_ltask<TYPE>{handle_type::from_promise(*this)};
             }
 
             auto initial_suspend()
@@ -884,27 +907,29 @@ namespace corolib
         struct promise_type;
         using handle_type = std::coroutine_handle<promise_type>;
 
-        async_task_void(const async_task_void& s) = delete;
-
-        async_task_void(async_task_void&& s) noexcept
-            : m_coro_handle{s.m_coro_handle}
+        async_task_void(const async_task_void&) = delete;
+#if DECLARE_MOVE_CONSTRUCTORS_AS_DELETED
+        async_task_void(async_task_void&&) = delete;
+#else
+        async_task_void(async_task_void&& other)
+            : m_coro_handle{ other.m_coro_handle}
 #if USE_RESULT_FROM_COROUTINE_OBJECT
-            , m_result{ std::move(s.m_result) }
+            , m_result{ std::move(other.m_result) }
 #endif
         {
-            print(PRI2, "%p: async_task_void::async_task_void(async_task&& s)\n", this);
-            s.m_coro_handle = nullptr;
+            print(PRI2, "%p: async_task_void::async_task_void(async_task&& other)\n", this);
+            other.m_coro_handle = nullptr;
 #if USE_RESULT_FROM_COROUTINE_OBJECT
-            s.m_result = {};
+            other.m_result = {};
 #endif
 #if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
-            m_promise_type = s.m_promise_type;
-            m_promise_valid = s.m_promise_valid;
-            s.m_promise_type = nullptr;
-            s.m_promise_valid = false;
+            m_promise_type = other.m_promise_type;
+            m_promise_valid = other.m_promise_valid;
+            other.m_promise_type = nullptr;
+            other.m_promise_valid = false;
 #endif
         }
-
+#endif
         ~async_task_void()
         {
             print(PRI2, "%p: async_task_void::~async_task_void()\n", this);
@@ -938,27 +963,29 @@ namespace corolib
         }
 
         async_task_void& operator = (const async_task_void&) = delete;
-
-        async_task_void& operator = (async_task_void&& s) noexcept
+#if DECLARE_MOVE_ASSIGMENT_OPERATORS_AS_DELETED
+        async_task_void& operator = (async_task_void&&) = delete;
+#else
+        async_task_void& operator = (async_task_void&& other)
         {
-            print(PRI2, "%p: async_task_void::async_task_void = (async_task&& s)\n", this);
-            m_coro_handle = s.m_coro_handle;
+            print(PRI2, "%p: async_task_void::async_task_void = (async_task&& other)\n", this);
+            m_coro_handle = other.m_coro_handle;
 #if USE_RESULT_FROM_COROUTINE_OBJECT
             m_result = std::move(s.m_result);
 #endif
-            s.m_coro_handle = nullptr;
+            other.m_coro_handle = nullptr;
 #if USE_RESULT_FROM_COROUTINE_OBJECT
-            s.m_result = {};
+            other.m_result = {};
 #endif
 #if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
-            m_promise_type = s.m_promise_type;
-            m_promise_valid = s.m_promise_valid;
-            s.m_promise_type = nullptr;
-            s.m_promise_valid = false;
+            m_promise_type = other.m_promise_type;
+            m_promise_valid = other.m_promise_valid;
+            other.m_promise_type = nullptr;
+            other.m_promise_valid = false;
 #endif
             return *this;
         }
-
+#endif
         /**
          * @brief baseStart() starts a lazy coroutine.
          * Should be a member function of async_ltask, but g++ does not find m_coro_handle.
@@ -1178,6 +1205,7 @@ namespace corolib
             {
                 m_coroutine_object = coroutine_object;
                 m_coroutine_valid = true;
+                m_coroutine_object->link_promise_type(this);
             }
 
             void unlink_coroutine_object()
@@ -1297,11 +1325,7 @@ namespace corolib
             auto get_return_object()
             {
                 print(PRI2, "%p: async_task<void>::promise_type::get_return_object()\n", this);
-                auto ret = async_task<void>{handle_type::from_promise(*this)};
-#if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
-                ret.link_promise_type(this);
-#endif
-                return ret;
+                return async_task<void>{handle_type::from_promise(*this)};
             }
 
             auto initial_suspend()
@@ -1464,11 +1488,7 @@ namespace corolib
             auto get_return_object()
             {
                 print(PRI2, "%p: async_ltask<void>::promise_type::get_return_object()\n", this);
-                auto ret = async_ltask<void>{handle_type::from_promise(*this)};
-#if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
-                ret.link_promise_type(this);
-#endif
-                return ret;
+                return async_ltask<void>{handle_type::from_promise(*this)};
             }
 
             auto initial_suspend()

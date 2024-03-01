@@ -68,19 +68,19 @@ namespace corolib
      * @brief async_operation_base::async_operation_base
      * @param s
      */
-    async_operation_base::async_operation_base(async_operation_base&& s) noexcept
-        : m_service(s.m_service)
-        , m_awaitings(std::move(s.m_awaitings))         // RESUME_MULTIPLE_COROUTINES
-        , m_awaiting(s.m_awaiting)                      // !RESUME_MULTIPLE_COROUTINES
-        , m_ctr(s.m_ctr)
-        , m_waitany(s.m_waitany)
-        , m_index(s.m_index)
-        , m_ready(s.m_ready)
-        , m_autoreset(s.m_autoreset)
-        , m_timestamp(s.m_timestamp)      // Should be the same: we cannot "move" from implementation.
+    async_operation_base::async_operation_base(async_operation_base&& other) noexcept
+        : m_service(other.m_service)
+        , m_awaitings(std::move(other.m_awaitings))         // RESUME_MULTIPLE_COROUTINES
+        , m_awaiting(other.m_awaiting)                      // !RESUME_MULTIPLE_COROUTINES
+        , m_ctr(other.m_ctr)
+        , m_waitany(other.m_waitany)
+        , m_index(other.m_index)
+        , m_ready(other.m_ready)
+        , m_autoreset(other.m_autoreset)
+        , m_timestamp(other.m_timestamp)      // Should be the same: we cannot "move" from implementation.
     {
-        print(PRI2, "%p: async_operation_base::async_operation_base(async_operation_base&& s): s.m_index = %d, s.m_service = %p, s.m_timestamp = %d\n",
-                this, s.m_index, s.m_service, static_cast<int>(s.m_timestamp));
+        print(PRI2, "%p: async_operation_base::async_operation_base(async_operation_base&& s): other.m_index = %d, other.m_service = %p, other.m_timestamp = %d\n",
+                this, other.m_index, other.m_service, static_cast<int>(other.m_timestamp));
 
         // Tell the CommService we are at another address after the move.
         if (m_service && m_index != -1)
@@ -88,7 +88,7 @@ namespace corolib
             m_service->update_entry(m_index, this, m_timestamp);
         }
 
-        s.cleanup();
+        other.cleanup();
     }
 
     /**
@@ -96,20 +96,20 @@ namespace corolib
      * @param s
      * @return async_operation_base
      */
-    async_operation_base& async_operation_base::operator = (async_operation_base&& s) noexcept
+    async_operation_base& async_operation_base::operator = (async_operation_base&& other) noexcept
     {
-        print(PRI2, "%p: async_operation_base::operator = (async_operation_base&& s):\n\tm_index = %d, s.m_index = %d, s.m_service = %p, s.m_timestamp = %d\n",
-            this, m_index, s.m_index, s.m_service, static_cast<int>(s.m_timestamp));
+        print(PRI2, "%p: async_operation_base::operator = (async_operation_base&& other):\n\tm_index = %d, other.m_index = %d, other.m_service = %p, other.m_timestamp = %d\n",
+            this, m_index, other.m_index, other.m_service, static_cast<int>(other.m_timestamp));
 
-        if (m_timestamp != s.m_timestamp)
+        if (m_timestamp != other.m_timestamp)
             if (m_timestamp == 1)
                 // We should not go from timestamped to non-timestamped.
                 // Going from non-timestamped to timestamped can occur when the async_operation is declared without
                 // immediately initializing it to an operation (e.g. when it is declared in an array).
-                print(PRI1, "%p: async_operation_base::operator = (async_operation_base&& s): m_timestamp = %d != s.m_timestamp = %d\n",
-                    this, static_cast<int>(m_timestamp), static_cast<int>(s.m_timestamp));
+                print(PRI1, "%p: async_operation_base::operator = (async_operation_base&& other): m_timestamp = %d != other.m_timestamp = %d\n",
+                    this, static_cast<int>(m_timestamp), static_cast<int>(other.m_timestamp));
 
-        m_timestamp = s.m_timestamp;
+        m_timestamp = other.m_timestamp;
 
         // Clean our entry at the original location, because we will move to another one.
         if (m_service && m_index != -1)
@@ -117,28 +117,28 @@ namespace corolib
             m_service->update_entry(m_index, nullptr, m_timestamp);
         }
 
-        m_service = s.m_service;
-        m_awaitings = std::move(s.m_awaitings);     // RESUME_MULTIPLE_COROUTINES
-        m_awaiting = s.m_awaiting;                  // !RESUME_MULTIPLE_COROUTINES
+        m_service = other.m_service;
+        m_awaitings = std::move(other.m_awaitings);     // RESUME_MULTIPLE_COROUTINES
+        m_awaiting = other.m_awaiting;                  // !RESUME_MULTIPLE_COROUTINES
  
         // The following 2 tests allow an async_operation that takes part in
         // a when_all or when_any to be re-assigned.
         // This avoids disposing the original when_all or when_any
         // and constructing a new one.
 
-        if (m_ctr != nullptr && s.m_ctr == nullptr)
+        if (m_ctr != nullptr && other.m_ctr == nullptr)
             ; // do not overwrite m_ctr
         else
-            m_ctr = s.m_ctr;
+            m_ctr = other.m_ctr;
 
-        if (m_waitany != nullptr && s.m_waitany == nullptr)
+        if (m_waitany != nullptr && other.m_waitany == nullptr)
             ; // do not overwrite m_waitany
         else
-            m_waitany = s.m_waitany;
+            m_waitany = other.m_waitany;
 
-        m_index = s.m_index;
-        m_ready = s.m_ready;
-        m_autoreset = s.m_autoreset;
+        m_index = other.m_index;
+        m_ready = other.m_ready;
+        m_autoreset = other.m_autoreset;
 
         // Tell the CommService we are at another address after the move.
         if (m_service)
@@ -146,7 +146,7 @@ namespace corolib
             m_service->update_entry(m_index, this, m_timestamp);
         }
 
-        s.cleanup();
+        other.cleanup();
         return *this;
     }
 

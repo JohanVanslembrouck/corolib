@@ -12,17 +12,6 @@ foreach(_target
   target_link_libraries(${_target} corolib)
 endforeach()
 
-#[[
-add_executable(p1100-auto_reset_event p1100-auto_reset_event.cpp)
-target_link_libraries(p1100-auto_reset_event corolib)
-add_executable(p1105-auto_reset_event p1105-auto_reset_event.cpp)
-target_link_libraries(p1105-auto_reset_event corolib)
-add_executable(p1110-auto_reset_event-oneway_task p1110-auto_reset_event-oneway_task.cpp)
-target_link_libraries(p1110-auto_reset_event-oneway_task corolib)
-add_executable(p1120-auto_reset_event-thread p1120-auto_reset_event-thread.cpp)
-target_link_libraries(p1120-auto_reset_event-thread corolib)
-]]
-
 add_executable(p1100-auto_reset_event-1 p1100-auto_reset_event-1.cpp)
 target_link_libraries(p1100-auto_reset_event-1 corolib)
 add_executable(p1101-auto_reset_event-1-when_all p1101-auto_reset_event-1-when_all.cpp)
@@ -70,6 +59,7 @@ target_link_libraries(p1210-mini1-thread corolib)
 add_executable(p1220-mini1-oneway_task-thread p1220-mini1-oneway_task-thread.cpp)
 target_link_libraries(p1220-mini1-oneway_task-thread corolib)
 
+# Requires the use of experimental/coroutine.h
 #add_executable(p1300-future p1300-future.cpp)
 #target_link_libraries(p1300-future corolib)
 
@@ -209,8 +199,9 @@ target_link_libraries(p1600-async_operation corolib)
 
 add_executable(p1700-async_operation p1700-async_operation.cpp p1700.cpp)
 target_link_libraries(p1700-async_operation corolib)
-add_executable(p1700a-async_operation p1700-async_operation.cpp p1700a.cpp)
-target_link_libraries(p1700a-async_operation corolib)
+# Requires the presence of move contructors and move assignment operators in async_task.h
+#add_executable(p1700a-async_operation p1700-async_operation.cpp p1700a.cpp)
+#target_link_libraries(p1700a-async_operation corolib)
 
 add_executable(p1730-async_operation p1730-async_operation.cpp class01.cpp p1730.cpp)
 target_link_libraries(p1730-async_operation corolib)
