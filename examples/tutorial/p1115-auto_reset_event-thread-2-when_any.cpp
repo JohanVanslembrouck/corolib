@@ -15,9 +15,12 @@ int main()
     set_print_level(0x01);        // Use 0x03 to follow the flow in corolib
 
     std::mutex mutx;
-    Class1115 obj{ &mutx };
+    ThreadAwaker awaker;
+    Class1115 obj{ &mutx, &awaker, 0 };
     print(PRI1, "main(): async_task<int> a = obj.coroutine1();\n");
     async_task<int> a = obj.coroutine1();
+    print(PRI1, "main(): awaker.releaseThreads();\n");
+    awaker.releaseThreads();
     print(PRI1, "main(): int v = a.get_result();\n");
     int v = a.get_result();
     print(PRI1, "main(): v = %d\n", v);

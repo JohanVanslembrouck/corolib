@@ -16,21 +16,33 @@
 #include <corolib/auto_reset_event.h>
 #include <corolib/async_task.h>
 #include <corolib/when_all.h>
+#include <corolib/threadawaker.h>
 
 using namespace corolib;
-
-extern auto_reset_event are1;
 
 class Class1111
 {
 public:
+    Class1111(ThreadAwaker* awaker = nullptr, int delay = 10)
+        : m_awaker(awaker)
+        , m_delay(delay)
+    {
+    }
+
     async_task<int> coroutine4()
     {
         auto_reset_event are;
 
+        if (m_awaker)
+            m_awaker->addThread();
+
         std::thread thread1([this, &are]() {
             print(PRI1, "coroutine4(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", m_delay);
             std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));
+
+            print(PRI1, "coroutine4(): thread1: if (m_awaker) m_awaker->awaitRelease();\n");
+            if (m_awaker)
+                m_awaker->awaitRelease();
 
             print(PRI1, "coroutine4(): thread1: are.resume();\n");
             are.resume();
@@ -76,7 +88,8 @@ public:
     }
 
 private:
-    int m_delay = 10;
+    ThreadAwaker* m_awaker;
+    int m_delay;
 };
 
 #endif

@@ -21,15 +21,7 @@ async_operation<int> Class01::start_operation()
 
 /**
  * @brief Class01::async_op
- * 
- * Completion of the asynchronous operation has to be simulated.
- * There are 4 cases:
- * 1) m_useMode == USE_NONE: The application (function main) has to call completionHandler "manually".
- * 2) m_useMode == USE_EVENTQUEUE: async_op places the completionHandler in an eventQueue.
- *    The application (function main) will run the event loop to call the completionHandler(s) in the eventQueue.
- * 3) m_useMode == USE_THREAD: async_op starts a detached thread that will
- *    call the eventHandler after a delay of 1000 ms. 
- * 4) m_useMode == USE_IMMEDIATE_COMPLETION: async_op calls the completionHandler immediately.
+ * See explanation in use_mode.h.
  *
  * @param idx
  */
@@ -39,9 +31,9 @@ void Class01::async_op(std::function<void(int)>&& completionHandler)
     {
     case UseMode::USE_NONE:
         // Nothing to be done here: eventHandler should be called "manually" by the application
-        ////eventHandler = completionHandler;
-        print(PRI2, "Class01::async_op(): eventHandler = std::move(completionHandler);\n");
-        eventHandler = std::move(completionHandler);
+        ////m_eventHandler = completionHandler;
+        print(PRI2, "Class01::async_op(): m_eventHandler = std::move(completionHandler);\n");
+        m_eventHandler = std::move(completionHandler);
         break;
     case UseMode::USE_EVENTQUEUE:
         if (m_eventQueue)
@@ -49,9 +41,16 @@ void Class01::async_op(std::function<void(int)>&& completionHandler)
         break;
     case UseMode::USE_THREAD:
     {
+        if (m_awaker)
+            m_awaker->addThread();
+
         std::thread thread1([this, completionHandler]() {
-            print(PRI1, "Class01::async_op(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));\n");
+            print(PRI1, "Class01::async_op(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", m_delay);
             std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));
+
+            print(PRI1, "Class01()::async_op(): thread1: if (m_awaker) m_awaker->awaitRelease();\n");
+            if (m_awaker)
+                m_awaker->awaitRelease();
 
             if (m_mutex) {
                 std::lock_guard<std::mutex> guard(*m_mutex);
@@ -73,7 +72,7 @@ void Class01::async_op(std::function<void(int)>&& completionHandler)
         m_queueSize++;
 
         std::thread thread1([this, completionHandler]() {
-            print(PRI1, "Class01::async_op(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));\n");
+            print(PRI1, "Class01::async_op(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", m_delay);
             std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));
             
             std::function<void(int)> completionHandler1 = completionHandler;
@@ -128,4 +127,3 @@ void Class01::start_operation_impl(const int idx)
             }
         });
 }
-

@@ -14,22 +14,23 @@ using namespace corolib;
 #include "class01.h"
 #include "p1430.h"
 
-void completionflow()
+void completionflow(ThreadAwaker& awaker)
 {
-
+    awaker.releaseThreads();
 }
 
 int main()
 {
     set_print_level(0x01);        // Use 0x03 to follow the flow in corolib
 
-    Class01 object01(UseMode::USE_THREAD);
+    ThreadAwaker awaker;
+    Class01 object01(UseMode::USE_THREAD, nullptr, nullptr, nullptr, &awaker);
     Class01 object02(UseMode::USE_IMMEDIATE_COMPLETION);
     Class1430 obj{ object01, object02 };
     async_task<int> a = obj.coroutine1();
 
-    print(PRI1, "main(): completionflow();\n");
-    completionflow();
+    print(PRI1, "main(): completionflow(awaker);\n");
+    completionflow(awaker);
 
     print(PRI1, "main(): int v = a.get_result();\n");
     int v = a.get_result();

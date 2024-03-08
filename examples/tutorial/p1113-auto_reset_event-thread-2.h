@@ -15,14 +15,17 @@
 #include <corolib/print.h>
 #include <corolib/auto_reset_event.h>
 #include <corolib/async_task.h>
+#include <corolib/threadawaker.h>
 
 using namespace corolib;
 
 class Class1113
 {
 public:
-    Class1113(std::mutex* mtx = nullptr)
+    Class1113(std::mutex* mtx = nullptr, ThreadAwaker* awaker = nullptr, int delay = 10)
         : m_mutex(mtx)
+        , m_awaker(awaker)
+        , m_delay(delay)
     {
     }
 
@@ -30,9 +33,16 @@ public:
     {
         auto_reset_event are;
 
+        if (m_awaker)
+            m_awaker->addThread();
+
         std::thread thread1([this, &are]() {
             print(PRI1, "coroutine4a(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", m_delay);
             std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));
+
+            print(PRI1, "coroutine4a(): thread1: if (m_awaker) m_awaker->awaitRelease();\n");
+            if (m_awaker)
+                m_awaker->awaitRelease();
 
             if (m_mutex) {
                 std::lock_guard<std::mutex> guard(*m_mutex);
@@ -59,9 +69,16 @@ public:
     {
         auto_reset_event are;
 
+        if (m_awaker)
+            m_awaker->addThread();
+
         std::thread thread1([this, &are]() {
             print(PRI1, "coroutine4b(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", m_delay);
             std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));
+
+            print(PRI1, "coroutine4b(): thread1: if (m_awaker) m_awaker->awaitRelease();\n");
+            if (m_awaker)
+                m_awaker->awaitRelease();
 
             if (m_mutex) {
                 std::lock_guard<std::mutex> guard(*m_mutex);
@@ -115,8 +132,9 @@ public:
     }
 
 private:
-    int m_delay = 10;
     std::mutex* m_mutex;
+    ThreadAwaker* m_awaker;
+    int m_delay;
 };
 
 #endif

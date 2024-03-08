@@ -262,7 +262,7 @@ TEST(TutorialTest, p1410)
 
     print(PRI1, "p1410(): int v = a.get_result();\n");
     int v = a.get_result();
-    print(PRI1, "main(): v = %d\n", v);
+    print(PRI1, "p1410(): v = %d\n", v);
 
     ASSERT_EQ(v, 27);
 }
@@ -358,6 +358,32 @@ TEST(TutorialTest, p1414)
     print(PRI1, "p1414(): int v = a.get_result();\n");
     int v = a.get_result();
     print(PRI1, "p1414(): v = %d\n", v);
+
+    ASSERT_EQ(v, 27);
+}
+
+// ---------------------------------
+
+void completionflow1414a(ThreadAwaker& awaker)
+{
+    awaker.releaseThreads();
+}
+
+TEST(TutorialTest, p1414a)
+{
+    set_print_level(0x00);
+
+    ThreadAwaker awaker;
+    Class01 object01(UseMode::USE_THREAD, nullptr, nullptr, nullptr, &awaker, 0);
+    Class1410 obj{ object01 };
+    async_task<int> a = obj.coroutine1();
+
+    print(PRI1, "p1414a(): completionflow1414a(awaker);\n");
+    completionflow1414a(awaker);
+
+    print(PRI1, "p1414a(): int v = a.get_result();\n");
+    int v = a.get_result();
+    print(PRI1, "p1414a(): v = %d\n", v);
 
     ASSERT_EQ(v, 27);
 }
@@ -577,7 +603,40 @@ TEST(TutorialTest, p1424)
 
     // Added timer to avoid the following sporadic error:
     // D:\a\_work\1\s\src\vctools\crt\github\stl\src\mutex.cpp(49): mutex destroyed while busy
-    print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
+    print(PRI1, "p1424(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    ASSERT_EQ(v, 47);
+}
+
+// ---------------------------------
+
+void completionflow1424a(ThreadAwaker& awaker)
+{
+    awaker.releaseThreads();
+}
+
+TEST(TutorialTest, p1424a)
+{
+    set_print_level(0x00);
+
+    std::mutex mtx;
+    ThreadAwaker awaker;
+    Class01 object01(UseMode::USE_THREAD, nullptr, nullptr, &mtx, &awaker, 0);
+    Class01 object02(UseMode::USE_THREAD, nullptr, nullptr, &mtx, &awaker, 0);
+    Class1420 obj{ object01, object02 };
+    async_task<int> a = obj.coroutine1();
+
+    print(PRI1, "p1424a(): completionflow1424a(awaker);\n");
+    completionflow1424a(awaker);
+
+    print(PRI1, "p1424a(): int v = a.get_result();\n");
+    int v = a.get_result();
+    print(PRI1, "p1424a(): v = %d\n", v);
+
+    // Added timer to avoid the following sporadic error:
+    // D:\a\_work\1\s\src\vctools\crt\github\stl\src\mutex.cpp(49): mutex destroyed while busy
+    print(PRI1, "p1424a(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     ASSERT_EQ(v, 47);
@@ -687,6 +746,33 @@ TEST(TutorialTest, p1429)
     print(PRI1, "p1429(): int v = a.get_result();\n");
     int v = a.get_result();
     print(PRI1, "p1429(): v = %d\n", v);
+
+    ASSERT_EQ(v, 47);
+}
+
+// ---------------------------------
+
+void completionflow1429a(ThreadAwaker& awaker)
+{
+    awaker.releaseThreads();
+}
+
+TEST(TutorialTest, p1429a)
+{
+    set_print_level(0x00);
+
+    ThreadAwaker awaker;
+    Class01 object01(UseMode::USE_THREAD, nullptr, nullptr, nullptr, &awaker, 0);
+    Class01 object02(UseMode::USE_IMMEDIATE_COMPLETION);
+    Class1420 obj{ object01, object02 };
+    async_task<int> a = obj.coroutine1();
+
+    print(PRI1, "p1429a(): completionflow1429a(awaker);\n");
+    completionflow1429a(awaker);
+
+    print(PRI1, "p1429a(): int v = a.get_result();\n");
+    int v = a.get_result();
+    print(PRI1, "p1429a(): v = %d\n", v);
 
     ASSERT_EQ(v, 47);
 }
@@ -874,6 +960,39 @@ TEST(TutorialTest, p1434)
 
 // ---------------------------------
 
+void completionflow1434a(ThreadAwaker& awaker)
+{
+    awaker.releaseThreads();
+}
+
+TEST(TutorialTest, p1434a)
+{
+    set_print_level(0x00);
+
+    std::mutex mtx;
+    ThreadAwaker awaker;
+    Class01 object01(UseMode::USE_THREAD, nullptr, nullptr, &mtx, &awaker, 0);
+    Class01 object02(UseMode::USE_THREAD, nullptr, nullptr, &mtx, &awaker, 0);
+    Class1430 obj{ object01, object02 };
+    async_task<int> a = obj.coroutine1();
+
+    print(PRI1, "p1434a(): completionflow1434a(awaker);\n");
+    completionflow1434a(awaker);
+
+    print(PRI1, "p1434a(): int v = a.get_result();\n");
+    int v = a.get_result();
+    print(PRI1, "p1434a(): v = %d\n", v);
+
+    // Added timer to avoid the following sporadic error:
+    // D:\a\_work\1\s\src\vctools\crt\github\stl\src\mutex.cpp(49): mutex destroyed while busy
+    print(PRI1, "p1434a(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    ASSERT_EQ(v, 49);
+}
+
+// ---------------------------------
+
 void completionflow1435()
 {
     print(PRI1, "completionflow1435(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
@@ -976,6 +1095,33 @@ TEST(TutorialTest, p1439)
     print(PRI1, "p1439(): int v = a.get_result();\n");
     int v = a.get_result();
     print(PRI1, "p1439(): v = %d\n", v);
+
+    ASSERT_EQ(v, 49);
+}
+
+// ---------------------------------
+
+void completionflow1439a(ThreadAwaker& awaker)
+{
+    awaker.releaseThreads();
+}
+
+TEST(TutorialTest, p1439a)
+{
+    set_print_level(0x00);
+
+    ThreadAwaker awaker;
+    Class01 object01(UseMode::USE_THREAD, nullptr, nullptr, nullptr, &awaker, 0);
+    Class01 object02(UseMode::USE_IMMEDIATE_COMPLETION);
+    Class1430 obj{ object01, object02 };
+    async_task<int> a = obj.coroutine1();
+
+    print(PRI1, "p1439a(): completionflow1439a(awaker);\n");
+    completionflow1439a(awaker);
+
+    print(PRI1, "p1439a(): int v = a.get_result();\n");
+    int v = a.get_result();
+    print(PRI1, "p1439a(): v = %d\n", v);
 
     ASSERT_EQ(v, 49);
 }
@@ -1087,7 +1233,40 @@ TEST(TutorialTest, p1444)
 
     // Added timer to avoid the following sporadic error:
     // D:\a\_work\1\s\src\vctools\crt\github\stl\src\mutex.cpp(49): mutex destroyed while busy
-    print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
+    print(PRI1, "p1444(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    ASSERT_EQ(v, 46);
+}
+
+// ---------------------------------
+
+void completionflow1444a(ThreadAwaker& awaker)
+{
+    awaker.releaseThreads();
+}
+
+TEST(TutorialTest, p1444a)
+{
+    set_print_level(0x00);
+
+    std::mutex mtx;
+    ThreadAwaker awaker;
+    Class01 object01(UseMode::USE_THREAD, nullptr, nullptr, &mtx, &awaker, 0);
+    Class01 object02(UseMode::USE_THREAD, nullptr, nullptr, &mtx, &awaker, 0);
+    Class1440 obj{ object01, object02 };
+    async_task<int> a = obj.coroutine1();
+
+    print(PRI1, "p1444a(): completionflow1444a(awaker);\n");
+    completionflow1444a(awaker);
+
+    print(PRI1, "p1444a(): int v = a.get_result();\n");
+    int v = a.get_result();
+    print(PRI1, "p1444a(): v = %d\n", v);
+
+    // Added timer to avoid the following sporadic error:
+    // D:\a\_work\1\s\src\vctools\crt\github\stl\src\mutex.cpp(49): mutex destroyed while busy
+    print(PRI1, "p1444a(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     ASSERT_EQ(v, 46);
@@ -1202,6 +1381,33 @@ TEST(TutorialTest, p1449)
     ASSERT_EQ(v,46);
 }
 
+// ---------------------------------
+
+void completionflow1449a(ThreadAwaker& awaker)
+{
+    awaker.releaseThreads();
+}
+
+TEST(TutorialTest, p1449a)
+{
+    set_print_level(0x00);
+
+    ThreadAwaker awaker;
+    Class01 object01(UseMode::USE_THREAD, nullptr, nullptr, nullptr, &awaker, 0);
+    Class01 object02(UseMode::USE_IMMEDIATE_COMPLETION);
+    Class1440 obj{ object01, object02 };
+    async_task<int> a = obj.coroutine1();
+
+    print(PRI1, "p1449a(): completionflow1449a(awaker);\n");
+    completionflow1449a(awaker);
+
+    print(PRI1, "p1449a(): int v = a.get_result();\n");
+    int v = a.get_result();
+    print(PRI1, "p1449a(): v = %d\n", v);
+
+    ASSERT_EQ(v, 46);
+}
+
 // -------------------------------------------------------------------------------------
 
 #include "p1450.h"
@@ -1303,7 +1509,40 @@ TEST(TutorialTest, p1454)
 
     // Added timer to avoid the following sporadic error:
     // D:\a\_work\1\s\src\vctools\crt\github\stl\src\mutex.cpp(49): mutex destroyed while busy
-    print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
+    print(PRI1, "p1454(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    ASSERT_EQ(v, 89);
+}
+
+// ---------------------------------
+
+void completionflow1454a(ThreadAwaker& awaker)
+{
+    awaker.releaseThreads();
+}
+
+TEST(TutorialTest, p1454a)
+{
+    set_print_level(0x00);
+
+    std::mutex mtx;
+    ThreadAwaker awaker;
+    Class01 object01(UseMode::USE_THREAD, nullptr, nullptr, &mtx, &awaker, 0);
+    Class01 object02(UseMode::USE_THREAD, nullptr, nullptr, &mtx, &awaker, 0);
+    Class1450 obj{ object01, object02 };
+    async_task<int> a = obj.coroutine1();
+
+    print(PRI1, "p1454a(): completionflow1454a(awaker);\n");
+    completionflow1454a(awaker);
+
+    print(PRI1, "p1454a(): int v = a.get_result();\n");
+    int v = a.get_result();
+    print(PRI1, "p1454a(): v = %d\n", v);
+
+    // Added timer to avoid the following sporadic error:
+    // D:\a\_work\1\s\src\vctools\crt\github\stl\src\mutex.cpp(49): mutex destroyed while busy
+    print(PRI1, "p454a(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     ASSERT_EQ(v, 89);
@@ -1417,6 +1656,33 @@ TEST(TutorialTest, p1459)
     ASSERT_EQ(v, 89);
 }
 
+// ---------------------------------
+
+void completionflow1459a(ThreadAwaker& awaker)
+{
+    awaker.releaseThreads();
+}
+
+TEST(TutorialTest, p1459a)
+{
+    set_print_level(0x00);
+
+    ThreadAwaker awaker;
+    Class01 object01(UseMode::USE_THREAD, nullptr, nullptr, nullptr, &awaker, 0);
+    Class01 object02(UseMode::USE_IMMEDIATE_COMPLETION);
+    Class1450 obj{ object01, object02 };
+    async_task<int> a = obj.coroutine1();
+
+    print(PRI1, "p1459a(): completionflow1459a(awaker);\n");
+    completionflow1459a(awaker);
+
+    print(PRI1, "p1459a(): int v = a.get_result();\n");
+    int v = a.get_result();
+    print(PRI1, "p1459a(): v = %d\n", v);
+
+    ASSERT_EQ(v, 89);
+}
+
 // -------------------------------------------------------------------------------------
 
 #include "p1460.h"
@@ -1515,7 +1781,40 @@ TEST(TutorialTest, p1464)
 
     // Added timer to avoid the following sporadic error:
     // D:\a\_work\1\s\src\vctools\crt\github\stl\src\mutex.cpp(49): mutex destroyed while busy
-    print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
+    print(PRI1, "p1464(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+    ASSERT_EQ(v, 249);
+}
+
+// ---------------------------------
+
+void completionflow1464a(ThreadAwaker& awaker)
+{
+    awaker.releaseThreads();
+}
+
+TEST(TutorialTest, p1464a)
+{
+    set_print_level(0x00);
+
+    std::mutex mtx;
+    ThreadAwaker awaker;
+    Class02 object01(UseMode::USE_THREAD, nullptr, nullptr, &mtx, &awaker, 0);
+    Class02 object02(UseMode::USE_THREAD, nullptr, nullptr, &mtx, &awaker, 0);
+    Class1460 obj{ object01, object02 };
+    async_task<int> a = obj.coroutine1();
+
+    print(PRI1, "p1464a(): completionflow1464a(awaker);\n");
+    completionflow1464a(awaker);
+
+    print(PRI1, "p1464a(): int v = a.get_result();\n");
+    int v = a.get_result();
+    print(PRI1, "p1464a(): v = %d\n", v);
+
+    // Added timer to avoid the following sporadic error:
+    // D:\a\_work\1\s\src\vctools\crt\github\stl\src\mutex.cpp(49): mutex destroyed while busy
+    print(PRI1, "p1464a(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     ASSERT_EQ(v, 249);
@@ -1627,6 +1926,35 @@ TEST(TutorialTest, p1469)
     print(PRI1, "p1469(): int v = a.get_result();\n");
     int v = a.get_result();
     print(PRI1, "p1469(): v = %d\n", v);
+
+    ASSERT_EQ(v, 249);
+}
+
+
+// ---------------------------------
+
+void completionflow1469a(ThreadAwaker& awaker)
+{
+    awaker.releaseThreads();
+}
+
+TEST(TutorialTest, p1469a)
+{
+    set_print_level(0x00);
+
+    std::mutex mtx;
+    ThreadAwaker awaker;
+    Class02 object01(UseMode::USE_THREAD, nullptr, nullptr, nullptr, &awaker);
+    Class02 object02(UseMode::USE_IMMEDIATE_COMPLETION);
+    Class1460 obj{ object01, object02 };
+    async_task<int> a = obj.coroutine1();
+
+    print(PRI1, "p1469a(): completionflow1469a(awaker);\n");
+    completionflow1469a(awaker);
+
+    print(PRI1, "p1469a(): int v = a.get_result();\n");
+    int v = a.get_result();
+    print(PRI1, "p1469a(): v = %d\n", v);
 
     ASSERT_EQ(v, 249);
 }

@@ -14,6 +14,7 @@
 #include <corolib/commservice.h>
 #include <corolib/async_operation.h>
 #include <corolib/semaphore.h>
+#include <corolib/threadawaker.h>
 
 #include "eventqueue.h"
 #include "eventqueuethr.h"
@@ -27,23 +28,28 @@ public:
     Class02(UseMode useMode = UseMode::USE_NONE,
             EventQueueFunctionVoidInt* eventQueue = nullptr,
             EventQueueThrFunctionVoidInt* eventQueueThr = nullptr,
-            std::mutex* mtx = nullptr)
+            std::mutex* mtx = nullptr,
+            ThreadAwaker* awaker = nullptr,
+            int delay = 10)
         : m_useMode(useMode)
         , m_eventQueue(eventQueue)
         , m_eventQueueThr(eventQueueThr)
         , m_mutex(mtx)
+        , m_awaker(awaker)
+        , m_delay(delay)
         , m_queueSize(0)
     {
     }
-
-    void setThreadDelay(int delay) { m_delay = delay; }
 
     async_operation<int> start_operation1();
     async_operation<int> start_operation2(int bias = 0);
     
     void runEventHandler(int i, int val)
     {
-        eventHandler[i](val);
+        // When the event handler runs, it may overwrite m_eventHandler[i].
+        // This did not cause any problems so far. Anyway make a copy first.
+        std::function<void(int)> eventHandler_ = m_eventHandler[i];
+        eventHandler_(val);
     }
 
     EventQueueFunctionVoidInt* getEventQueue() { return m_eventQueue; }
@@ -56,13 +62,14 @@ protected:
     void start_operation2_impl(const int idx, int bias);
     
 private:
-    std::function<void(int)> eventHandler[NROPERATIONS];
-    UseMode     m_useMode;
+    std::function<void(int)> m_eventHandler[NROPERATIONS];
+    UseMode m_useMode;
     EventQueueFunctionVoidInt* m_eventQueue;
     EventQueueThrFunctionVoidInt* m_eventQueueThr;
     std::mutex* m_mutex;
+    ThreadAwaker* m_awaker;
+    int m_delay;
     int m_queueSize;
-    int m_delay = 10;
 };
 
 #endif

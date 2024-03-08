@@ -13,6 +13,7 @@
 #include <corolib/print.h>
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
+#include <corolib/threadawaker.h>
 
 #include "use_mode.h"
 
@@ -26,5 +27,7 @@ extern UseMode useMode;
 async_task<int> coroutine1();
 
 extern int delay;
+
+extern ThreadAwaker *awaker;
 
 #endif

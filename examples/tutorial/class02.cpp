@@ -20,18 +20,7 @@ async_operation<int> Class02::start_operation1()
 
 /**
  * @brief Class02::async_op1
- *
- * Completion of the asynchronous operation has to be simulated.
- * There are 4 cases:
- * 1) m_useMode == USE_NONE: The application (function main) has to call completionHandler "manually".
- * 2) m_useMode == USE_EVENTQUEUE: async_op1 places the completionHandler in an eventQueue.
- *    The application (function main) will run the event loop to call the completionHandler(s) in the eventQueue.
- * 3) m_useMode == USE_THREAD: async_op1 starts a detached thread that will
- *    call the completionHandler after a delay of 1000 ms.
- * 4) m_useMode == USE_THREAD_QUEUE: async_op1 starts a detached thread that will
- *    place the completionHandler in a queue after the delay of 1000 ms.
- *    The main thread will run the completionHandler in its own context.
- * 5) m_useMode == USE_IMMEDIATE_COMPLETION: async_op1 calls the completionHandler immediately.
+ * See explanation in use_mode.h.
  *
  * @param idx
  */
@@ -40,8 +29,8 @@ void Class02::async_op1(const int idx, std::function<void(int)>&& completionHand
     switch (m_useMode)
     {
     case UseMode::USE_NONE:
-        // Nothing to be done: eventHandler[idx] should be called "manually" by the application
-        eventHandler[idx] = completionHandler;
+        // Nothing to be done: m_eventHandler[idx] should be called "manually" by the application
+        m_eventHandler[idx] = completionHandler;
         break;
     case UseMode::USE_EVENTQUEUE:
         if (m_eventQueue)
@@ -49,9 +38,16 @@ void Class02::async_op1(const int idx, std::function<void(int)>&& completionHand
         break;
     case UseMode::USE_THREAD:
     {
+        if (m_awaker)
+            m_awaker->addThread();
+
         std::thread thread1([this, idx, completionHandler]() {
-            print(PRI1, "Class02::async_op1(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));\n");
+            print(PRI1, "Class02::async_op1(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", m_delay);
             std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));
+
+            print(PRI1, "Class02(): async_op1(): thread1: if (m_awaker) m_awaker->awaitRelease();\n");
+            if (m_awaker)
+                m_awaker->awaitRelease();
 
             if (m_mutex) {
                 std::lock_guard<std::mutex> guard(*m_mutex);
@@ -73,7 +69,7 @@ void Class02::async_op1(const int idx, std::function<void(int)>&& completionHand
         m_queueSize++;
 
         std::thread thread1([this, completionHandler]() {
-            print(PRI1, "Class02::async_op1(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));\n");
+            print(PRI1, "Class02::async_op1(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", m_delay);
             std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));
 
             std::function<void(int)> completionHandler1 = completionHandler;
@@ -141,18 +137,8 @@ async_operation<int> Class02::start_operation2(int bias)
 
 /**
  * @brief Class02::async_op2
- *
- * Completion of the asynchronous operation has to be simulated.
- * There are 4 cases:
- * 1) m_useMode == USE_NONE: The application (function main) has to call completionHandler "manually".
- * 2) m_useMode == USE_EVENTQUEUE: async_op2 places the completionHandler in an eventQueue.
- *    The application (function main) will run the event loop to call the completionHandler(s) in the eventQueue.
- * 3) m_useMode == USE_THREAD: async_op1 starts a detached thread that will
- *    call the completionHandler after a delay of 1000 ms.
- * 4) m_useMode == USE_THREAD_QUEUE: async_op1 starts a detached thread that will
- *    place the completionHandler in a queue after the delay of 1000 ms.
- *    The main thread will run the completionHandler in its own context.
- * 5) m_useMode == USE_IMMEDIATE_COMPLETION: async_op1 calls the completionHandler immediately.
+ * See explanation in use_mode.h.
+ * 
  */
 void Class02::async_op2(int idx, int bias, std::function<void(int)>&& completionHandler)
 {
@@ -160,7 +146,7 @@ void Class02::async_op2(int idx, int bias, std::function<void(int)>&& completion
     {
     case UseMode::USE_NONE:
         // Nothing to be done: eventHandler[idx] should be called "manually" by the application
-        eventHandler[idx] = completionHandler;
+        m_eventHandler[idx] = completionHandler;
         break;
     case UseMode::USE_EVENTQUEUE:
         if (m_eventQueue)
@@ -168,9 +154,16 @@ void Class02::async_op2(int idx, int bias, std::function<void(int)>&& completion
         break;
     case UseMode::USE_THREAD:
     {
+        if (m_awaker)
+            m_awaker->addThread();
+
         std::thread thread1([this, idx, bias, completionHandler]() {
-            print(PRI1, "Class02::async_op2(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));\n");
+            print(PRI1, "Class02::async_op2(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", m_delay);
             std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));
+
+            print(PRI1, "Class02(): async_op2(): thread1: if (m_awaker) m_awaker->awaitRelease();\n");
+            if (m_awaker)
+                m_awaker->awaitRelease();
 
             if (m_mutex) {
                 std::lock_guard<std::mutex> guard(*m_mutex);
@@ -192,7 +185,7 @@ void Class02::async_op2(int idx, int bias, std::function<void(int)>&& completion
         m_queueSize++;
 
         std::thread thread1([this, completionHandler]() {
-            print(PRI1, "Class02::async_op2(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));\n");
+            print(PRI1, "Class02::async_op2(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", m_delay);
             std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));
 
             std::function<void(int)> completionHandler1 = completionHandler;

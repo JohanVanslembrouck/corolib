@@ -27,10 +27,14 @@ std::function<void(int)> eventHandler;        // Will be initialized in async_op
 UseMode useMode;
 
 int delay = 10;
+int delay2 = 200;
+
+ThreadAwaker *awaker = nullptr;
 
 /**
  * @brief async_op
- *
+ * See explanation in use_mode.h.
+ * 
  */
 void async_op(std::function<void(int)>&& completionHandler)
 {
@@ -48,15 +52,29 @@ void async_op(std::function<void(int)>&& completionHandler)
     }
     case UseMode::USE_THREAD:
     {
+        if (awaker)
+            awaker->addThread();
+
         std::thread thread1([completionHandler]() {
             print(PRI1, "async_op(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", delay);
             std::this_thread::sleep_for(std::chrono::milliseconds(delay));
+
+            if (awaker)
+                awaker->awaitRelease();
 
             print(PRI1, "async_op(): thread1: completionHandler(10);\n");
             completionHandler(10);
             print(PRI1, "async_op(): thread1: return;\n");
             });
         thread1.detach();
+
+        // Normally we should not use delays in an asynchronous application.
+        // The following delay is only used to investigate possible problems caused by it,
+        // especially when the completionHandler in the thread runs before the following delay expires.
+		print(PRI1, "async_op(): before std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", delay2);
+        std::this_thread::sleep_for(std::chrono::milliseconds(delay2));
+        print(PRI1, "async_op(): after std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", delay2);
+
         break;
     }
     case UseMode::USE_THREAD_QUEUE:
