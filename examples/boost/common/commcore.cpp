@@ -104,7 +104,7 @@ void CommCore::start_writing_impl(const int idx, const char* str, int size)
         return;
     }
 
-    std::chrono::high_resolution_clock::time_point now = m_async_operation_info[idx].start;
+    std::chrono::high_resolution_clock::time_point now = get_async_operation_info(idx)->start;
 
     boost::asio::async_write(
         m_socket,
@@ -145,7 +145,7 @@ void CommCore::start_reading_impl(const int idx, const char ch)
     // Set a deadline for the read operation.
     m_deadline.expires_after(std::chrono::seconds(10));
 
-    std::chrono::high_resolution_clock::time_point now = m_async_operation_info[idx].start;
+    std::chrono::high_resolution_clock::time_point now = get_async_operation_info(idx)->start;
 
     boost::asio::async_read_until(
         m_socket,
@@ -186,7 +186,7 @@ void CommCore::start_timer_impl(const int idx, steady_timer& tmr, int ms)
 
     tmr.expires_after(std::chrono::milliseconds(ms));
 
-    std::chrono::high_resolution_clock::time_point now = m_async_operation_info[idx].start;
+    std::chrono::high_resolution_clock::time_point now = get_async_operation_info(idx)->start;
 
     tmr.async_wait(
         [this, idx, now](const boost::system::error_code& error)

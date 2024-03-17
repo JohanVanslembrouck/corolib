@@ -60,12 +60,13 @@ public:
             async_task<int> t = m_dispatch_table[idx].op(str);
             co_await t;
 
-            async_operation<std::string>* om_async_operation = 
-                static_cast<async_operation<std::string>*>(m_async_operations[idx]);
-            if (om_async_operation)
+            async_operation_base* om_async_operation = get_async_operation(idx);
+            async_operation<std::string>* om_async_operation_t =
+                static_cast<async_operation<std::string>*>(om_async_operation);
+            if (om_async_operation_t)
             {
-                om_async_operation->set_result(str);
-                om_async_operation->completed();
+                om_async_operation_t->set_result(str);
+                om_async_operation_t->completed();
             }
 
             co_return 0;
@@ -101,17 +102,19 @@ public:
      */
     void dispatch(std::string str)
     {
-        print(PRI2, "Dispatcher::dispatch(str), m_index = %d, str = %s", m_index, str.c_str());
+        int index = get_table_size();
+
+        print(PRI2, "Dispatcher::dispatch(str), index = %d, str = %s", index, str.c_str());
         
         std::string header = getHeader(str);
 
-        for (int i = 0; i < m_index+1; i++)
+        for (int i = 0; i < index+1; i++)
         {
             print(PRI2, "Dispatcher::dispatch(): m_dispatch_table[%d].str = <%s>\n", i, m_dispatch_table[i].str.c_str());
             if (m_dispatch_table[i].str.compare(header) == 0)
             {
                 print(PRI1, "Dispatcher::dispatch(): found match at index %d\n", i);
-                m_dispatch_table[m_index].op2(str, i);
+                m_dispatch_table[index].op2(str, i);
                 break;
             }
         }

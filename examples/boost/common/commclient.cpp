@@ -41,7 +41,7 @@ void CommClient::start()
     print(PRI2, "%p: CommClient::start()\n", this);
     int index = get_free_index_ts();
     print(PRI2, "%p: CommClient::start(): index = %d\n", this, index);
-    assert(m_async_operation_info[index].async_operation == nullptr);
+    assert(get_async_operation_info(index)->async_operation == nullptr);
     start_connecting_impl(index);
 
     // Start the deadline actor. You will note that we're not setting any
@@ -74,7 +74,7 @@ void CommClient::start_connecting_impl(const int idx)
     // Set a deadline for the connect operation.
     m_deadline.expires_after(std::chrono::seconds(5));
 
-    std::chrono::high_resolution_clock::time_point now = m_async_operation_info[idx].start;
+    std::chrono::high_resolution_clock::time_point now = get_async_operation_info(idx)->start;
 
     // Start the asynchronous connect operation.
     boost::asio::async_connect(

@@ -170,7 +170,7 @@ public:
             [&status, idx, this](Status s) {
                 status = std::move(s);
 
-                async_operation_base* om_async_operation = m_async_operations[idx];
+                async_operation_base* om_async_operation = get_async_operation(idx);
                 async_operation<void>* om_async_operation_t =
                     dynamic_cast<async_operation<void>*>(om_async_operation);
                 if (om_async_operation_t) {
@@ -214,7 +214,7 @@ public:
             [&status, idx, this](Status s) {
                 status = std::move(s);
 
-                async_operation_base* om_async_operation = m_async_operations[idx];
+                async_operation_base* om_async_operation = get_async_operation(idx);
                 async_operation<void>* om_async_operation_t =
                     dynamic_cast<async_operation<void>*>(om_async_operation);
                 if (om_async_operation_t) {

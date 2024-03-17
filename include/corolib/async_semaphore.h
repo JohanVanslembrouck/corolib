@@ -68,7 +68,7 @@ namespace corolib
         {
             print(PRI2, "async_semaphore::complete_waiter(idx = %d)\n", idx);
 
-            async_operation_base* om_async_operation = m_async_operations[idx];
+            async_operation_base* om_async_operation = get_async_operation(idx);
             async_operation<void>* om_async_operation_t =
                 static_cast<async_operation<void>*>(om_async_operation);
 

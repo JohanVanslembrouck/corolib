@@ -129,7 +129,7 @@ public:
     {
         bool success = false;
 
-        async_operation_base* om_async_operation = m_async_operations[idx];
+        async_operation_base* om_async_operation = get_async_operation(idx);
 
         async_operation<std::string>* om_async_operation_t =
             static_cast<async_operation<std::string>*>(om_async_operation);

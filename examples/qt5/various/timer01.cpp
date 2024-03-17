@@ -55,7 +55,7 @@ async_operation<void> Timer01::start_timer(QTimer& timer, int ms, bool doDisconn
  */
 void Timer01::start_timer_impl(const int idx, QTimer& tmr, int ms, bool doDisconnect)
 {
-    print(PRI1, "%p: Timer01::start_timer_impl(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
+    print(PRI1, "%p: Timer01::start_timer_impl(): idx = %d, operation = %p\n", this, idx, get_async_operation(idx));
 
     tmr.start(ms);
 
@@ -64,7 +64,7 @@ void Timer01::start_timer_impl(const int idx, QTimer& tmr, int ms, bool doDiscon
         {
             print(PRI1, "%p: Timer01::handle_timer() lambda: idx = %d\n", this, idx);
 
-            async_operation_base* om_async_operation = m_async_operations[idx];
+            async_operation_base* om_async_operation = get_async_operation(idx);
             async_operation<void>* om_async_operation_t =
                 static_cast<async_operation<void>*>(om_async_operation);
 

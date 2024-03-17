@@ -54,7 +54,7 @@ void CommServer::start_accepting_impl(spCommCore commRWT, int idx)
 {
     print(PRI2, "%p: CommServer::start_accepting_impl()\n", this);
 
-    std::chrono::high_resolution_clock::time_point now = m_async_operation_info[idx].start;
+    std::chrono::high_resolution_clock::time_point now = get_async_operation_info(idx)->start;
 
     m_acceptor.async_accept(
         commRWT->m_socket,

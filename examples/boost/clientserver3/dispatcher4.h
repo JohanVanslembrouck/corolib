@@ -78,11 +78,13 @@ public:
      */
     async_task<int> dispatch(std::string str)
     {
-        print(PRI2, "Dispatcher::dispatch(str), m_index = %d, str = %s", m_index, str.c_str());
+        int index = get_table_size();
+
+        print(PRI2, "Dispatcher::dispatch(str), index = %d, str = %s", index, str.c_str());
         
         std::string header = getHeader(str);
 
-        for (int i = 0; i < m_index+1; i++)
+        for (int i = 0; i < index +1; i++)
         {
             print(PRI2, "Dispatcher::dispatch(): m_dispatch_table[%d].str = <%s>\n", i, m_dispatch_table[i].str.c_str());
             if (m_dispatch_table[i].str.compare(header) == 0)

@@ -356,7 +356,7 @@ void TcpClient01::start_reading_impl(const int idx)
     m_connections[idx] = connect(this, &TcpClient01::responseReceivedSig,
         [this, idx](QByteArray msg)
         {
-            async_operation_base* om_async_operation = m_async_operations[idx];
+            async_operation_base* om_async_operation = get_async_operation(idx);
             async_operation<QByteArray>* om_async_operation_t =
                 static_cast<async_operation<QByteArray>*>(om_async_operation);
 

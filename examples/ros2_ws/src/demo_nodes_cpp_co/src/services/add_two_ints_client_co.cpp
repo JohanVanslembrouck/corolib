@@ -151,7 +151,7 @@ public:
                 RCLCPP_ERROR(m_node->get_logger(), "Interrupted while waiting for response. Exiting.");
             }
 
-            async_operation_base* om_async_operation = m_async_operations[idx];
+            async_operation_base* om_async_operation = get_async_operation(idx);
             async_operation<int>* om_async_operation_t =
                 static_cast<async_operation<int>*>(om_async_operation);
             if (om_async_operation_t)

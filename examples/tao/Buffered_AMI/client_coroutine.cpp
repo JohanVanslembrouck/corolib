@@ -255,7 +255,7 @@ public:
         m_reply_handler_servant.eventHandler =
             [this, idx](CORBA::ULong reply_number)
         {
-            async_operation_base* om_async_operation = m_async_operations[idx];
+            async_operation_base* om_async_operation = get_async_operation(idx);
             async_operation<CORBA::ULong>* om_async_operation_t =
                 static_cast<async_operation<CORBA::ULong>*>(om_async_operation);
             if (om_async_operation_t)

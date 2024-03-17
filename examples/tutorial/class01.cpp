@@ -102,7 +102,7 @@ void Class01::start_operation_impl(const int idx)
         {
             print(PRI1, "Class01::eventHandler[%p, %d](%d)\n", this, idx, i);
 
-            async_operation_base* om_async_operation = m_async_operations[idx];
+            async_operation_base* om_async_operation = get_async_operation(idx);
             async_operation<int>* om_async_operation_t =
                 static_cast<async_operation<int>*>(om_async_operation);
 

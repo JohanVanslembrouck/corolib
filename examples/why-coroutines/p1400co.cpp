@@ -22,7 +22,7 @@ void RemoteObjectImplCo::start_write_segment_impl(int idx, char* p, int offset, 
         {
             print(PRI2, "%p: RemoteObjectImplCo::start_write_segment_impl(%d) - handler\n", this, idx);
 
-            async_operation_base* om_async_operation = m_async_operations[idx];
+            async_operation_base* om_async_operation = get_async_operation(idx);
             async_operation<void>* om_async_operation_t =
                 static_cast<async_operation<void>*>(om_async_operation);
 
@@ -48,7 +48,7 @@ void RemoteObjectImplCo::start_read_segment_impl(int idx, char* p, int offset, i
         {
             print(PRI2, "%p: RemoteObjectImpl::start_read_segment_impl(%d) - handler\n", this, idx);
 
-            async_operation_base* om_async_operation = m_async_operations[idx];
+            async_operation_base* om_async_operation = get_async_operation(idx);
             async_operation<bool>* om_async_operation_t =
                 static_cast<async_operation<bool>*>(om_async_operation);
 

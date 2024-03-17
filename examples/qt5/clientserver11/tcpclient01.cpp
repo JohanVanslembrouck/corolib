@@ -245,12 +245,12 @@ async_operation<QByteArray> TcpClient01::start_reading()
  */
 void TcpClient01::start_reading_impl(const int idx)
 {
-    print(PRI2, "%p: TcpClient01::start_reading_impl(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
+    print(PRI2, "%p: TcpClient01::start_reading_impl(): idx = %d, operation = %p\n", this, idx, get_async_operation(idx));
 
     m_connections[idx] = connect(this, &TcpClient01::responseReceivedSig,
         [this, idx](QByteArray msg)
         {
-            async_operation_base* om_async_operation = m_async_operations[idx];
+            async_operation_base* om_async_operation = get_async_operation(idx);
             async_operation<QByteArray>* om_async_operation_t =
                 static_cast<async_operation<QByteArray>*>(om_async_operation);
 
@@ -300,7 +300,7 @@ async_operation<void> TcpClient01::start_timer(QTimer& timer, int ms)
  */
 void TcpClient01::start_timer_impl(const int idx, QTimer& tmr, int ms)
 {
-    print(PRI2, "%p: TcpClient01::start_timer_impl(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
+    print(PRI2, "%p: TcpClient01::start_timer_impl(): idx = %d, operation = %p\n", this, idx, get_async_operation(idx));
 
     tmr.start(ms);
 
@@ -309,7 +309,7 @@ void TcpClient01::start_timer_impl(const int idx, QTimer& tmr, int ms)
          {
              print(PRI2, "%p: TcpClient01::handle_timer() lambda: idx = %d\n", this, idx);
 
-             async_operation_base* om_async_operation = m_async_operations[idx];
+             async_operation_base* om_async_operation = get_async_operation(idx);
              async_operation<void>* om_async_operation_t =
                  static_cast<async_operation<void>*>(om_async_operation);
 
@@ -369,14 +369,14 @@ async_operation<void> TcpClient01::start_connecting(QString& serverIpAddress, qu
  */
 void TcpClient01::start_connecting_impl(const int idx, QString& serverIpAddress, quint16 port)
 {
-    print(PRI2, "%p: TcpClient::start_connecting_impl(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
+    print(PRI2, "%p: TcpClient::start_connecting_impl(): idx = %d, operation = %p\n", this, idx, get_async_operation(idx));
 
     m_connections[idx] = connect(&m_tcpClient, &TcpClient::connectedSig,
          [this, idx]()
          {
              print(PRI2, "%p: TcpClient01::handle_connect() lambda: idx = %d\n", this, idx);
 
-             async_operation_base* om_async_operation = m_async_operations[idx];
+             async_operation_base* om_async_operation = get_async_operation(idx);
              async_operation<void>* om_async_operation_t =
                  static_cast<async_operation<void>*>(om_async_operation);
 

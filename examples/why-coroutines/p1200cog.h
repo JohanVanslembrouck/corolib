@@ -84,7 +84,7 @@ public:
     {
         print(PRI1, "%p: RemoteObject1Co::genericCompletionHandler(%d)\n", this, idx);
 
-        async_operation_base* om_async_operation = m_async_operations[idx];
+        async_operation_base* om_async_operation = get_async_operation(idx);
         async_operation<TYPE>* om_async_operation_t =
             static_cast<async_operation<TYPE>*>(om_async_operation);
 

@@ -16,7 +16,7 @@ void RemoteObject1Co::start_op1_impl(const int idx, Msg& msg)
         {
             print(PRI1, "%p: RemoteObject1Co::start_op1_impl(%d) - handler\n", this, idx);
 
-            async_operation_base* om_async_operation = m_async_operations[idx];
+            async_operation_base* om_async_operation = get_async_operation(idx);
             async_operation<int>* om_async_operation_t =
                 static_cast<async_operation<int>*>(om_async_operation);
 

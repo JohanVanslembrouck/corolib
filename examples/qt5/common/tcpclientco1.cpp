@@ -132,7 +132,7 @@ bool TcpClientCo1::connectToServer(QString& serverIPaddress, quint16 serverPort)
 
                         print(PRI2, "%p: TcpClientCo1::handle_read() lambda: idx = %d\n", this, idx);
 
-                        async_operation_base* om_async_operation = m_async_operations[idx];
+                        async_operation_base* om_async_operation = get_async_operation(idx);
                         async_operation<QByteArray>* om_async_operation_t =
                             static_cast<async_operation<QByteArray>*>(om_async_operation);
 
@@ -156,7 +156,7 @@ bool TcpClientCo1::connectToServer(QString& serverIPaddress, quint16 serverPort)
 
                         print(PRI2, "%p: TcpClientCo1::handle_connect() lambda: idx = %d\n", this, idx);
 
-                        async_operation_base* om_async_operation = m_async_operations[idx];
+                        async_operation_base* om_async_operation = get_async_operation(idx);
                         async_operation<void>* om_async_operation_t =
                             static_cast<async_operation<void>*>(om_async_operation);
 
@@ -504,7 +504,7 @@ async_operation<QByteArray> TcpClientCo1::start_reading()    // no doDisconnect 
  */
 void TcpClientCo1::start_reading_impl(const int idx)        // no doDisconnect parameter compared with tcpclientco.cpp
 {
-    print(PRI2, "%p: TcpClientCo1::start_reading_impl(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
+    print(PRI2, "%p: TcpClientCo1::start_reading_impl(): idx = %d, operation = %p\n", this, idx, get_async_operation(idx));
 
     m_index_read = idx;            // New statement compared with tcpclientco.cpp
     
@@ -548,7 +548,7 @@ async_operation<void> TcpClientCo1::start_timer(QTimer& timer, int ms)
  */
 void TcpClientCo1::start_timer_impl(const int idx, QTimer& tmr, int ms)
 {
-    print(PRI2, "%p: TcpClientCo1::start_timer_impl(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
+    print(PRI2, "%p: TcpClientCo1::start_timer_impl(): idx = %d, operation = %p\n", this, idx, get_async_operation(idx));
 
     tmr.start(ms);
 
@@ -557,7 +557,7 @@ void TcpClientCo1::start_timer_impl(const int idx, QTimer& tmr, int ms)
         {
             print(PRI2, "%p: TcpClientCo1::handle_timer() lambda: idx = %d\n", this, idx);
 
-            async_operation_base* om_async_operation = m_async_operations[idx];
+            async_operation_base* om_async_operation = get_async_operation(idx);
             async_operation<void>* om_async_operation_t =
                 static_cast<async_operation<void>*>(om_async_operation);
 
@@ -617,7 +617,7 @@ async_operation<void> TcpClientCo1::start_connecting(QString& serverIpAddress, q
  */
 void TcpClientCo1::start_connecting_impl(const int idx, QString& serverIpAddress, quint16 port)
 {
-    print(PRI2, "%p: TcpClientCo1::start_connecting_impl(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
+    print(PRI2, "%p: TcpClientCo1::start_connecting_impl(): idx = %d, operation = %p\n", this, idx, get_async_operation(idx));
 
     m_index_connect = idx;        // New statement compared with tcpclientco.cpp
 

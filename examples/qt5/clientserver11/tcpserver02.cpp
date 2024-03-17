@@ -198,12 +198,12 @@ async_operation<int> TcpServer02::start_accepting(bool doDisconnect)
  */
 void TcpServer02::start_accepting_impl(const int idx, bool doDisconnect)
 {
-    print(PRI2, "%p: TcpServer02::start_accepting_impl(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
+    print(PRI2, "%p: TcpServer02::start_accepting_impl(): idx = %d, operation = %p\n", this, idx, get_async_operation(idx));
 
     m_connections[idx] = connect(&m_tcpServer, &TcpServer::newTCPConnectionSig,
         [this, idx, doDisconnect]()
         {
-            async_operation_base* om_async_operation = m_async_operations[idx];
+            async_operation_base* om_async_operation = get_async_operation(idx);
             async_operation<int>* om_async_operation_t =
                 static_cast<async_operation<int>*>(om_async_operation);
 
@@ -253,7 +253,7 @@ async_operation<readInfo> TcpServer02::start_reading(bool doDisconnect)
  */
 void TcpServer02::start_reading_impl(const int idx, bool doDisconnect)
 {
-    print(PRI2, "%p: TcpServer02::start_reading_impl(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
+    print(PRI2, "%p: TcpServer02::start_reading_impl(): idx = %d, operation = %p\n", this, idx, get_async_operation(idx));
 
     m_connections[idx] = connect(&m_tcpServer, &TcpServer::readyReadTcpSig,
         [this, idx, doDisconnect](QTcpSocket* sock, QByteArray& data)
@@ -264,7 +264,7 @@ void TcpServer02::start_reading_impl(const int idx, bool doDisconnect)
             readInfo_.sock = sock;
             readInfo_.data = data;
 
-            async_operation_base* om_async_operation = m_async_operations[idx];
+            async_operation_base* om_async_operation = get_async_operation(idx);
             async_operation<readInfo>* om_async_operation_t =
                 static_cast<async_operation<readInfo>*>(om_async_operation);
 
@@ -325,7 +325,7 @@ async_operation<void> TcpServer02::start_timer(QTimer& timer, int ms, bool doDis
  */
 void TcpServer02::start_timer_impl(const int idx, QTimer& tmr, int ms, bool doDisconnect)
 {
-    print(PRI2, "%p: TcpServer02::start_timer_impl(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
+    print(PRI2, "%p: TcpServer02::start_timer_impl(): idx = %d, operation = %p\n", this, idx, get_async_operation(idx));
 
     tmr.start(ms);
 
@@ -334,7 +334,7 @@ void TcpServer02::start_timer_impl(const int idx, QTimer& tmr, int ms, bool doDi
         {
             print(PRI2, "%p: TcpServer02::start_timer_impl() lambda: idx = %d\n", this, idx);
 
-            async_operation_base* om_async_operation = m_async_operations[idx];
+            async_operation_base* om_async_operation = get_async_operation(idx);
             async_operation<void>* om_async_operation_t =
                 static_cast<async_operation<void>*>(om_async_operation);
 
@@ -383,12 +383,12 @@ async_operation<int> TcpServer02::start_disconnecting(bool doDisconnect)
  */
 void TcpServer02::start_disconnecting_impl(const int idx, bool doDisconnect)
 {
-    print(PRI2, "%p: TcpServer02::start_disconnecting_impl(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
+    print(PRI2, "%p: TcpServer02::start_disconnecting_impl(): idx = %d, operation = %p\n", this, idx, get_async_operation(idx));
 
     m_connections[idx] = connect(&m_tcpServer, &TcpServer::disconnectedClientSig,
         [this, idx, doDisconnect]()
         {
-            async_operation_base* om_async_operation = m_async_operations[idx];
+            async_operation_base* om_async_operation = get_async_operation(idx);
             async_operation<int>* om_async_operation_t =
                 static_cast<async_operation<int>*>(om_async_operation);
 

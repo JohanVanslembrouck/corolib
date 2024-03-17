@@ -400,7 +400,7 @@ class RouteGuideClient : public CommService {
       pReaderCo_->eventHandler =
           [this, idx](Status status)
       {
-          async_operation_base* om_async_operation = m_async_operations[idx];
+          async_operation_base* om_async_operation = get_async_operation(idx);
           async_operation<Status>* om_async_operation_t =
               dynamic_cast<async_operation<Status>*>(om_async_operation);
           if (om_async_operation_t)

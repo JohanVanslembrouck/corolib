@@ -13,7 +13,7 @@
 namespace corolib
 {
 
-async_operation_base reserved;
+async_operation_base CommService::reserved;
 
 CommService::CommService()
     : m_index(-1)
