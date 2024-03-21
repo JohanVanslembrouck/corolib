@@ -30,8 +30,8 @@ public:
     async_task<int> coroutine5();
 
 public:
-    Class01 m_object01;
-    Class01 m_object02;
+    Class01 &m_object01;
+    Class01 &m_object02;
 };
 
 #endif

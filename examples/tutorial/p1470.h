@@ -37,8 +37,8 @@ public:
     async_task<int> coroutine5c();
 
 public:
-    Class02 m_object01;
-    Class02 m_object02;
+    Class02 &m_object01;
+    Class02 &m_object02;
 
     bool m_running = true;
 };

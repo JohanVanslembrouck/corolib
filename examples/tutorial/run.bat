@@ -93,6 +93,7 @@ p1485-async_operation-thread-queue.exe
 
 p1500-async_operation.exe
 p1600-async_operation.exe
+p1610-async_operation.exe
 p1700-async_operation.exe
 p1700a-async_operation.exe
 p1730-async_operation.exe

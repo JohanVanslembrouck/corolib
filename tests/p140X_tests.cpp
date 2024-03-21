@@ -1725,7 +1725,7 @@ TEST(TutorialTest, p1460)
     int v = a.get_result();
     print(PRI1, "p1460(): v = %d\n", v);
 
-    ASSERT_EQ(v, 249);
+    ASSERT_EQ(v, 273);
 }
 
 // ---------------------------------
@@ -1752,7 +1752,7 @@ TEST(TutorialTest, p1462)
     int v = a.get_result();
     print(PRI1, "p1462(): v = %d\n", v);
 
-    ASSERT_EQ(v, 249);
+    ASSERT_EQ(v, 273);
 }
 
 // ---------------------------------
@@ -1784,7 +1784,7 @@ TEST(TutorialTest, p1464)
     print(PRI1, "p1464(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    ASSERT_EQ(v, 249);
+    ASSERT_EQ(v, 273);
 }
 
 // ---------------------------------
@@ -1817,7 +1817,7 @@ TEST(TutorialTest, p1464a)
     print(PRI1, "p1464a(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    ASSERT_EQ(v, 249);
+    ASSERT_EQ(v, 273);
 }
 
 // ---------------------------------
@@ -1846,7 +1846,7 @@ TEST(TutorialTest, p1465)
     int v = a.get_result();
     print(PRI1, "p1465(): v = %d\n", v);
 
-    ASSERT_EQ(v, 249);
+    ASSERT_EQ(v, 273);
 }
 
 // ---------------------------------
@@ -1873,7 +1873,7 @@ TEST(TutorialTest, p1466)
     print(PRI1, "p1466(): v = %d\n", v);
 
 
-    ASSERT_EQ(v, 249);
+    ASSERT_EQ(v, 273);
 }
 
 // ---------------------------------
@@ -1900,7 +1900,7 @@ TEST(TutorialTest, p1468)
     int v = a.get_result();
     print(PRI1, "p1468(): v = %d\n", v);
 
-    ASSERT_EQ(v, 249);
+    ASSERT_EQ(v, 273);
 }
 
 // ---------------------------------
@@ -1927,7 +1927,7 @@ TEST(TutorialTest, p1469)
     int v = a.get_result();
     print(PRI1, "p1469(): v = %d\n", v);
 
-    ASSERT_EQ(v, 249);
+    ASSERT_EQ(v, 273);
 }
 
 
@@ -1956,7 +1956,7 @@ TEST(TutorialTest, p1469a)
     int v = a.get_result();
     print(PRI1, "p1469a(): v = %d\n", v);
 
-    ASSERT_EQ(v, 249);
+    ASSERT_EQ(v, 273);
 }
 
 // -------------------------------------------------------------------------------------

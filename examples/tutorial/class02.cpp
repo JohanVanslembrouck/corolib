@@ -9,6 +9,29 @@
 
 #include <corolib/print.h>
 
+Class02::Class02(UseMode useMode,
+    EventQueueFunctionVoidInt* eventQueue,
+    EventQueueThrFunctionVoidInt* eventQueueThr,
+    std::mutex* mtx,
+    ThreadAwaker* awaker,
+    int delay)
+    : m_useMode(useMode)
+    , m_eventQueue(eventQueue)
+    , m_eventQueueThr(eventQueueThr)
+    , m_mutex(mtx)
+    , m_awaker(awaker)
+    , m_delay(delay)
+    , m_queueSize(0)
+{
+    for (int i = 0; i < NROPERATIONS; ++i)
+    {
+        m_eventHandler[i] = 
+            [this, i](int) {
+                print(PRI1, "%p: Class02::invalid m_eventHandler entry: index = %d\n", this, i);
+            };
+    }
+}
+
 async_operation<int> Class02::start_operation1()
 {
     int index = get_free_index();
@@ -226,7 +249,7 @@ void Class02::start_operation2_impl(const int idx, int bias)
                 if (i >= 0)
                 {
                     print(PRI1, "Class02::eventHandler[%p, %d](%d): om_async_operation_t->set_result(%d);\n", this, idx, i, bias + i);
-                    om_async_operation_t->set_result(i);
+                    om_async_operation_t->set_result(bias + i);
                 }
                 else
                 {
@@ -241,4 +264,14 @@ void Class02::start_operation2_impl(const int idx, int bias)
                 print(PRI1, "Class02::eventHandler[%p, %d, %d](%d): Warning: om_async_operation_t == nullptr\n", this, idx, bias, i);
             }
         });
+}
+
+void Class02::runEventHandler(int i, int val)
+{
+    std::function<void(int)> eventHandler_ = m_eventHandler[i];
+    eventHandler_(val);
+    m_eventHandler[i] =
+        [this, i](int) {
+            print(PRI1, "%p: Class02::invalid m_eventHandler entry: index = %d\n", this, i);
+        };
 }

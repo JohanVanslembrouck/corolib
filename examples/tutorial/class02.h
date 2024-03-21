@@ -25,32 +25,18 @@ using namespace corolib;
 class Class02 : public CommService
 {
 public:
-    Class02(UseMode useMode = UseMode::USE_NONE,
-            EventQueueFunctionVoidInt* eventQueue = nullptr,
-            EventQueueThrFunctionVoidInt* eventQueueThr = nullptr,
-            std::mutex* mtx = nullptr,
-            ThreadAwaker* awaker = nullptr,
-            int delay = 10)
-        : m_useMode(useMode)
-        , m_eventQueue(eventQueue)
-        , m_eventQueueThr(eventQueueThr)
-        , m_mutex(mtx)
-        , m_awaker(awaker)
-        , m_delay(delay)
-        , m_queueSize(0)
-    {
-    }
+    Class02(
+        UseMode useMode = UseMode::USE_NONE,
+        EventQueueFunctionVoidInt* eventQueue = nullptr,
+        EventQueueThrFunctionVoidInt* eventQueueThr = nullptr,
+        std::mutex* mtx = nullptr,
+        ThreadAwaker* awaker = nullptr,
+        int delay = 10);
 
     async_operation<int> start_operation1();
     async_operation<int> start_operation2(int bias = 0);
     
-    void runEventHandler(int i, int val)
-    {
-        // When the event handler runs, it may overwrite m_eventHandler[i].
-        // This did not cause any problems so far. Anyway make a copy first.
-        std::function<void(int)> eventHandler_ = m_eventHandler[i];
-        eventHandler_(val);
-    }
+    void runEventHandler(int i, int val);
 
     EventQueueFunctionVoidInt* getEventQueue() { return m_eventQueue; }
 

@@ -197,6 +197,9 @@ target_link_libraries(p1500-async_operation corolib)
 add_executable(p1600-async_operation p1600-async_operation.cpp p1600.cpp)
 target_link_libraries(p1600-async_operation corolib)
 
+add_executable(p1610-async_operation p1610-async_operation.cpp class02.cpp p1610.cpp)
+target_link_libraries(p1610-async_operation corolib)
+
 add_executable(p1700-async_operation p1700-async_operation.cpp p1700.cpp)
 target_link_libraries(p1700-async_operation corolib)
 # Requires the presence of move contructors and move assignment operators in async_task.h

@@ -10,6 +10,25 @@
 
 #include <corolib/print.h>
 
+Class01::Class01(UseMode useMode,
+    EventQueueFunctionVoidInt* eventQueue,
+    EventQueueThrFunctionVoidInt* eventQueueThr,
+    std::mutex* mtx,
+    ThreadAwaker* awaker,
+    int delay)
+    : m_useMode(useMode)
+    , m_eventQueue(eventQueue)
+    , m_eventQueueThr(eventQueueThr)
+    , m_mutex(mtx)
+    , m_awaker(awaker)
+    , m_delay(delay)
+    , m_queueSize(0)
+{
+    m_eventHandler = [this](int) {
+        print(PRI1, "%p: Class01::invalid m_eventHandler entry\n", this);
+        };
+}
+
 async_operation<int> Class01::start_operation()
 {
     int index = get_free_index();

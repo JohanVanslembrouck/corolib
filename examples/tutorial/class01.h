@@ -25,21 +25,13 @@ using namespace corolib;
 class Class01 : public CommService
 {
 public:
-    Class01(UseMode useMode = UseMode::USE_NONE,
-            EventQueueFunctionVoidInt* eventQueue = nullptr,
-            EventQueueThrFunctionVoidInt* eventQueueThr = nullptr,
-            std::mutex* mtx = nullptr,
-            ThreadAwaker* awaker = nullptr,
-            int delay = 10)
-        : m_useMode(useMode)
-        , m_eventQueue(eventQueue)
-        , m_eventQueueThr(eventQueueThr)
-        , m_mutex(mtx)
-        , m_awaker(awaker)
-        , m_delay(delay)
-        , m_queueSize(0)
-    {
-    }
+    Class01(
+        UseMode useMode = UseMode::USE_NONE,
+        EventQueueFunctionVoidInt* eventQueue = nullptr,
+        EventQueueThrFunctionVoidInt* eventQueueThr = nullptr,
+        std::mutex* mtx = nullptr,
+        ThreadAwaker* awaker = nullptr,
+        int delay = 10);
 
     async_operation<int> start_operation();
     

@@ -185,6 +185,8 @@ echo Running ./p1500-async_operation
 ./p1500-async_operation
 echo Running ./p1600-async_operation
 ./p1600-async_operation
+echo Running ./p1610-async_operation
+./p1610-async_operation
 echo Running ./p1700-async_operation
 ./p1700-async_operation
 echo Running ./p1700a-async_operation
