@@ -1,16 +1,36 @@
 /**
  * @file async_operation.h
  * @brief
- * async_operation<TYPE> is used as the return types of asynchronous (I/O) operations 
- * (see commcore.h, commclient.h and commserver.h in case of Boost ASIO).
+ * async_operation<TYPE> is used as the return types of asynchronous (I/O) operations.
  * async_operation<TYPE> defines operator co_await (so it can be co_awaited upon from a coroutine)
  * but it does not define a promise_type (so it can not be used as a return type of a coroutine).
  *
  * The TYPE in async_operation<TYPE> corresponds to the real return type of the operation.
  * async_operation<void> must be used for operations that return void.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
+
+ /**
+ Class hierarchy
+ ===============
+
+                     class async_base
+                             ^
+                             |
+                             |
+                class async_operation_base
+                             ^
+                             |
+                             |
+             ----------------------------------
+             |                                |
+             |                                |
+     template<typename TYPE>            template<>
+     class async_operation              class async_operation<void>
+
+*/
+
 #ifndef _ASYNC_OPERATION_H_
 #define _ASYNC_OPERATION_H_
 

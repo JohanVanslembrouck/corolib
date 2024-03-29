@@ -7,7 +7,7 @@
  * 
  * Both types include a promise_type, so they can be used as the return type of a coroutine.
  * 
- * Both types also define operator co_await, so another coroutine can co_await the async_task<TYPE> or async_ltask<TYPE> object.
+ * Both types also define operator co_await, so that another coroutine can co_await the async_task<TYPE> or async_ltask<TYPE> object.
  * The TYPE in async_task<TYPE> or async_ltask<TYPE> corresponds to the "real" return type of the coroutine
  * (the type the user is interested in).
  * 
@@ -17,15 +17,48 @@
  * 2) In a lazy start coroutine, the coroutine is suspended at the initial suspension point;
  *    the application has to call co_await on the coroutine return object to enter the user-written part of the coroutine.
  * 
- * Class hierarchy
  * 
- * async_task<TYPE> and async_ltask<TYPE> are derived from a common base class async_task_base<TYPE>.
- * async_task<void> and async_ltask<void> are derived from a common base class async_task_void.
- * 
- * Avoiding memory leaks using the asymmetric transfer approach
- * The reader is referred to ../../docs/Avoiding_memory_leaks.md for further info on this subject.
- * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ */
+
+ /**
+ Class hierarchy
+ ===============
+
+                     class async_base
+                             ^
+                             |
+                             |
+                     template<typename TYPE>
+                     class async_task_base
+                             ^
+                             |
+                             |
+             ----------------------------------
+             |                                |
+             |                                |
+     template<typename TYPE>             template<typename TYPE>
+     class async_task                    class async_task
+
+
+
+                     class async_base
+                             ^
+                             |
+                             |
+                     class async_task_void
+                             ^
+                             |
+                             |
+             ----------------------------------
+             |                                |
+             |                                |
+     template<>                          template<>
+     class async_task<void>              class async_ltask<void>
+
+The second class hierarchy (for void) is independent from the one for non-void types,
+apart from the common base class async_base.
+
  */
 
 #ifndef _ASYNC_TASK_H_
@@ -47,52 +80,98 @@
 #define DECLARE_MOVE_CONSTRUCTORS_AS_DELETED 0
 #define DECLARE_MOVE_ASSIGMENT_OPERATORS_AS_DELETED 1
 
+
 #define USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN 1
 #define USE_RESULT_FROM_COROUTINE_OBJECT 0
 #define USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL 0
 #define USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_HANDLE 1
 
-// Explanation
-// ===========
-// Asymmetric transfer
-// Combinations: (impossible cases are marked X)            1   2   X   X   5   6   7   8
-// --------------------------------------------------------------------------------------
-// #define USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN            0   0   0   0   1   1   1   1
-// #define USE_RESULT_FROM_COROUTINE_OBJECT                 0   0   1   1   0   0   1   1
-// #define USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL     0   1   0   1   0   1   0   1
-// #define USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_HANDLE   0   0   0   0   0   0   0   0
-// 
-// Symmetric transfer
-// Combinations: (impossible cases are marked X)            9   X   X   X  13   X  15   X
-// --------------------------------------------------------------------------------------
-// #define USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN            0   0   0   0   1   1   1   1
-// #define USE_RESULT_FROM_COROUTINE_OBJECT                 0   0   1   1   0   0   1   1
-// #define USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL     0   1   0   1   0   1   0   1
-// #define USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_HANDLE   1   1   1   1   1   1   1   1
-// 
-// To use the implementation with std::suspend_always as final awaiter, set all 4 compiler directives to 0.
-// Observe that many promise_type objects are still present when leaving the application.
-// 
-// The combinations with USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL enabled display unreliable behavior 
-// in multi-threaded applications.
-// 
-// USE_RESULT_FROM_COROUTINE_OBJECT = 1 requires USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN = 1.
-// 
-// USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL and USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_HANDLE
-// cannot be 1 at the same time.
-// 
-// To use symmetric transfer, set USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_HANDLE to 1 
-// and USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL to 0.
-// 
-// In addition, USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN can be set to 1.
-// There is no need to set USE_RESULT_FROM_COROUTINE_OBJECT to 1.
-// 
-// With USE_RESULT_FROM_COROUTINE_OBJECT = 0, the values in the tracker columns c>p and c<p
-// (displayed in the table when leaving an application) are always 0.
-//
-// In conclusion: use combinations 9, 13 or 15 only.
-//
-// The reader is also referred to ../../reading/Avoiding_memory_leaks.md for further info
+/**
+Explanation
+===========
+
+Asymmetric transfer
+Combinations: (impossible cases are marked X)            1   2   X   X   5   6   7   8
+--------------------------------------------------------------------------------------
+#define USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN            0   0   0   0   1   1   1   1
+#define USE_RESULT_FROM_COROUTINE_OBJECT                 0   0   1   1   0   0   1   1
+        USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_VOID     1   0   1   0   1   0   1   0   (implicit: 1 if the following two are 0)
+#define USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL     0   1   0   1   0   1   0   1
+#define USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_HANDLE   0   0   0   0   0   0   0   0
+
+Symmetric transfer
+Combinations: (impossible cases are marked X)            9   X   X   X  13   X  15   X
+--------------------------------------------------------------------------------------
+#define USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN            0   0   0   0   1   1   1   1
+#define USE_RESULT_FROM_COROUTINE_OBJECT                 0   0   1   1   0   0   1   1
+        USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_VOID     0   0   0   0   0   0   0   0   (implicit)
+#define USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL     0   1   0   1   0   1   0   1
+#define USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_HANDLE   1   1   1   1   1   1   1   1
+
+To use the implementation with std::suspend_always as final awaiter, set all 4 compiler directives to 0.
+Observe that many promise_type objects are still present when leaving the application.
+
+The combinations with USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL enabled display unreliable behavior 
+in multi-threaded applications.
+
+USE_RESULT_FROM_COROUTINE_OBJECT = 1 requires USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN = 1.
+
+USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL and USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_HANDLE
+cannot be 1 at the same time.
+
+To use symmetric transfer, set USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_HANDLE to 1 
+and USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL to 0.
+
+In addition, USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN can be set to 1.
+There is no need to set USE_RESULT_FROM_COROUTINE_OBJECT to 1.
+
+With USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN = 0, the values in the tracker columns c>p and c<p
+(displayed in the table when leaving an application) are always 0.
+
+In conclusion: use combinations 9, 13 or 15 only.
+
+The reader is also referred to ../../reading/Avoiding_memory_leaks.md for further info.
+
+*/
+
+
+/**
+Overview of possible and used combinations for await_ready, await_suspend and await_resume
+==========================================================================================
+
+type                            return type                 usage in corolib
+        await_* function                                    numbers: see tables above 
+------------------------------------------------------------------------------------------------
+async_task | async_ltask
+    awaiter
+        await_ready             bool                        return value is calculated
+        await_suspend           void                        async_task: (no resumption from here)
+                                                            async_ltask: m_async_ltask.m_coro_handle.resume();
+                                bool                        this variant is not used
+                                std::coroutine_handle<>     this variqnt is not used
+        await_resume            TYPE or void
+
+    promise_type
+        initial_awaiter                                     std::suspend_never (async_task)
+                                                            std::suspend_always (async_ltask)
+            await_ready         bool                        true: async_task
+                                                            false: async_ltask
+            await_suspend       void
+                                bool                        this variant is not used
+                                std::coroutine_handle<>     this variant is not used
+            await_resume        void
+
+        return_value|_void       void                       1, 5, 7, 2, 6, 8: m_awaiting.resume();
+                                                            9, 12, 15: (no resuumption from here)
+
+        final_awaiter                                       if await_suspend returns void: std::suspend_always is used
+            await_ready         bool                        always returns false
+            await_suspend       void                        1, 5, 7 
+                                bool                        2, 6, 8
+                                std::coroutine_handle<>     9, 12, 15
+            await_resume        void
+
+*/
 
 #if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
 #include <assert.h>
