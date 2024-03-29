@@ -56,12 +56,20 @@ echo Running ./p0403dt
 ./p0403dt
 # crashes: Norton complains
 #./p0406
-echo Running ./p0414a
+echo Running ./p0414
 ./p0414
+echo Running ./p0415
+./p0415
+echo Running ./p0415
+./p0415
 echo Running ./p0416
 ./p0416
+echo Running ./p0417
+./p0417
 echo Running ./p0418
 ./p0418
+echo Running ./p0419
+./p0419
 echo Running ./p0420
 ./p0420
 echo Running ./p0422
@@ -70,15 +78,24 @@ echo Running ./p0423
 ./p0423
 echo Running ./p0424
 ./p0424
-echo Running ./p0424a
-./p0424a
+echo Running ./p0425
+./p0425
 echo Running ./p0426
 ./p0426
+echo Running ./p0427
+./p0427
 
+echo Running ./p0430
+./p0430
+echo Running ./p0432
+./p0432
 echo Running ./p0435
 ./p0435
-echo Running ./p0440
-./p0440
+echo Running ./p0436
+./p0436
+
+#echo Running ./p0440
+#./p0440
 # May hang
 #echo Running ./p0460
 #./p0460

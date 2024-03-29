@@ -14,9 +14,7 @@
  *        The main() function is responsible for resuming both instances of coroutine6 twice.
  *        The order in which this happens is not important.
  *
- *  Tested with Visual Studio 2019.
- *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ *  Author: Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  *
  */
 
@@ -34,19 +32,20 @@
 
 #define USE_FINAL_AWAITER 1
 
- /**
- Without final_awaiter:
+/**
+Tracker
+Without final_awaiter:
 
 00:     cons    dest    diff    max     c>p     p>c     err
 00: cor 7       7       0       6       0       0       0
 00: pro 5       0       5       5       0       0
 
- With final_awaiter:
+With final_awaiter:
 
 00:     cons    dest    diff    max     c>p     p>c     err
 00: cor 7       7       0       6       0       0       0
 00: pro 5       5       0       5       0       0
- */
+*/
 
 //--------------------------------------------------------------
 
@@ -344,7 +343,6 @@ struct oneway_task : private coroutine_tracker
     };
 };
 
-//--------------------------------------------------------------
 //--------------------------------------------------------------
 
 auto_reset_event m1, m1a, m2, m2a;

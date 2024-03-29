@@ -15,9 +15,7 @@
  *        translated by the compiler into return_value(), return_value resumes
  *        the calling coroutine.
  *
- *  Tested with Visual Studio 2019.
- *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ *  Author: Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  *
  */
 
@@ -31,6 +29,16 @@
 #include "print.h"
 #include "tracker.h"
 #include "csemaphore.h"
+
+/**
+Tracker
+
+00:     cons    dest    diff    max     c>p     p>c     err
+00: cor 7       7       0       6       0       0       0
+00: pro 7       7       0       6       0       0
+*/
+
+//--------------------------------------------------------------
 
 template<typename T>
 struct eager : private coroutine_tracker {
@@ -71,7 +79,7 @@ struct eager : private coroutine_tracker {
     }
 
     T get() {
-        print("%p: eager::get(); coro.done() = %d\n", this, coro.done());
+        print("%p: eager::get(); coro.done() = %d, coro.promise().m_ready = %d\n", this, coro.done(), coro.promise().m_ready);
         if (!coro.done()) {
             coro.promise().m_wait_for_signal = true;
             coro.promise().m_sema.wait();
@@ -122,6 +130,7 @@ struct eager : private coroutine_tracker {
 
         promise_type() :
             m_value{},
+            m_ready{false},
             m_awaiting(nullptr),
             m_wait_for_signal(false) {
             print("%p: eager::promise_type::promise_type()\n", this);
@@ -133,6 +142,7 @@ struct eager : private coroutine_tracker {
 
         void return_value(T v) {
             print("%p: eager::promise_type::return_value(T v): begin\n", this);
+            m_ready = true;
             m_value = v;
             if (m_awaiting) {
                 print("%p: eager::promise_type::return_value(T v): before m_awaiting.resume();\n", this);
@@ -169,6 +179,7 @@ struct eager : private coroutine_tracker {
 
     private:
         T m_value;
+        bool m_ready;
         CSemaphore m_sema;
         std::coroutine_handle<> m_awaiting;
         bool m_wait_for_signal;
@@ -176,7 +187,6 @@ struct eager : private coroutine_tracker {
 
     handle_type coro;
 };
-
 
 //--------------------------------------------------------------
 

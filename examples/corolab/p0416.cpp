@@ -15,9 +15,7 @@
  *        translated by the compiler into return_value(), return_value resumes
  *        the calling coroutine.
  *
- *  Tested with Visual Studio 2019.
- *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ *  Author: Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  *
  */
 
@@ -31,6 +29,14 @@
 #include "print.h"
 #include "tracker.h"
 #include "csemaphore.h"
+
+/**
+Tracker
+
+00:     cons    dest    diff    max     c>p     p>c     err
+00: cor 7       7       0       6       0       0       0
+00: pro 7       7       0       6       0       0
+*/
 
 //--------------------------------------------------------------
 

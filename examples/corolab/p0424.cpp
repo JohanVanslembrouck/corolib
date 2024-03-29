@@ -10,9 +10,7 @@
  *         An global object of this type is co_awaited in coroutine5 and
  *         is resumed from main().
  *
- *  Tested with Visual Studio 2019.
- *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ *  Author: Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  *
  */
 
@@ -30,6 +28,7 @@
 #define USE_FINAL_AWAITER 1
 
 /**
+Tracker
 Without final_awaiter:
 
 00:     cons    dest    diff    max     c>p     p>c     err
@@ -41,7 +40,6 @@ With final_awaiter:
 00:     cons    dest    diff    max     c>p     p>c     err
 00: cor 7       7       0       7       0       0       0
 00: pro 7       7       0       7       0       0
-
 */
 
 //--------------------------------------------------------------

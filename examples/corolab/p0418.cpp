@@ -15,9 +15,7 @@
  *        translated by the compiler into return_value(), return_value resumes
  *        the calling coroutine.
  *
- *  Tested with Visual Studio 2019.
- *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ *  Author: Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  *
  */
 
@@ -37,6 +35,14 @@
 #if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
 #include <assert.h>
 #endif
+
+/**
+Tracker
+
+00:     cons    dest    diff    max     c>p     p>c     err
+00: cor 7       7       0       7       2       5       0
+00: pro 7       7       0       7       2       5
+*/
 
 //--------------------------------------------------------------
 
@@ -136,7 +142,6 @@ struct eager : private coroutine_tracker {
         }
     }
 #endif
-
 
     // Alternative 1: define operator co_await and an awaiter type
     // that defines await_ready(), await_suspend() and await_resume().
