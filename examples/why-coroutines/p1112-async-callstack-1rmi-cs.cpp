@@ -1,9 +1,8 @@
 /**
  * @file p1112-async-callstack-1rmi-cs.cpp
  * @brief Asynchronous implementation of p1100-sync-callstack-1rmi.cpp.
- * Fixes the problem described in p1110-async-callstack-1rmi.cpp.
  *
- * Instead of passing a lambda while calling a function at a lower layer,
+ * Instead of passing a lambda and a context while calling a function at a lower layer,
  * a higher layer passes a CallStack object to the lower layer.
  * The highest layer creates a CallStack object for every asynchronous function 
  * it calls on its lower layer.
@@ -13,14 +12,13 @@
  * Different CallStack objects may thus store lambdas that correspond to a different callback
  * function at a given layer.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #include <stdio.h>
 #include <stack>
 
 #include "common.h"
-#include "variables.h"
 #include "eventqueue.h"
 
 class CallStack;
@@ -110,7 +108,7 @@ public:
     
     void function1(CallStack& callstack, int in1) 
     {
-        printf("Layer01::function1(): part 1\n");
+        printf("Layer01::function1(in1 = %d)\n", in1);
         lambda_cs_3int_t* op = new lambda_cs_3int_t(
             [this](CallStack& callstack, int out1, int out2, int ret1)
             {
@@ -123,12 +121,11 @@ public:
 
     void function1_cb(CallStack& callstack, int out1, int out2, int ret1) 
     {
-        printf("Layer01::function1_cb(%d, %d, %d)\n", out1, out2, ret1);
-        printf("Layer01::function1_cb(): part 2\n");
+        printf("Layer01::function1_cb(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);
         // call function1_cb of upper layer (Layer02)
         lambda_cs_2int_t* op = static_cast<lambda_cs_2int_t*>(callstack.top_pop());
         (*op)(callstack, out1, ret1);
-        printf("Layer01::function1_cb(): part 2: delete %p\n", op);
+        printf("Layer01::function1_cb(): delete %p\n", op);
         delete op;
     }
 };
@@ -147,7 +144,7 @@ public:
     
     void function1(CallStack& callstack, int in1)
     {
-        printf("Layer02::function1(): part 1\n");
+        printf("Layer02::function1(in1 = %d)\n", in1);
         lambda_cs_2int_t* op = new lambda_cs_2int_t(
             [this](CallStack& callstack, int out1, int ret1)
             {
@@ -160,12 +157,11 @@ public:
 
     void function1_cb(CallStack& callstack, int out1, int ret1)
     {
-        printf("Layer02::function1_cb(%d, %d)\n", out1, ret1);
-        printf("Layer02::function1_cb(): part 2\n");
+        printf("Layer02::function1_cb(out1 = %d, ret1 = %d)\n", out1, ret1);
         // call function1_cb of upper layer (Layer03)
         lambda_cs_1int_t* op = static_cast<lambda_cs_1int_t*>(callstack.top_pop());
         (*op)(callstack, ret1);
-        printf("Layer02::function1_cb(): part 2: delete %p\n", op);
+        printf("Layer02::function1_cb(): delete %p\n", op);
         delete op;
     }
 };
@@ -185,7 +181,7 @@ public:
             
     void function1(int in1)
     {
-        printf("Layer03::function1(): part 1\n");
+        printf("Layer03::function1(in1 = %d)\n", in1);
         lambda_cs_1int_t* p = new lambda_cs_1int_t(
             [this](CallStack& callstack, int ret1)
             {
@@ -198,13 +194,12 @@ public:
 
     void function1_cb(CallStack&, int ret1)
     {
-        printf("Layer03::function1_cb(%d)\n", ret1);
-        printf("Layer03::function1_cb(): part 2\n");
+        printf("Layer03::function1_cb(ret1 = %d)\n", ret1);
     }
     
     void function2(int in1)
     {
-        printf("Layer03::function2(): part 1\n");
+        printf("Layer03::function2(in1 = %d)\n", in1);
         lambda_cs_1int_t* p = new lambda_cs_1int_t(
             [this](CallStack& callstack, int ret1)
             {
@@ -216,8 +211,7 @@ public:
 
     void function2_cb(CallStack&, int ret1)
     {
-        printf("Layer03::function2_cb(%d)\n", ret1);
-        printf("Layer03::function2_cb(): part 2\n");
+        printf("Layer03::function2_cb(ret1 = %d)\n", ret1);
     }
 
 private:

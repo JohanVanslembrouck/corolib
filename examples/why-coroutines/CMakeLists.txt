@@ -1,4 +1,4 @@
-project (tutorial)
+project (why-coroutines)
 
 include_directories(../../include)
 

@@ -4,7 +4,7 @@
  * RemoteObjectImpl contains functions to write and read a segment (synchronous version)
  * or to start writing and reading a segment (asynchronous version).
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _P1400_H_

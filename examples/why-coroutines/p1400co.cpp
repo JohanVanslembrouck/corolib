@@ -2,7 +2,7 @@
  * @file p1400co.cpp
  * @brief 
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
  
 #include "p1400co.h"

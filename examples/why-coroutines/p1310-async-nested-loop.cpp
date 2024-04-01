@@ -2,7 +2,7 @@
  * @file p1310-async-nested-loop.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #include <stdio.h>

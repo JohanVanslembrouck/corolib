@@ -2,7 +2,7 @@
  * @file p1400co.h
  * @brief 
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _P1400CO_H_

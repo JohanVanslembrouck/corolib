@@ -2,15 +2,13 @@
  * @file p1002-sync+thread-1rmi.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #include <stdio.h>
-#include <thread>
+#include <future>
 
 #include "common.h"
-#include "variables.h"
-
 #include "p1000.h"
 
 RemoteObject1 remoteObj1;
@@ -22,13 +20,13 @@ RemoteObject1 remoteObj1;
 class Class01
 {
 public:
-    int function1()
+    int function1(int in1, int in2)
     {
-        printf("Class01::function1(): part 1\n");
-        int ret1 = remoteObj1.op1(gin11, gin12, gout11, gout12);
-        printf("Class01::function1(): gout11 = %d, gout12 = %d, ret1 = %d\n", gout11, gout12, ret1);
-        printf("Class01::function1(): part 2\n");
-        return ret1;
+        printf("Class01::function1(in1 = %d, in2 = %d)\n", in1, in2);
+        int out1 = -1, out2 = -1;
+        int ret1 = remoteObj1.op1(in1, in2, out1, out2);
+        printf("Class01::function1(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
+        return in1 + in2 + out1 + out2 + ret1;
     }
 };
 
@@ -37,9 +35,11 @@ Class01 class01;
 int main()
 {
     printf("main();\n");
-    std::thread th1(&Class01::function1, &class01);
-    std::thread th2(&Class01::function1, &class01);
-    th1.join();
-    th2.join();
+    std::future<int> t1 = std::async(std::launch::async, []() { return class01.function1(11, 12); });
+    std::future<int> t2 = std::async(std::launch::async, []() { return class01.function1(21, 22); });
+    int ret1 = t1.get();
+    printf("main(): ret1 = %d\n", ret1);
+    int ret2 = t2.get();
+    printf("main(): ret2 = %d\n", ret2);
     return 0;
 }

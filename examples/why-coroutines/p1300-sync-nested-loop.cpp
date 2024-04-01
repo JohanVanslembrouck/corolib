@@ -2,7 +2,7 @@
  * @file p1300-sync-nested-loop.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #include <stdio.h>
@@ -11,7 +11,6 @@
 #include "variables.h"
 #include "eventqueue.h"
 #include "buf+msg.h"
-
 #include "p1300.h"
 
 RemoteObject1 remoteObj1;
@@ -41,13 +40,10 @@ public:
 
 Class01 class01;
 
-EventQueue eventQueue;
-
 int main()
 {
     printf("main();\n");
     class01.function1();
-    //class01.function1();
-    eventQueue.run();
+    class01.function1();
     return 0;
 }

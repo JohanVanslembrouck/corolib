@@ -6,7 +6,7 @@
  * This allows going downwards the stack (higher layer objects call coroutines of lower layers)
  * and upwards the stack (lower layer objects call coroutines of higher layers).
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #include <corolib/print.h>
@@ -14,13 +14,11 @@
 #include <corolib/commservice.h>
 
 #include "common.h"
-#include "variables.h"
 #include "eventqueue.h"
 #include "buf+msg.h"
+#include "p1000.h"
 
 using namespace corolib;
-
-#include "p1000.h"
 
 class Layer01;
 class Layer02;
@@ -130,44 +128,44 @@ public:
         op1_ret_t res = co_await op1;
         out1 = res.out1;
         out2 = res.out2;
-        co_return res.ret;
+        co_return in1 + in2 + res.ret;
     }
     
     // Start functions
     // ---------------
     
-    async_operation<op1_ret_t> start_op1d(int in11, int in12)
+    async_operation<op1_ret_t> start_op1d(int in1, int in2)
     {
         int index = get_free_index();
         print(PRI1, "%p: RemoteObj1::start_op1d(): index = %d\n", this, index);
-        start_op1d_impl(index, in11, in12);
+        start_op1d_impl(index, in1, in2);
         return { this, index };
     }
 
-    async_task<int> start_op1u(int in11, int in12)
+    async_task<int> start_op1u(int in1, int in2)
     {
         print(PRI1, "RemoteObj1::start_op1u(): begin\n");
-        int ret1 = co_await m_layer01.coroutine1u(in11, in12, in12);
+        int ret1 = co_await m_layer01.coroutine1u(in1, in2, in2);
         print(PRI1, "RemoteObj1::start_op1u(): end\n");
-        co_return ret1;
+        co_return in1 + in2 + ret1;
     }
 
 protected:
     // Implementation function
     // -----------------------
-    void start_op1d_impl(const int idx, int in11, int in12);
+    void start_op1d_impl(const int idx, int in1, int in2);
     
 private:
     RemoteObject1 m_remoteObject;
     Layer01& m_layer01;
 };
 
-void RemoteObject1Co::start_op1d_impl(const int idx, int in11, int in12)
+void RemoteObject1Co::start_op1d_impl(const int idx, int in1, int in2)
 {
     print(PRI1, "%p: RemoteObject1Co::start_op1_impl(%d)\n", this, idx);
 
-    m_remoteObject.sendc_op1(in11, in12, 
-        [this, idx](int out11, int out12, int ret1) 
+    m_remoteObject.sendc_op1(in1, in2, 
+        [this, idx](int out1, int out2, int ret1) 
         {
             print(PRI1, "%p: RemoteObject1Co::start_op1_impl(%d)\n", this, idx);
 
@@ -178,7 +176,7 @@ void RemoteObject1Co::start_op1d_impl(const int idx, int in11, int in12)
             if (om_async_operation_t)
             {
                 print(PRI1, "%p: RemoteObject1Co::start_op1_impl(%d): om_async_operation_t->set_result()\n", this, idx);
-                op1_ret_t op1_ret = { out11, out12, ret1 };
+                op1_ret_t op1_ret = { out1, out2, ret1 };
                 om_async_operation_t->set_result(op1_ret);
                 om_async_operation_t->completed();
             }
@@ -212,7 +210,7 @@ public:
         int ret1 = co_await m_remoteObj1co.op1d(in1, in1, out1, out2);
         printf("Layer01::coroutine1d(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
         printf("Layer01::coroutine1d(): part 2\n");
-        co_return ret1;
+        co_return in1 + ret1;
     }
 
     async_task<int> coroutine1u(int in1, int& out1, int& out2) override
@@ -221,7 +219,7 @@ public:
         int ret1 = co_await m_layer02.coroutine1u(in1, out1);
         printf("Layer01::coroutine1u(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
         printf("Layer01::coroutine1u(): part 2\n");
-        co_return ret1;
+        co_return in1 + ret1;
     }
 };
 
@@ -235,23 +233,22 @@ public:
     async_task<int> coroutine1d(int in1, int& out1) override
     {
         printf("Layer02::coroutine1d(): part 1\n");
+        int out2 = -1;
         int ret1 = co_await m_layer01.coroutine1d(in1, out1, out2);
         printf("Layer02::coroutine1d(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
         printf("Layer02::coroutine1d(): part 2\n");
-        co_return ret1;
+        co_return in1 + out2 + ret1;
     }
 
     async_task<int> coroutine1u(int in1, int& out1) override
     {
         printf("Layer02::coroutine1u(): part 1\n");
+        int out2 = -1;
         int ret1 = co_await m_layer03.coroutine1u(in1, out1, out2);
         printf("Layer02::coroutine1u(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
         printf("Layer02::coroutine1u(): part 2\n");
-        co_return ret1;
+        co_return in1 + out2 + ret1;
     }
-
-private:
-    int    out2{0};
 };
 
 class Layer03d : public Layer03
@@ -264,20 +261,22 @@ public:
     async_task<int> coroutine1d(int in1) override
     {
         printf("Layer03::coroutine1d(): part 1\n");
+        int out1 = -1;
         int ret1 = co_await m_layer02.coroutine1d(in1, out1);
         printf("Layer03::coroutine1d(): out1 = %d, ret1 = %d\n", out1, ret1);
         printf("Layer03::coroutine1d(): part 2\n");
-        co_return ret1;
+        co_return in1 + out1 + ret1;
     }
 
     // Not used so far
     async_task<int> coroutine2d(int in1)
     {
         printf("Layer03::coroutine2d(): part 1\n");
+        int out1 = -1;
         int ret1 = co_await m_layer02.coroutine1d(in1, out1);
         printf("Layer03::coroutine2d(): out1 = %d, ret1 = %d\n", out1, ret1);
         printf("Layer03::coroutine2d(): part 2\n");
-        co_return ret1;
+        co_return in1 + out1 + ret1;
     }
 
     /**
@@ -291,11 +290,8 @@ public:
         int ret1 = co_await coroutine1d(in1);
         printf("Layer03::coroutine1u(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
         printf("Layer03::coroutine1u(): part 2\n");
-        co_return ret1;
+        co_return in1 + ret1;
     }
-
-private:
-    int    out1{0};
 };
 
 /**
@@ -328,5 +324,9 @@ int main()
     // Upstream example
     async_task<int> t2 = remoteObj1co.start_op1u(3, 4);
     eventQueue.run();
+    int ret1 = t1.get_result();
+    printf("main(): ret1 = %d\n", ret1);
+    int ret2 = t2.get_result();
+    printf("main(): ret2 = %d\n", ret2);
     return 0;
 }

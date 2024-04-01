@@ -24,13 +24,13 @@ The application class looks as follows:
 class Class01
 {
 public:
-    int function1()
+    int function1(int in1, int in2)
 	{
-        printf("Class01::function1(): part 1\n");
-        int ret1 = remoteObj1.op1(gin11, gin12, gout11, gout12);
-        printf("Class01::function1(): gout11 = %d, gout12 = %d, ret1 = %d\n", gout11, gout12, ret1);
-        printf("Class01::function1(): part 2\n");
-        return ret1;
+        printf("Class01::function1(in1 = %d, in2 = %d)\n", in1, in2);
+        int out1 = -1, out2 = -1;
+        int ret1 = remoteObj1.op1(in1, in2, out1, out2);
+        printf("Class01::function1(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
+        return in1 + in2 + out1 + out2 + ret1;
     }
 };
 ```
@@ -42,9 +42,10 @@ During that time, the program cannot handle other events.
 int main()
 {
     printf("main();\n");
-    eventQueue.push([]() { class01.function1(); });
-    eventQueue.push([]() { class01.function1(); });
-    eventQueue.run();
+    int ret1 = class01.function1(11, 12);
+    printf("main(): ret1 = %d\n", ret1);
+    int ret2 = class01.function1(21, 22);
+    printf("main(): ret2 = %d\n", ret2);
     return 0;
 }
 ```
@@ -58,9 +59,12 @@ The implementation of function1 does not have to be changed. This can be accompl
 int main()
 {
     printf("main();\n");
-    eventQueue.push([]() { std::thread th(&Class01::function1, &class01); th.join(); });
-    eventQueue.push([]() { std::thread th(&Class01::function1, &class01); th.join(); });
-    eventQueue.run();
+    std::future<int> t1 = std::async(std::launch::async, []() { return class01.function1(11, 12); });
+    int ret1 = t1.get();
+    printf("main(): ret1 = %d\n", ret1);
+    std::future<int> t2 = std::async(std::launch::async, []() { return class01.function1(21, 22); });
+    int ret2 = t2.get();
+    printf("main(): ret2 = %d\n", ret2);
     return 0;
 }
 ```
@@ -73,26 +77,39 @@ The application class now looks as follows:
 class Class01
 {
 public:
-    void function1()
+    
+    struct function1_cxt_t
     {
-        printf("Class01::function1(): part 1\n");
-        remoteObj1.sendc_op1(gin11, gin12, 
-            [this](int out1, int out2, int ret1)
-            { 
-                this->function1_cb(out1, out2, ret1);
-            });
+        int in1;
+        int in2;
+        int* ret;
+    };
+
+    void function1(int in1, int in2, int& ret)
+    {
+        printf("Class01::function1(in1 = %d, in2 = %d, ret = %d)\n", in1, in2, ret);
+        void* ctxt = new function1_cxt_t{ in1, in2, &ret };
+        printf("Class01::function1(): ctxt = %p\n", ctxt);
+
+        remoteObj1.sendc_op1(ctxt,
+            [this](void* context, int out1, int out2, int ret1)
+            {
+                this->function1_cb(context, out1, out2, ret1);
+            },
+            in1, in2);
     }
 
-    /**
-     * @brief callback function with the out parameters and the return value
-     *
-     */
-    void function1_cb(int out11, int out12, int ret1)
+    void function1_cb(void* context, int out1, int out2, int ret1)
     {
-        printf("Class01::function1_cb(out11 = %d, out12 = %d, ret1 = %d)\n", out11, out12, ret1);
-        printf("Class01::function1_cb(): part 2\n");
+        printf("Class01::function1_cb(context = %p, out1 = %d, out2 = %d, ret1 = %d)\n", context, out1, out2, ret1);
+
+        function1_cxt_t* ctxt = static_cast<function1_cxt_t*>(context);
+
+        printf("Class01::function1_cb(): ctxt->in1 = %d, ctxt->in2 = %d, ctxt->ret = %p, ctxt->ret = %d)\n", 
+            ctxt->in1, ctxt->in2, ctxt->ret, *ctxt->ret);
+        *ctxt->ret = ctxt->in1 + ctxt->in2 + out1 + out2 + ret1;
+        delete ctxt;
     }
-};
 ```
 
 function1() returns control to the event loop as soon as it has started the remote operation by calling sendc_op1.
@@ -106,13 +123,13 @@ The application class now looks as follows:
 class Class01
 {
 public:
-    async_task<int> coroutine1()
+    async_task<int> coroutine1(int in1, int in2)
     {
-        printf("Class01::coroutine1() - part 1\n");
-        int ret1 = co_await remoteObj1co.op1(gin11, gin12, gout11, gout12);
-        printf("Class01::coroutine1(): gout11 = %d, gout12 = %d, ret1 = %d\n", gout11, gout12, ret1);
-        printf("Class01::coroutine1() - part 2\n");
-        co_return ret1;
+        printf("Class01::coroutine1(in1 = %d, in2 = %d)\n", in1, in2);
+        int out1 = -1, out2 = -1;
+        int ret1 = co_await remoteObj1co.op1(in1, in2, out1, out2);
+        printf("Class01::coroutine1(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
+        co_return in1 + in2 + out1 + out2 + ret1;
     }
 };
 ```
@@ -134,13 +151,12 @@ The three application classes look as follows:
 class Layer01
 {
 public:
-    int function1(int in1, int& out11, int& out12)
+    int function1(int in1, int& out1, int& out2)
     {
-        printf("Layer01::function1(): part 1\n");
-        int ret1 = remoteObj1.op1(in1, in1, out11, out12);
-        printf("Layer01::function1(): out11 = %d, out12 = %d, ret1 = %d\n", out11, out12, ret1);
-        printf("Layer01::function1(): part 2\n");
-        return ret1;
+        printf("Layer01::function1(in1 = %d, out1 = %d, out2 = %d)\n", in1, out1, out2);
+        int ret1 = remoteObj1.op1(in1, in1, out1, out2);
+        printf("Layer01::function1(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
+        return in1 + ret1;
     }
 };
 
@@ -151,14 +167,12 @@ class Layer02
 public:
     int function1(int in1, int& out1)
     {
-        printf("Layer02::function1(): part 1\n");
+        printf("Layer02::function1(in1 = %d, out1 = %d)\n", in1, out1);
+        int out2 = -1;
         int ret1 = layer01.function1(in1, out1, out2);
         printf("Layer02::function1(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
-        printf("Layer02::function1(): part 2\n");
-        return ret1;
+        return in1 + out2 + ret1;
     }
-private:
-    int    out2{0};
 };
 
 Layer02 layer02;
@@ -168,17 +182,16 @@ class Layer03
 public:
     int function1(int in1)
     {
-        printf("Layer03::function1(): part 1\n");
+        printf("Layer03::function1(in1 = %d)\n", in1);
+        int out1 = -1;
         int ret1 = layer02.function1(in1, out1);
         printf("Layer03::function1(): out1 = %d, ret1 = %d\n", out1, ret1);
-        printf("Layer03::function1(): part 2\n");
-        return ret1;
+        return in1 + out1 + ret1;
     }
-private:
-    int    out1{0};
 };
 
 Layer03 layer03;
+
 ```
 
 ### p1110-async-callstack-1rmi.cpp
@@ -189,28 +202,34 @@ The three application classes now look as follows:
 class Layer01
 {
 public:
-    // int function1(int in11, int& out12, int& out12)
-    
-    void function1(int in1, lambda_2int_t lambda) 
+    struct function1_cxt_t
     {
-        printf("Layer01::function1(): part 1\n");
-        m_lambda = lambda;
-        remoteObj1.sendc_op1(in1, in1, 
-            [this](int out1, int out2, int ret1)
-            { 
-                this->function1_cb(out1, out2, ret1); 
-            });
+        void* ctxt;
+        lambda_vp_3int_t lambda;
+        int in1;
+    };
+
+    void function1(void* ctxt1, lambda_vp_3int_t lambda, int in1)
+    {
+        printf("Layer01::function1(in1 = %d)\n", in1);
+        void* ctxt = new function1_cxt_t{ ctxt1, lambda, in1 };
+
+        remoteObj1.sendc_op1(ctxt,
+            [this](void* context, int out1, int out2, int ret1)
+            {
+                this->function1_cb(context, out1, out2, ret1);
+            },
+            in1, in1);
     }
 
-    void function1_cb(int out11, int out12, int ret1) 
+    void function1_cb(void* context, int out1, int out2, int ret1)
     {
-        printf("Layer01::function1_cb(%d, %d, %d)\n", out11, out12, ret1);
-        printf("Layer01::function1_cb(): part 2\n");
+        printf("Layer01::function1_cb(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);
+        function1_cxt_t* ctxt = static_cast<function1_cxt_t*>(context);
         // call function1_cb of upper layer
-        m_lambda(out11, ret1);
+        ctxt->lambda(ctxt->ctxt, out1, out2, ctxt->in1 + ret1);
+        delete context;
     }
-private:
-    lambda_2int_t m_lambda;
 };
 
 Layer01 layer01;
@@ -218,27 +237,34 @@ Layer01 layer01;
 class Layer02
 {
 public:
-    // int function1(int in1, int& out11)
-    
-    void function1(int in1, lambda_1int_t lambda)
+
+    struct function1_cxt_t
     {
-        printf("Layer02::function1(): part 1\n");
-        m_lambda = lambda;
-        layer01.function1(in1, 
-            [this](int out1, int ret1) { 
-                this->function1_cb(out1, ret1);
-            });
+        void* ctxt;
+        lambda_vp_2int_t lambda;
+        int in1;
+    };
+
+    void function1(void* ctxt1, lambda_vp_2int_t lambda, int in1)
+    {
+        printf("Layer02::function1(in1 = %d)\n", in1);
+        void* ctxt = new function1_cxt_t{ ctxt1, lambda, in1 };
+
+        layer01.function1(
+            ctxt,
+            [this](void* ctxt1, int out1, int out2, int ret1) { 
+                this->function1_cb(ctxt1, out1, out2, ret1);
+            },
+            in1);
     }
 
-    void function1_cb(int out11, int ret1)
+    void function1_cb(void* context, int out1, int out2, int ret1)
     {
-        printf("Layer02::function1_cb(%d, %d)\n", out11, ret1);
-        printf("Layer02::function1_cb(): part 2\n");
+        printf("Layer02::function1_cb(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);
+        function1_cxt_t* ctxt = static_cast<function1_cxt_t*>(context);
         // call function1_cb of upper layer
-        m_lambda(ret1);
+        ctxt->lambda(ctxt->ctxt, out1, ctxt->in1 + out2 + ret1);
     }
-private:
-    lambda_1int_t m_lambda;
 };
 
 Layer02 layer02;
@@ -246,21 +272,31 @@ Layer02 layer02;
 class Layer03
 {
 public:
-    // int function1(int in1);
 
-    void function1(int in1)
+    struct function1_cxt_t
     {
-        printf("Layer03::function1(): part 1\n");
-        layer02.function1(in1,
-            [this](int ret1) { 
-                this->function1_cb(ret1); 
-            });
+        int* ret;
+        int in1;
+    };
+
+    void function1(int in1, int& ret1)
+    {
+        printf("Layer03::function1(in1 = %d)\n", in1);
+        void* ctxt = new function1_cxt_t{ &ret1, in1 };
+
+        layer02.function1(ctxt,
+            [this](void *ctxt, int out1, int ret1) {
+                this->function1_cb(ctxt, out1, ret1);
+            },
+            in1);
     }
 
-    void function1_cb(int ret1)
+    void function1_cb(void* context, int out1, int ret1)
     {
-        printf("Layer03::function1_cb(%d)\n", ret1);
-        printf("Layer03::function1_cb(): part 2\n");
+        printf("Layer03::function1_cb(out1 = %d, ret1 = %d)\n", out1, ret1);
+        function1_cxt_t* ctxt = static_cast<function1_cxt_t*>(context);
+        *ctxt->ret = ctxt->in1 + out1 + ret1;
+        delete ctxt;
     }
 };
 
@@ -268,12 +304,10 @@ Layer03 layer03;
 ```
 
 In this implementation, Layer01 and Layer02 use a data member to store the lambda (used as callback function) passed from their calling layer.
-This is a simple implementation: its major disadvantage is that only one RMI can invoked at a time: the first RMI has to return before a second can be called.
-
 
 ### p1112-async-callstack-1rmi-queue-cs.cpp
 
-This variant remedies the problem of p1110-async-callstack-1rmi-queue.cpp by using a callstack variable that is passed from the upper layer (Layer03)
+This variant usses a callstack variable that is passed from the upper layer (Layer03)
 to the lower layer (Layer01) and to the remote object.
 This way, it is possible to find the way back upwards the call stack without relying on a single data member.
 Several RMIs can be invoked one after the other, because they will use a dedicated callstack.
@@ -284,28 +318,26 @@ The three application classes look as follows:
 class Layer01
 {
 public:
-    // int function1(int in11, int& out12, int& out12)
-    
     void function1(CallStack& callstack, int in1) 
     {
-        printf("Layer01::function1(): part 1\n");
+        printf("Layer01::function1(in1 = %d)\n", in1);
         lambda_cs_3int_t* op = new lambda_cs_3int_t(
-            [this](CallStack& callstack, int out1, int out12, int ret1)
+            [this](CallStack& callstack, int out1, int out2, int ret1)
             {
-                this->function1_cb(callstack, out1, out12, ret1);
+                this->function1_cb(callstack, out1, out2, ret1);
             });
         callstack.push(op);
         remoteObj1.sendc_op1(callstack, in1, in1);
+        printf("Layer01::function1(): return\n");
     }
 
-    void function1_cb(CallStack& callstack, int out11, int out12, int ret1) 
+    void function1_cb(CallStack& callstack, int out1, int out2, int ret1) 
     {
-        printf("Layer01::function1_cb(%d, %d, %d)\n", out11, out12, ret1);
-        printf("Layer01::function1_cb(): part 2\n");
+        printf("Layer01::function1_cb(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);
         // call function1_cb of upper layer (Layer02)
         lambda_cs_2int_t* op = static_cast<lambda_cs_2int_t*>(callstack.top_pop());
-        (*op)(callstack, out11, ret1);
-        printf("Layer01::function1_cb(): part 2: delete %p\n", op);
+        (*op)(callstack, out1, ret1);
+        printf("Layer01::function1_cb(): delete %p\n", op);
         delete op;
     }
 };
@@ -315,11 +347,9 @@ Layer01 layer01;
 class Layer02
 {
 public:    
-    // int function1(int in1, int& out11)
-    
     void function1(CallStack& callstack, int in1)
     {
-        printf("Layer02::function1(): part 1\n");
+        printf("Layer02::function1(in1 = %d)\n", in1);
         lambda_cs_2int_t* op = new lambda_cs_2int_t(
             [this](CallStack& callstack, int out1, int ret1)
             {
@@ -327,16 +357,16 @@ public:
             });
         callstack.push(op);
         layer01.function1(callstack, in1);
+        printf("Layer02::function1(): return\n");
     }
 
-    void function1_cb(CallStack& callstack, int out11, int ret1)
+    void function1_cb(CallStack& callstack, int out1, int ret1)
     {
-        printf("Layer02::function1_cb(%d, %d)\n", out11, ret1);
-        printf("Layer02::function1_cb(): part 2\n");
+        printf("Layer02::function1_cb(out1 = %d, ret1 = %d)\n", out1, ret1);
         // call function1_cb of upper layer (Layer03)
         lambda_cs_1int_t* op = static_cast<lambda_cs_1int_t*>(callstack.top_pop());
         (*op)(callstack, ret1);
-        printf("Layer02::function1_cb(): part 2: delete %p\n", op);
+        printf("Layer02::function1_cb(): delete %p\n", op);
         delete op;
     }
 };
@@ -345,29 +375,45 @@ Layer02 layer02;
 
 class Layer03
 {
-public:
-    // int function1(int in1);
-            
+public:       
     void function1(int in1)
     {
-        printf("Layer03::function1(): part 1\n");
+        printf("Layer03::function1(in1 = %d)\n", in1);
         lambda_cs_1int_t* p = new lambda_cs_1int_t(
             [this](CallStack& callstack, int ret1)
             {
                 this->function1_cb(callstack, ret1);
             });
-        m_callstack.push(p);
-        layer02.function1(m_callstack, in1);
+        m_callstack1.push(p);
+        layer02.function1(m_callstack1, in1);
+        printf("Layer03::function1(): return\n");
     }
 
     void function1_cb(CallStack&, int ret1)
     {
-        printf("Layer03::function1_cb(%d)\n", ret1);
-        printf("Layer03::function1_cb(): part 2\n");
+        printf("Layer03::function1_cb(ret1 = %d)\n", ret1);
     }
     
+    void function2(int in1)
+    {
+        printf("Layer03::function2(in1 = %d)\n", in1);
+        lambda_cs_1int_t* p = new lambda_cs_1int_t(
+            [this](CallStack& callstack, int ret1)
+            {
+                this->function2_cb(callstack, ret1);
+            });
+        m_callstack2.push(p);
+        layer02.function1(m_callstack2, in1);
+    }
+
+    void function2_cb(CallStack&, int ret1)
+    {
+        printf("Layer03::function2_cb(ret1 = %d)\n", ret1);
+    }
+
 private:
-    CallStack m_callstack;
+    CallStack m_callstack1;
+    CallStack m_callstack2;
 };
 
 Layer03 layer03;
@@ -383,48 +429,64 @@ The three application classes look as follows:
 class Layer01
 {
 public:
-    async_task<int> coroutine1(int in1, int& out11, int& out12)
+    async_task<int> coroutine1(int in1, int& out1, int& out2)
     {
-        printf("Layer01::coroutine1(): part 1\n");
-        int ret1 = co_await remoteObj1co.op1(in1, in1, out11, out12);
-        printf("Layer01::coroutine1(): out11 = %d, out12 = %d, ret1 = %d\n", out11, out12, ret1);
-        printf("Layer01::coroutine1(): part 2\n");
-        co_return ret1;
+        printf("Layer01::coroutine1(in1 = %d, out1 = %d, out2 = %d)\n", in1, out1, out2);
+        int ret1 = co_await remoteObj1co.op1(in1, in1, out1, out2);
+        printf("Layer01::coroutine1(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
+        co_return in1 + ret1;
     }
 };
 
 Layer01 layer01;
 
+/**
+ * @brief Layer02 is the middle layer in the application stack
+ * Lower layer: Layer01
+ * Upper layer: Layer03 (but not known by Layer02)
+ *
+ */
 class Layer02
 {
 public:
     async_task<int> coroutine1(int in1, int& out1)
     {
-        printf("Layer02::coroutine1(): part 1\n");
+        printf("Layer01::coroutine1(in1 = %d, out1 = %d)\n", in1, out1);
+        int out2 = -1;
         int ret1 = co_await layer01.coroutine1(in1, out1, out2);
         printf("Layer02::coroutine1(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
-        printf("Layer02::coroutine1(): part 2\n");
-        co_return ret1;
+        co_return in1 + out2 + ret1;
     }
-private:
-    int    out2{0};
 };
 
 Layer02 layer02;
 
+/**
+ * @brief Layer03 is the upper layer in the application stack
+ * Lower layer: Layer02
+ * Upper layer: application (but not known by Layer03)
+ *
+ */
 class Layer03
 {
 public:
     async_task<int> coroutine1(int in1)
     {
-        printf("Layer03::coroutine1(): part 1\n");
+        printf("Layer03::coroutine1(in1 = %d)\n", in1);
+        int out1 = -1;
         int ret1 = co_await layer02.coroutine1(in1, out1);
         printf("Layer03::coroutine1(): out1 = %d, ret1 = %d\n", out1, ret1);
-        printf("Layer03::coroutine1(): part 2\n");
-        co_return ret1;
+        co_return in1 + out1 + ret1;
     }
-private:
-    int    out1{0};
+
+    async_task<int> coroutine2(int in1)
+    {
+        printf("Layer03::coroutine2(in1 = %d)\n", in1);
+        int out1 = -1;
+        int ret1 = co_await layer02.coroutine1(in1, out1);
+        printf("Layer03::coroutine2(): out1 = %d, ret1 = %d\n", out1, ret1);
+        co_return in1 + out1 + ret1;
+    }
 };
 
 Layer03 layer03;
@@ -445,17 +507,22 @@ The application class looks as follows:
 class Class01
 {
 public:
-    void function1()
+    void function1(int in1, int in2)
     {
-        printf("Class01::function1()\n");
-        int ret1 = remoteObj1.op1(gin11, gin12, gout11, gout12);
+        printf("Class01::function1(in1 = %d, in2 = %d)\n", in1, in2);
+        int out1 = -1, out2 = -1;
+        int ret1 = remoteObj1.op1(in1, in2, out1, out2);
         // 1 Do stuff
         if (ret1 == gval1) {
-            int ret2 = remoteObj2.op2(gin21, gin22, gout21);
+            int out3 = -1;
+            int ret2 = remoteObj2.op2(in1, in2, out3);
+            (void)ret2;
             // 2 Do stuff
         }
         else {
-            int ret3 = remoteObj3.op3(gin31, gout31, gout32);
+            int out4 = -1, out5 = -1;
+            int ret3 = remoteObj3.op3(in1, out4, out5);
+            (void)ret3;
             // 3 Do stuff
         }
     }
@@ -471,9 +538,8 @@ The implementation of function1 does not have to be changed. This can be done as
 int main()
 {
     printf("main();\n");
-    eventQueue.push([]() { std::thread th(&Class01::function1, &class01); th.join(); });
-    eventQueue.push([]() { std::thread th(&Class01::function1, &class01); th.join(); });
-    eventQueue.run();
+    std::thread th1(&Class01::function1, &class01, 11, 12); th1.join();
+    std::thread th2(&Class01::function1, &class01, 21, 22); th2.join();
     return 0;
 }
 ```
@@ -486,17 +552,17 @@ The application class now looks as follows:
 class Class01
 {
 public:
-    void function1()
+    void function1(int in1, int in2)
     {
-        printf("Class01::function1()\n");
-        remoteObj1.sendc_op1(gin11, gin12, 
+        printf("Class01::function1(in1 = %d, in2 = %d)\n", in1, in2);
+        remoteObj1.sendc_op1(in1, in2, 
             [this](int out1, int out2, int ret1) { this->function1a(out1, out2, ret1); });
         // 1a Do stuff that doesn't need the result of the RMI
     }
 
-    void function1a(int out11, int out12, int ret1)
+    void function1a(int out1, int out2, int ret1)
     {
-        printf("Class01::function1a(%d, %d, %d)\n", out11, out12, ret1);
+        printf("Class01::function1a(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);
         // 1b Do stuff that needs the result of the RMI
         if (ret1 == gval1) {
             remoteObj2.sendc_op2(gin21, gin22,
@@ -510,15 +576,15 @@ public:
         }
     }
 
-    void function1b(int out21, int ret2)
+    void function1b(int out1, int ret2)
     {
-        printf("Class01::function1b(%d, %d)\n", out21, ret2);
+        printf("Class01::function1b(out1 = %d, ret2 = %d)\n", out1, ret2);
         // 2b Do stuff that needs the result of the RMI
     }
 
-    void function1c(int out31, int out32, int ret3)
+    void function1c(int out1, int out2, int ret3)
     {
-        printf("Class01::function1c(%d, %d, %d)\n", out31, out32, ret3);
+        printf("Class01::function1c(out1 = %d, out2 = %d, ret3 = %d)\n", out1, out2, ret3);
         // 3b Do stuff that needs the result of the RMI
     }
     
@@ -527,19 +593,19 @@ public:
      * by placing the original code in lambdas in lambdas.
      *
      */
-    void function1alt()
+    void function1alt(int in1, int in2)
     {
-        printf("Class01::function1()\n");
-        remoteObj1.sendc_op1(gin11, gin12, 
+        printf("Class01::function1alt(in1 = %d, in2 = %d)\n", in1, in2);
+        remoteObj1.sendc_op1(in1, in2, 
             [this](int out1, int out2, int ret1)
             { 
-                printf("Class01::function1alt(%d, %d, %d)\n", out1, out2, ret1);
+                printf("Class01::function1alt(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);
                 // 1b Do stuff that needs the result of the RMI
                 if (ret1 == gval1) {
                     remoteObj2.sendc_op2(gin21, gin22,
                         [this](int out1, int ret1)
                         {
-                            printf("Class01::function1alt(%d, %d)\n", out1, ret1);
+                            printf("Class01::function1alt(out1 = %d, ret1 = %d)\n", out1, ret1);
                             // 2b Do stuff that needs the result of the RMI 
                         });
                     // 2a Do stuff that doesn't need the result of the RMI
@@ -548,7 +614,7 @@ public:
                     remoteObj3.sendc_op3(gin31, 
                         [this](int out1, int out2, int ret1) 
                         {
-                            printf("Class01::function1alt(%d, %d, %d)\n", out1, out2, ret1);
+                            printf("Class01::function1alt(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);
                             // 3b Do stuff that needs the result of the RMI
                         });
                     // 3a Do stuff that doesn't need the result of the RMI
@@ -572,23 +638,23 @@ The application class looks as follows:
 class Class01
 {
 public:
-    void function1()
+    void function1(int in1, int in2)
     {
-        printf("Class01::function1()\n");
-        remoteObj1.sendc_op1(gin11, gin12,
+        printf("Class01::function1(in1 = %d, in2 = %d)\n", in1, in2);
+        remoteObj1.sendc_op1(in1, in2,
             [this](int out1, int out2, int ret1) { this->callback1(out1, out2, ret1); });
         // 1a Do some stuff that doesn't need the result of the RMI
         eventQueue.run();
         // 1b Do stuff that needs the result of the RMI
         if (gret1 == gval1) {
-            remoteObj2.sendc_op2(gin21, gin22, 
+            remoteObj2.sendc_op2(in1, in2, 
                 [this](int out1, int ret1) { this->callback2(out1, ret1); });
             // 2a Do some stuff that doesn't need the result of the RMI
             eventQueue.run();
             // 2b Do stuff that needs the result of the RMI
         }
         else {
-            remoteObj3.sendc_op3(gin31, 
+            remoteObj3.sendc_op3(in1, 
                 [this](int out1, int out2, int ret1) { this->callback3(out1, out2, ret1); });
             // 3a Do some stuff that doesn't need the result of the RMI
             eventQueue.run();
@@ -598,18 +664,18 @@ public:
 
     void callback1(int out11, int out12, int ret1)
     { 
-        printf("Class01::callback1(%d, %d, %d)\n", out11, out12, ret1);
+        printf("Class01::callback1(out11 = %d, out12 = %d, ret1 = %d)\n", out11, out12, ret1);
         // copy to local variables
         gret1 = ret1;
     }
     
     void callback2(int out21, int ret2) { 
-        printf("Class01::callback2(%d, %d)\n", out21, ret2);
+        printf("Class01::callback2(out21 = %d, ret2 = %d)\n", out21, ret2);
         // copy to local variables
     }
     
     void callback3(int out31, int out32, int ret3) {
-        printf("Class01::callback3(%d, %d, %d)\n", out31, out32, ret3);
+        printf("Class01::callback3(out31 = %d, out32 = %d, ret3 = %d)\n", out31, out32, ret3);
         // copy to local variables
     }
     
@@ -626,36 +692,48 @@ The application class looks as follows:
 ```c++
 struct Class01
 {
-    async_task<void> coroutine1()
+    async_task<void> coroutine1(int in1, int in2)
     {
-        int ret1 = co_await remoteObj1co.op1(gin11, gin12, gout11, gout12);
+        printf("Class01::coroutine1(in1 = %d, in2 = %d)\n", in1, in2);
+        int out1 = -1, out2 = -1;
+        int ret1 = co_await remoteObj1co.op1(in1, in2, out1, out2);
         // 1 Do stuff
         if (ret1 == gval1) {
-            int ret2 = co_await remoteObj2co.op2(gin21, gin22, gout21);
+            int out3 = -1;
+            int ret2 = co_await remoteObj2co.op2(in1, in2, out3);
+            (void)ret2;
             // 2 Do stuff
         }
         else {
-            int ret3 = co_await remoteObj3co.op3(gin31, gout31, gout32);
+            int out4 = -1, out5 = -1;
+            int ret3 = co_await remoteObj3co.op3(in1, out4, out5);
+            (void)ret3;
             // 3 Do stuff
         }
     }
     
-    async_task<void> coroutine1a()
+    async_task<void> coroutine1a(int in1, int in2)
     {
-        async_task<int> op1 = remoteObj1co.op1(gin11, gin12, gout11, gout12);
+        printf("Class01::coroutine1a(in1 = %d, in2 = %d)\n", in1, in2);
+        int out1 = -1, out2 = -1;
+        async_task<int> op1 = remoteObj1co.op1(in1, in2, out1, out2);
         // 1a Do some stuff that doesn't need the result of the RMI
         int ret1 = co_await op1;
         // 1b Do stuff that needs the result of the RMI
         if (ret1 == gval1) {
-            async_task<int> op2 = remoteObj2co.op2(gin21, gin22, gout21);
+            int out3 = -1;
+            async_task<int> op2 = remoteObj2co.op2(in1, in2, out3);
             // 2a Do some stuff that doesn't need the result of the RMI
             int ret2 = co_await op2;
+            (void)ret2;
             // 2b Do stuff that needs the result of the RMI
         }
         else {
-            async_task<int> op3 = remoteObj3co.op3(gin31, gout31, gout32);
+            int out4 = -1, out5 = -1;
+            async_task<int> op3 = remoteObj3co.op3(in1, out4, out5);
             // 3a Do some stuff that doesn't need the result of the RMI
             int ret3 = co_await op3;
+            (void)ret3;
             // 3b Do stuff that needs the result of the RMI
         }
     }
@@ -684,12 +762,16 @@ The application class looks as follows:
 class Class01
 {
 public:
-    void function1()
+    void function1(int in1, int in2)
     {
         printf("Class01::function1()\n");
-        int ret1 = remoteObj1.op1(gin11, gin12, gout11, gout12);
-        int ret2 = remoteObj2.op1(gin11, gin12, gout11, gout12);
-        int ret3 = remoteObj3.op1(gin11, gin12, gout11, gout12);
+        int out11 = -1, out12 = -1;
+        int out21 = -1, out22 = -1;
+        int out31 = -1, out32 = -1;
+  
+        int ret1 = remoteObj1.op1(in1, in2, out11, out12);
+        int ret2 = remoteObj2.op1(in1, in2, out21, out22);
+        int ret3 = remoteObj3.op1(in1, in2, out31, out32);
         int result = ret1 + ret2 + ret3;
         printf("Class01::function1(): result = %d\n", result);
     }
@@ -704,20 +786,20 @@ The application class looks as follows:
 class Class01
 {
 public:
-    void function1()
+    void function1(int in1, int in2)
     {
         printf("Class01::function1()\n");
-        remoteObj1.sendc_op1(gin11, gin12, 
+        remoteObj1.sendc_op1(in1, in2, 
             [this](int out1, int out2, int ret1) { this->function1a(0, out1, out2, ret1); });
-        remoteObj2.sendc_op1(gin11, gin12, 
+        remoteObj2.sendc_op1(in1, in2, 
             [this](int out1, int out2, int ret1) { this->function1a(1, out1, out2, ret1); });
-        remoteObj3.sendc_op1(gin11, gin12, 
+        remoteObj3.sendc_op1(in1, in2, 
             [this](int out1, int out2, int ret1) { this->function1a(2, out1, out2, ret1); });
     }
 
-    void function1a(int index, int out11, int out12, int ret1)
+    void function1a(int index, int out1, int out2, int ret1)
     {
-        printf("Class01::function1a(%d, %d, %d)\n", out11, out12, ret1);
+        printf("Class01::function1a(%d, %d, %d)\n", out1, out2, ret1);
         callfinished[index] = true;
         result[index] = ret1;
         if (callfinished[0] && callfinished[1] && callfinished[2])
@@ -738,15 +820,25 @@ The application class looks as follows:
 class Class01
 {
 public:
-    async_task<void> coroutine1()
+    async_task<void> coroutine1(int in1, int in2)
     {
         printf("Class01::coroutine1()\n");
-        async_task<int> op1 = remoteObj1co.op1(gin11, gin12, gout11, gout12);
-        async_task<int> op2 = remoteObj2co.op1(gin11, gin12, gout11, gout12);
-        async_task<int> op3 = remoteObj3co.op1(gin11, gin12, gout11, gout12);
-        co_await when_all<async_task<int>>({ &op1, &op2, &op3 });
+        int out11 = -1, out12 = -1;
+        int out21 = -1, out22 = -1;
+        int out31 = -1, out32 = -1;
+
+        async_task<int> op1 = remoteObj1co.op1(in1, in2, out11, out12);
+        async_task<int> op2 = remoteObj2co.op1(in1, in2, out21, out21);
+        async_task<int> op3 = remoteObj3co.op1(in1, in2, out31, out32);
+#if 0
+        // g++ 11 does not like this one-liner
+        co_await when_all({ &op1, &op2, &op3 });
+#else
+        when_all wa({ &op1, &op2, &op3 });
+        co_await wa;
+#endif
         printf("Class01::coroutine1(): result = %d\n", op1.get_result() +  op2.get_result() + op3.get_result());
-    }
+    } // g++ 11 reports at this line: error: array used as initializer
 };
 ```
 

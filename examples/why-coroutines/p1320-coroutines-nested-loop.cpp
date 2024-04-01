@@ -2,8 +2,7 @@
  * @file p1320-coroutines-nested-loop.cpp
  * @brief
  *
- *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #include <corolib/print.h>

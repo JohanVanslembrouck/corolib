@@ -2,7 +2,7 @@
  * @file common.h
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _COMMON_H_
@@ -17,6 +17,13 @@ using lambda_2int_t = typename std::function<void(int, int)>;
 using lambda_1int_t = typename std::function<void(int)>;
 using lambda_bool_t = typename std::function<void(bool)>;
 using lambda_void_t = typename std::function<void(void)>;
+
+using lambda_vp_3int_t = typename std::function<void(void*, int, int, int)>;
+using lambda_vp_2int_t = typename std::function<void(void*, int, int)>;
+using lambda_vp_1int_t = typename std::function<void(void*, int)>;
+using lambda_vp_bool_t = typename std::function<void(void*, bool)>;
+using lambda_vp_t = typename std::function<void(void*)>;
+
 
 struct op1_ret_t
 {
@@ -34,18 +41,21 @@ struct op2_ret_t
 using lambda_op1_ret_t = typename std::function<void(op1_ret_t)>;
 using lambda_op2_ret_t = typename std::function<void(op2_ret_t)>;
 
+using lambda_vp_op1_ret_t = typename std::function<void(void*, op1_ret_t)>;
+using lambda_vp_op2_ret_t = typename std::function<void(void*, op2_ret_t)>;
+
 
 // There isn't an I/O system that will place the lambda in the event queue
 // when an I/O event arrives. Therefore we do it ourselves.
 
 extern EventQueue eventQueue;
 
-inline void registerCB(lambda_3int_t lambda)
+inline void registerCB(lambda_3int_t lambda, int in1, int in2)
 {
-    eventQueue.push([lambda]() { lambda(1, 2, 3); });
+    eventQueue.push([lambda, in1, in2]() { lambda(1, 2, in1 + in2); });
 }
 
-inline void registerCB(lambda_2int_t lambda)
+inline void registerCB(lambda_2int_t lambda, int in1, int in2)
 {
     eventQueue.push([lambda]() { lambda(1, 2); });
 }
@@ -55,14 +65,41 @@ inline void registerCB(lambda_void_t lambda)
     eventQueue.push(lambda);
 }
 
-inline void registerCB(lambda_op1_ret_t lambda)
+inline void registerCB(lambda_op1_ret_t lambda, int in1, int in2)
 {
     eventQueue.push([lambda]() { lambda({ 1, 2, 3 }); });
 }
 
-inline void registerCB(lambda_op2_ret_t lambda)
+inline void registerCB(lambda_op2_ret_t lambda, int in1, int in2)
 {
-    eventQueue.push([lambda]() { lambda({1, 2 }); });
+    eventQueue.push([lambda]() { lambda({ 1, 2 }); });
+}
+
+
+
+inline void registerCB(void* context, lambda_vp_3int_t lambda, int in1, int in2)
+{
+    eventQueue.push([lambda, context, in1, in2]() { lambda(context, 1, 2, in1 + in2); });
+}
+
+inline void registerCB(void* context, lambda_vp_2int_t lambda, int in1, int in2)
+{
+    eventQueue.push([lambda, context]() { lambda(context, 1, 2); });
+}
+
+inline void registerCB(void* context, lambda_vp_t lambda)
+{
+    eventQueue.push([lambda, context]() { lambda(context); });
+}
+
+inline void registerCB(void* context, lambda_vp_op1_ret_t lambda, int in1, int in2)
+{
+    eventQueue.push([lambda, context]() { lambda(context, { 1, 2, 3 }); });
+}
+
+inline void registerCB(void* context, lambda_vp_op2_ret_t lambda, int in1, int in2)
+{
+    eventQueue.push([lambda, context]() { lambda(context, { 1, 2 }); });
 }
 
 #endif

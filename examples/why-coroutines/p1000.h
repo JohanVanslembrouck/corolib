@@ -2,7 +2,7 @@
  * @file p1000.h
  * @brief Contains a RemoteObject1 class that is common to all p10XX-* and p11XX-* variants.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _P1000_H_
@@ -40,7 +40,7 @@ public:
         // Unmarshal out12 and out12 from the response buffer.
         out1 = 1;
         out2 = 2;
-        return 3; 
+        return in1 + in2; 
     }
     
     /**
@@ -49,6 +49,7 @@ public:
      * @param in2
      * @param lambda
      */
+    // to be replaced by the following function
     void sendc_op1(int in1, int in2, lambda_3int_t lambda)
     {
         printf("RemoteObject1::sendc_op1(%d, %d, lambda)\n", in1, in2);
@@ -58,7 +59,31 @@ public:
         
         // Register the lambda with the "communication framework".
         // The framework will call the lambda when it has received the response.
-        registerCB(lambda);
+        registerCB(lambda, in1, in2);
+    }
+
+    void sendc_op1(lambda_3int_t lambda, int in1, int in2)
+    {
+        printf("RemoteObject1::sendc_op1(%d, %d, lambda)\n", in1, in2);
+        // Marshal in1 and in2 into a buffer to write to the remote object.
+        // Write the buffer to the remote object.
+        // (write code is not present.)
+
+        // Register the lambda with the "communication framework".
+        // The framework will call the lambda when it has received the response.
+        registerCB(lambda, in1, in2);
+    }
+
+    void sendc_op1(void* context, lambda_vp_3int_t lambda, int in1, int in2)
+    {
+        printf("RemoteObject1::sendc_op1(%d, %d, lambda)\n", in1, in2);
+        // Marshal in1 and in2 into a buffer to write to the remote object.
+        // Write the buffer to the remote object.
+        // (write code is not present.)
+
+        // Register the lambda with the "communication framework".
+        // The framework will call the lambda when it has received the response.
+        registerCB(context, lambda, in1, in2);
     }
 };
 

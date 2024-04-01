@@ -2,7 +2,7 @@
  * @file p1200cog.h
  * @brief coroutine wrapper class for RemoteObject1 with generic completion handler
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _P1200COG_H_
@@ -107,19 +107,19 @@ public:
     void sendc_op1(int in1, int in2, lambda_op1_ret_t lambda)
     {
         printf("RemoteObject1Co::sendc_op1(%d, %d, l)\n", in1, in2);
-        registerCB(lambda);
+        registerCB(lambda, in1, in2);
     }
 
     void sendc_op2(int in1, int in2, lambda_op2_ret_t lambda)
     {
         printf("RemoteObject1Co::sendc_op2(%d, %d, l)\n", in1, in2);
-        registerCB(lambda);
+        registerCB(lambda, in1, in2);
     }
 
     void sendc_op3(int in1, lambda_op1_ret_t lambda)
     {
         printf("RemoteObject1Co::sendc_op3(%d, l)\n", in1);
-        registerCB(lambda);
+        registerCB(lambda, in1, 0);
     }
 
 protected:

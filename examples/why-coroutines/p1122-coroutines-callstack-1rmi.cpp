@@ -4,7 +4,7 @@
  * Variant of p1120. References to lower layer objects are passed via the constructor.
  * All objects can be and are declared after all class definitions.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #include <corolib/print.h>
@@ -31,13 +31,12 @@ public:
         : m_remoteObj1co(remoteObj1co)
     {}
 
-    async_task<int> coroutine1(int in1, int& out11, int& out12)
+    async_task<int> coroutine1(int in1, int& out1, int& out2)
     {
-        printf("Layer01::coroutine1(): part 1\n");
-        int ret1 = co_await m_remoteObj1co.op1(in1, in1, out11, out12);
-        printf("Layer01::coroutine1(): out11 = %d, out12 = %d, ret1 = %d\n", out11, out12, ret1);
-        printf("Layer01::coroutine1(): part 2\n");
-        co_return ret1;
+        printf("Layer01::coroutine1(in1 = %d, out1 = %d, out2 = %d)\n", in1, out1, out2);
+        int ret1 = co_await m_remoteObj1co.op1(in1, in1, out1, out2);
+        printf("Layer01::coroutine1(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
+        co_return in1 + ret1;
     }
 
 private:
@@ -59,16 +58,15 @@ public:
 
     async_task<int> coroutine1(int in1, int& out1)
     {
-        printf("Layer02::coroutine1(): part 1\n");
+        printf("Layer01::coroutine1(in1 = %d, out1 = %d)\n", in1, out1);
+        int out2 = -1;
         int ret1 = co_await m_layer01.coroutine1(in1, out1, out2);
         printf("Layer02::coroutine1(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
-        printf("Layer02::coroutine1(): part 2\n");
-        co_return ret1;
+        co_return in1 + out2 + ret1;
     }
 
 private:
     Layer01& m_layer01;
-    int    out2{0};
 };
 
 /**
@@ -86,25 +84,24 @@ public:
 
     async_task<int> coroutine1(int in1)
     {
-        printf("Layer03::coroutine1(): part 1\n");
+        printf("Layer03::coroutine1(in1 = %d)\n", in1);
+        int out1 = -1;
         int ret1 = co_await m_layer02.coroutine1(in1, out1);
         printf("Layer03::coroutine1(): out1 = %d, ret1 = %d\n", out1, ret1);
-        printf("Layer03::coroutine1(): part 2\n");
-        co_return ret1;
+        co_return in1 + out1 + ret1;
     }
 
     async_task<int> coroutine2(int in1)
     {
-        printf("Layer03::coroutine2(): part 1\n");
+        printf("Layer03::coroutine2(in1 = %d)\n", in1);
+        int out1 = -1;
         int ret1 = co_await m_layer02.coroutine1(in1, out1);
         printf("Layer03::coroutine2(): out1 = %d, ret1 = %d\n", out1, ret1);
-        printf("Layer03::coroutine2(): part 2\n");
-        co_return ret1;
+        co_return in1 + out1 + ret1;
     }
 
 private:
     Layer02& m_layer02;
-    int    out1{0};
 };
 
 /** 
@@ -126,5 +123,9 @@ int main()
     async_task<int> t1 = layer03.coroutine1(2);
     async_task<int> t2 = layer03.coroutine2(3);
     eventQueue.run();
+    int ret1 = t1.get_result();
+    printf("main(): ret1 = %d\n", ret1);
+    int ret2 = t2.get_result();
+    printf("main(): ret2 = %d\n", ret2);
     return 0;
 }

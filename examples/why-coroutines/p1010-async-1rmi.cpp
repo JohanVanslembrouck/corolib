@@ -2,15 +2,13 @@
  * @file p1010-async-1rmi.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #include <stdio.h>
 
 #include "common.h"
-#include "variables.h"
 #include "eventqueue.h"
-
 #include "p1000.h"
 
 RemoteObject1 remoteObj1;
@@ -23,28 +21,44 @@ class Class01
 {
 public:
     
+    struct function1_cxt_t
+    {
+        int in1;
+        int in2;
+        int* ret;
+    };
+
     /**
      * @brief
      *
      */
-    void function1()
+    void function1(int in1, int in2, int& ret)
     {
-        printf("Class01::function1(): part 1\n");
-        remoteObj1.sendc_op1(gin11, gin12, 
-            [this](int out1, int out2, int ret1)
-            { 
-                this->function1_cb(out1, out2, ret1);
-            });
+        printf("Class01::function1(in1 = %d, in2 = %d, ret = %d)\n", in1, in2, ret);
+        void* ctxt = new function1_cxt_t{ in1, in2, &ret };
+        printf("Class01::function1(): ctxt = %p\n", ctxt);
+
+        remoteObj1.sendc_op1(ctxt,
+            [this](void* context, int out1, int out2, int ret1)
+            {
+                this->function1_cb(context, out1, out2, ret1);
+            },
+            in1, in2);
     }
 
     /**
      * @brief callback function with the out parameters and the return value
      *
      */
-    void function1_cb(int out11, int out12, int ret1)
+    void function1_cb(void* context, int out1, int out2, int ret1)
     {
-        printf("Class01::function1_cb(out11 = %d, out12 = %d, ret1 = %d)\n", out11, out12, ret1);
-        printf("Class01::function1_cb(): part 2\n");
+        printf("Class01::function1_cb(context = %p, out1 = %d, out2 = %d, ret1 = %d)\n", context, out1, out2, ret1);
+        function1_cxt_t* ctxt = static_cast<function1_cxt_t*>(context);
+
+        printf("Class01::function1_cb(): ctxt->in1 = %d, ctxt->in2 = %d, ctxt->ret = %p, ctxt->ret = %d)\n", 
+            ctxt->in1, ctxt->in2, ctxt->ret, *ctxt->ret);
+        *ctxt->ret = ctxt->in1 + ctxt->in2 + out1 + out2 + ret1;
+        delete ctxt;
     }
     
     /**
@@ -53,15 +67,21 @@ public:
      * in the body of the lambda.
      *
      */
-    void function1alt()
+    void function1alt(int in1, int in2, int& ret)
     {
-        printf("Class01::function1alt(): part 1\n");
-        remoteObj1.sendc_op1(gin11, gin12, 
-            [this](int out1, int out2, int ret1)
-            { 
-                printf("Class01::function1alt(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);
-                printf("Class01::function1alt(): part 2\n");
-            });
+        printf("Class01::function1(in1 = %d, in2 = %d, ret = %d)\n", in1, in2, ret);
+        void* context = new function1_cxt_t{ in1, in2, &ret };
+
+        remoteObj1.sendc_op1(context, 
+            [this](void* context, int out1, int out2, int ret1)
+            {
+                function1_cxt_t* cntx = static_cast<function1_cxt_t*>(context);
+                printf("Class01::function1alt(context = %p, out1 = %d, out2 = %d, ret1 = %d)\n", context, out1, out2, ret1);
+                printf("Class01::function1alt(): cntx->in1 = %d, cntx->in2 = %d, cntx->ret = %p)\n", cntx->in1, cntx->in2, cntx->ret);
+                *cntx->ret = cntx->in1 + cntx->in2 + out1 + out2 + ret1;
+                delete cntx;
+            },
+            in1, in2);
     }
 };
 
@@ -72,8 +92,12 @@ EventQueue eventQueue;
 int main()
 {
     printf("main();\n");
-    class01.function1();
-    class01.function1alt();
+    int ret1 = -1;
+    class01.function1(11, 12, ret1);
+    int ret2 = -1;
+    class01.function1alt(21, 22, ret2);
     eventQueue.run();
+    printf("main(): ret1 = %d\n", ret1);
+    printf("main(): ret2 = %d\n", ret2);
     return 0;
 }

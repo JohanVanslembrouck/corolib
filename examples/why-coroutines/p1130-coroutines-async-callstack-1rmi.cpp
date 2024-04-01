@@ -10,7 +10,7 @@
  * 
  * This example has the same problem as described in p1110-async-callstack-1rmi.cpp.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #include <stdio.h>
@@ -23,9 +23,7 @@
 using namespace corolib;
 
 #include "common.h"
-#include "variables.h"
 #include "eventqueue.h"
-
 #include "p1000.h"
 
 RemoteObject1 remoteObj1;
@@ -53,12 +51,12 @@ public:
         printf("Layer01::function1(): return\n");
     }
 
-    void function1_cb(int out11, int out12, int ret1) 
+    void function1_cb(int out1, int out2, int ret1) 
     {
-        printf("Layer01::function1_cb(%d, %d, %d)\n", out11, out12, ret1);
+        printf("Layer01::function1_cb(%d, %d, %d)\n", out1, out2, ret1);
         printf("Layer01::function1_cb(): part 2\n");
         // call function1_cb of upper layer
-        m_lambda(out11, ret1);
+        m_lambda(out1, ret1);
     }
 private:
     lambda_2int_t m_lambda;
@@ -88,9 +86,9 @@ public:
         printf("Layer02::function1(): return\n");
     }
 
-    void function1_cb(int out11, int ret1)
+    void function1_cb(int out1, int ret1)
     {
-        printf("Layer02::function1_cb(%d, %d)\n", out11, ret1);
+        printf("Layer02::function1_cb(%d, %d)\n", out1, ret1);
         printf("Layer02::function1_cb(): part 2\n");
         // call function1_cb of upper layer
         m_lambda(ret1);
@@ -153,7 +151,7 @@ public:
 		int ret1 = co_await op1;
         printf("Layer03::coroutine1(): ret1 = %d\n", ret1);
         printf("Layer03::coroutine1(): part 2\n");
-        co_return ret1;
+        co_return in1 + ret1;
     }
 
     async_task<int> coroutine2(int in1)
@@ -166,7 +164,7 @@ public:
         int ret1 = co_await op1;
         printf("Layer03::coroutine2(): ret1 = %d\n", ret1);
         printf("Layer03::coroutine2(): part 2\n");
-        co_return ret1;
+        co_return in1 + ret1;
     }
 
 private:
@@ -180,8 +178,12 @@ EventQueue eventQueue;
 int main() {
     printf("main()\n");
     async_task<int> t1 = layer03co.coroutine1(2);
-    async_task<int> t2 = layer03co.coroutine2(3);
+    //async_task<int> t2 = layer03co.coroutine2(3);
     printf("main(): eventQueue.run();\n");
     eventQueue.run();
+    int ret1 = t1.get_result();
+    printf("main(): ret1 = %d\n", ret1);
+    //int ret2 = t2.get_result();
+    //printf("main(): ret2 = %d\n", ret2);
     return 0;
 }

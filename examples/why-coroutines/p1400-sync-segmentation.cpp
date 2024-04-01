@@ -2,7 +2,7 @@
  * @file p1400-sync-segmentation.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #include <stdio.h>
@@ -90,12 +90,9 @@ public:
 
 Class01 class01;
 
-EventQueue eventQueue;
-
 int main() {
     printf("main();\n");
     class01.function1();
     //class01.function1();
-    eventQueue.run();
     return 0;
 }

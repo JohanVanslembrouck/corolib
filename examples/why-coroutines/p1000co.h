@@ -2,7 +2,7 @@
  * @file p1000co.h
  * @brief Coroutine "wrapper" class for RemoteObject1.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _P1000CO_H_

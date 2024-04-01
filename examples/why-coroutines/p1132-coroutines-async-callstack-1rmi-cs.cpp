@@ -8,7 +8,7 @@
  * This approach can be useful in case it is not possible or desirable to make modifications
  * to an existing asynchronous callstack, yet the application should be able to use coroutines.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #include <stdio.h>
@@ -22,7 +22,6 @@
 using namespace corolib;
 
 #include "common.h"
-#include "variables.h"
 #include "eventqueue.h"
 
 class CallStack;
@@ -108,7 +107,7 @@ RemoteObject1 remoteObj1;
 class Layer01
 {
 public:
-    // int function1(int in11, int& out12, int& out12)
+    // int function1(int in11, int& out1, int& out2)
     
     void function1(CallStack& callstack, int in1) 
     {
@@ -262,5 +261,9 @@ int main() {
     async_task<int> t2 = layer03co.coroutine2(3);
     printf("main(): eventQueue.run();\n");
     eventQueue.run();
+    int ret1 = t1.get_result();
+    printf("main(): ret1 = %d\n", ret1);
+    int ret2 = t2.get_result();
+    printf("main(): ret2 = %d\n", ret2);
     return 0;
 }

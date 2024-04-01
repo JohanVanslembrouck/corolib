@@ -4,15 +4,13 @@
  * The application calls layer03.function1, which calls layer2.function2, which calls layer1.function1,
  * which calls remoteOb1.op.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #include <stdio.h>
 
 #include "common.h"
-#include "variables.h"
 #include "eventqueue.h"
-
 #include "p1000.h"
 
 RemoteObject1 remoteObj1;
@@ -26,13 +24,12 @@ RemoteObject1 remoteObj1;
 class Layer01
 {
 public:
-    int function1(int in1, int& out11, int& out12)
+    int function1(int in1, int& out1, int& out2)
     {
-        printf("Layer01::function1(): part 1\n");
-        int ret1 = remoteObj1.op1(in1, in1, out11, out12);
-        printf("Layer01::function1(): out11 = %d, out12 = %d, ret1 = %d\n", out11, out12, ret1);
-        printf("Layer01::function1(): part 2\n");
-        return ret1;
+        printf("Layer01::function1(in1 = %d, out1 = %d, out2 = %d)\n", in1, out1, out2);
+        int ret1 = remoteObj1.op1(in1, in1, out1, out2);
+        printf("Layer01::function1(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
+        return in1 + ret1;
     }
 };
 
@@ -49,14 +46,12 @@ class Layer02
 public:
     int function1(int in1, int& out1)
     {
-        printf("Layer02::function1(): part 1\n");
+        printf("Layer02::function1(in1 = %d, out1 = %d)\n", in1, out1);
+        int out2 = -1;
         int ret1 = layer01.function1(in1, out1, out2);
         printf("Layer02::function1(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
-        printf("Layer02::function1(): part 2\n");
-        return ret1;
+        return in1 + out2 + ret1;
     }
-private:
-    int    out2{0};
 };
 
 Layer02 layer02;
@@ -72,33 +67,22 @@ class Layer03
 public:
     int function1(int in1)
     {
-        printf("Layer03::function1(): part 1\n");
+        printf("Layer03::function1(in1 = %d)\n", in1);
+        int out1 = -1;
         int ret1 = layer02.function1(in1, out1);
         printf("Layer03::function1(): out1 = %d, ret1 = %d\n", out1, ret1);
-        printf("Layer03::function1(): part 2\n");
-        return ret1;
+        return in1 + out1 + ret1;
     }
-
-    int function2(int in1)
-    {
-        printf("Layer03::function2(): part 1\n");
-        int ret1 = layer02.function1(in1, out1);
-        printf("Layer03::function2(): out1 = %d, ret1 = %d\n", out1, ret1);
-        printf("Layer03::function2(): part 2\n");
-        return ret1;
-    }
-private:
-    int    out1{0};
 };
 
 Layer03 layer03;
 
-EventQueue eventQueue;
-
 int main() {
     printf("main();\n");
-    layer03.function1(2);
-    layer03.function2(3);
-    eventQueue.run();
+    int ret1 = layer03.function1(2);
+    int ret2 = layer03.function1(3);
+
+    printf("main(): ret1 = %d\n", ret1);
+    printf("main(): ret2 = %d\n", ret2);
     return 0;
 }
