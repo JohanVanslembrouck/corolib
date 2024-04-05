@@ -64,7 +64,6 @@ Layer01 layer01;
 class Layer02
 {
 public:
-
     struct function1_cxt_t
     {
         void* ctxt;
@@ -108,7 +107,6 @@ Layer02 layer02;
 class Layer03
 {
 public:
-
     struct function1_cxt_t
     {
         int* ret;
@@ -131,6 +129,34 @@ public:
     void function1_cb(void* context, int out1, int ret1)
     {
         printf("Layer03::function1_cb(out1 = %d, ret1 = %d)\n", out1, ret1);
+        function1_cxt_t* ctxt = static_cast<function1_cxt_t*>(context);
+        //return in1 + out1 + ret1;
+        *ctxt->ret = ctxt->in1 + out1 + ret1;
+        delete ctxt;
+    }
+
+    struct function2_cxt_t
+    {
+        int* ret;
+        int in1;
+    };
+
+    void function2(int in1, int& ret1)
+    {
+        printf("Layer03::function2(in1 = %d)\n", in1);
+        void* ctxt = new function1_cxt_t{ &ret1, in1 };
+
+        // int ret1 = layer02.function1(in1, out1);
+        layer02.function1(ctxt,
+            [this](void* ctxt, int out1, int ret1) {
+                this->function2_cb(ctxt, out1, ret1);
+            },
+            in1);
+    }
+
+    void function2_cb(void* context, int out1, int ret1)
+    {
+        printf("Layer03::function2_cb(out1 = %d, ret1 = %d)\n", out1, ret1);
         function1_cxt_t* ctxt = static_cast<function1_cxt_t*>(context);
         //return in1 + out1 + ret1;
         *ctxt->ret = ctxt->in1 + out1 + ret1;

@@ -29,7 +29,7 @@ public:
      */
     int op1(int in1, int in2, int& out1, int& out2)
     {
-        printf("RemoteObject1::op1(%d, %d, %d, %d)\n", in1, in2, out1, out2);
+        printf("RemoteObject1::op1(in1 = %d, in2 = %d, out1 = %d, out2 = %d)\n", in1, in2, out1, out2);
         // Marshal in1 and in2 into a buffer to write to the remote object.
         // Write the buffer to the remote object.
         // Read the response from the remote object.
@@ -52,7 +52,7 @@ public:
     // to be replaced by the following function
     void sendc_op1(int in1, int in2, lambda_3int_t lambda)
     {
-        printf("RemoteObject1::sendc_op1(%d, %d, lambda)\n", in1, in2);
+        printf("RemoteObject1::sendc_op1(in1 = %d, in2 = %d, lambda_3int_t)\n", in1, in2);
         // Marshal in1 and in2 into a buffer to write to the remote object.
         // Write the buffer to the remote object.
         // (write code is not present.)
@@ -64,7 +64,7 @@ public:
 
     void sendc_op1(lambda_3int_t lambda, int in1, int in2)
     {
-        printf("RemoteObject1::sendc_op1(%d, %d, lambda)\n", in1, in2);
+        printf("RemoteObject1::sendc_op1(lambda_3int_t, in1 = %d, in2 = %d)\n", in1, in2);
         // Marshal in1 and in2 into a buffer to write to the remote object.
         // Write the buffer to the remote object.
         // (write code is not present.)
@@ -76,7 +76,7 @@ public:
 
     void sendc_op1(void* context, lambda_vp_3int_t lambda, int in1, int in2)
     {
-        printf("RemoteObject1::sendc_op1(%d, %d, lambda)\n", in1, in2);
+        printf("RemoteObject1::sendc_op1(context, lambda_vp_3int_t, in1 = %d, in2 = %d)\n", in1, in2);
         // Marshal in1 and in2 into a buffer to write to the remote object.
         // Write the buffer to the remote object.
         // (write code is not present.)

@@ -36,30 +36,36 @@ RemoteObject1 remoteObj1;
 class Layer01
 {
 public:
-    // Synchronous function:
-    // int function1(int in11, int& out12, int& out12)
-    
-    void function1(int in1, lambda_2int_t lambda) 
+    struct function1_cxt_t
     {
-        printf("Layer01::function1(): part 1\n");
-        m_lambda = lambda;
-        remoteObj1.sendc_op1(in1, in1, 
-            [this](int out1, int out2, int ret1)
-            { 
-                this->function1_cb(out1, out2, ret1); 
-            });
-        printf("Layer01::function1(): return\n");
+        void* ctxt;
+        lambda_vp_3int_t lambda;
+        int in1;
+    };
+
+    void function1(void* ctxt1, lambda_vp_3int_t lambda, int in1)
+    {
+        printf("Layer01::function1(in1 = %d)\n", in1);
+        void* ctxt = new function1_cxt_t{ ctxt1, lambda, in1 };
+
+        // int ret1 = remoteObj1.op1(in1, in1, out1, out2);
+        remoteObj1.sendc_op1(ctxt,
+            [this](void* context, int out1, int out2, int ret1)
+            {
+                this->function1_cb(context, out1, out2, ret1);
+            },
+            in1, in1);
     }
 
-    void function1_cb(int out1, int out2, int ret1) 
+    void function1_cb(void* context, int out1, int out2, int ret1)
     {
-        printf("Layer01::function1_cb(%d, %d, %d)\n", out1, out2, ret1);
-        printf("Layer01::function1_cb(): part 2\n");
+        printf("Layer01::function1_cb(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);
+        function1_cxt_t* ctxt = static_cast<function1_cxt_t*>(context);
         // call function1_cb of upper layer
-        m_lambda(out1, ret1);
+        //  return in1 + ret1;
+        ctxt->lambda(ctxt->ctxt, out1, out2, ctxt->in1 + ret1);
+        delete ctxt;
     }
-private:
-    lambda_2int_t m_lambda;
 };
 
 Layer01 layer01;
@@ -72,29 +78,37 @@ Layer01 layer01;
 class Layer02
 {
 public:
-    // Synchronous function:
-    // int function1(int in1, int& out11)
-    
-    void function1(int in1, lambda_1int_t lambda)
+
+    struct function1_cxt_t
     {
-        printf("Layer02::function1(): part 1\n");
-        m_lambda = lambda;
-        layer01.function1(in1, 
-            [this](int out1, int ret1) { 
-                this->function1_cb(out1, ret1);
-            });
-        printf("Layer02::function1(): return\n");
+        void* ctxt;
+        lambda_vp_2int_t lambda;
+        int in1;
+    };
+
+    void function1(void* ctxt1, lambda_vp_2int_t lambda, int in1)
+    {
+        printf("Layer02::function1(in1 = %d)\n", in1);
+        void* ctxt = new function1_cxt_t{ ctxt1, lambda, in1 };
+
+        // int ret1 = layer01.function1(in1, out1, out2);
+        layer01.function1(
+            ctxt,
+            [this](void* ctxt1, int out1, int out2, int ret1) {
+                this->function1_cb(ctxt1, out1, out2, ret1);
+            },
+            in1);
     }
 
-    void function1_cb(int out1, int ret1)
+    void function1_cb(void* context, int out1, int out2, int ret1)
     {
-        printf("Layer02::function1_cb(%d, %d)\n", out1, ret1);
-        printf("Layer02::function1_cb(): part 2\n");
+        printf("Layer02::function1_cb(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);
+        function1_cxt_t* ctxt = static_cast<function1_cxt_t*>(context);
         // call function1_cb of upper layer
-        m_lambda(ret1);
+        //return in1 + out2 + ret1;
+        ctxt->lambda(ctxt->ctxt, out1, ctxt->in1 + out2 + ret1);
+        delete ctxt;
     }
-private:
-    lambda_1int_t m_lambda;
 };
 
 Layer02 layer02;
@@ -111,28 +125,33 @@ public:
     // Synchronous function:
     // int function1(int in1);
 
-    void function1(int in1, async_operation<int>& op1)
+    void function1(async_operation<int>& op1, int in1)
     {
-        printf("Layer03::function1(): part 1\n");
-        layer02.function1(in1,
-            [this, &op1](int ret1) {  
-				op1.set_result(ret1);
+        printf("Layer03::function1(in1 = %d)\n", in1);
+        void* ctxt = nullptr;
+        layer02.function1(ctxt,
+            [this, in1, &op1](void* ctxt, int out1, int ret1) {
+				op1.set_result(in1 + out1 + ret1);
                 op1.completed();
-            });
+            },
+            in1);
         printf("Layer03::function1(): return\n");
     }
 
     // Synchronous function:
     // int function2(int in1);
-    
-    void function2(int in1, async_operation<int>& op1)
+
+    void function2(async_operation<int>& op1, int in1)
     {
-        printf("Layer03::function2(): part 1\n");
-        layer02.function1(in1,
-            [this, &op1](int ret1) {
-                op1.set_result(ret1);
+        printf("Layer03::function2(in1 = %d)\n", in1);
+        void* ctxt = nullptr;
+        layer02.function1(ctxt,
+            [this, in1, &op1](void* ctxt, int out1, int ret1) {
+                op1.set_result(in1 + out1 + ret1);
                 op1.completed();
-            });
+            },
+            in1);
+        printf("Layer03::function2(): return\n");
     }
 };
 
@@ -143,32 +162,27 @@ class Layer03Co : public CommService
 public:
     async_task<int> coroutine1(int in1)
     {
-        printf("Layer03::coroutine1(): part 1\n");
+        printf("Layer03Co::coroutine1(in1 = %d)\n", in1);
 		int index = get_free_index();
 		async_operation<int> op1{this, index};
-        layer03.function1(in1, op1);
-        printf("Layer03::coroutine1(): int ret1 = co_await op1\n");
+        layer03.function1(op1, in1);
+        printf("Layer03Co::coroutine1(): int ret1 = co_await op1\n");
 		int ret1 = co_await op1;
-        printf("Layer03::coroutine1(): ret1 = %d\n", ret1);
-        printf("Layer03::coroutine1(): part 2\n");
-        co_return in1 + ret1;
+        printf("Layer03Co::coroutine1(): ret1 = %d\n", ret1);
+        co_return ret1;
     }
 
     async_task<int> coroutine2(int in1)
     {
-        printf("Layer03::coroutine2(): part 1\n");
+        printf("Layer03Co::coroutine2(in1 = %d)\n", in1);
         int index = get_free_index();
         async_operation<int> op1{ this, index };
-        layer03.function2(in1, op1);
-        printf("Layer03::coroutine2(): int ret1 = co_await op1\n");
+        layer03.function1(op1, in1);
+        printf("Layer03Co::coroutine2(): int ret1 = co_await op1\n");
         int ret1 = co_await op1;
-        printf("Layer03::coroutine2(): ret1 = %d\n", ret1);
-        printf("Layer03::coroutine2(): part 2\n");
-        co_return in1 + ret1;
+        printf("Layer03Co::coroutine2(): ret1 = %d\n", ret1);
+        co_return ret1;
     }
-
-private:
-    int    out1{0};
 };
 
 Layer03Co layer03co;
@@ -178,12 +192,12 @@ EventQueue eventQueue;
 int main() {
     printf("main()\n");
     async_task<int> t1 = layer03co.coroutine1(2);
-    //async_task<int> t2 = layer03co.coroutine2(3);
+    async_task<int> t2 = layer03co.coroutine2(3);
     printf("main(): eventQueue.run();\n");
     eventQueue.run();
     int ret1 = t1.get_result();
     printf("main(): ret1 = %d\n", ret1);
-    //int ret2 = t2.get_result();
-    //printf("main(): ret2 = %d\n", ret2);
+    int ret2 = t2.get_result();
+    printf("main(): ret2 = %d\n", ret2);
     return 0;
 }
