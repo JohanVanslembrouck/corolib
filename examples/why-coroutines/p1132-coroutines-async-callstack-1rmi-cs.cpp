@@ -219,6 +219,55 @@ class Layer03
 public:
     // Synchronous function:
     // int function1(int in1);
+
+    // Alternative 1
+
+    struct function1_cxt_t
+    {
+        int* ret;
+        int in1;
+    };
+
+    void function1(int in1, int& ret1)
+    {
+        printf("Layer03::function1(in1 = %d)\n", in1);
+        CallStack* callstack = new CallStack;
+
+        lambda_cs_2int_t* p = new lambda_cs_2int_t(
+            [this](CallStack* callstack, int out1, int ret1)
+            {
+                this->function1_cb(callstack, out1, ret1);
+            });
+        void* ctxt = new function1_cxt_t{ &ret1, in1 };
+        StackElement* se = new StackElement(ctxt, p);
+        callstack->push(se);
+
+        layer02.function1(callstack, in1);
+    }
+
+    void function1_cb(CallStack* callstack, int out1, int ret1)
+    {
+        printf("Layer03::function1_cb(out1 = %d, ret1 = %d)\n", out1, ret1);
+        StackElement* se = callstack->top_pop();
+        function1_cxt_t* ctxt = static_cast<function1_cxt_t*>(se->context);
+        *ctxt->ret = ctxt->in1 + out1 + ret1;
+        delete ctxt;
+        delete se;
+        delete callstack;
+    }
+
+    void function1(int in1, lambda_cs_2int_t lambda)
+    {
+        printf("Layer03::function1(in1 = %d)\n", in1);
+        void* ctxt = new function1_cxt_t{ nullptr, in1 };
+
+        CallStack* callstack = new CallStack;
+        lambda_cs_2int_t* p = new lambda_cs_2int_t(lambda);
+        StackElement* se = new StackElement(ctxt, p);
+        callstack->push(se);
+
+        layer02.function1(callstack, in1);
+    }
   
     void function1(async_operation<int>& op1, int in1)
     {
@@ -269,17 +318,37 @@ Layer03 layer03;
 class Layer03Co : public CommService
 {
 public:
+    // Alternative 1
+
     async_task<int> coroutine1(int in1)
     {
-        printf("Layer03::coroutine1(in1 = %d)\n", in1);
-        int index = get_free_index();
-        async_operation<int> op1{ this, index };
-        layer03.function1(op1, in1);
-        printf("Layer03::coroutine1(): int ret1 = co_await op1\n");
+        printf("Layer03Co::coroutine1(in1 = %d)\n", in1);
+        async_operation<int> op1 = start_op1(in1);
+        printf("Layer03Co::coroutine1(): int ret1 = co_await op1\n");
         int ret1 = co_await op1;
-        printf("Layer03::coroutine1(): ret1 = %d\n", ret1);
+        printf("Layer03Co::coroutine1(): ret1 = %d\n", ret1);
         co_return ret1;
     }
+
+    async_operation<int> start_op1(int in1)
+    {
+        int index = get_free_index();
+        async_operation<int> ret{ this, index };
+        start_op1_impl(index, in1);
+        return ret;
+    }
+
+    void start_op1_impl(int idx, int in1)
+    {
+        layer03.function1(in1,
+            [this, idx, in1](CallStack* callstack, int out1, int ret1) {
+                completionHandler<int>(idx, in1 + out1 + ret1);
+                delete callstack;
+            }
+        );
+    }
+
+    // Alternative 2
 
     async_task<int> coroutine2(int in1)
     {
@@ -300,10 +369,13 @@ EventQueue eventQueue;
 
 int main() {
     printf("main()\n");
+    int ret0 = -1;
+    layer03.function1(2, ret0);
     async_task<int> t1 = layer03co.coroutine1(2);
     async_task<int> t2 = layer03co.coroutine2(3);
     printf("main(): eventQueue.run();\n");
     eventQueue.run();
+    printf("main(): ret0 = %d\n", ret0);
     int ret1 = t1.get_result();
     printf("main(): ret1 = %d\n", ret1);
     int ret2 = t2.get_result();
