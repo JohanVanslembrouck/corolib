@@ -10,6 +10,8 @@ set(GRPC_INSTALLED FALSE)
 set(TAO_INSTALLED FALSE)
 # If you have installed Qt5 and you want to use it, set the following variable to TRUE:
 set(QT5_INSTALLED FALSE)
+# If you have installed libevent and you want to use it, set the following variable to TRUE:
+set(LIBEVENT_INSTALLED FALSE)
 
 # If you want to install and use GoogleTest, set the following variable to TRUE:
 set(USE_GOOGLETEST TRUE)
@@ -42,6 +44,14 @@ if (TAO_INSTALLED)
     add_subdirectory(examples/tao/Buffered_AMI)
 endif()
 
+if (QT5_INSTALLED)
+    add_subdirectory(examples/qt5)
+endif()
+
+if (LIBEVENT_INSTALLED)
+    add_subdirectory(examples/libevent)
+endif()
+
 if (WIN32)
     add_subdirectory(examples/cppcoro)
 endif()
@@ -53,10 +63,6 @@ add_subdirectory(examples/why-coroutines)
 add_subdirectory(examples/corolab)
 
 add_subdirectory(examples/transform)
-
-if (QT5_INSTALLED)
-    add_subdirectory(examples/qt5)
-endif()
 
 if (USE_GOOGLETEST)
     if (NOT googletest)

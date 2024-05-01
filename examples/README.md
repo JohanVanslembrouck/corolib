@@ -3,9 +3,12 @@
 This directory/folder has the following subdirectories/subfolders that use an asynchronous communication framework:
 
 * boost
+* cppcoro
 * grpc
+* libevent
 * qt5
-* ROS2 (Humble)
+* ros2_ws (ROS2 Humble)
+* tao
 
 See the README.md file in those directories for further information.
 

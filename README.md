@@ -28,6 +28,7 @@ For its communication, corolib currently uses any of the following frameworks:
 * Boost ASIO library
 * Qt (QTcpSocket, QTcpServer)
 * gRPC
+* libevent
 * ROS2 (Humble)
 * TAO (The ACE ORB)
 * cppcoro (WIN32 API) (included in corolib)
@@ -181,6 +182,27 @@ The last line is needed if you want to run the TAO IDL compiler (tao_idl in C:\l
 If the last line is not present, running tao_idl will fail with the message that CL.exe is not found.
 
 After installing TAO, set the TAO_INSTALLED flag to TRUE in the top-level CMakelists.txt file.
+
+#### libevent
+
+The build instructions can be found here: https://github.com/libevent/libevent/blob/master/Documentation/Building.md#building-on-windows
+
+Clone or download the source code for libevent from https://github.com/libevent/libevent.
+I placed libevent in folder C:\local, leading to C:\local\libevent.
+
+    cd C:\local\libevent
+    md build
+    cd build
+    cmake -G "Visual Studio 17" ..
+    cmake --build . --config Release
+
+Visual Studio 17 corresponds to Visual Studio 2022.
+
+Edit the Environment Variables and add the following directory to the Path variable:
+
+    C:\local\libevent\build\bin\Release
+
+After installing libevent, set the LIBEVENT_INSTALLED flag to TRUE in the top-level CMakelists.txt file.
 
 ### On Ubuntu 22.04 LTS
 
@@ -358,6 +380,14 @@ Add the following lines to .bashrc:
     export LD_LIBRARY_PATH=$ACE_ROOT/lib:$LD_LIBRARY_PATH
 
 After installing TAO, set the TAO_INSTALLED flag to TRUE in the top-level CMakelists.txt file.
+
+#### libevent
+
+The installation instructions can be found here: https://github.com/libevent/libevent/blob/master/Documentation/Building.md#linux-deb-like-ubuntudebian
+
+libevent was already installed on my Ubuntu installation, so I did not have to do anything.
+
+Set the LIBEVENT_INSTALLED flag to TRUE in the top-level CMakelists.txt file.
 
 ## Organization of corolib
 
