@@ -61,7 +61,6 @@ public:
         print(PRI1, "timeoutcb\n");
 
         struct event_base* base = (struct event_base*)arg;
-        print(PRI1, "timeout\n");
         event_base_loopexit(base, NULL);
     }
 
@@ -75,10 +74,10 @@ public:
 
         size_t nr_read = 0;
         char* msg = evbuffer_readln(input, &nr_read, EVBUFFER_EOL_ANY);
-        print(PRI1, "msg = %s, nr_read = %zu\n", msg, nr_read);
+        print(PRI1, "readcb: msg = %s, nr_read = %zu\n", msg, nr_read);
 
         ++total_messages_read;
-        total_bytes_read += evbuffer_get_length(input);
+        total_bytes_read += nr_read;    // evbuffer_get_length(input);
 
         print(PRI1, "readcb: total_messages_read = %zd, total_bytes_read = %zd\n", total_messages_read, total_bytes_read);
 
@@ -90,10 +89,12 @@ public:
         int idx = ctxt->idx;
         async_base* om_async_base = ctxt->base;
 
+        print(PRI2, "readcb: idx = %d, om_async_base = %p\n", idx, om_async_base);
+
         async_operation<std::string>* om_async_operation_t =
             static_cast<async_operation<std::string>*>(om_async_base);
         if (om_async_operation_t) {
-            print(PRI1, "set_result: %d\n", idx);
+            print(PRI1, "readcb: set_result: %d\n", idx);
             om_async_operation_t->set_result(msg);
         }
     }
@@ -110,33 +111,53 @@ public:
             set_tcp_no_delay(fd);
         }
         else if (events & BEV_EVENT_ERROR) {
-            print(PRI1, "NOT Connected\n");
+            print(PRI1, "eventcb: NOT connected\n");
         }
         else {
+            print(PRI1, "eventcb: else\n");
+
             context_t* ctxt = static_cast<context_t*>(ctx);
             int idx = ctxt->idx;
             async_base* om_async_base = ctxt->base;
+
+            print(PRI2, "eventcb: idx = %d, om_async_base = %p\n", idx, om_async_base);
             
             async_operation<std::string>* om_async_operation_t =
                 static_cast<async_operation<std::string>*>(om_async_base);
             if (om_async_operation_t) {
-                print(PRI1, "completing: %d\n", idx);
+                print(PRI1, "eventcb: completing: %d\n", idx);
                 om_async_operation_t->completed();
             }
         }
     }
 
-    async_operation<std::string> start_operation(int& request, int block_size)
+    tcpclient(int port, int block_size_, int session_count_, int seconds)
+    {
+        memset(&sin, 0, sizeof(sin));
+        sin.sin_family = AF_INET;
+        sin.sin_addr.s_addr = htonl(0x7f000001); /* 127.0.0.1 */
+        sin.sin_port = htons(port);
+
+        block_size = block_size_;
+
+        session_count = session_count_;
+
+        timeout.tv_sec = seconds;
+        timeout.tv_usec = 0;
+    }
+
+    async_operation<std::string> start_operation(int request, context_t *ctxt)
     {
         int index = get_free_index();
+        ctxt->idx = index;
         async_operation<std::string> ret{ this, index };
-        start_operation_impl(index, request, block_size);
+        start_operation_impl(index, request);
         return ret;
     }
 
-    int start_operation_impl(int idx, int request, int block_size)
+    void start_operation_impl(int idx, int request)
     {
-        print(PRI1, "start_operation_impl: idx = %d\n", idx);
+        print(PRI1, "start_operation_impl: idx = %d, request = %d\n", idx, request);
 
         struct bufferevent* bev = bufferevent_socket_new(base, -1, BEV_OPT_CLOSE_ON_FREE);
 
@@ -148,57 +169,51 @@ public:
                                void* cbarg)
         */
 
-        bufferevent_setcb(bev, readcb, NULL, eventcb, &ctxt[idx]);
+        bufferevent_setcb(bev, readcb, NULL, eventcb, &ctxt[request]);
         bufferevent_enable(bev, EV_READ | EV_WRITE);
-        evbuffer_add(bufferevent_get_output(bev), message, block_size);
+
+        evbuffer *evb = bufferevent_get_output(bev);
+
+        evbuffer_add(evb, message, block_size);
 
         if (bufferevent_socket_connect(bev, (struct sockaddr*)&sin, sizeof(sin)) < 0)
         {
             /* Error starting connection */
-            bufferevent_free(bev);
-            print(PRI1, "main() : error connect\n");
-            return -1;
+            //bufferevent_free(bev);
+            print(PRI1, "start_operation_impl: error connecting\n");
+            //return;
         }
-        bevs[idx] = bev;
-        return 0;
+        bevs[request] = bev;
     }
 
-    async_task<void> init(int port, int block_size, int session_count, int seconds)
+    async_task<void> init()
     {
-        timeout.tv_sec = seconds;
-        timeout.tv_usec = 0;
-
         base = event_base_new();
         if (!base) {
-            print(PRI1, "Couldn't open event base\n");
+            print(PRI1, "init: Couldn't open event base\n");
             co_return;
         }
 
-        message = (char*) malloc(block_size);
-        for (int i = 0; i < block_size; ++i)
-            message[i] = i % 128;
+        message = (char*)malloc(block_size);
+        //for (int i = 0; i < block_size; ++i)
+        //    message[i] = i % 128;
         memset(message, 'A', block_size);
 
         evtimeout = evtimer_new(base, timeoutcb, base);
         evtimer_add(evtimeout, &timeout);
 
-        memset(&sin, 0, sizeof(sin));
-        sin.sin_family = AF_INET;
-        sin.sin_addr.s_addr = htonl(0x7f000001); /* 127.0.0.1 */
-        sin.sin_port = htons(port);
-
         bevs = (struct bufferevent**) malloc(session_count * sizeof(struct bufferevent*));
 
         async_operation<std::string>* asyncsc = new async_operation<std::string>[session_count];
-        ppasyncsc = new async_base * [session_count];
+        async_base** ppasyncsc = new async_base * [session_count];
         ctxt = new context_t[session_count];
+
         for (int i = 0; i < session_count; ++i)
         {
             print(PRI1, "i = % d\n", i);
             ppasyncsc[i] = &asyncsc[i];
-            ctxt[i].idx = i;
             ctxt[i].base = ppasyncsc[i];
-            async_operation <std::string> op = start_operation(i, block_size);
+            async_operation <std::string> op = start_operation(i, &ctxt[i]);
             asyncsc[i] = std::move(op);
         }
 
@@ -208,7 +223,7 @@ public:
         // print results
         for (int i = 0; i < session_count; ++i)
         {
-            print(PRI1, "%s\n", asyncsc[i].get_result().c_str());
+            print(PRI1, "init: %s\n", asyncsc[i].get_result().c_str());
         }
 
         delete[] asyncsc;
@@ -216,7 +231,7 @@ public:
         delete[] ctxt;
     }
 
-    void deinit(int session_count)
+    void deinit()
     {
         for (int i = 0; i < session_count; ++i) {
             bufferevent_free(bevs[i]);
@@ -226,25 +241,28 @@ public:
         event_free(evtimeout);
         event_base_free(base);
         free(message);
+    }
 
-        print(PRI1, "%zd total bytes read\n", total_bytes_read);
-        print(PRI1, "%zd total messages read\n", total_messages_read);
-        print(PRI1, "%.3f average messages size\n",
+    void print_statistics()
+    {
+        printf("%zd total bytes read\n", total_bytes_read);
+        printf("%zd total messages read\n", total_messages_read);
+        printf("%.3f average messages size\n",
             (double)total_bytes_read / total_messages_read);
-        print(PRI1, "%.3f MiB/s throughtput\n",
+        printf("%.3f MiB/s throughtput\n",
             (double)total_bytes_read / (timeout.tv_sec * 1024 * 1024));
     }
 
 public:
     struct event_base* base;
-    async_base** ppasyncsc;
 
 private:
     struct bufferevent** bevs;
     struct sockaddr_in sin;
     struct event* evtimeout;
-    struct timeval     timeout;
-  
+    struct timeval timeout;
+    int block_size;
+    int session_count;
     context_t* ctxt;
     char* message;
 };
@@ -270,10 +288,14 @@ int main(int argc, char **argv)
     WSAStartup(0x0201, &wsa_data);
 #endif
 
-    tcpclient cl;
-    async_task<void> t = cl.init(port, block_size, session_count, seconds);
-    event_base_dispatch(cl.base);
-    t.wait();
-    cl.deinit(session_count);
+    for (int i = 0; i < 5; ++i)
+    {
+        tcpclient cl(port, block_size, session_count, seconds);
+        async_task<void> t = cl.init();
+        event_base_dispatch(cl.base);
+        t.wait();
+        cl.deinit();
+        cl.print_statistics();
+    }
     return 0;
 }

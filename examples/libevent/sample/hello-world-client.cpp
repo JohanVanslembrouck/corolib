@@ -6,7 +6,7 @@
  * 
  * Usqge examples:
  * hello-world-client.exe 9995 30 30 1
- * hello-world-client.exe 9995 30 1 1
+ * hello-world-client.exe 9995 30 10 1
  */
 
 #include <event2/event.h>
@@ -51,10 +51,10 @@ void readcb(struct bufferevent *bev, void *ctx)
 
     size_t nr_read = 0;
     char* msg = evbuffer_readln(input, &nr_read, EVBUFFER_EOL_ANY);
-    printf("msg = %s, nr_read = %zu\n", msg, nr_read);
+    printf("readcb: msg = %s, nr_read = %zu\n", msg, nr_read);
 
     ++total_messages_read;
-    total_bytes_read += evbuffer_get_length(input);
+    total_bytes_read += nr_read;    //  evbuffer_get_length(input);
     printf("readcb: total_messages_read = %zd, total_bytes_read = %zd\n", total_messages_read, total_bytes_read);
 
     // Don't do this! Connection is already closed on Linux.
@@ -73,10 +73,10 @@ void eventcb(struct bufferevent *bev, short events, void *ptr)
         evutil_socket_t fd = bufferevent_getfd(bev);
         set_tcp_no_delay(fd);
     } else if (events & BEV_EVENT_ERROR) {
-        printf("NOT Connected\n");
+        printf("eventcb: NOT connected\n");
     }
     else {
-        printf("other\n");
+        printf("eventcb: else\n");
     }
 }
 
@@ -115,9 +115,9 @@ int main(int argc, char **argv)
     }
 
     char* message = (char*)malloc(block_size);
-    for (i = 0; i < block_size; ++i)
-        message[i] = i % 128;
-    memset(message,'A',block_size);
+    //for (i = 0; i < block_size; ++i)
+    //    message[i] = i % 128;
+    memset(message, 'A', block_size);
 
     evtimeout = evtimer_new(base, timeoutcb, base);
     evtimer_add(evtimeout, &timeout);
