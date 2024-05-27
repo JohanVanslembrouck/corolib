@@ -23,7 +23,7 @@
  *
  * TODO: verify instantiation of when_any with an appropriate type using C++20 concepts.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _WHEN_ANY_AWAITABLE_
@@ -268,44 +268,24 @@ namespace corolib
         bool m_first{ true };
     };
 
-
-#if 1
     /**
-    * @brief when_anyT is the original implementation of when_any (which has been renamed to when_anyT).
-    * Its implementation is here for historical/backup/reference reasons only.
-    * when_anyT is considered to be obsolete.
+    * @brief when_anyT is an alternative to when_any.
+    * It has only one constructor when_anyT(TYPE aws[], int size) that allows passing a C-style array of TYPE objects,
+    * together with its size.
+    * This avoids the use of an auxiliary array of async_base* to be used with when_any(async_base* pasync_ops[], int size).
+    * TYPE must be an async_operation or an async_task.
     */
     template<typename TYPE>
     class when_anyT
     {
     public:
-	    /**
-         * @brief constructor that takes an initializer list and
-		 * populates the internal vector m_elements with its elements.
-         */
-        when_anyT(std::initializer_list<TYPE*> aws)
-        {
-            print(PRI2, "%p: when_anyT::when_anyT(std::initializer_list<TYPE*> aws)\n", this);
-            for (TYPE* a : aws)
-            {
-                // Only place the object in m_elements if it has not yet been completed.
-                if (!a->is_ready())
-                {
-                    when_any_one* q = new when_any_one();
-                    m_wait_any.push_back(q);
-                    a->setWaitAny(q);
-                    m_elements.push_back(a);
-                }
-            }
-        }
-
         /**
          * @brief constructor that takes a pointer to a C-style array of objects and its size
 		 * and that populates the internal vector m_elements with its elements.
          */
-        when_anyT(TYPE* aws, int size)
+        when_anyT(TYPE aws[], int size)
         {
-            print(PRI2, "%p: when_anyT::when_anyT(TYPE* aws, int size)\n", this);
+            print(PRI2, "%p: when_anyT::when_anyT(TYPE aws[], int size)\n", this);
             for (int i = 0; i < size; i++)
             {
                 // Only place the object in m_elements if it has not yet been completed.
@@ -435,9 +415,7 @@ namespace corolib
         std::vector<TYPE*> m_elements;
         bool m_first{true};
     };
-#endif
 
 }
-
 
 #endif

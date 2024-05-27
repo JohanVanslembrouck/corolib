@@ -6,7 +6,7 @@
  * Apart from async_operation and async_task, this example
  * also uses oneway_task and auto_reset_event.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
  
 #include <boost/asio.hpp>
@@ -536,7 +536,7 @@ async_task<int> mainflow4(CommClient& c1, CommClient& c2, CommClient& c3)
  * @return always 0
  *
  */
-async_task<int> mainflow5(std::initializer_list<CommClient*> clients)
+async_task<int> mainflow5(std::initializer_list<CommClient*> client_il)
 {
     print(PRI1, "mainflow5: begin\n");
 
@@ -545,10 +545,10 @@ async_task<int> mainflow5(std::initializer_list<CommClient*> clients)
 
     // Copy the clients from the initializer list:
     // we can iterate over this list only once.
-    CommClient* _clients[nrClients];
+    CommClient* clients[nrClients];
     int cntr = 0;
-    for (CommClient* cl : clients)
-        _clients[cntr++] = cl;
+    for (CommClient* cl : client_il)
+        clients[cntr++] = cl;
 
     for (int i = 0; i < 60; i++)
     {
@@ -564,7 +564,7 @@ async_task<int> mainflow5(std::initializer_list<CommClient*> clients)
         
         // Connecting
         j = 0;
-        for (CommClient* cl: _clients) {
+        for (CommClient* cl: clients) {
             print(PRI1, "mainflow5: asyncsc[%d] = cl->start_connecting();\n", j);
             asyncsc[j++] = cl->start_connecting();
         }
@@ -575,7 +575,7 @@ async_task<int> mainflow5(std::initializer_list<CommClient*> clients)
 
         // Writing
         j = 0;
-        for (CommClient* cl : _clients) {
+        for (CommClient* cl : clients) {
             print(PRI1, "mainflow5: asyncsw[%d] = cl->start_writing(...);\n", j);
             str[j] = "This is string ";
             str[j] += std::to_string(counter++);
@@ -590,7 +590,7 @@ async_task<int> mainflow5(std::initializer_list<CommClient*> clients)
 
         // Reading
         j = 0;
-        for (CommClient* cl : _clients) {
+        for (CommClient* cl : clients) {
             print(PRI1, "mainflow5: asyncsr[%d] = cl->start_reading();\n", j);
             asyncsr[j++] = cl->start_reading();
         }
@@ -603,7 +603,7 @@ async_task<int> mainflow5(std::initializer_list<CommClient*> clients)
         }
 
         // Closing
-        for (CommClient* cl : _clients) {
+        for (CommClient* cl : clients) {
             print(PRI1, "mainflow5: cl->stop();\n");
             cl->stop();
         }
@@ -626,7 +626,7 @@ async_task<int> mainflow5(std::initializer_list<CommClient*> clients)
  * @param clients is an iniatializer list will all clients
  * @return always 0
  */
-async_task<int> mainflow6(std::initializer_list<CommClient*> clients)
+async_task<int> mainflow6(std::initializer_list<CommClient*> client_il)
 {
     print(PRI1, "mainflow6: begin\n");
 
@@ -640,10 +640,10 @@ async_task<int> mainflow6(std::initializer_list<CommClient*> clients)
 
     // Copy the clients from the initializer list:
     // we can iterate over this list only once.
-    CommClient* _clients[nrClients];
+    CommClient* clients[nrClients];
     int cntr = 0;
-    for (CommClient* cl : clients)
-        _clients[cntr++] = cl;
+    for (CommClient* cl : client_il)
+        clients[cntr++] = cl;
 
     for (int i = 0; i < 60; i++)
     {
@@ -654,7 +654,7 @@ async_task<int> mainflow6(std::initializer_list<CommClient*> clients)
 
         // Connecting
         j = 0;
-        for (CommClient* cl : _clients) {
+        for (CommClient* cl : clients) {
             print(PRI1, "mainflow6: asyncsc[%d] = cl->start_connecting();\n", j);
             asyncsc[j++] = cl->start_connecting();
         }
@@ -665,7 +665,7 @@ async_task<int> mainflow6(std::initializer_list<CommClient*> clients)
 
         // Writing
         j = 0;
-        for (CommClient* cl : _clients) {
+        for (CommClient* cl : clients) {
             print(PRI1, "mainflow6: asyncsw[%d] = cl->start_writing(...);\n", j);
             str[j] = "This is string ";
             str[j] += std::to_string(counter++);
@@ -680,7 +680,7 @@ async_task<int> mainflow6(std::initializer_list<CommClient*> clients)
 
         // Reading
         j = 0;
-        for (CommClient* cl : _clients) {
+        for (CommClient* cl : clients) {
             print(PRI1, "mainflow6: asyncsr[%d] = cl->start_reading();\n", j);
             asyncsr[j++] = cl->start_reading();
         }
@@ -693,7 +693,7 @@ async_task<int> mainflow6(std::initializer_list<CommClient*> clients)
         }
 
         // Closing
-        for (CommClient* cl : _clients) {
+        for (CommClient* cl : clients) {
             print(PRI1, "mainflow6: cl->stop();\n");
             cl->stop();
         }

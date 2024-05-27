@@ -11,7 +11,7 @@
  *
  * TODO: verify instantiation of when_all with an appropriate type using C++20 concepts.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _WHEN_ALL
@@ -191,53 +191,32 @@ namespace corolib
         std::vector<async_base*> m_elements;
     };
 
-
-#if 1
     /**
-     * @brief when_allT is the original implementation of when_all (which has been renamed to when_allT).
-     * Its implementation is here for historical/backup/reference reasons only.
-     * when_allT is considered to be obsolete.
+     * @brief when_allT is an alternative to when_all.
+     * It has only one constructor when_allT(TYPE aws[], int size) that allows passing a C-style array of TYPE objects,
+     * together with its size.
+     * This avoids the use of an auxiliary array of async_base* to be used with when_all(async_base* pasync_ops[], int size).
+     * TYPE must be an async_operation or an async_task
      */
-    // TYPE must be an async_operation or an async_task
     template<typename TYPE>
     class when_allT
     {
     public:
-	    /**
-         * @brief constructor that takes an initializer list and
-		 * populates the internal vector m_elements with its elements.
-         */
-        when_allT(std::initializer_list<TYPE*> async_ops)
-            : m_counter(0)
-        {
-            print(PRI2, "%p: when_allT::when_allT(std::initializer_list<TYPE*> async_ops)\n", this);
-            for (TYPE* async_op : async_ops)
-            {
-                // Only place the object in m_elements if it has not yet been completed.
-                if (!async_op->is_ready())
-                {
-                    async_op->setCounter(&m_counter);
-                    m_elements.push_back(async_op);
-                    m_counter.increment();
-                }
-            }
-        }
-
         /**
          * @brief constructor that takes a pointer to a C-style array of objects and its size
 		 * and that populates the internal vector m_elements with its elements.
          */
-        when_allT(TYPE* async_ops, int size)
+        when_allT(TYPE aws[], int size)
             : m_counter(0)
         {
-            print(PRI2, "%p: when_allT::when_allT(TYPE* async_ops, size = %d)\n", this, size);
+            print(PRI2, "%p: when_allT::when_allT(TYPE* aws, size = %d)\n", this, size);
             for (int i = 0; i < size; i++)
             {
                 // Only place the object in m_elements if it has not yet been completed.
-                if (!async_ops[i].is_ready())
+                if (!aws[i].is_ready())
                 {
-                    async_ops[i].setCounter(&m_counter);
-                    m_elements.push_back(&async_ops[i]);
+                    aws[i].setCounter(&m_counter);
+                    m_elements.push_back(&aws[i]);
                     m_counter.increment();
                 }
             }
@@ -323,7 +302,6 @@ namespace corolib
         when_all_counter m_counter;
         std::vector<TYPE*> m_elements;
     };
-#endif
 
 }
 
