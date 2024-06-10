@@ -64,6 +64,8 @@ add_subdirectory(examples/corolab)
 
 add_subdirectory(examples/transform)
 
+add_subdirectory(examples/study-initial_suspend)
+
 if (USE_GOOGLETEST)
     if (NOT googletest)
         include(FetchContent)
