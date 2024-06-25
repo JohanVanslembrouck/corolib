@@ -24,6 +24,25 @@ set -x
 ./stis-p1130e_corolib
 
 ./stis-p1200e_void
-./stis-p2110e_bool
+./stis-p1210e_bool
 ./stis-p1220e_coroutine_handle
 ./stis-p1230e_corolib
+
+./stis-p1320_coroutine_handle
+./stis-p1320e_coroutine_handle
+./stis-p1320e_coroutine_handle-thread
+
+./stis-p1322_coroutine_handle
+./stis-p1322e_coroutine_handle
+./stis-p1322e_coroutine_handle-thread
+
+./stis-p1330_corolib
+./stis-p1330_corolib-thread
+./stis-p1330e_corolib
+./stis-p1330e_corolib-thread
+
+./stis-p1332_corolib
+./stis-p1332e_corolib
+# The following example hangs
+# ./stis-p1332_corolib-thread
+./stis-p1332e_corolib-thread

@@ -31,7 +31,7 @@ public:
             return {};
         }
 
-        void return_void() noexcept {}
+        void return_void() noexcept { ready = true;  }
 
         void unhandled_exception() noexcept {
             std::terminate();
@@ -71,7 +71,7 @@ public:
     class awaiter {
     public:
         bool await_ready() noexcept {
-            return false;
+            return coro_.done();
         }
 
         bool await_suspend(coroutine_handle<> continuation) noexcept {

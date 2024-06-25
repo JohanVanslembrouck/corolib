@@ -15,6 +15,7 @@
 
 #include <coroutine>
 #include <utility>
+#include <thread>
 
 using namespace std;
 
@@ -73,11 +74,12 @@ public:
         bool await_ready() noexcept {
             return coro_.done();
         }
-
-        void await_suspend(coroutine_handle<> continuation) noexcept {
+#
+        coroutine_handle<> await_suspend(coroutine_handle<> continuation) noexcept {
             // Store the continuation in the task's promise so that the final_suspend()
             // knows to resume this coroutine when the task completes.
             coro_.promise().continuation = continuation;
+            return std::noop_coroutine();
         }
 
         void await_resume() noexcept {}
