@@ -13,7 +13,7 @@ and the impact this choice has on the behavior of the application.
 
 ## Lazy versus eager start
 
-In a coroutine with lawy start, initial_suspend() returns std::suspend_always;
+In a coroutine with lazy start, initial_suspend() returns std::suspend_always;
 in a coroutine with eager start, initial_suspend() returns std::suspend_never.
 
 await_suspend() can have one of the following three return types: void, bool, or coroutine_handle<>.
@@ -193,7 +193,7 @@ Point 1 is reached when foo() either suspends (or has completed synchronously):
 
 At the co_await statement:
 
-* Lawy start: foo() will be resumed and enter its body. bar() suspends and returns control to its caller.
+* Lazy start: foo() will be resumed and enter its body. bar() suspends and returns control to its caller.
 
 * Eager start:
 
@@ -202,7 +202,7 @@ At the co_await statement:
   * foo() completes on another thread: there is a race condition between the original thread checking if foo() has already completed 
     and the other thread on which the completion of foo() takes place.
 
-In case of a lawy start or an eager start with foo() not yet completed,
+In case of a lazy start or an eager start with foo() not yet completed,
 bar() suspends and returns control to its caller, that will return control to its caller, etc.
 At some point, however, we will reach a point where we cannot "descend" any further,
 otherwise we would "fall off" the original thread.
@@ -239,7 +239,7 @@ thread synchronization issues cannot be avoided when the completion thread runs 
 ```c++
 task bar()
 {
-   	task t = foo();
+    task t = foo();
     // Point 1
     // Pre co_await code
     // co_await t;         
@@ -253,7 +253,7 @@ At the end of bar(), task object t goes out of scope and it will destroy foo()'s
 
 Let's compare lazy and eager start.
 
-* Lawy start: foo() has suspended at its initial suspend point. The task destructor can safely destroy foo()'s coroutine frame
+* Lazy start: foo() has suspended at its initial suspend point. The task destructor can safely destroy foo()'s coroutine frame
   because foo() has not entered its body (and started an operation that has to be completed).
 
 * Eager start(): foo() may (will) have started an operation that has not yet completed.
@@ -278,7 +278,7 @@ However, the code is wrong and must be corrected: the co_await statement must be
 ```c++
 task bar()
 {
-   	task t = foo();
+    task t = foo();
     // Point 1
     // Pre co_await code can raise an exception
     co_await t;         
@@ -289,7 +289,7 @@ task bar()
 
 Let's compare lazy and eager start.
 
-* Lawy start: foo() has suspended at its initial suspend point. If the exception is not caught,
+* Lazy start: foo() has suspended at its initial suspend point. If the exception is not caught,
   the task destructor can safely destroy foo()'s coroutine frame
   because foo() has not entered its body (and started an operation that has to be completed).
 
