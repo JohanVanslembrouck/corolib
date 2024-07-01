@@ -1,4 +1,13 @@
-# Avoiding memory leaks using the symmetric transfer approach
+# Avoiding memory leaks
+
+## Introduction
+
+The original implementation of async_task has some memory leaks because not all coroutine frames
+(with their "embedded" promise_type objects) were released. The following explains the causes of the problem
+and how it is solved.
+
+The reader is also referred to ../examples/study-final_suspend that explains the problem with simpler task class implementations
+and both for eager and lazy start coroutines. The latter are not considered in this post.
 
 ## Example
 
@@ -78,7 +87,7 @@ The resume function has the following signature:
     __coroutine_state* coroutine1(__coroutine_state*)
 ```
 
-## Original approach
+## Original approach: final_suspend returns std::suspend_always
 
 In the original implementation of async_task::promise_type, the function return_value() is
 implemented as follows:
@@ -88,7 +97,7 @@ implemented as follows:
     {
         m_value = v;
         m_ready = true;
-        m_awaiting.resume(); // We resume the co_awaiting coroutine from here
+        m_continuation.resume(); // We resume the co_awaiting coroutine from here
     }
 ```
 
@@ -181,6 +190,19 @@ Calling destroy() anyway would lead to program misbehavior.
 
 ## Using a custom final_awaiter
 
+Instead of final_suspend() returning std::suspend_always, what would be the result if final_suspend() returns
+std::suspend_never instead? This alternative is not discussed here.
+The reader is referred to the p11X0_sn.cpp and p11X0e_sn.cpp examples in ./examples/study-final_suspend
+(where "sn" stands for suspend_never). Instead, we will investigate 3 custom final_awaiter types, where await_suspend() returns ...
+
+* bool, so that the coroutine may conditionally suspend at the final_suspend_point
+* std::coroutine_handle<>
+* void
+
+Note that void, bool and std::coroutine_handle<> are the three possible return types of await_suspend().
+
+### await_suspend() returns bool
+
 Let's try to eliminate the problem by defining a custom final_awaiter1 type that is defined and used as follows:
 
 ```c++
@@ -241,11 +263,11 @@ However, this leads to problems when calling get_result() from main():
 at that point, the coroutine frame/state (with the promise_type object inside) has been deleted
 and get_result() may/will return random results (if not worse).
 
-To use the adapted final_awaiter1, set the compiler directive USE_FINAL_AWAITER1 to 1 in async_task.h
+To use the adapted final_awaiter1, set the compiler directive USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL to 1 in async_task.h
 
-## Pushing the result from the promise_type object to the async_task object
+#### Pushing the result from the promise_type object to the async_task object
 
-To remedy the problem described in the last section,
+To remedy the problem described in the previous section,
 I experimented with an approach where a coroutine promise_type object
 "pushes" the result to the coroutine return object, so that afterwards
 the coroutine can safely use a final_awaiter1 object that allows it to proceed at the final suspend point.
@@ -266,11 +288,10 @@ to the coroutine return object it creates when calling get_return_object().
 
 To enable this additional linking, set USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN to 1.
 
-## Multi-threaded applications
+#### Multi-threaded applications
 
 The approach described in the previous two sections avoided the memory leaks from the original implementation.
-However, applications where the resumption took place from a separate thread 
-are now very unstable.
+However, applications where the resumption took place from a separate thread are now very unstable.
 Making them behave correctly would require the use of std::atomic (and possibly also mutexes)
 for all data members that can be accessed from multiple threads.
 
@@ -278,9 +299,7 @@ This approach has not been implemented yet.
 One reason is that the implementation should avoid the overhead
 of std::atomic and mutexes in single-thread applications.
 
-Instead, the symmetric transfer approach has been used. This approach is described in the next section.
-
-## Using symmetric transfer
+### Using symmetric transfer: await_suspend() returns std::coroutine_handle<>
 
 For an introduction to symmetric transfer, the reader is referred to
 https://lewissbaker.github.io/2020/05/11/understanding_symmetric_transfer
@@ -307,8 +326,8 @@ The final_awaiter2 type is defined and used as follows:
     struct final_awaiter2 {
         bool await_ready() const noexcept { return false; }
         std::coroutine_handle<> await_suspend(handle_type_own h) noexcept {
-            if (h.promise().m_awaiting)
-                return h.promise().m_awaiting;
+            if (h.promise().m_continuation)
+                return h.promise().m_continuation;
             else
                 return std::noop_coroutine();
         }
@@ -320,7 +339,6 @@ The final_awaiter2 type is defined and used as follows:
     }
 ```
 
-Notice that await_suspend() now returns a std::coroutine_handle<>.
 The transformed code may now look as follows:
 
 ```c++
@@ -352,6 +370,29 @@ The transformed code may now look as follows:
         return static_cast<__coroutine_state*>(std::noop_coroutine().address());
     }
 ```
+
+### await_suspend() returns void
+
+Looking at the implementation of await_suspend() in struct final_awaiter2 (see previous section),
+it is straight-forward to replace it with the following implementation:
+
+```c++
+    struct final_awaiter0 {
+        bool await_ready() const noexcept { return false; }
+        void await_suspend(std::coroutine_handle<> h) noexcept {
+            if (h.promise().m_continuation)
+                h.promise().m_continuation.resume();
+        }
+        void await_resume() noexcept { }
+    };
+    
+    auto final_suspend() noexcept {
+         return final_awaiter1{};
+    }
+```
+
+In this implementation, await_suspend() has void as return type instead of std::coroutine_handle<>
+and it has to resume h.promise().m_continuation.
 
 ## Overview of the settings
 
