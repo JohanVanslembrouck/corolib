@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
-project(symmetric_transfer)
+project(study_initial_suspend)
 
 set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_CXX_EXTENSIONS OFF)
@@ -30,33 +30,46 @@ foreach(_target
 
     p1000_void
     p1000e_void
+    p1000l_void
 
     p1010_bool
     p1010e_bool
+    p1010l_bool
 
     p1020_coroutine_handle
     p1020e_coroutine_handle
+    p1020l_coroutine_handle
 
     p1100_void
-    p1100e_void 
+    p1100e_void
+    p1100l_void
 
     p1110_bool
     p1110e_bool
-    
+    p1110l_bool
+
     p1120_coroutine_handle
     p1120e_coroutine_handle
+    p1120l_coroutine_handle
 
     p1200e_void
+    p1200l_void
     p1210e_bool
+    p1210l_bool
     p1220e_coroutine_handle
+    p1220l_coroutine_handle
 
     p1320_coroutine_handle 
-    p1320e_coroutine_handle 
+    p1320e_coroutine_handle
+    p1320l_coroutine_handle 
     p1320e_coroutine_handle-thread
+    p1320l_coroutine_handle-thread
 
     p1322_coroutine_handle
     p1322e_coroutine_handle
+    p1322l_coroutine_handle
     p1322e_coroutine_handle-thread
+    p1322l_coroutine_handle-thread
   )
   add_executable(stis-${_target} ${_target}.cpp)
 endforeach()

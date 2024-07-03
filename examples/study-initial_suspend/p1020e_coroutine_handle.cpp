@@ -30,7 +30,7 @@ task bar(mini_awaiter& ex) {
 
 int main() {
     mini_awaiter are;
-    task tb = bar(are);
+    bar(are);
     are.resume();
     return 0;
 }

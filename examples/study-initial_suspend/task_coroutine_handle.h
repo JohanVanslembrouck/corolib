@@ -13,8 +13,8 @@
 #ifndef _TASK_COROUTINE_HANDLE_H_
 #define _TASK_COROUTINE_HANDLE_H_
 
+#include <stdio.h>
 #include <coroutine>
-#include <atomic>
 #include <utility>
 #include <thread>
 
@@ -43,7 +43,10 @@ public:
                 return false;
             }
             coroutine_handle<> await_suspend(coroutine_handle<promise_type> h) noexcept {
-                return h.promise().continuation;
+                if (h.promise().continuation)
+                    return h.promise().continuation;
+                else
+                    return std::noop_coroutine();
             }
             void await_resume() noexcept {}
         };
@@ -61,7 +64,21 @@ public:
 
     ~task() {
         if (coro_)
-            coro_.destroy();
+            if (coro_.done()) {
+                coro_.destroy();
+                coro_ = { };
+            }
+            else {
+                printf("%p: task::~task(): !coro.done()\n", this);
+            }
+        else
+            printf("%p: task::~task(): coro_ == nullptr\n", this);
+    }
+
+    // Added by Johan Vanslembrouck
+    void start() {
+        if (coro_)
+            coro_.resume();
     }
 
     class awaiter {

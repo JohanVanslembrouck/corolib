@@ -13,8 +13,8 @@
 #ifndef _TASK_VOID_H_
 #define _TASK_VOID_H_
 
+#include <stdio.h>
 #include <coroutine>
-#include <atomic>
 #include <utility>
 
 using namespace std;
@@ -42,7 +42,8 @@ public:
                 return false;
             }
             void await_suspend(coroutine_handle<promise_type> h) noexcept {
-                h.promise().continuation.resume();
+                if (h.promise().continuation)
+                    h.promise().continuation.resume();
             }
             void await_resume() noexcept {}
         };
@@ -60,7 +61,21 @@ public:
 
     ~task() {
         if (coro_)
-            coro_.destroy();
+            if (coro_.done()) {
+                coro_.destroy();
+                coro_ = { };
+            }
+            else {
+                printf("%p: task::~task(): !coro.done()\n", this);
+            }
+        else
+            printf("%p: task::~task(): coro_ == nullptr\n", this);
+    }
+
+    // Added by Johan Vanslembrouck
+    void start() {
+        if (coro_)
+            coro_.resume();
     }
 
     class awaiter {

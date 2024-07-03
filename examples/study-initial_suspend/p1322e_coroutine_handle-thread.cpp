@@ -71,8 +71,8 @@ private:
 int main()
 {
     Class obj{ 1000 };
-    printf("main(): task a = obj.coroutine1();\n");
-    task a = obj.coroutine1();
+    printf("main(): obj.coroutine1();\n");
+    obj.coroutine1();
 
     printf("main(): std::this_thread::sleep_for(std::chrono::milliseconds(1100));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(1100));

@@ -13,6 +13,7 @@
 #ifndef _TASKE_BOOL_H_
 #define _TASKE_BOOL_H_
 
+#include <stdio.h>
 #include <coroutine>
 #include <atomic>
 #include <utility>
@@ -65,7 +66,15 @@ public:
 
     ~task() {
         if (coro_)
-            coro_.destroy();
+            if (coro_.done()) {
+                coro_.destroy();
+                coro_ = { };
+            }
+            else {
+                printf("%p: task::~task(): !coro.done()\n", this);
+            }
+        else
+            printf("%p: task::~task(): coro_ == nullptr\n", this);
     }
 
     class awaiter {

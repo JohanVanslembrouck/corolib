@@ -13,8 +13,8 @@
 #ifndef _TASKE_VOID_H_
 #define _TASKE_VOID_H_
 
+#include <stdio.h>
 #include <coroutine>
-#include <atomic>
 #include <utility>
 
 using namespace std;
@@ -61,8 +61,15 @@ public:
 
     ~task() {
         if (coro_)
-            if (coro_.done())
+            if (coro_.done()) {
                 coro_.destroy();
+                coro_ = { };
+            }
+            else {
+                printf("%p: task::~task(): !coro.done()\n", this);
+            }
+        else
+            printf("%p: task::~task(): coro_ == nullptr\n", this);
     }
 
     class awaiter {

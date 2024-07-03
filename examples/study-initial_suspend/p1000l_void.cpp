@@ -1,5 +1,5 @@
 /**
- * @file p1010e_bool.cpp
+ * @file p1000l_void.cpp
  * @brief
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
@@ -8,7 +8,7 @@
 #include <iostream>
 
 #include "mini_awaiter.h"
-#include "taske_bool.h"
+#include "task_void.h"
 
 task foo(mini_awaiter& are) {
     std::cout << "inside foo()\n";
@@ -25,7 +25,7 @@ task bar(mini_awaiter& ex) {
 
 int main() {
     mini_awaiter are;
-    bar(are);
+    bar(are).start();
     are.resume();
     return 0;
 }
