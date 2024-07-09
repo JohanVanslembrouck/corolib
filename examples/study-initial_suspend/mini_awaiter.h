@@ -11,6 +11,8 @@
 
 #include <coroutine>
 
+#include "tracker1.h"
+
 /**
  * @brief mini_awaiter mini0 defines a simple awaitable type with two member functions:
  * 1) function resume() resumes the coroutine that co_awaits a mini0 object.
@@ -22,8 +24,10 @@ struct mini_awaiter
 
     void resume()
     {
-        if (!m_awaiting.done())
+        if (!m_awaiting.done()) {
+            tracker1_obj.nr_resumptions++;
             m_awaiting.resume();
+        }
     }
 
     auto operator co_await() noexcept
