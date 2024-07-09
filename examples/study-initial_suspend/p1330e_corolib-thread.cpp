@@ -12,6 +12,7 @@
 #include <corolib/threadawaker.h>
 
 #include "mini_awaiter.h"
+#include "tracker1.h"
 
 using namespace corolib;
 
@@ -40,7 +41,9 @@ public:
                 m_awaker->awaitRelease();
 
             print(PRI1, "coroutine4(): thread1: are.resume();\n");
+            tracker1_obj.nr_resumptions++;
             are.resume();
+
             print(PRI1, "coroutine4(): thread1: return;\n");
             });
         thread1.detach();

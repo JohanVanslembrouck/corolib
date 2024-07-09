@@ -13,6 +13,8 @@
 
 #include <coroutine>
 
+#include "tracker1.h"
+
 using namespace std;
 
 struct manual_executor {
@@ -46,6 +48,7 @@ struct manual_executor {
         while (head_ != nullptr) {
             auto* item = head_;
             head_ = item->next_;
+            tracker1_obj.nr_resumptions++;
             item->continuation_.resume();
         }
     }

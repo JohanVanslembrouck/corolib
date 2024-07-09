@@ -1,5 +1,5 @@
 /**
- * @file p1200e_bool.cpp
+ * @file p1210e_bool.cpp
  * @brief
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
@@ -30,23 +30,31 @@ int main() {
 
     loop_synchronously(are, 100);
     for (int i = 0; i < 100; ++i)
-        if (i % 2 == 0)
+        if (i % 2 == 0) {
+            tracker1_obj.nr_resumptions++;
             are.resume();
+        }
 
     loop_synchronously(are, 1000);
     for (int i = 0; i < 1000; ++i)
-        if (i % 2 == 0)
+        if (i % 2 == 0) {
+            tracker1_obj.nr_resumptions++;
             are.resume();
+        }
 
     loop_synchronously(are, 100'000);
     for (int i = 0; i < 100'000; ++i)
-        if (i % 2 == 0)
+        if (i % 2 == 0) {
+            tracker1_obj.nr_resumptions++;
             are.resume();
+        }
 
     loop_synchronously(are, 1'000'000);
     for (int i = 0; i < 1'000'000; ++i)
-        if (i % 2 == 0)
+        if (i % 2 == 0) {
+            tracker1_obj.nr_resumptions++;
             are.resume();
+        }
 
     return 0;
 }

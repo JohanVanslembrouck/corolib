@@ -31,6 +31,7 @@ task bar(mini_awaiter& ex) {
 int main() {
     mini_awaiter are;
     bar(are).start();
+    tracker1_obj.nr_resumptions++;
     are.resume();
     return 0;
 }

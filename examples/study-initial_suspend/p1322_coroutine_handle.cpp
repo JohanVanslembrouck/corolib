@@ -1,5 +1,5 @@
 /**
- * @file p1322e_coroutine_handle.cpp
+ * @file p1322_coroutine_handle.cpp
  * @brief
  * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
@@ -57,7 +57,9 @@ int main()
 	
     printf("main(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
     printf("main(): are1.resume();\n");
+    tracker1_obj.nr_resumptions++;
     are1.resume();
 	
     printf("main(): return 0;\n");

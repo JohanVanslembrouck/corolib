@@ -31,6 +31,7 @@ stis-p1120_coroutine_handle
 stis-p1120e_coroutine_handle
 stis-p1120l_coroutine_handle
 
+stis-p1130_corolib
 stis-p1130e_corolib
 
 stis-p1200e_void
@@ -42,6 +43,7 @@ stis-p1210l_bool
 stis-p1220e_coroutine_handle
 stis-p1220l_coroutine_handle
 
+stis-p1230_corolib
 stis-p1230e_corolib
 
 stis-p1320_coroutine_handle

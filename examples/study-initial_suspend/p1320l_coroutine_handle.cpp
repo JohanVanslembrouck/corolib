@@ -58,7 +58,9 @@ int main()
 	
     printf("main(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
     printf("main(): are1.resume();\n");
+    tracker1_obj.nr_resumptions++;
     are1.resume();
 	
     printf("main(): return 0;\n");

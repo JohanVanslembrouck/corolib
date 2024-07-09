@@ -18,6 +18,8 @@
 #include <atomic>
 #include <utility>
 
+#include "tracker1.h"
+
 using namespace std;
 
 class task {
@@ -45,8 +47,10 @@ public:
             void await_suspend(coroutine_handle<promise_type> h) noexcept {
                 auto& promise = h.promise();
                 if (promise.ready.exchange(true, std::memory_order_acq_rel)) {
-                    if (h.promise().continuation)
+                    if (h.promise().continuation) {
+                        tracker1_obj.nr_resumptions++;
                         h.promise().continuation.resume();
+                    }
                 }
             }
             void await_resume() noexcept {}

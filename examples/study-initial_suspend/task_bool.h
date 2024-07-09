@@ -18,6 +18,8 @@
 #include <atomic>
 #include <utility>
 
+#include "tracker1.h"
+
 using namespace std;
 
 class task {
@@ -45,6 +47,7 @@ public:
             void await_suspend(coroutine_handle<promise_type> h) noexcept {
                 auto& promise = h.promise();
                 if (promise.ready.exchange(true, std::memory_order_acq_rel)) {
+                    tracker1_obj.nr_resumptions++;
                     h.promise().continuation.resume();
                 }
             }
@@ -78,8 +81,10 @@ public:
 
     // Added by Johan Vanslembrouck
     void start() {
-        if (coro_)
+        if (coro_) {
+            tracker1_obj.nr_resumptions++;
             coro_.resume();
+        }
     }
 
     class awaiter {
@@ -95,6 +100,7 @@ public:
             // knows to resume this coroutine when the task completes.
             promise.continuation = continuation;
 
+            tracker1_obj.nr_resumptions++;
             // Then we resume the task's coroutine, which is currently suspended
             // at the initial-suspend-point (ie. at the open curly brace).
             coro_.resume();

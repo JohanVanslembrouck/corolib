@@ -17,6 +17,8 @@
 #include <coroutine>
 #include <utility>
 
+#include "tracker1.h"
+
 using namespace std;
 
 class task {
@@ -42,8 +44,10 @@ public:
                 return false;
             }
             void await_suspend(coroutine_handle<promise_type> h) noexcept {
-                if (h.promise().continuation)
+                if (h.promise().continuation) {
+                    tracker1_obj.nr_resumptions++;
                     h.promise().continuation.resume();
+                }
             }
             void await_resume() noexcept {}
         };
@@ -74,8 +78,10 @@ public:
 
     // Added by Johan Vanslembrouck
     void start() {
-        if (coro_)
+        if (coro_) {
+            tracker1_obj.nr_resumptions++;
             coro_.resume();
+        }
     }
 
     class awaiter {
@@ -89,6 +95,7 @@ public:
             // knows to resume this coroutine when the task completes.
             coro_.promise().continuation = continuation;
 
+            tracker1_obj.nr_resumptions++;
             // Then we resume the task's coroutine, which is currently suspended
             // at the initial-suspend-point (ie. at the open curly brace).
             coro_.resume();

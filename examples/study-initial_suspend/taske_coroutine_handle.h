@@ -18,6 +18,8 @@
 #include <utility>
 #include <thread>
 
+#include "tracker1.h"
+
 using namespace std;
 
 class task {
@@ -44,8 +46,10 @@ public:
             }
 
             coroutine_handle<> await_suspend(coroutine_handle<promise_type> h) noexcept {
-                if (h.promise().continuation)
+                if (h.promise().continuation) {
+                    tracker1_obj.nr_resumptions++;
                     return h.promise().continuation;
+                }
                 else
                     return std::noop_coroutine();
             }

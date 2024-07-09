@@ -29,6 +29,7 @@ int main() {
     manual_executor ex;
     ex.sync_wait(loop_synchronously(100));
     ex.sync_wait(loop_synchronously(1000));
+    ex.sync_wait(loop_synchronously(10'000));
     ex.sync_wait(loop_synchronously(100'000));
     ex.sync_wait(loop_synchronously(1'000'000));
     return 0;

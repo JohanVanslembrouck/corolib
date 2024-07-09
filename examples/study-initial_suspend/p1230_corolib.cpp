@@ -1,5 +1,5 @@
 /**
- * @file p1200e_void.cpp
+ * @file p1230_corolib.cpp
  * @brief
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
@@ -8,16 +8,18 @@
 #include <iostream>
 
 #include "mini_awaiter.h"
-#include "taske_void.h"
 
-task completes_synchronously(mini_awaiter& are, int i) {
+#include "corolib/async_task.h"
+using namespace corolib;
+
+async_ltask<void> completes_synchronously(mini_awaiter& are, int i) {
     if (i % 2 == 0)
         co_await are;
     else
         co_return;
 }
 
-task loop_synchronously(mini_awaiter& are, int count) {
+async_ltask<void> loop_synchronously(mini_awaiter& are, int count) {
     std::cout << "loop_synchronously(" << count << ")" << std::endl;
     for (int i = 0; i < count; ++i) {
         co_await completes_synchronously(are, i);
@@ -28,40 +30,40 @@ task loop_synchronously(mini_awaiter& are, int count) {
 int main() {
     mini_awaiter are;
 
-    loop_synchronously(are, 100);
+    async_ltask<void> t1 = loop_synchronously(are, 100);
+    t1.start();
     for (int i = 0; i < 100; ++i)
-        if (i % 2 == 0) {
-            tracker1_obj.nr_resumptions++;
+        if (i % 2 == 0)
             are.resume();
-        }
+    t1.wait();
 
-    loop_synchronously(are, 1000);
+    async_ltask<void> t2 = loop_synchronously(are, 1000);
+    t2.start();
     for (int i = 0; i < 1000; ++i)
-        if (i % 2 == 0) {
-            tracker1_obj.nr_resumptions++;
+        if (i % 2 == 0)
             are.resume();
-        }
+    t2.wait();
 
-    loop_synchronously(are, 10'000);
+    async_ltask<void> t3 = loop_synchronously(are, 10'000);
+    t3.start();
     for (int i = 0; i < 10'000; ++i)
-        if (i % 2 == 0) {
-            tracker1_obj.nr_resumptions++;
+        if (i % 2 == 0)
             are.resume();
-        }
+    t3.wait();
 
-    loop_synchronously(are, 100'000);
+    async_ltask<void> t4 = loop_synchronously(are, 100'000);
+    t4.start();
     for (int i = 0; i < 100'000; ++i)
-        if (i % 2 == 0) {
-            tracker1_obj.nr_resumptions++;
+        if (i % 2 == 0)
             are.resume();
-        }
+    t4.wait();
 
-    loop_synchronously(are, 1'000'000);
+    async_ltask<void> t5 = loop_synchronously(are, 1'000'000);
+    t5.start();
     for (int i = 0; i < 1'000'000; ++i)
-        if (i % 2 == 0) {
-            tracker1_obj.nr_resumptions++;
+        if (i % 2 == 0)
             are.resume();
-        }
+    t5.wait();
 
     return 0;
 }

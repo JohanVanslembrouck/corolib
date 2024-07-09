@@ -42,17 +42,26 @@ int main() {
             are.resume();
     t2.wait();
 
-    async_task<void> t3 = loop_synchronously(are, 100'000);
-    for (int i = 0; i < 100'000; ++i)
+    async_task<void> t3 = loop_synchronously(are, 10'000);
+    t3.start();
+    for (int i = 0; i < 10'000; ++i)
         if (i % 2 == 0)
             are.resume();
     t3.wait();
 
-    async_task<void> t4 = loop_synchronously(are, 1'000'000);
-    for (int i = 0; i < 1'000'000; ++i)
+    async_task<void> t4 = loop_synchronously(are, 100'000);
+    t4.start();
+    for (int i = 0; i < 100'000; ++i)
         if (i % 2 == 0)
             are.resume();
     t4.wait();
+
+    async_task<void> t5 = loop_synchronously(are, 1'000'000);
+    t5.start();
+    for (int i = 0; i < 1'000'000; ++i)
+        if (i % 2 == 0)
+            are.resume();
+    t5.wait();
 
     return 0;
 }

@@ -25,6 +25,7 @@ async_task<void> loop_synchronously(int count) {
 int main() {
     loop_synchronously(100);
     loop_synchronously(1000);
+    loop_synchronously(10'000);
     loop_synchronously(100'000);
     loop_synchronously(1'000'000);
     return 0;

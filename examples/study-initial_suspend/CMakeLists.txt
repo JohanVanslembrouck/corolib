@@ -21,13 +21,18 @@ set (MY_CXX_FLAGS
     )
 endif()
 
+
 foreach(_target
     p0000_void
 
     p0100_void 
     p0110_bool
     p0120_coroutine_handle
+  )
+  add_executable(stis-${_target} ${_target}.cpp)
+endforeach()
 
+foreach(_target
     p1000_void
     p1000e_void
     p1000l_void
@@ -71,7 +76,7 @@ foreach(_target
     p1322e_coroutine_handle-thread
     p1322l_coroutine_handle-thread
   )
-  add_executable(stis-${_target} ${_target}.cpp)
+  add_executable(stis-${_target} ${_target}.cpp tracker1.cpp)
 endforeach()
 
 include_directories(../../include)
@@ -80,16 +85,12 @@ foreach(_target
     p1030_corolib
     p1030e_corolib
 
+    p1130_corolib
     p1130e_corolib
 
+    p1230_corolib
     p1230e_corolib
-  )
-  add_executable(stis-${_target} ${_target}.cpp)
-  target_link_libraries(stis-${_target} corolib)
-endforeach()
 
-
-foreach(_target
     p1330_corolib
     p1330_corolib-thread
     p1330e_corolib
@@ -100,6 +101,6 @@ foreach(_target
     p1330e_corolib-thread
     p1332e_corolib-thread
   )
-  add_executable(stis-${_target} ${_target}.cpp)
+  add_executable(stis-${_target} ${_target}.cpp tracker1.cpp)
   target_link_libraries(stis-${_target} corolib)
 endforeach()

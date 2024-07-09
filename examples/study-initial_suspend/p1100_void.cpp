@@ -1,5 +1,5 @@
 /**
- * @file p1100e_void.cpp
+ * @file p1100_void.cpp
  * @brief
  *
  * Source: https://godbolt.org/z/gy5Q8q 
@@ -29,8 +29,11 @@ task loop_synchronously(int count) {
 int main() {
     manual_executor ex;
     ex.sync_wait(loop_synchronously(100));
+#if 0
     ex.sync_wait(loop_synchronously(1000));
+    ex.sync_wait(loop_synchronously(10'000));
     ex.sync_wait(loop_synchronously(100'000));
-    ex.sync_wait(loop_synchronously(1'000'000)); // Crashes with stack-overflow!
+    ex.sync_wait(loop_synchronously(1'000'000));
+#endif
     return 0;
 }

@@ -27,7 +27,9 @@ public:
             std::this_thread::sleep_for(std::chrono::milliseconds(m_delay));
 
             printf("coroutine4(): thread1: are.resume();\n");
+            tracker1_obj.nr_resumptions++;
             are.resume();
+
             printf("coroutine4(): thread1: return;\n");
             });
         thread1.detach();
