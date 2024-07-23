@@ -18,7 +18,7 @@
  * More flexible mechanisms are possible because the array size limits the number of operations 
  * that can be active at any moment: its size may be too big or too small.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _COMMSERVICE_H_
@@ -57,9 +57,9 @@ namespace corolib
 
         async_operation_base* get_async_operation(int idx)
         {
-            if (m_async_operations[idx] == &reserved)
+            if (m_async_operation_info[idx].async_operation == &reserved)
                 return nullptr;
-            return m_async_operations[idx];
+            return m_async_operation_info[idx].async_operation;
         }
 
         async_operation_info* get_async_operation_info(int idx)
@@ -99,10 +99,10 @@ namespace corolib
             print(PRI2, "%p: CommService::completionHandler(idx = %d, in)\n", this, idx);
 
             async_operation_base* om_async_operation = get_async_operation(idx);
-			
-			completionHandler<TYPE>(om_async_operation, in);
+            
+            completionHandler<TYPE>(om_async_operation, in);
         }
-		
+        
         template<typename TYPE>
         void completionHandler(async_operation_base* om_async_operation, TYPE in)
         {
@@ -137,10 +137,10 @@ namespace corolib
             print(PRI2, "%p: CommService::completionHandler_v(idx = %d)\n", this, idx);
 
             async_operation_base* om_async_operation = get_async_operation(idx);
-			
-			completionHandler_v(om_async_operation);
+            
+            completionHandler_v(om_async_operation);
         }
-		
+        
         void completionHandler_v(async_operation_base* om_async_operation)
         {
             print(PRI2, "%p: CommService::completionHandler_v(om_async_operation = %p)\n", this, om_async_operation);
@@ -242,8 +242,8 @@ namespace corolib
                 print(PRI1, "%p: CommService::completionHandler_ts_v(idx = %d): Warning: om_async_operation_t == nullptr\n", this, idx);
             }
         }
-
         int get_table_size() { return m_index; }
+
         constexpr int get_table_entries() { return NROPERATIONS; }
 
     protected:
@@ -255,15 +255,7 @@ namespace corolib
     private:
         static async_operation_base reserved;
 
-        // Old implementation
-        // Still used by many examples. Should be faded out.
         int m_index;
-        async_operation_base* m_async_operations[NROPERATIONS];
-
-        // New implementation
-        // Already used by the Boost examples.
-        // Will replace old implementation in the longer term.
-        int m_index_ts;
         async_operation_info m_async_operation_info[NROPERATIONS];
     };
 }
