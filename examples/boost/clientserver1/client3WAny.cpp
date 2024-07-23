@@ -478,7 +478,7 @@ async_task<int> mainflowWA4(CommClient& c1, CommClient& c2, CommClient& c3)
 /**
  * @brief
  * mainflowWA5 is a variant of mainflowWA1.
- * It avoids the use of async_base arrays by using when_allT.
+ * It avoids the use of async_base arrays by using when_anyT.
  *
  * @param clients is an initializer list with all clients
  * @return always 0
@@ -577,7 +577,7 @@ async_task<int> mainflowWA5(std::initializer_list<CommClient*> client_il)
 /**
  * @brief
  * mainflowWA6 is a variant of mainflowWA2.
- * It avoids the use of async_base arrays by using when_allT.
+ * It avoids the use of async_base arrays by using when_anyT.
  *
  * @param clients is an initializer list with all clients
  * @return always 0

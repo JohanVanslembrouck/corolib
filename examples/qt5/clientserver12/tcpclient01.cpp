@@ -351,7 +351,7 @@ async_operation<QByteArray> TcpClient01::start_reading()
  */
 void TcpClient01::start_reading_impl(const int idx)
 {
-    print(PRI2, "%p: TcpClient01::start_reading_impl(): idx = %d, operation = %p\n", this, idx, m_async_operations[idx]);
+    print(PRI2, "%p: TcpClient01::start_reading_impl(): idx = %d, operation = %p\n", this, idx, get_async_operation(idx));
 
     m_connections[idx] = connect(this, &TcpClient01::responseReceivedSig,
         [this, idx](QByteArray msg)
