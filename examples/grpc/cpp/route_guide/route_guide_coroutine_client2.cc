@@ -432,7 +432,7 @@ class RouteGuideClient : public CommService {
       {
           async_operation_base* om_async_operation = get_async_operation(idx);
           async_operation<ReaderResult>* om_async_operation_t =
-              dynamic_cast<async_operation<ReaderResult>*>(om_async_operation);
+              static_cast<async_operation<ReaderResult>*>(om_async_operation);
           if (om_async_operation_t)
           {
               om_async_operation_t->set_result_and_complete(result);

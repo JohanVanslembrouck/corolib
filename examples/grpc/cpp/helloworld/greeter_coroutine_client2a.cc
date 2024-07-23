@@ -193,7 +193,7 @@ public:
             [this, idx]() {
             async_operation_base* om_async_operation = get_async_operation(idx);
             async_operation<void>* om_async_operation_t =
-                dynamic_cast<async_operation<void>*>(om_async_operation);
+                static_cast<async_operation<void>*>(om_async_operation);
             if (om_async_operation_t) {
                 om_async_operation_t->completed();
             }
