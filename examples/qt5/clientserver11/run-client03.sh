@@ -1,1 +1,1 @@
-./tcpclient03 2>&1 | tee tcpclient03.txt
+./qt-tcpclient03 2>&1 | tee tcpclient03.txt
