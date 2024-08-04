@@ -66,6 +66,11 @@ apart from the common base class async_base.
 
 #include <coroutine>
 #include <exception>
+#include <assert.h>
+
+#if USE_IN_MT_APPS
+#include <atomic>
+#endif
 
 #include "print.h"
 #include "tracker.h"
@@ -172,11 +177,20 @@ namespace corolib
     template<typename TYPE>
     class result_t
     {
+    private:
+        enum class completion_status : char
+        {
+            INITIAL = 0,
+            COMPLETED,
+            WAIT_FOR_SEMAPHORE_RELEASE,
+        };
+
     public:
         result_t()
             : m_value{}
             , m_exception{nullptr}
-            , m_ready{false}
+            , m_ready{completion_status::INITIAL}
+            , m_wait_for_semaphore_release{false}
         {
             print(PRI2, "%p: result_t::result_t();\n", this);
         }
@@ -187,7 +201,8 @@ namespace corolib
 
             m_value = {};
             m_exception = nullptr;
-            m_ready = false;
+            m_ready = completion_status::INITIAL;
+            m_wait_for_semaphore_release = false;
         }
 
         result_t(const result_t&) = delete;
@@ -196,10 +211,12 @@ namespace corolib
             : m_value(other.m_value)
             , m_exception(other.m_exception)
             , m_ready(other.m_ready)
+            , m_wait_for_semaphore_release(other.m_wait_for_semaphore_release)
         {
             print(PRI2, "%p: result_t::result_t(result_t&& other);\n", this);
             other.m_exception = nullptr;
-            other.m_ready = false;
+            other.m_ready = completion_status::INITIAL;
+            other.m_wait_for_semaphore_release = false;
         }
 
         result_t& operator = (const result_t&) = delete;
@@ -210,29 +227,90 @@ namespace corolib
             m_value = other.m_value;
             m_exception = other.m_exception;
             m_ready = other.m_ready;
+            m_wait_for_semaphore_release = other.m_wait_for_semaphore_release;
             other.m_exception = nullptr;
-            other.m_ready = false;
+            other.m_ready = completion_status::INITIAL;
+            other.m_wait_for_semaphore_release = false;
             return *this;
         }
 
         void set_value(const TYPE& value)
         {
             m_value = value;
-            m_ready = true;
+            
+#if USE_IN_MT_APPS
+            completion_status expected = completion_status::INITIAL;
+            if (!m_ready.compare_exchange_strong(expected, completion_status::COMPLETED)) {
+                assert(expected == completion_status::WAIT_FOR_SEMAPHORE_RELEASE);
+                m_ready = completion_status::COMPLETED;
+                m_wait_for_semaphore_release = true;
+            }
+#else
+            if (m_ready != completion_status::INITIAL) {
+                assert(m_ready == completion_status::WAIT_FOR_SEMAPHORE_RELEASE);
+                m_ready = completion_status::COMPLETED;
+                m_wait_for_semaphore_release = true;
+            }
+            else
+                m_ready = completion_status::COMPLETED;
+#endif
         }
 
         void set_exception(std::exception_ptr exception)
         {
             m_exception = exception;
-            m_ready = true;
+            
+#if USE_IN_MT_APPS
+            completion_status expected = completion_status::INITIAL;
+            if (!m_ready.compare_exchange_strong(expected, completion_status::COMPLETED)) {
+                assert(expected == completion_status::WAIT_FOR_SEMAPHORE_RELEASE);
+                m_ready = completion_status::COMPLETED;
+                m_wait_for_semaphore_release = true;
+            }
+#else
+            if (m_ready != completion_status::INITIAL) {
+                assert(m_ready == completion_status::WAIT_FOR_SEMAPHORE_RELEASE);
+                m_ready = completion_status::COMPLETED;
+                m_wait_for_semaphore_release = true;
+            }
+            else
+                m_ready = completion_status::COMPLETED;
+#endif
+        }
+        
+        bool is_ready() {
+            bool ready = (m_ready == completion_status::COMPLETED);
+            print(PRI2, "%p: result_t::is_ready(): return %d;\n", this, ready);
+            return ready;
         }
 
-        bool is_ready() { return m_ready; }
-
+        bool wait_for_result() {
+            bool wait = false;
+#if USE_IN_MT_APPS
+            completion_status expected = completion_status::INITIAL;
+            if (m_ready.compare_exchange_strong(expected, completion_status::WAIT_FOR_SEMAPHORE_RELEASE)) {
+                wait = true;
+            }
+            else {
+                assert(expected == completion_status::COMPLETED);
+            }
+#else
+            if (m_ready == completion_status::INITIAL) {
+                m_ready = completion_status::WAIT_FOR_SEMAPHORE_RELEASE;
+                wait = true;
+            }
+            else {
+                assert(m_ready == completion_status::COMPLETED);
+            }
+#endif
+            print(PRI2, "%p: result_t::wait_for_result(): return %d;\n", this, wait);
+            return wait;
+        }
+        
         TYPE retrieve_result()
         {
-            if (!m_ready)
-                print(PRI1, "%p: result_t: m_ready == false!!!\n", this);
+            if (m_ready == completion_status::INITIAL)
+                print(PRI1, "%p: result_t::retrieve_result(): m_ready == INITIAL!!!\n", this);
             if (m_exception != nullptr)
             {
                 print(PRI1, "%p: result_t::retrieve_result(): std::rethrow_exception(m_exception);\n", this);
@@ -241,17 +319,30 @@ namespace corolib
             print(PRI2, "%p: result_t::retrieve_result(): return m_value;\n", this);
             return m_value;
         }
+        
+        bool wait_for_semaphore_release() {
+            print(PRI2, "%p: result_t::wait_for_semaphore_release(): return %d;\n", this, m_wait_for_semaphore_release);
+            return m_wait_for_semaphore_release;
+        }
+        
     private:
-        TYPE m_value;
+        TYPE m_value{};
         std::exception_ptr m_exception;
-        bool m_ready;
+#if USE_IN_MT_APPS
+        std::atomic<completion_status> m_ready{0};
+#else
+        completion_status m_ready{0};
+#endif
+        // m_wait_for_semaphore_release is accessed from a single thread only (the completion thread).
+        // Therefore it does not have to be atomic.
+        bool m_wait_for_semaphore_release{false};
     };
 
     template<typename TYPE>
     class async_task_base : public async_base, private coroutine_tracker
     {
     public:
-	
+    
         struct promise_type;
         using handle_type = std::coroutine_handle<promise_type>;
 
@@ -360,34 +451,30 @@ namespace corolib
          */
         TYPE get_result(bool waitIfNotReady = true)
         {
-            print(PRI2, "%p: async_task_base::get_result()\n", this);
+            print(PRI2, "%p: async_task_base::get_result(%d)\n", this, waitIfNotReady);
 #if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
             get_result_admin();
 #endif
+
+            if (waitIfNotReady) {
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
-            print(PRI2, "%p: async_task_base::get_result(): m_coro_handle.promise().m_result.is_ready() = %d\n", this, m_coro_handle.promise().m_result.is_ready());
-            if (!m_coro_handle.promise().m_result.is_ready())
+                print(PRI2, "%p: async_task_base::get_result(): m_coro_handle.promise().m_result.wait_for_result()\n", this);
+                if (m_coro_handle.promise().m_result.wait_for_result())
 #else
-            print(PRI2, "%p: async_task_base::get_result(): m_result.is_ready() = %d\n", this, m_result.is_ready());
-            if (!m_result.is_ready())
+                print(PRI2, "%p: async_task_base::get_result(): m_result.wait_for_result()\n", this);
+                if (m_result.wait_for_result())
 #endif
-            {
-                if (waitIfNotReady)
                 {
-                    print(PRI2, "%p: async_task_base::get_result(): before m_coro_handle.promise().m_sema.wait();\n", this);
-                    m_coro_handle.promise().m_wait_for_signal = true;
+                    print(PRI2, "%p: async_task_base::get_result(): m_coro_handle.promise().m_sema.wait()\n", this);
                     m_coro_handle.promise().m_sema.wait();
-                    print(PRI2, "%p: async_task_base::get_result(): after m_coro_handle.promise().m_sema.wait();\n", this);
-                }
-                else
-                {
-                    print(PRI1, "%p: async_task_base::get_result(): m_ready == false: returning {} value!\n", this);
-                    return {};
                 }
             }
+
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
+            print(PRI2, "%p: async_task_base::get_result(): return m_coro_handle.promise().m_result.retrieve_result();\n", this);
             return m_coro_handle.promise().m_result.retrieve_result();
 #else
+            print(PRI2, "%p: async_task_base::get_result(): return m_result.retrieve_result();\n", this);
             return m_result.retrieve_result();
 #endif
         }
@@ -399,7 +486,7 @@ namespace corolib
 #else
             const bool ready = m_result.is_ready();
 #endif
-            print(PRI2, "%p: void async_task_base::is_ready() returns %d\n", this, ready);
+            print(PRI2, "%p: async_task_base::is_ready() returns %d\n", this, ready);
             return ready;
         }
 
@@ -414,7 +501,7 @@ namespace corolib
         }
 
         /**
-		 * @brief called from the constructors and destructor of when_any
+         * @brief called from the constructors and destructor of when_any
          *
          */
         void setWaitAny(when_any_one* waitany) override
@@ -478,7 +565,6 @@ namespace corolib
                 : m_continuation(nullptr)
                 , m_ctr(nullptr)
                 , m_waitany(nullptr)
-                , m_wait_for_signal(false)
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
                 , m_result{ }
 #endif
@@ -507,8 +593,8 @@ namespace corolib
                     m_coroutine_object->m_result.set_value(v);
                 }
 #endif
-                print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v):\n\tm_ctr = %p, m_waitany = %p, m_continuation = %p, m_wait_for_signal = %d\n",
-                            this, m_ctr, m_waitany, m_continuation, m_wait_for_signal);
+                print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v):\n\tm_ctr = %p, m_waitany = %p, m_continuation = %p\n",
+                            this, m_ctr, m_waitany, m_continuation);
                 if (m_ctr)
                 {
                     print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): before m_ctr->completed();\n", this);
@@ -537,7 +623,7 @@ namespace corolib
                     print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): after m_continuation.resume();\n", this);
                 }
 #endif
-                if (m_wait_for_signal)
+                if (m_result.wait_for_semaphore_release())
                 {
                     print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): before m_sema.signal();\n", this);
                     m_sema.signal();
@@ -600,7 +686,6 @@ namespace corolib
             when_all_counter* m_ctr;
             when_any_one* m_waitany;
             Semaphore m_sema;
-            bool m_wait_for_signal;
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
             result_t<TYPE> m_result;
 #endif
@@ -1125,27 +1210,21 @@ namespace corolib
          */
         void wait(bool waitIfNotReady = true)
         {
-            print(PRI2, "%p: async_task_void::wait()\n", this);
+            print(PRI2, "%p: async_task_void::wait(%d)\n", this, waitIfNotReady);
+            if (waitIfNotReady) {
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
-            print(PRI2, "%p: async_task_void::wait(): m_coro_handle.promise().m_result.is_ready() = %d\n", this, m_coro_handle.promise().m_result.is_ready());
-            if (!m_coro_handle.promise().m_result.is_ready())
+                print(PRI2, "%p: async_task_base::get_result(): m_coro_handle.promise().m_result.wait_for_result()\n", this);
+                if (m_coro_handle.promise().m_result.wait_for_result())
 #else
-            print(PRI2, "%p: async_task_void::wait(): m_result.is_ready() = %d\n", this, m_result.is_ready());
-            if (!m_result.is_ready())
+                print(PRI2, "%p: async_task_base::get_result(): m_result.wait_for_result()\n", this);
+                if (m_result.wait_for_result())
 #endif
-            {
-                if (waitIfNotReady)
                 {
-                    print(PRI2, "%p: async_task_void::wait(): before m_coro_handle.promise().m_sema.wait();\n", this);
-                    m_coro_handle.promise().m_wait_for_signal = true;
+                    print(PRI2, "%p: async_task_base::get_result(): m_coro_handle.promise().m_sema.wait()\n", this);
                     m_coro_handle.promise().m_sema.wait();
-                    print(PRI2, "%p: async_task_void::wait(): after m_coro_handle.promise().m_sema.wait();\n", this);
-                }
-                else
-                {
-                    print(PRI1, "%p: async_task_void::wait(): m_ready == false: returning without waiting for ready!\n", this);
                 }
             }
+
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
             m_coro_handle.promise().m_result.retrieve_result();
 #else
@@ -1226,7 +1305,6 @@ namespace corolib
                 : m_continuation(nullptr)
                 , m_ctr(nullptr)
                 , m_waitany(nullptr)
-                , m_wait_for_signal(false)
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
                 , m_result{ }
 #endif
@@ -1255,8 +1333,8 @@ namespace corolib
                 if (m_coroutine_valid)
                     m_coroutine_object->m_result.set_value(0);
 #endif
-                print(PRI2, "%p: async_task_void::promise_type::return_value(TYPE v):\n\tm_ctr = %p, m_waitany = %p, m_continuation = %p, m_wait_for_signal = %d\n",
-                                this, m_ctr, m_waitany, m_continuation, m_wait_for_signal);
+                print(PRI2, "%p: async_task_void::promise_type::return_value(TYPE v):\n\tm_ctr = %p, m_waitany = %p, m_continuation = %p\n",
+                                this, m_ctr, m_waitany, m_continuation);
                 if (m_ctr)
                 {
                     print(PRI2, "%p: async_task_void::promise_type::return_void(): before m_ctr->completed();\n", this);
@@ -1285,7 +1363,7 @@ namespace corolib
                     print(PRI2, "%p: async_task_void::promise_type::return_void(): after m_continuation.resume();\n", this);
                 }
 #endif
-                if (m_wait_for_signal)
+                if (m_result.wait_for_semaphore_release())
                 {
                     print(PRI2, "%p: async_task_void::promise_type::return_void(): before m_sema.signal();\n", this);
                     m_sema.signal();
@@ -1349,7 +1427,6 @@ namespace corolib
             when_all_counter* m_ctr;
             when_any_one* m_waitany;
             Semaphore m_sema;
-            bool m_wait_for_signal;
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
             result_t<int> m_result;     // cannot use void
 #endif
@@ -1375,8 +1452,8 @@ namespace corolib
     class async_task<void> : public async_task_void
     {
     public:
-	
-	    using handle_type = typename async_task_void::handle_type;
+    
+        using handle_type = typename async_task_void::handle_type;
 
         struct promise_type;
         using handle_type_own = std::coroutine_handle<promise_type>;
@@ -1561,13 +1638,13 @@ namespace corolib
         }; // struct promise_type
 
     }; // template<> class async_task<void>
-	
+    
 
     template<>
     class async_ltask<void> : public async_task_void
     {
     public:
-	    using handle_type = typename async_task_void::handle_type;
+        using handle_type = typename async_task_void::handle_type;
 
         struct promise_type;
         using handle_type_own = std::coroutine_handle<promise_type>;
@@ -1577,7 +1654,7 @@ namespace corolib
         {
             print(PRI2, "%p: async_ltask<void>::async_ltask(handle_type h)\n", this);
         }
-		
+        
         /**
          * @brief start starts a lazy coroutine.
          */

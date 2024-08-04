@@ -57,7 +57,7 @@ namespace corolib
     public:
         async_operation_base(CommService* s = nullptr, int index = -1, bool timestamp = false);
         virtual ~async_operation_base();
-		
+        
         async_operation_base(const async_operation_base&) = delete;
         async_operation_base(async_operation_base&&) noexcept;
 
@@ -71,10 +71,14 @@ namespace corolib
          * This function should be called after the call of async_operation<TYPE>::set_result(TYPE).
          */
         void completed();
-		
+        
         bool is_ready() override
         {
+#if USE_IN_MT_APPS
+            print(PRI2, "%p: void async_operation_base::is_ready() returns %d\n", this, m_ready.load());
+#else
             print(PRI2, "%p: void async_operation_base::is_ready() returns %d\n", this, m_ready);
+#endif
             return m_ready;
         }
 
@@ -89,7 +93,7 @@ namespace corolib
         }
 
         /**
-		 * @brief called from the constructors and destructor of when_any
+         * @brief called from the constructors and destructor of when_any
          *
          */
         void setWaitAny(when_any_one* waitany) override
@@ -140,7 +144,11 @@ namespace corolib
         when_all_counter* m_ctr;
         when_any_one* m_waitany;
         int m_index;
+#if USE_IN_MT_APPS
+        std::atomic<bool> m_ready;
+#else
         bool m_ready;
+#endif
         bool m_autoreset;
         bool m_timestamp;
     }; // class async_operation_base
@@ -253,7 +261,11 @@ namespace corolib
 
                 bool await_ready()
                 {
+#if USE_IN_MT_APPS
+                    print(PRI2, "%p: m_async = %p: async_operation<TYPE>::awaiter::await_ready(): return %d;\n", this, &m_async, m_async.m_ready.load());
+#else
                     print(PRI2, "%p: m_async = %p: async_operation<TYPE>::awaiter::await_ready(): return %d;\n", this, &m_async, m_async.m_ready);
+#endif
                     return m_async.m_ready;
                 }
 
@@ -309,7 +321,11 @@ namespace corolib
 
                 bool await_ready()
                 {
+#if USE_IN_MT_APPS
+                    print(PRI2, "%p: m_async = %p: async_operation<void>::await_ready(): return %d;\n", this, &m_async, m_async.m_ready.load());
+#else
                     print(PRI2, "%p: m_async = %p: async_operation<void>::await_ready(): return %d;\n", this, &m_async, m_async.m_ready);
+#endif
                     return m_async.m_ready;
                 }
 

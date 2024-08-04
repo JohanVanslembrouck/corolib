@@ -34,7 +34,7 @@ namespace corolib
     {
         print(PRI2, "%p: async_operation_base::async_operation_base(CommService* s = %p, index = %d, timestamp = %d)\n",
             this, s, index, static_cast<int>(timestamp));
-		
+        
         if (m_service && m_index != -1)
         {
             m_service->add_entry(m_index, this, m_timestamp);
@@ -75,7 +75,7 @@ namespace corolib
         , m_ctr(other.m_ctr)
         , m_waitany(other.m_waitany)
         , m_index(other.m_index)
-        , m_ready(other.m_ready)
+        //, m_ready(other.m_ready)
         , m_autoreset(other.m_autoreset)
         , m_timestamp(other.m_timestamp)      // Should be the same: we cannot "move" from implementation.
     {
@@ -137,7 +137,7 @@ namespace corolib
             m_waitany = other.m_waitany;
 
         m_index = other.m_index;
-        m_ready = other.m_ready;
+        //m_ready = other.m_ready;
         m_autoreset = other.m_autoreset;
 
         // Tell the CommService we are at another address after the move.

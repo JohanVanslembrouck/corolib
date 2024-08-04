@@ -49,6 +49,19 @@ namespace corolib
     {
         async_base* m_element = nullptr;
         when_any_one m_when_any_one;
+        
+        when_any_info() : m_element(nullptr) {}
+
+        when_any_info(const when_any_info& other)
+            : m_element(other.m_element)
+        {
+
+        }
+
+        when_any_info(when_any_info&&) noexcept = default;
+
+        when_any_info& operator = (const when_any_info&) = delete;
+        when_any_info& operator = (when_any_info&&) noexcept = default;
     };
 
     class when_any

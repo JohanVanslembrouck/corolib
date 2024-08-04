@@ -19,10 +19,12 @@ set(USE_GOOGLETEST TRUE)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+# USE_IN_MT_APPS can be set to 0 to build corolib for single-threaded frameworks and applications.
+
 if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-    set(CMAKE_CXX_FLAGS "/await:strict /EHsc /D USE_CPP20SEMAPHORE=1")
+    set(CMAKE_CXX_FLAGS "/await:strict /EHsc /D USE_CPP20SEMAPHORE=1 /D USE_IN_MT_APPS=1")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    set(CMAKE_CXX_FLAGS "-Wall -fPIC -fcoroutines -D USE_CPP20SEMAPHORE=1")
+    set(CMAKE_CXX_FLAGS "-Wall -fPIC -fcoroutines -D USE_CPP20SEMAPHORE=1 -D USE_IN_MT_APPS=1")
 else()
     message("Unsupported compiler")
 endif()

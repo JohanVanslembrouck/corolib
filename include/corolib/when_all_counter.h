@@ -10,17 +10,16 @@
  * when (in case of async_operation) the asynchronous operation completes
  * or (in case of async_task) the coroutine co_returns.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _WHEN_ALL_COUNTER_H_
 #define _WHEN_ALL_COUNTER_H_
 
-#define USE_ATOMIC_COUNTER 1
-
-#if USE_ATOMIC_COUNTER
+#if USE_IN_MT_APPS
 #include <atomic>
 #endif
+
 #include <coroutine>
 #include "print.h"
 
@@ -29,7 +28,7 @@ namespace corolib
     class when_all_counter
     {
     public:
-	
+    
         when_all_counter(int nr)
             : m_awaiting(nullptr)
             , m_nr(nr)
@@ -53,7 +52,7 @@ namespace corolib
          */
         int get_counter()
         {
-#if USE_ATOMIC_COUNTER
+#if USE_IN_MT_APPS
             print(PRI2, "%p: when_all_counter::get_counter(): returns %d\n", this, m_nr.load());
 #else
             print(PRI2, "%p: when_all_counter::get_counter(): returns %d\n", this, m_nr);
@@ -63,7 +62,7 @@ namespace corolib
 
         void increment()
         {
-#if USE_ATOMIC_COUNTER
+#if USE_IN_MT_APPS
             print(PRI2, "%p: when_all_counter::increment(): m_nr = %d\n", this, m_nr.load());
 #else
             print(PRI2, "%p: when_all_counter::increment(): m_nr = %d\n", this, m_nr);
@@ -78,7 +77,7 @@ namespace corolib
          */
         std::coroutine_handle<> completed()
         {
-#if USE_ATOMIC_COUNTER
+#if USE_IN_MT_APPS
             print(PRI2, "%p: when_all_counter::completed(): m_nr = %d\n", this, m_nr.load());
 #else
             print(PRI2, "%p: when_all_counter::completed(): m_nr = %d\n", this, m_nr);
@@ -93,9 +92,8 @@ namespace corolib
 
     private:
         std::coroutine_handle<> m_awaiting;
-#if USE_ATOMIC_COUNTER
-        //std::atomic<int> m_nr;
-        std::atomic_int m_nr;
+#if USE_IN_MT_APPS
+        std::atomic<int> m_nr;
 #else
         int m_nr;
 #endif
