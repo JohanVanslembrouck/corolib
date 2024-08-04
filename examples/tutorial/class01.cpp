@@ -10,6 +10,8 @@
 
 #include <corolib/print.h>
 
+#define COMPILER_USES_RVO 1
+
 Class01::Class01(UseMode useMode,
     EventQueueFunctionVoidInt* eventQueue,
     EventQueueThrFunctionVoidInt* eventQueueThr,
@@ -26,8 +28,20 @@ Class01::Class01(UseMode useMode,
 {
     m_eventHandler = [this](int) {
         print(PRI1, "%p: Class01::invalid m_eventHandler entry\n", this);
-        };
+    };	
 }
+
+#if COMPILER_USES_RVO
+
+async_operation<int> Class01::start_operation()
+{
+    print(PRI1, "%p: Class01::start_operation()\n", this);
+    async_operation<int> ret;
+    start_operation_impl(&ret);
+    return ret;
+}
+
+#else
 
 async_operation<int> Class01::start_operation()
 {
@@ -37,6 +51,8 @@ async_operation<int> Class01::start_operation()
     start_operation_impl(index);
     return ret;
 }
+
+#endif
 
 /**
  * @brief Class01::async_op
@@ -106,6 +122,33 @@ void Class01::async_op(std::function<void(int)>&& completionHandler)
         completionHandler(10);
         break;
     }
+}
+
+/**
+ * @brief Class01::start_operation_impl simulates starting an asynchronous operation.
+ *
+ * @param om_async_operation_t
+ */
+void Class01::start_operation_impl(async_operation<int>* om_async_operation_t)
+{
+    print(PRI1, "%p: Class01::start_operation_impl(%p)\n", this, om_async_operation_t);
+    async_op(
+        [this, om_async_operation_t](int i)
+        {
+            print(PRI1, "Class01::eventHandler[%p, %p](%d)\n", this, om_async_operation_t, i);
+
+            if (i >= 0)
+            {
+                print(PRI1, "Class01::eventHandler[%p, %p](%d): om_async_operation_t->set_result(%d);\n", this, om_async_operation_t, i, i);
+                om_async_operation_t->set_result(i);
+            }
+            else
+            {
+                print(PRI1, "Class01::eventHandler[%p, %p](%d): om_async_operation_t->set_error(%d);\n", this, om_async_operation_t, i, i);
+                om_async_operation_t->set_error(i);
+            }
+            om_async_operation_t->completed();
+        });
 }
 
 /**

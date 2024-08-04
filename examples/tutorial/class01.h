@@ -31,7 +31,7 @@ public:
         EventQueueThrFunctionVoidInt* eventQueueThr = nullptr,
         std::mutex* mtx = nullptr,
         ThreadAwaker* awaker = nullptr,
-        int delay = 10);
+        int delay = 0);
 
     async_operation<int> start_operation();
     
@@ -47,6 +47,7 @@ public:
 
 protected:
     void async_op(std::function<void(int)>&& completionHandler);
+	void start_operation_impl(async_operation<int>* om_async_operation_t);
     void start_operation_impl(const int idx);
     
 private:
