@@ -48,20 +48,25 @@ int main()
 
     set_priority(0x01);        // Use 0x03 to follow the flow in corolib
 
-    print(PRI1, "main(): async_ltask<int> a = coroutine1();\n");
-    async_task<int> a1 = coroutine1();
-    async_task<int> a2 = coroutine2();
-    async_task<int> a3 = coroutine3();
- 
-    print(PRI1, "main(): completionflow(a1, a2, a3);\n");
-    completionflow(a1, a2, a3);
- 
-    print(PRI1, "main(): int v = a1.get_result() + a2.get_result() + a3.get_result();\n");
-    int v = a1.get_result() + a2.get_result() + a3.get_result();
-    print(PRI1, "main(): v = %d\n", v);
+    for (int i = 0; i < 10; ++i)
+    {
+        print(PRI1, "main(): ---------- iteration %d ----------\n", i);
 
-    print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        print(PRI1, "main(): async_ltask<int> a = coroutine1();\n");
+        async_task<int> a1 = coroutine1();
+        async_task<int> a2 = coroutine2();
+        async_task<int> a3 = coroutine3();
+
+        print(PRI1, "main(): completionflow(a1, a2, a3);\n");
+        completionflow(a1, a2, a3);
+
+        print(PRI1, "main(): int v = a1.get_result() + a2.get_result() + a3.get_result();\n");
+        int v = a1.get_result() + a2.get_result() + a3.get_result();
+        print(PRI1, "main(): v = %d\n", v);
+
+        print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
 
     print(PRI1, "main(): return 0;\n");
     return 0;

@@ -83,8 +83,8 @@ async_task<int> Class1470::coroutine5c()
     auto_reset_event are;
 
     std::thread thread1([&are]() {
-        print(PRI1, "coroutine5c(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(30000));\n");
-        std::this_thread::sleep_for(std::chrono::milliseconds(30000));
+        print(PRI1, "coroutine5c(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(10000));\n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(10000));
         print(PRI1, "coroutine5c(): thread1: are.resume();\n");
         are.resume();
         print(PRI1, "coroutine5c(): thread1: return;\n");

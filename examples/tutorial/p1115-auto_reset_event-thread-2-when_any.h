@@ -105,7 +105,9 @@ public:
 
     async_task<int> coroutine3()
     {
-        int i = 0;
+        int v1, v2;
+        v1 = v2 = 0;
+
         print(PRI1, "coroutine3(): async_task<int> a = coroutine4a();\n");
         async_task<int> a = coroutine4a();
         print(PRI1, "coroutine3(): async_task<int> b = coroutine4b();\n");
@@ -117,14 +119,22 @@ public:
         for (int j = 0; j < 2; ++j)
         {
             print(PRI1, "coroutine3(): i = co_await wa;\n");
-            i = co_await wa;
+            int i = co_await wa;
             print(PRI1, "coroutine3(): i = %d\n", i);
+            switch (i) {
+            case 0:
+                print(PRI1, "coroutine3(): v1 = a.get_result();\n");
+                v1 = a.get_result();
+                break;
+            case 1:
+                print(PRI1, "coroutine3(): v2 = b.get_result();\n");
+                v2 = b.get_result();
+                break;
+            default:
+                print(PRI1, "coroutine3(): invalid index = %d\n", i);
+            }
         }
 
-        print(PRI1, "coroutine3(): int v1 = a.get_result();\n", i);
-        int v1 = a.get_result();
-        print(PRI1, "coroutine3(): int v2 = b.get_result();\n", i);
-        int v2 = b.get_result();
         print(PRI1, "coroutine3(): co_return v1 + v2 + 1 = %d;\n", v1 + v2 + 1);
         co_return v1 + v2 + 1;
     }

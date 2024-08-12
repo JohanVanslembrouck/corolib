@@ -18,22 +18,22 @@ extern std::function<void(int)> eventHandler;       // p1700.cpp
 void completionflow()
 {
     // Begin manual event completion
-    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(0));
 
     print(PRI1, "completionflow(): before eventHandler(10);\n");
     eventHandler(10);
     print(PRI1, "completionflow(): after eventHandler(10);\n");
 
-    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds());\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(0));
 
     print(PRI1, "completionflow(): before eventHandler(10);\n");
     eventHandler(10);
     print(PRI1, "completionflow(): after eventHandler(10);\n");
 
-    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(0));
     // End manual event completion
 }
 
@@ -56,8 +56,8 @@ int main()
         int v = a.get_result();
         print(PRI1, "main(): v = %d\n", v);
 
-        print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(0));
     }
     print();
 	reinit();
@@ -73,8 +73,8 @@ int main()
         print(PRI1, "main(): a.wait();\n");
         a.wait();
 
-        print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(0));
     }
 
     print(PRI1, "main(): return 0;\n");

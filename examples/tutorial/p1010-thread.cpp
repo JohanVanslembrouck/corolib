@@ -117,6 +117,7 @@ int main()
     print(PRI1, "main(): int v = awa.get_result();\n");
     int v = a.get_result();
     print(PRI1, "main(): v = %d\n", v);
+
     print(PRI1, "main(): return 0;\n");
     return 0;
 }

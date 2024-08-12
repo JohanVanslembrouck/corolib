@@ -23,22 +23,22 @@ async_task<int> coroutine1();
 void completionflow()
 {
     // Begin manual event completion
-    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(0));
 
     print(PRI1, "completionflow(): before eventHandler1(10);\n");
     eventHandler(10);
     print(PRI1, "completionflow(): after eventHandler1(10);\n");
 
-    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(0));
 
     print(PRI1, "completionflow(): before eventHandler1(10);\n");
     eventHandler(10);
     print(PRI1, "completionflow(): after eventHandler1(10);\n");
 
-    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(0));
     // End manual event completion
 }
 
@@ -47,18 +47,23 @@ int main()
     set_priority(0x01);                     // Use 0x03 to follow the flow in corolib
     resume_multiple_coroutines(true);       // See header of p1600.cpp for explanation.
 
-    print(PRI1, "main(): async_task<int> a = coroutine1();\n");
-    async_task<int> a = coroutine1();
+    for (int i = 0; i < 10; ++i)
+    {
+        print(PRI1, "main(): ---------- iteration %d ----------\n", i);
 
-    print(PRI1, "main(): completionflow();\n");
-    completionflow();
+        print(PRI1, "main(): async_task<int> a = coroutine1();\n");
+        async_task<int> a = coroutine1();
 
-    print(PRI1, "main(): int v = a.get_result();\n");
-    int v = a.get_result();
-    print(PRI1, "main(): v = %d\n", v);
+        print(PRI1, "main(): completionflow();\n");
+        completionflow();
 
-    print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        print(PRI1, "main(): int v = a.get_result();\n");
+        int v = a.get_result();
+        print(PRI1, "main(): v = %d\n", v);
+
+        print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(0));
+    }
 
     print(PRI1, "main(): return 0;\n");
     return 0;

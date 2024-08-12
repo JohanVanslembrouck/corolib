@@ -19,8 +19,8 @@ void task0()
 {
     for (int i = 0; i < 4; i++)
     {
-        print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
         print(PRI1, "completionflow(): start_operation_impl(op);\n");
         start_operation_impl(op1);
@@ -50,18 +50,23 @@ int main()
 
     set_priority(0x01);        // Use 0x03 to follow the flow in corolib
 
-    print(PRI1, "main(): std::jthread task1thr{ task1 };\n");
-    std::jthread task1thr{ task1 };
-    print(PRI1, "main(): std::jthread task2thr{ task2 };\n");
-    std::jthread task2thr{ task2 };
-    print(PRI1, "main(): std::jthread task3thr{ task3 };\n");
-    std::jthread task3thr{ task3 };
+    for (int i = 0; i < 10; ++i)
+    {
+        print(PRI1, "main(): ---------- iteration %d ----------\n", i);
 
-    print(PRI1, "main(): completionflow();\n");
-    completionflow();
+        print(PRI1, "main(): std::jthread task1thr{ task1 };\n");
+        std::jthread task1thr{ task1 };
+        print(PRI1, "main(): std::jthread task2thr{ task2 };\n");
+        std::jthread task2thr{ task2 };
+        print(PRI1, "main(): std::jthread task3thr{ task3 };\n");
+        std::jthread task3thr{ task3 };
 
-    print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        print(PRI1, "main(): completionflow();\n");
+        completionflow();
+
+        print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(0));
+    }
 
     print(PRI1, "main(): return 0;\n");
     return 0;

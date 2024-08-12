@@ -16,22 +16,28 @@ int main()
 {
     set_print_level(0x01);        // Use 0x03 to follow the flow in corolib
 
-    Class1120 obj;
-    print(PRI1, "main(): async_task<int> a1 = obj.coroutine1();\n");
-    async_task<int> a1 = obj.coroutine1();
+    for (int i = 0; i < 10; ++i)
+    {
+        print(PRI1, "main(): ---------- iteration %d ----------\n", i);
 
-    print(); print(PRI1, "main(): m2.resume();\n");
-    m2.resume();
-    print(); print(PRI1, "main(): m1.resume();\n");
-    m1.resume();
-    print(); print(PRI1, "main(): m1.resume();\n");
-    m1.resume();
-    print(); print(PRI1, "main(): m2.resume();\n");
-    m2.resume();
+        Class1120 obj;
+        print(PRI1, "main(): async_task<int> a1 = obj.coroutine1();\n");
+        async_task<int> a1 = obj.coroutine1();
 
-    print(); print(PRI1, "main(): int v = a1.get_result();\n");
-    int v = a1.get_result();
-    print(PRI1, "main(): v = %d\n", v);
+        print(); print(PRI1, "main(): m2.resume();\n");
+        m2.resume();
+        print(); print(PRI1, "main(): m1.resume();\n");
+        m1.resume();
+        print(); print(PRI1, "main(): m1.resume();\n");
+        m1.resume();
+        print(); print(PRI1, "main(): m2.resume();\n");
+        m2.resume();
+
+        print(); print(PRI1, "main(): int v = a1.get_result();\n");
+        int v = a1.get_result();
+        print(PRI1, "main(): v = %d\n", v);
+    }
+
     print(PRI1, "main(): return 0;\n");
     return 0;
 }

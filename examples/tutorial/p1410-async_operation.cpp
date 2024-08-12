@@ -16,15 +16,15 @@ using namespace corolib;
 void completionflow(Class1410& obj)
 {
     // Begin manual event completion
-    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(0));
 
     print(PRI1, "completionflow(): before obj.m_object01.runEventHandler(10);\n");
     obj.m_object01.runEventHandler(10);
     print(PRI1, "completionflow(): after obj.m_object01.runEventHandler(10);\n");
 
-    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(0));
 
     print(PRI1, "completionflow(): before obj.m_object01.runEventHandler(10);\n");
     obj.m_object01.runEventHandler(10);
@@ -36,19 +36,24 @@ int main()
 {
     set_print_level(0x01);        // Use 0x03 to follow the flow in corolib
 
-    Class01 object01;
-    Class1410 obj{ object01 };
-    async_task<int> a = obj.coroutine1();
+    for (int i = 0; i < 10; ++i)
+    {
+        print(PRI1, "main(): ---------- iteration %d ----------\n", i);
 
-    print(PRI1, "main(): completionflow(obj);\n");
-    completionflow(obj);
+        Class01 object01;
+        Class1410 obj{ object01 };
+        async_task<int> a = obj.coroutine1();
 
-    print(PRI1, "main(): int v = a.get_result();\n");
-    int v = a.get_result();
-    print(PRI1, "main(): v = %d\n", v);
+        print(PRI1, "main(): completionflow(obj);\n");
+        completionflow(obj);
 
-    print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        print(PRI1, "main(): int v = a.get_result();\n");
+        int v = a.get_result();
+        print(PRI1, "main(): v = %d\n", v);
+
+        print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(0));
+    }
 
     print(PRI1, "main(): return 0;\n");
     return 0;

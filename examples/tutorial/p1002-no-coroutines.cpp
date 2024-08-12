@@ -69,11 +69,16 @@ int main()
 {
     set_print_level(0x01);        // Use 0x03 to follow the flow in corolib
 
-    print(PRI1, "main(): int a = function1();\n");
-    int a = function1();
-    print(PRI1, "main(): int v = a;\n");
-    int v = a;
-    print(PRI1, "main(): v = %d\n", v);
+    for (int i = 0; i < 10; ++i)
+    {
+        print(PRI1, "main(): ---------- iteration %d ----------\n", i);
+        print(PRI1, "main(): int a = function1();\n");
+        int a = function1();
+        print(PRI1, "main(): int v = a;\n");
+        int v = a;
+        print(PRI1, "main(): v = %d\n", v);
+    }
+
     print(PRI1, "main(): return 0;\n");
     return 0;
 }

@@ -27,7 +27,7 @@ std::function<void(int)> eventHandler;        // Will be initialized in async_op
 UseMode useMode;
 
 int delay = 10;
-int delay2 = 200;
+int delay2 = 20;
 
 ThreadAwaker *awaker = nullptr;
 
