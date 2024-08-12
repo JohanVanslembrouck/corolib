@@ -236,12 +236,15 @@ namespace corolib
 
         void set_value(const TYPE& value)
         {
+            print(PRI2, "%p: result_t::set_value(const TYPE& value);\n", this);
             m_value = value;
             
 #if USE_IN_MT_APPS
             completion_status expected = completion_status::INITIAL;
             if (!m_ready.compare_exchange_strong(expected, completion_status::COMPLETED)) {
-                assert(expected == completion_status::WAIT_FOR_SEMAPHORE_RELEASE);
+                if (expected != completion_status::WAIT_FOR_SEMAPHORE_RELEASE)
+                    print(PRI1, "%p: result_t::set_value(const TYPE& value) = expected = %d != completion_status::WAIT_FOR_SEMAPHORE_RELEASE\n", this);
+                //assert(expected == completion_status::WAIT_FOR_SEMAPHORE_RELEASE);
                 m_ready = completion_status::COMPLETED;
                 m_wait_for_semaphore_release = true;
             }
@@ -1117,7 +1120,7 @@ namespace corolib
 #if DECLARE_MOVE_CONSTRUCTORS_AS_DELETED
         async_task_void(async_task_void&&) = delete;
 #else
-        async_task_void(async_task_void&& other)
+        async_task_void(async_task_void&& other) noexcept
             : m_coro_handle{ other.m_coro_handle}
 #if USE_RESULT_FROM_COROUTINE_OBJECT
             , m_result{ std::move(other.m_result) }

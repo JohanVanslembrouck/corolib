@@ -27,7 +27,7 @@ namespace corolib
     const int PRI7 = 0x40;
     const int PRI8 = 0x80;
 
-    const int NR_THREADS = 128;
+    const int NR_THREADS = 1024;
 
     void set_priority(int pri);
     inline void set_print_level(int pri) { set_priority(pri); }

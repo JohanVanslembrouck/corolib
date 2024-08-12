@@ -50,12 +50,14 @@ namespace corolib
         async_base* m_element = nullptr;
         when_any_one m_when_any_one;
         
-        when_any_info() : m_element(nullptr) {}
+        when_any_info()
+            : m_element(nullptr)
+        {
+        }
 
         when_any_info(const when_any_info& other)
             : m_element(other.m_element)
         {
-
         }
 
         when_any_info(when_any_info&&) noexcept = default;
@@ -89,18 +91,18 @@ namespace corolib
         {
             print(PRI2, "%p: when_any::when_any(std::initializer_list<async_base*> async_ops)\n", this);
             m_when_any_info_vector.reserve(async_ops.size());
+
             int i = 0;
             for (async_base* async_op : async_ops)
             {
-                // Only place the object in m_elements if it has not yet been completed.
-                if (!async_op->is_ready())
-                {
-                    when_any_info info;
-                    info.m_element = async_op;
-                    m_when_any_info_vector.push_back(info);
-                    async_op->setWaitAny(&m_when_any_info_vector[i].m_when_any_one);
-                    i++;
-                }
+                when_any_info info;
+                info.m_element = async_op;
+                m_when_any_info_vector.push_back(info);
+                async_op->setWaitAny(&m_when_any_info_vector[i].m_when_any_one);
+                // Retrieve status from the async_op and save it
+                bool ready = async_op->is_ready();
+                m_when_any_info_vector[i].m_when_any_one.set_completed(ready);
+                i++;
             }
         }
 
@@ -117,19 +119,19 @@ namespace corolib
             {
                 // Only place the object in m_elements if it has not yet been completed.
                 async_base* async_op = pasync_ops[i];
-                if (!async_op->is_ready())
-                {
-                    when_any_info info;
-                    info.m_element = async_op;
-                    m_when_any_info_vector.push_back(info);
-                    async_op->setWaitAny(&m_when_any_info_vector[i].m_when_any_one);
-                }
+                when_any_info info;
+                info.m_element = async_op;
+                m_when_any_info_vector.push_back(info);
+                async_op->setWaitAny(&m_when_any_info_vector[i].m_when_any_one);
+                // Retrieve status from the async_op and save it
+                bool ready = async_op->is_ready();
+                m_when_any_info_vector[i].m_when_any_one.set_completed(ready);
             }
         }
 
         when_any(const when_any& s) = delete;
 
-        when_any(when_any&& s)
+        when_any(when_any&& s) noexcept
         {
             print(PRI2, "%p: when_any::when_any(when_any&& s)\n", this);
         }
@@ -216,6 +218,7 @@ namespace corolib
                     // Find out which one has completed
                     print(PRI2, "%p: when_any::awaiter::await_resume(): size = %ld\n",
                             this, m_when_any.m_when_any_info_vector.size());
+
                     int ret = -1;
                     for (std::size_t i = 0; i < m_when_any.m_when_any_info_vector.size(); i++)
                     {
@@ -266,15 +269,16 @@ namespace corolib
         void make_when_any(int i, T& t, AsyncBaseTypes&... others) {
             async_base* async_op = static_cast<async_base*>(&t);
             print(PRI2, "%p: make_when_any() - begin\n", this);
-            // Only place the object in m_elements if it has not yet been completed.
-            if (!async_op->is_ready())
-            {
-                when_any_info info;
-                info.m_element = async_op;
-                m_when_any_info_vector.push_back(info);
-                async_op->setWaitAny(&m_when_any_info_vector[i].m_when_any_one);
-            }
-            make_when_any(i+1, others...);
+
+            when_any_info info;
+            info.m_element = async_op;
+            m_when_any_info_vector.push_back(info);
+            async_op->setWaitAny(&m_when_any_info_vector[i].m_when_any_one);
+            // Retrieve status from the async_op and save it
+            bool ready = async_op->is_ready();
+            m_when_any_info_vector[i].m_when_any_one.set_completed(ready);
+
+            make_when_any(i + 1, others...);
             print(PRI2, "%p: make_when_any() - end\n", this);
         };
 
@@ -317,16 +321,16 @@ namespace corolib
         {
             print(PRI2, "%p: when_anyT::when_anyT(TYPE aws[], int size)\n", this);
             m_when_any_info_vector.reserve(size);
+
             for (int i = 0; i < size; i++)
             {
-                // Only place the object in m_elements if it has not yet been completed.
-                if (!aws[i].is_ready())
-                {
-                    when_any_infoT<TYPE> q;
-                    q.m_element = &aws[i];
-                    m_when_any_info_vector.push_back(q);
-                    aws[i].setWaitAny(&m_when_any_info_vector[i].m_when_any_one);
-                }
+                when_any_infoT<TYPE> q;
+                q.m_element = &aws[i];
+                m_when_any_info_vector.push_back(q);
+                aws[i].setWaitAny(&m_when_any_info_vector[i].m_when_any_one);
+                // Retrieve status from the async_op and save it
+                bool ready = aws[i].is_ready();
+                m_when_any_info_vector[i].m_when_any_one.set_completed(ready);
             }
         }
 
@@ -428,7 +432,7 @@ namespace corolib
                     int ret = -1;
                     for (std::size_t i = 0; i < m_when_any.m_when_any_info_vector.size(); i++)
                     {
-                        if (m_when_any.m_when_any_info_vector[i].m_when_any_one.get_and_reset_completed())
+                        if (m_when_any.m_when_any_info_vector[i].m_when_any_one.get_and_mark_as_completed())
                         {
                             print(PRI2, "%p: when_anyT::awaiter::await_resume(): return i = %d\n", this, i);
                             // TODO: possibly remove i-th element from m_when_any_one and m_elements

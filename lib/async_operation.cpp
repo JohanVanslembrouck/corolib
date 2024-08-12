@@ -75,7 +75,9 @@ namespace corolib
         , m_ctr(other.m_ctr)
         , m_waitany(other.m_waitany)
         , m_index(other.m_index)
-        //, m_ready(other.m_ready)
+#if !USE_IN_MT_APPS
+        , m_ready(other.m_ready)
+#endif
         , m_autoreset(other.m_autoreset)
         , m_timestamp(other.m_timestamp)      // Should be the same: we cannot "move" from implementation.
     {
@@ -137,7 +139,9 @@ namespace corolib
             m_waitany = other.m_waitany;
 
         m_index = other.m_index;
-        //m_ready = other.m_ready;
+#if !USE_IN_MT_APPS
+        m_ready = other.m_ready;
+#endif
         m_autoreset = other.m_autoreset;
 
         // Tell the CommService we are at another address after the move.

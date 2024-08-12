@@ -69,7 +69,11 @@ namespace corolib
          */
         bool get_completed()
         {
-            print(PRI2, "%p: when_any_one::get_completed()\n", this);
+#if USE_IN_MT_APPS
+            print(PRI2, "%p: when_any_one::get_completed(): m_completed = %d\n", this, m_completed.load());
+#else
+            print(PRI2, "%p: when_any_one::get_completed(): m_completed = %d\n", this, m_completed);
+#endif
             return m_completed;
         }
 
@@ -77,24 +81,29 @@ namespace corolib
          * @brief called from await_resume in when_any
          *
          */
-        bool get_and_reset_completed()
-        {
-            print(PRI2, "%p: when_any_one::get_and_reset_completed()\n", this);
-            bool completed = m_completed;
-            m_completed = false;
-            return completed;
-        }
-
         bool get_and_mark_as_completed()
         {
             print(PRI2, "%p: when_any_one::get_and_mark_as_completed()\n", this);
-            m_completion_status = when_any_one_status::COMPLETED_PROCESSED;
-            return get_and_reset_completed();
+#if USE_IN_MT_APPS
+            bool expected = true;
+            if (m_completed.compare_exchange_strong(expected, false)) {
+                m_completion_status = when_any_one_status::COMPLETED_PROCESSED;
+                return true;
+            }
+            return false;
+#else
+            bool completed = m_completed;
+            if (m_completed) {
+                m_completed = false;
+                m_completion_status = when_any_one_status::COMPLETED_PROCESSED;
+            }
+            return completed;
+#endif
         }
 
         /**
-         * @brief called from async_operation_base::completed and 
-         * from return_value and return_void in the promise_type of async_task
+         * @brief called from async_operation_base::completed() and 
+         * from return_value() and return_void() in the promise_type of async_task
          *
          */
         std::coroutine_handle<> completed()
@@ -103,6 +112,11 @@ namespace corolib
             m_completion_status = when_any_one_status::NEWLY_COMPLETED;
             m_completed = true;
             return m_awaiting;
+        }
+
+        void set_completed(bool completed)
+        {
+            m_completed = completed;
         }
 
     private:

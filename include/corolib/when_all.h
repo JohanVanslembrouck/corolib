@@ -39,6 +39,9 @@ namespace corolib
             : m_counter(0)
         {
             print(PRI2, "%p: when_all::when_all(AsyncBaseTypes&... others)\n", this);
+            int len = make_when_all_len(0, others...);
+            print(PRI2, "%p: when_all::when_all(AsyncBaseTypes&... others): len = %d\n", this, len);
+            m_elements.reserve(len);
             make_when_all(others...);
         }
 
@@ -50,6 +53,8 @@ namespace corolib
             : m_counter(0)
         {
             print(PRI2, "%p: when_all::when_all(std::initializer_list<async_base*> async_ops)\n", this);
+            m_elements.reserve(async_ops.size());
+
             for (async_base* async_op : async_ops)
             {
                 // Only place the object in m_elements if it has not yet been completed.
@@ -70,6 +75,8 @@ namespace corolib
             : m_counter(0)
         {
             print(PRI2, "%p: when_all::when_all(async_base* pasync_ops, size = %d)\n", this, size);
+            m_elements.reserve(size);
+
             for (int i = 0; i < size; i++)
             {
                 // Only place the object in m_elements if it has not yet been completed.
@@ -164,6 +171,24 @@ namespace corolib
 
     protected:
 
+        // ---------------------------------------------------------
+
+        template<typename... AsyncBaseTypes>
+        int make_when_all_len(int len, AsyncBaseTypes&... others);
+
+        template<typename T, typename... AsyncBaseTypes,
+            typename std::enable_if<std::is_base_of_v<async_base, T>, int>::type = 0>
+        int make_when_all_len(int len, T& t, AsyncBaseTypes&... others) {
+            return make_when_all_len(len + 1, others...);
+        };
+
+        //template<>      // g++:  error: explicit specialization in non-namespace scope ‘class corolib::when_any’
+        int make_when_all_len(int len) {
+            return len;
+        };
+
+        // ---------------------------------------------------------
+
         template<typename... AsyncBaseTypes>
         void make_when_all(AsyncBaseTypes&... others);
 
@@ -185,6 +210,8 @@ namespace corolib
         //template<>      // g++: error: explicit specialization in non-namespace scope ‘class corolib::when_all’
         void make_when_all() {
         };
+
+        // ---------------------------------------------------------
 
     private:
         when_all_counter m_counter;
@@ -210,6 +237,8 @@ namespace corolib
             : m_counter(0)
         {
             print(PRI2, "%p: when_allT::when_allT(TYPE* aws, size = %d)\n", this, size);
+            m_elements.reserve(size);
+
             for (int i = 0; i < size; i++)
             {
                 // Only place the object in m_elements if it has not yet been completed.
