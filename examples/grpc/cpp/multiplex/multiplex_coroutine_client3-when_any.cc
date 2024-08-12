@@ -1,11 +1,11 @@
 /**
- * @file multiplex_coroutine_client3.cc
+ * @file multiplex_coroutine_client3-when_any.cc
  * @brief Added coroutine implementation.
  * Based on the implementation in multiplex_coroutine_client2.cc.
  * In this variant start_SayHello and start_GetFeature return async_operation<Status> instead of async_operation<void>.
  * Consequently, there is no need to pass Status as reference argument to start_SayHello and start_GetFeature.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 /*
@@ -70,6 +70,7 @@ public:
         async_task<std::string> t1 = SayHelloAsync();
         async_task<std::string> t2 = GetFeatureAsync();
         when_any wa(t1, t2);
+        //when_any wa({ &t1, &t2 });
         for (int i = 0; i < 2; ++i) {
             int s = co_await wa;
             switch (s) {
@@ -120,7 +121,12 @@ public:
                     static_cast<async_operation<Status>*>(om_async_operation);
                 if (om_async_operation_t) {
                     om_async_operation_t->set_result(status);
-                    om_async_operation_t->completed();
+                    if (use_mutex) {
+                        std::lock_guard<std::mutex> guard(m_mutex);
+                        om_async_operation_t->completed();
+                    }
+                    else
+                        om_async_operation_t->completed();
                 }
 
             });
@@ -165,7 +171,13 @@ public:
                     static_cast<async_operation<Status>*>(om_async_operation);
                 if (om_async_operation_t) {
                     om_async_operation_t->set_result(status);
-                    om_async_operation_t->completed();
+                    om_async_operation_t->set_result(status);
+                    if (use_mutex) {
+                        std::lock_guard<std::mutex> guard(m_mutex);
+                        om_async_operation_t->completed();
+                    }
+                    else
+                        om_async_operation_t->completed();
                 }
 
             });
@@ -173,6 +185,8 @@ public:
 
 private:
     std::shared_ptr<Channel> channel_;
+    bool use_mutex = true;
+    std::mutex m_mutex;
 };
 
 int main(int argc, char** argv) {
@@ -187,11 +201,11 @@ int main(int argc, char** argv) {
   GreeterClient greeter(
       grpc::CreateChannel(target_str, grpc::InsecureChannelCredentials()));
 
-  for (int i = 0; i < 10; ++i) {
+  for (int i = 0; i < 100; ++i) {
       async_task<void> t = greeter.SayHello_GetFeatureCo();
       print(PRI2, "Before wait\n");
       t.wait();
-      print(PRI2, "after wait\n");
+      print(PRI2, "After wait\n");
 
       print(PRI2, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
       std::this_thread::sleep_for(std::chrono::milliseconds(10));

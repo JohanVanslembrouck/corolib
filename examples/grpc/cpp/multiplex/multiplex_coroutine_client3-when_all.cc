@@ -1,5 +1,5 @@
 /**
- * @file multiplex_coroutine_client3.cc
+ * @file multiplex_coroutine_client3-when_all.cc
  * @brief Added coroutine implementation.
  * Based on the implementation in multiplex_coroutine_client2.cc.
  * In this variant start_SayHello and start_GetFeature return async_operation<Status> instead of async_operation<void>.
@@ -49,6 +49,7 @@
 #include <corolib/commservice.h>
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
+#include <corolib/when_all.h>
 
 ABSL_FLAG(std::string, target, "localhost:50051", "Server address");
 
@@ -68,10 +69,10 @@ public:
     async_task<void> SayHello_GetFeatureCo() {
         async_task<std::string> t1 = SayHelloAsync();
         async_task<std::string> t2 = GetFeatureAsync();
-        std::string helloReply = co_await t1;
-        std::string featureReply = co_await t2;
-        std::cout << helloReply;
-        std::cout << featureReply;
+        when_all wa(t1, t2);
+        co_await wa;
+        std::cout << t1.get_result();
+        std::cout << t2.get_result();
         co_return;
     }
 

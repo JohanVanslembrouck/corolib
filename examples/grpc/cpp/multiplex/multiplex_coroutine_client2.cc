@@ -3,7 +3,7 @@
  * @brief Added coroutine implementation.
  * Based on the implementation in multiplex_client2.cc.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 /*
@@ -244,11 +244,11 @@ int main(int argc, char** argv) {
 #if USE_ORIGINAL
   greeter.SayHello_GetFeature();
 #else
-  for (int i = 0; i < 10; ++i) {
+  for (int i = 0; i < 100; ++i) {
       async_task<void> t = greeter.SayHello_GetFeatureCo();
       print(PRI2, "Before wait\n");
       t.wait();
-      print(PRI2, "after wait\n");
+      print(PRI2, "After wait\n");
 
       print(PRI2, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
