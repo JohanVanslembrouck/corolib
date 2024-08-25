@@ -70,7 +70,6 @@ public:
         async_task<std::string> t1 = SayHelloAsync();
         async_task<std::string> t2 = GetFeatureAsync();
         when_any wa(t1, t2);
-        //when_any wa({ &t1, &t2 });
         for (int i = 0; i < 2; ++i) {
             int s = co_await wa;
             switch (s) {
@@ -121,7 +120,7 @@ public:
                     static_cast<async_operation<Status>*>(om_async_operation);
                 if (om_async_operation_t) {
                     om_async_operation_t->set_result(status);
-                    if (use_mutex) {
+                    if (m_use_mutex) {
                         std::lock_guard<std::mutex> guard(m_mutex);
                         om_async_operation_t->completed();
                     }
@@ -172,7 +171,7 @@ public:
                 if (om_async_operation_t) {
                     om_async_operation_t->set_result(status);
                     om_async_operation_t->set_result(status);
-                    if (use_mutex) {
+                    if (m_use_mutex) {
                         std::lock_guard<std::mutex> guard(m_mutex);
                         om_async_operation_t->completed();
                     }
@@ -183,9 +182,13 @@ public:
             });
     }
 
+    void set_use_mutex(bool use_mutex) {
+        m_use_mutex = use_mutex;
+    }
+
 private:
     std::shared_ptr<Channel> channel_;
-    bool use_mutex = true;
+    bool m_use_mutex = true;
     std::mutex m_mutex;
 };
 
@@ -203,9 +206,23 @@ int main(int argc, char** argv) {
 
   for (int i = 0; i < 100; ++i) {
       async_task<void> t = greeter.SayHello_GetFeatureCo();
-      print(PRI2, "Before wait\n");
+      print(PRI1);
+      print(PRI2, "Before wait: i = %d\n", i);
       t.wait();
-      print(PRI2, "After wait\n");
+      print(PRI2, "After wait: i = %d\n", i);
+
+      print(PRI2, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+
+  greeter.set_use_mutex(false);
+
+  for (int i = 0; i < 100; ++i) {
+      async_task<void> t = greeter.SayHello_GetFeatureCo();
+      print(PRI1);
+      print(PRI2, "Before wait: i = %d\n", i);
+      t.wait();
+      print(PRI2, "After wait: i = %d\n", i);
 
       print(PRI2, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
       std::this_thread::sleep_for(std::chrono::milliseconds(10));

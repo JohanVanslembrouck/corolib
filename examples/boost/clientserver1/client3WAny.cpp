@@ -104,13 +104,25 @@ async_task<int> mainflowWA0(CommClient& c1, CommClient& c2, CommClient& c3)
         for (int i = 0; i < 3; i++) {
             print(PRI1, "mainflowWA0: int r = co_await war;\n");
             int r = co_await war;
-            print(PRI1, "mainflowWA0: war %d completed\n", r);
+            switch (r) {
+            case 0:
+                print(PRI1, "mainflowWA0: r = 0: sr1.get_result() = %s", sr1.get_result().c_str());
+                break;
+            case 1:
+                print(PRI1, "mainflowWA0: r = 1: sr2.get_result() = %s", sr2.get_result().c_str());
+                break;
+            case 2:
+                print(PRI1, "mainflowWA0: r = 2: sr3.get_result() = %s", sr3.get_result().c_str());
+                break;
+            default:
+                print(PRI1, "mainflowWA0: co_await war returned invalid value %d\n", r);
+            }
         }
-        
+#if 0
         print(PRI1, "mainflowWA0: sr1.get_result() = %s", sr1.get_result().c_str());
         print(PRI1, "mainflowWA0: sr2.get_result() = %s", sr2.get_result().c_str());
         print(PRI1, "mainflowWA0: sr3.get_result() = %s", sr3.get_result().c_str());
-
+#endif
         // Closing
         print(PRI1, "mainflowWA0: c1.stop();\n");
         c1.stop();
@@ -225,13 +237,25 @@ async_task<int> mainflowWA1(std::initializer_list<CommClient*> client_il)
         for (int j = 0; j < nrClients; j++) {
             print(PRI1, "mainflowWA1: int r = co_await war;\n");
             int r = co_await war;
-            print(PRI1, "mainflowWA1: war %d completed\n", r);
+            switch (r) {
+            case 0:
+                print(PRI1, "mainflowWA1: r = 0: asyncsr[0].get_result() = %s", asyncsr[r].get_result().c_str());
+                break;
+            case 1:
+                print(PRI1, "mainflowWA1: r = 1: asyncsr[1].get_result() = %s", asyncsr[r].get_result().c_str());
+                break;
+            case 2:
+                print(PRI1, "mainflowWA1: r = 2: asyncsr[2].get_result() = %s", asyncsr[r].get_result().c_str());
+                break;
+            default:
+                print(PRI1, "mainflowWA1: co_await war returned invalid value %d\n", r);
+            }
         }
-        
+#if 0
         for (int j = 0; j < nrClients; j++) {
             print(PRI1, "mainflowWA1: asyncsr[%d].get_result() = %s", j, asyncsr[j].get_result().c_str());
         }
-        
+#endif
         // Closing
         for (int j = 0; j < nrClients; j++) {
             print(PRI1, "mainflowWA1: clients[%d]->stop();\n", j);
@@ -334,13 +358,25 @@ async_task<int> mainflowWA2(std::initializer_list<CommClient*> client_il)
         for (int j = 0; j < nrClients; j++) {
             print(PRI1, "mainflowWA2: int r = co_await war;\n");
             int r = co_await war;
-            print(PRI1, "mainflowWA2: war %d completed\n", r);
+            switch (r) {
+            case 0:
+                print(PRI1, "mainflowWA2: r = 0: asyncsr[0].get_result() = %s", asyncsr[r].get_result().c_str());
+                break;
+            case 1:
+                print(PRI1, "mainflowWA2: r = 1: asyncsr[1].get_result() = %s", asyncsr[r].get_result().c_str());
+                break;
+            case 2:
+                print(PRI1, "mainflowWA2: r = 2: asyncsr[2].get_result() = %s", asyncsr[r].get_result().c_str());
+                break;
+            default:
+                print(PRI1, "mainflowWA2: co_await war returned invalid value %d\n", r);
+            }
         }
-        
+#if 0
         for (int j = 0; j < nrClients; j++) {
             print(PRI1, "mainflowWA2: asyncsr[%d].get_result() = %s", j, asyncsr[j].get_result().c_str());
         }
-        
+#endif
         // Closing
         for (int j = 0; j < nrClients; j++) {
             print(PRI1, "mainflowWA2: clients[%d]->stop();\n", j);
@@ -553,13 +589,25 @@ async_task<int> mainflowWA5(std::initializer_list<CommClient*> client_il)
         for (int j = 0; j < nrClients; j++) {
             print(PRI1, "mainflowWA5: int r = co_await war;\n");
             int r = co_await war;
-            print(PRI1, "mainflowWA5: war %d completed\n", r);
+            switch (r) {
+            case 0:
+                print(PRI1, "mainflowWA5: r = 0: asyncsr[0].get_result() = %s", asyncsr[r].get_result().c_str());
+                break;
+            case 1:
+                print(PRI1, "mainflowWA5: r = 1: asyncsr[1].get_result() = %s", asyncsr[r].get_result().c_str());
+                break;
+            case 2:
+                print(PRI1, "mainflowWA5: r = 2: asyncsr[2].get_result() = %s", asyncsr[r].get_result().c_str());
+                break;
+            default:
+                print(PRI1, "mainflowWA5: co_await war returned invalid value %d\n", r);
+            }
         }
-
+#if 0
         for (int j = 0; j < nrClients; j++) {
             print(PRI1, "mainflowWA5: asyncsr[%d].get_result() = %s", j, asyncsr[j].get_result().c_str());
         }
-
+#endif
         // Closing
         for (int j = 0; j < nrClients; j++) {
             print(PRI1, "mainflowWA5: clients[%d]->stop();\n", j);
@@ -651,13 +699,25 @@ async_task<int> mainflowWA6(std::initializer_list<CommClient*> client_il)
         for (int j = 0; j < nrClients; j++) {
             print(PRI1, "mainflowWA6: int r = co_await war;\n");
             int r = co_await war;
-            print(PRI1, "mainflowWA6: war %d completed\n", r);
+            switch (r) {
+            case 0:
+                print(PRI1, "mainflowWA6: r = 0: asyncsr[0].get_result() = %s", asyncsr[r].get_result().c_str());
+                break;
+            case 1:
+                print(PRI1, "mainflowWA6: r = 1: asyncsr[1].get_result() = %s", asyncsr[r].get_result().c_str());
+                break;
+            case 2:
+                print(PRI1, "mainflowWA6: r = 2: asyncsr[2].get_result() = %s", asyncsr[r].get_result().c_str());
+                break;
+            default:
+                print(PRI1, "mainflowWA6: co_await war returned invalid value %d\n", r);
+            }
         }
-
+#if 0
         for (int j = 0; j < nrClients; j++) {
             print(PRI1, "mainflowWA6: asyncsr[%d].get_result() = %s", j, asyncsr[j].get_result().c_str());
         }
-
+#endif
         // Closing
         for (int j = 0; j < nrClients; j++) {
             print(PRI1, "mainflowWA6: clients[%d]->stop();\n", j);

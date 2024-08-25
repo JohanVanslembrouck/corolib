@@ -52,9 +52,14 @@ async_task<int> Class1430a::coroutine4()
     int idx = -1;
     for (int i = 0; i < 2; i++)
     {
-        print(PRI1, "coroutine4: idx : co_await wa;\n");
+        print(PRI1, "coroutine4(): idx = co_await wa;\n");
         idx = co_await wa;
-        print(PRI1, "coroutine4: idx = %d\n", idx);
+        switch (idx)
+        {
+        case 0: print(PRI1, "coroutine4(): idx = %d: a.get_result() = %d\n", idx, a.get_result()); break;
+        case 1: print(PRI1, "coroutine4(): idx = %d: b.get_result() = %d\n", idx, b.get_result()); break;
+        default: print(PRI1, "coroutine4(): co_await wa returned invalid value %d\n", idx); break;
+        }
     }
     print(PRI1, "coroutine4(): int v = a.get_result() + b.get_result();\n");
     int v = a.get_result() + b.get_result();

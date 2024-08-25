@@ -71,9 +71,9 @@ void async_op(std::function<void(int)>&& completionHandler)
         // Normally we should not use delays in an asynchronous application.
         // The following delay is only used to investigate possible problems caused by it,
         // especially when the completionHandler in the thread runs before the following delay expires.
-		print(PRI1, "async_op(): before std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", delay2);
-        std::this_thread::sleep_for(std::chrono::milliseconds(delay2));
-        print(PRI1, "async_op(): after std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", delay2);
+        //print(PRI1, "async_op(): before std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", delay2);
+        //std::this_thread::sleep_for(std::chrono::milliseconds(delay2));
+        //print(PRI1, "async_op(): after std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", delay2);
 
         break;
     }

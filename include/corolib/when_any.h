@@ -50,14 +50,22 @@ namespace corolib
         async_base* m_element = nullptr;
         when_any_one m_when_any_one;
         
-        when_any_info()
-            : m_element(nullptr)
+        when_any_info(async_base* element = nullptr)
+            : m_element(element)
         {
+            print(PRI2, "%p: when_any_info::when_any_info(element = %p)\n", this, element);
         }
 
         when_any_info(const when_any_info& other)
             : m_element(other.m_element)
         {
+            print(PRI2, "%p: when_any_info::when_any_info(&other = %p)\n", this, &other);
+        }
+
+        ~when_any_info()
+        {
+            print(PRI2, "%p: when_any_info::~when_any_info()\n", this, m_element);
+            m_element = nullptr;
         }
 
         when_any_info(when_any_info&&) noexcept = default;
@@ -95,8 +103,7 @@ namespace corolib
             int i = 0;
             for (async_base* async_op : async_ops)
             {
-                when_any_info info;
-                info.m_element = async_op;
+                when_any_info info(async_op);
                 m_when_any_info_vector.push_back(info);
                 async_op->setWaitAny(&m_when_any_info_vector[i].m_when_any_one);
                 // Retrieve status from the async_op and save it
@@ -117,10 +124,8 @@ namespace corolib
             
             for (int i = 0; i < size; i++)
             {
-                // Only place the object in m_elements if it has not yet been completed.
                 async_base* async_op = pasync_ops[i];
-                when_any_info info;
-                info.m_element = async_op;
+                when_any_info info(async_op);
                 m_when_any_info_vector.push_back(info);
                 async_op->setWaitAny(&m_when_any_info_vector[i].m_when_any_one);
                 // Retrieve status from the async_op and save it
@@ -141,6 +146,10 @@ namespace corolib
             print(PRI2, "%p: when_any::~when_any()\n", this);
             for (std::size_t i = 0; i < m_when_any_info_vector.size(); i++)
             {
+                async_base* async_op = m_when_any_info_vector[i].m_element;
+                print(PRI2, "%p: when_any::~when_any(): i = %d, async_op = %p\n", this, i, async_op);
+                if (async_op)
+                    async_op->setWaitAny(nullptr);
                 m_when_any_info_vector[i].m_element = nullptr;
             }
             m_when_any_info_vector.clear();
@@ -267,11 +276,10 @@ namespace corolib
         template<typename T, typename... AsyncBaseTypes,
                  typename std::enable_if<std::is_base_of_v<async_base, T>, int>::type = 0>
         void make_when_any(int i, T& t, AsyncBaseTypes&... others) {
-            async_base* async_op = static_cast<async_base*>(&t);
             print(PRI2, "%p: make_when_any() - begin\n", this);
 
-            when_any_info info;
-            info.m_element = async_op;
+            async_base* async_op = static_cast<async_base*>(&t);
+            when_any_info info(async_op);
             m_when_any_info_vector.push_back(info);
             async_op->setWaitAny(&m_when_any_info_vector[i].m_when_any_one);
             // Retrieve status from the async_op and save it
@@ -324,8 +332,7 @@ namespace corolib
 
             for (int i = 0; i < size; i++)
             {
-                when_any_infoT<TYPE> q;
-                q.m_element = &aws[i];
+                when_any_infoT<TYPE> q(&aws[i]);
                 m_when_any_info_vector.push_back(q);
                 aws[i].setWaitAny(&m_when_any_info_vector[i].m_when_any_one);
                 // Retrieve status from the async_op and save it
@@ -346,6 +353,10 @@ namespace corolib
             print(PRI2, "%p: when_anyT::~when_anyT()\n", this);
             for (std::size_t i = 0; i < m_when_any_info_vector.size(); i++)
             {
+                async_base* async_op = m_when_any_info_vector[i].m_element;
+                print(PRI2, "%p: when_anyT::~when_anyT(): i = %d, async_op = %p\n", this, i, async_op);
+                if (async_op)
+                    async_op->setWaitAny(nullptr);
                 m_when_any_info_vector[i].m_element = nullptr;
             }
             m_when_any_info_vector.clear();
