@@ -4,7 +4,7 @@ project (corolib)
 
 # If you have installed Boost and you want to use it, set the following variable to TRUE:
 set(BOOST_INSTALLED FALSE)
-# If you heva installed gRPC and you want to use it, set the following variable to TRUE:
+# If you have installed gRPC and you want to use it, set the following variable to TRUE:
 set(GRPC_INSTALLED FALSE)
 # If you have installed TAO and you want to use it, set the following variable to TRUE:
 set(TAO_INSTALLED FALSE)
@@ -12,6 +12,8 @@ set(TAO_INSTALLED FALSE)
 set(QT5_INSTALLED FALSE)
 # If you have installed libevent and you want to use it, set the following variable to TRUE:
 set(LIBEVENT_INSTALLED FALSE)
+# If you have installed curl and you want to use it, set the following variable to TRUE:
+set(LIBCURL_INSTALLED FALSE)
 
 # If you want to install and use GoogleTest, set the following variable to TRUE:
 set(USE_GOOGLETEST TRUE)
@@ -52,6 +54,10 @@ endif()
 
 if (LIBEVENT_INSTALLED)
     add_subdirectory(examples/libevent)
+endif()
+
+if (LIBCURL_INSTALLED)
+    add_subdirectory(examples/curl)
 endif()
 
 if (WIN32)

@@ -32,8 +32,10 @@ For its communication, corolib currently uses any of the following frameworks:
 * ROS2 (Humble)
 * TAO (The ACE ORB)
 * cppcoro (WIN32 API) (included in corolib)
+* curl
 
-You do not have to install Boost, Qt, gRPC, ROS2 or TAO on your computer before building corolib from the top-level CMakeLists.txt file.
+You do not have to install Boost, Qt, gRPC, libevent, ROS2, TAO or curl on your computer 
+before building corolib from the top-level CMakeLists.txt file.
 Without any of these libraries, you can still build and run many examples illustrating the use of corolib.
 
 You can install any of the mentioned communication libraries one by one and then include them in the build by setting a flag in the top-level CMakeLists.txt file.
@@ -87,7 +89,8 @@ In the top-level CMakeLists.txt, adapt BOOST_ROOT to your own installation of th
 
     set(BOOST_ROOT C:/local/boost/boost_1_82_0/)
 
-After installing Boost ASIO, set the BOOST_INSTALLED flag to TRUE in the top-level CMakelists.txt file.
+After installing Boost ASIO, set the BOOST_INSTALLED flag to TRUE in the top-level CMakelists.txt file
+if you want to build the Boost eaamples in examples/boost and examples/corolab.
 
 #### Qt
 
@@ -98,7 +101,8 @@ Download the Qt Online Installer for your operating system (macOS, Windows, Linu
 
 Run the installer. I installed Qt in C:\Qt.
 
-After installing Qt5, set the QT5_INSTALLED flag to TRUE in the top-level CMakelists.txt file.
+After installing Qt5, set the QT5_INSTALLED flag to TRUE in the top-level CMakelists.txt file
+if you want to build the Qt5 eaamples in examples/qt5.
 
 You can build the Qt examples from the top-level CMakeLists.txt file.
 In addition, you can also build them from the qt5.pro file in the top-level directory.
@@ -129,7 +133,8 @@ Finally, I added the following folders to my PATH:
 	C:\local\vcpkg\installed\x64-windows\tools\protobuf
 	C:\local\vcpkg\installed\x64-windows\tools\grpc
 
-After installing gRPC, set the GRPC_INSTALLED flag to TRUE in the top-level CMakelists.txt file.
+After installing gRPC, set the GRPC_INSTALLED flag to TRUE in the top-level CMakelists.txt file
+if you want to build the gRPC eaamples in examples/grpc.
 
 #### ROS 2
 
@@ -181,7 +186,8 @@ The VERSION changes with every upgrade of Visual Studio (2022).
 The last line is needed if you want to run the TAO IDL compiler (tao_idl in C:\local\ACE_wrappers\bin) from the command line.
 If the last line is not present, running tao_idl will fail with the message that CL.exe is not found.
 
-After installing TAO, set the TAO_INSTALLED flag to TRUE in the top-level CMakelists.txt file.
+After installing TAO, set the TAO_INSTALLED flag to TRUE in the top-level CMakelists.txt file
+if you want to build the TAO eaamples in examples/tao.
 
 #### libevent
 
@@ -202,7 +208,32 @@ Edit the Environment Variables and add the following directory to the Path varia
 
     C:\local\libevent\build\bin\Release
 
-After installing libevent, set the LIBEVENT_INSTALLED flag to TRUE in the top-level CMakelists.txt file.
+After installing libevent, set the LIBEVENT_INSTALLED flag to TRUE in the top-level CMakelists.txt file
+if you want to build the libevent eaamples in examples/libevent.
+
+#### curl
+
+Download the source code of the latest release of curl from https://curl.se/download.html.
+Early September 2024, I downloaded curl-8.9.1.zip.
+
+I placed curl-8.9.1.zip in folder C:\local and unzipped it, leading to C:\local\curl-8.9.1.
+
+Build curl as follows:
+
+    cd C:\local\curl-8.9.1
+    md build
+    cd build
+    cmake -G "Visual Studio 17" ..
+    cmake --build . --config Release
+
+Visual Studio 17 corresponds to Visual Studio 2022.
+
+Edit the Environment Variables and add the following directory to the Path variable:
+
+    C:\local\curl-8.9.1\build\bin\Release
+
+After installing curl, set the CURL_INSTALLED flag to TRUE in the top-level CMakelists.txt file 
+if you want to build the curl examples in examples/curl.
 
 ### On Ubuntu 22.04 LTS
 
@@ -250,7 +281,8 @@ On my computer, the Boost libraries (version 1.74.0) are located in
 
 	/usr/lib/x86_64-linux-gnu/
 
-After installing Boost ASIO, set the BOOST_INSTALLED flag to TRUE in the top-level CMakelists.txt file.
+After installing Boost ASIO, set the BOOST_INSTALLED flag to TRUE in the top-level CMakelists.txt file
+if you want to build the Boost eaamples in examples/boost and examples/corolab.
 
 #### Qt
 
@@ -259,7 +291,8 @@ https://askubuntu.com/questions/1404263/how-do-you-install-qt-on-ubuntu22-04:
 
 	sudo apt install -y qtcreator qtbase5-dev qt5-qmake cmake
 
-After installing Qt5, set the QT5_INSTALLED flag to TRUE in the top-level CMakelists.txt file.
+After installing Qt5, set the QT5_INSTALLED flag to TRUE in the top-level CMakelists.txt file
+if you want to build the Qt5 eaamples in examples/qt5.
 
 You can build the Qt examples from the top-level CMakeLists.txt file.
 In addition, you can also build them from the qt5.pro file in the top-level directory.
@@ -305,7 +338,8 @@ or, in my setup:
 
     export PATH=$HOME/grpcbin/bin:$PATH
 
-After installing gRPC, set the GRPC_INSTALLED flag to TRUE in the top-level CMakelists.txt file.
+After installing gRPC, set the GRPC_INSTALLED flag to TRUE in the top-level CMakelists.txt file
+if you want to build the gRPC eaamples in examples/grpc.
 
 #### ROS 2
 
@@ -379,7 +413,8 @@ Add the following lines to .bashrc:
     export PATH=$ACE_ROOT/bin:$PATH
     export LD_LIBRARY_PATH=$ACE_ROOT/lib:$LD_LIBRARY_PATH
 
-After installing TAO, set the TAO_INSTALLED flag to TRUE in the top-level CMakelists.txt file.
+After installing TAO, set the TAO_INSTALLED flag to TRUE in the top-level CMakelists.txt file
+if you want to build the TAO eaamples in examples/tao.
 
 #### libevent
 
@@ -387,7 +422,15 @@ The installation instructions can be found here: https://github.com/libevent/lib
 
 libevent was already installed on my Ubuntu installation, so I did not have to do anything.
 
-Set the LIBEVENT_INSTALLED flag to TRUE in the top-level CMakelists.txt file.
+Set the LIBEVENT_INSTALLED flag to TRUE in the top-level CMakelists.txt file
+if you want to build the libevent eaamples in examples/libevent.
+
+#### curl
+
+curl is by default installed on Ubuntu (and other Linux) distributions, so I did not have to do anything.
+
+Set the CURL_INSTALLED flag to TRUE in the top-level CMakelists.txt file 
+if you want to build the curl eaamples in examples/curl.
 
 ## Organization of corolib
 
