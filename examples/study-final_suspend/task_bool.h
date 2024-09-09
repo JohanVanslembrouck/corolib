@@ -4,7 +4,7 @@
  *
  * Contains the task class that is used in p0110_bool.cpp.
  * 
- * task::promise_type::final_awaiter::await_suspend() returns void.
+ * task::promise_type::final_awaiter::await_suspend() returns bool.
  * task::awaiter::await_suspend() returns bool.
  * 
  * @author Lewis Baker
@@ -43,7 +43,6 @@ public:
 
         void return_value(int v) noexcept {
             value = v;
-            //if (continuation) continuation.resume();
         }
 
         void unhandled_exception() noexcept {
@@ -54,11 +53,15 @@ public:
             bool await_ready() noexcept {
                 return false;
             }
-            void await_suspend(coroutine_handle<promise_type> h) noexcept {
+            bool await_suspend(coroutine_handle<promise_type> h) noexcept {
                 auto& promise = h.promise();
                 if (promise.ready.exchange(true, std::memory_order_acq_rel)) {
                     h.promise().continuation.resume();
                 }
+                // This function must return true.
+                // Otherwise the coroutine will run to an end and the coroutine frame will be deleted.
+                // The call of get_result() will retrieve the result from released memory.
+                return true;
             }
             void await_resume() noexcept {}
         };

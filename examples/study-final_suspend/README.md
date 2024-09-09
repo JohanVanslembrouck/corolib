@@ -155,7 +155,7 @@ that all promise_type objects are released.
 
 ### await_suspend() returns bool
 
-In this implementation, task::promise_type::final_awaiter::await_suspend() still returns void, but task::awaiter::await_suspend() returns bool.
+In this implementation, task::promise_type::final_awaiter::await_suspend() and task::awaiter::await_suspend() returns bool.
 
 The examples p13X0_sn.cpp (lazy start coroutines) and p13X0e_sn.cpp (eager start coroutines) show that the results are correct and
 that all promise_type objects are released. 
