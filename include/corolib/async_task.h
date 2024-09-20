@@ -81,9 +81,12 @@ apart from the common base class async_base.
 
 // Some compilers require the copy or move constructor to be present
 // to be able to return an object from get_return_object().
-// For other compilers (MSVC, g++11) DECLARE_MOVE_CONSTRUCTORS_AS_DELETED can be set to 1
+// For other compilers (MSVC, g++11) DECLARE_MOVE_CONSTRUCTORS_AS_DELETED can be set to 1.
+// However, if applications make use of assignments,
+// e.g. as in: tasks[i] = std::move(clientTask());
+// set the next two compiler directives to 0
 #define DECLARE_MOVE_CONSTRUCTORS_AS_DELETED 0
-#define DECLARE_MOVE_ASSIGMENT_OPERATORS_AS_DELETED 1
+#define DECLARE_MOVE_ASSIGMENT_OPERATORS_AS_DELETED 0
 
 #define USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN 1
 #define USE_RESULT_FROM_COROUTINE_OBJECT 0
@@ -174,6 +177,9 @@ async_task | async_ltask
 
 namespace corolib
 {
+    /**
+     * @brief class result_t
+     */
     template<typename TYPE>
     class result_t
     {
@@ -281,13 +287,20 @@ namespace corolib
 #endif
         }
         
-        bool is_ready() {
+        bool is_ready()
+        {
             bool ready = (m_ready == completion_status::COMPLETED);
             print(PRI2, "%p: result_t::is_ready(): return %d;\n", this, ready);
             return ready;
         }
 
-        bool wait_for_result() {
+        void reset()
+        {
+            m_ready = completion_status::INITIAL;
+        }
+
+        bool wait_for_result()
+        {
             bool wait = false;
 #if USE_IN_MT_APPS
             completion_status expected = completion_status::INITIAL;
@@ -325,7 +338,8 @@ namespace corolib
             return m_value;
         }
         
-        bool wait_for_semaphore_release() {
+        bool wait_for_semaphore_release()
+        {
             print(PRI2, "%p: result_t::wait_for_semaphore_release(): return %d;\n", this, m_wait_for_semaphore_release);
             return m_wait_for_semaphore_release;
         }
@@ -343,6 +357,10 @@ namespace corolib
         bool m_wait_for_semaphore_release{false};
     };
 
+
+    /**
+     * @brief class async_task_base
+     */
     template<typename TYPE>
     class async_task_base : public async_base, private coroutine_tracker
     {
@@ -350,6 +368,34 @@ namespace corolib
     
         struct promise_type;
         using handle_type = std::coroutine_handle<promise_type>;
+
+        /**
+         * @brief this constructor is called from promise_type::get_return_object()
+         */
+        async_task_base(handle_type h)
+            : m_coro_handle(h)
+#if USE_RESULT_FROM_COROUTINE_OBJECT
+            , m_result{ }
+#endif
+        {
+            print(PRI2, "%p: async_task_base::async_task_base(handle_type h): promise = %p\n", this, &m_coro_handle.promise());
+#if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
+            m_coro_handle.promise().link_coroutine_object(this);
+#endif
+        }
+
+        /**
+         * @brief this constructor can be used to construct a "placeholder" async_task object
+         * to which a "real" async_task object (constructed by the previous constuctor)
+         * will be assigned.
+         */
+        async_task_base()
+            : m_coro_handle(nullptr)
+#if USE_RESULT_FROM_COROUTINE_OBJECT
+            , m_result{ }
+#endif
+        {
+        }
 
         async_task_base(const async_task_base&) = delete;
 #if DECLARE_MOVE_CONSTRUCTORS_AS_DELETED
@@ -374,12 +420,9 @@ namespace corolib
 #endif
         }
 #endif
-        ~async_task_base()
+
+        void destroy_coroutine_frame()
         {
-            print(PRI2, "%p: async_task_base::~async_task_base()\n", this);
-#if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
-            coroutine_destructor_admin();
-#endif
             if (m_coro_handle)  // Does the coroutine_handle still contain a valid pointer to the coroutine frame/state?
             {
                 if (m_coro_handle.done()) {     // Has the coroutine reached the final suspend point (and cleared the "resume" function pointer)?
@@ -388,22 +431,19 @@ namespace corolib
                     m_coro_handle.destroy();    // Call "destroy" function
                 }
                 else {
-                    print(PRI1, "%p: async_task_base::~async_task_base(): m_coro_handle.done() returned false\n", this);
+                    print(PRI1, "%p: async_task_base::destroy_coroutine_frame(): m_coro_handle.done() returned false\n", this);
                     ++tracker_obj.nr_dying_coroutines_handle_not_done;
                 }
             }
         }
 
-        async_task_base(handle_type h)
-            : m_coro_handle(h)
-#if USE_RESULT_FROM_COROUTINE_OBJECT
-            , m_result{ }
-#endif
+        ~async_task_base()
         {
-            print(PRI2, "%p: async_task_base::async_task_base(handle_type h): promise = %p\n", this, &m_coro_handle.promise());
+            print(PRI2, "%p: async_task_base::~async_task_base()\n", this);
 #if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
-            m_coro_handle.promise().link_coroutine_object(this);
+            coroutine_destructor_admin();
 #endif
+            destroy_coroutine_frame();
         }
 
         async_task_base& operator = (const async_task_base&) = delete;
@@ -413,6 +453,7 @@ namespace corolib
         async_task_base& operator = (async_task_base&& other)
         {
             print(PRI2, "%p: async_task_base::async_task_base = (async_task_base&& other)\n", this);
+            destroy_coroutine_frame();
             m_coro_handle = other.m_coro_handle;
 #if USE_RESULT_FROM_COROUTINE_OBJECT
             m_result = std::move(other.m_result);
@@ -486,13 +527,25 @@ namespace corolib
 
         bool is_ready() override
         {
+            bool ready = false;
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
-            const bool ready = m_coro_handle.promise().m_result.is_ready();
+            if (m_coro_handle)
+                ready = m_coro_handle.promise().m_result.is_ready();
 #else
-            const bool ready = m_result.is_ready();
+            ready = m_result.is_ready();
 #endif
             print(PRI2, "%p: async_task_base::is_ready() returns %d\n", this, ready);
             return ready;
+        }
+
+        void reset()
+        {
+#if !USE_RESULT_FROM_COROUTINE_OBJECT
+            if (m_coro_handle)
+                m_coro_handle.promise().m_result.reset();
+#else
+            m_result.reset();
+#endif
         }
 
         /**
@@ -585,6 +638,39 @@ namespace corolib
 #endif
             }
 
+            /**
+             * @brief inform_interested_parties is an auxiliary function that
+             * informs the coroutine that references this async_task object using a when_all or a when_any
+             * or a function that awaits the completion of this async_task in a different thread
+             * that the async_task has completed.
+             * The function is called from return_value.
+             * See async_task_void::promise_type::inform_interested_parties and
+             * async_operation_base::inform_interested_parties for similar functions.
+             */
+            void inform_interested_parties()
+            {
+                print(PRI2, "%p: async_task_base::promise_type::inform_interested_parties():\n\tm_ctr = %p, m_waitany = %p, m_continuation = %p\n",
+                    this, m_ctr, m_waitany, m_continuation);
+                if (m_ctr)
+                {
+                    print(PRI2, "%p: async_task_base::promise_type::inform_interested_parties(): before m_ctr->completed();\n", this);
+                    m_continuation = m_ctr->completed();
+                    print(PRI2, "%p: async_task_base::promise_type::inform_interested_parties(): after m_ctr->completed();\n", this);
+                }
+                else if (m_waitany)
+                {
+                    print(PRI2, "%p: async_task_base::promise_type::inform_interested_parties(): before m_waitany->completed();\n", this);
+                    m_continuation = m_waitany->completed();
+                    print(PRI2, "%p: async_task_base::promise_type::inform_interested_parties(): after m_waitany->completed();\n", this);
+                }
+                else if (m_result.wait_for_semaphore_release())
+                {
+                    print(PRI2, "%p: async_task_base::promise_type::inform_interested_parties(): before m_sema.signal();\n", this);
+                    m_sema.signal();
+                    print(PRI2, "%p: async_task_base::promise_type::inform_interested_parties(): after m_sema.signal();\n", this);
+                }
+            }
+
             void return_value(TYPE v)
             {
                 print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): begin\n", this);
@@ -592,34 +678,13 @@ namespace corolib
                 m_result.set_value(v);
 #else
                 print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): m_coroutine_object = %p (m_coroutine_valid = %d)\n",
-                            this, m_coroutine_object, m_coroutine_valid);
+                    this, m_coroutine_object, m_coroutine_valid);
                 if (m_coroutine_valid)
                 {
                     m_coroutine_object->m_result.set_value(v);
                 }
 #endif
-                print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v):\n\tm_ctr = %p, m_waitany = %p, m_continuation = %p\n",
-                            this, m_ctr, m_waitany, m_continuation);
-                if (m_ctr)
-                {
-                    print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): before m_ctr->completed();\n", this);
-                    m_continuation = m_ctr->completed();
-                    print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): after m_ctr->completed();\n", this);
-                    return;
-                }
-                if (m_waitany)
-                {
-                    print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): before m_waitany->completed();\n", this);
-                    m_continuation = m_waitany->completed();
-                    print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): after m_waitany->completed();\n", this);
-                    return;
-                }
-                if (m_result.wait_for_semaphore_release())
-                {
-                    print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): before m_sema.signal();\n", this);
-                    m_sema.signal();
-                    print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): after m_sema.signal();\n", this);
-                }
+                inform_interested_parties();
                 print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): end\n", this);
             }
 
@@ -698,6 +763,9 @@ namespace corolib
     }; // template<typename TYPE> class async_task_base
 
 
+    /**
+     * @brief class async_task
+     */
     template<typename TYPE>
     class async_task : public async_task_base<TYPE>
     {
@@ -706,12 +774,22 @@ namespace corolib
 
         struct promise_type;
         using handle_type_own = std::coroutine_handle<promise_type>;
-
+ 
+        /** 
+         * @brief this constructor is called from promise_type::get_return_object()
+         */
         async_task(handle_type h)
             : async_task_base<TYPE>(h)
         {
             print(PRI2, "%p: async_task<TYPE>::async_task(handle_type h)\n", this);
         }
+
+        /**
+        * @brief this constructor can be used to construct a "placeholder" async_task object
+        * to which a "real" async_task object (constructed by the previous constuctor)
+        * will be assigned.
+        */
+        async_task() = default;
 
         /**
          * @brief start is a dummy function for eager start coroutines, but it required because
@@ -874,6 +952,9 @@ namespace corolib
     }; // template<typename TYPE> class async_task
 
 
+    /**
+     * @class async_ltask
+     */
     template<typename TYPE>
     class async_ltask : public async_task_base<TYPE>
     {
@@ -883,11 +964,21 @@ namespace corolib
         struct promise_type;
         using handle_type_own = std::coroutine_handle<promise_type>;
 
+        /**
+         * @brief this constructor is called from promise_type::get_return_object()
+         */
         async_ltask(handle_type h)
             : async_task_base<TYPE>(h)
         {
             print(PRI2, "%p: async_ltask<TYPE>::async_task(handle_type h)\n", this);
         }
+
+        /**
+        * @brief this constructor can be used to construct a "placeholder" async_task object
+        * to which a "real" async_task object (constructed by the previous constuctor)
+        * will be assigned.
+        */
+        async_ltask() = default;
 
         /**
          * @brief start starts a lazy coroutine.
@@ -1055,12 +1146,43 @@ namespace corolib
     // ---------------------------------------------------------------------
     // ---------------------------------------------------------------------
 
+    /**
+     * @brief class async_task_void
+     */
     class async_task_void : public async_base, private coroutine_tracker
     {
     public:
 
         struct promise_type;
         using handle_type = std::coroutine_handle<promise_type>;
+
+        /**
+         * @brief this constructor is called from promise_type::get_return_object()
+         */
+        async_task_void(handle_type h)
+            : m_coro_handle{ h }
+#if USE_RESULT_FROM_COROUTINE_OBJECT
+            , m_result{ }
+#endif
+        {
+            print(PRI2, "%p: async_task_base::async_task_base(handle_type h): promise = %p\n", this, &m_coro_handle.promise());
+#if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
+            m_coro_handle.promise().link_coroutine_object(this);
+#endif
+        }
+
+        /**
+         * @brief this constructor can be used to construct a "placeholder" async_task object
+         * to which a "real" async_task object (constructed by the previous constuctor)
+         * will be assigned.
+         */
+        async_task_void()
+            : m_coro_handle{ nullptr }
+#if USE_RESULT_FROM_COROUTINE_OBJECT
+            , m_result{ }
+#endif
+        {
+        }
 
         async_task_void(const async_task_void&) = delete;
 #if DECLARE_MOVE_CONSTRUCTORS_AS_DELETED
@@ -1085,12 +1207,9 @@ namespace corolib
 #endif
         }
 #endif
-        ~async_task_void()
+
+        void destroy_coroutine_frame()
         {
-            print(PRI2, "%p: async_task_void::~async_task_void()\n", this);
-#if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
-            coroutine_destructor_admin();
-#endif
             if (m_coro_handle)  // Does the coroutine_handle still contain a valid pointer to the coroutine frame/state?
             {
                 if (m_coro_handle.done()) {     // Has the coroutine reached the final suspend point (and cleared the "resume" function pointer)?
@@ -1105,16 +1224,13 @@ namespace corolib
             }
         }
 
-        async_task_void(handle_type h)
-            : m_coro_handle{h}
-#if USE_RESULT_FROM_COROUTINE_OBJECT
-            , m_result{ }
-#endif
+        ~async_task_void()
         {
-            print(PRI2, "%p: async_task_base::async_task_base(handle_type h): promise = %p\n", this, &m_coro_handle.promise());
+            print(PRI2, "%p: async_task_void::~async_task_void()\n", this);
 #if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
-            m_coro_handle.promise().link_coroutine_object(this);
+            coroutine_destructor_admin();
 #endif
+            destroy_coroutine_frame();
         }
 
         async_task_void& operator = (const async_task_void&) = delete;
@@ -1124,6 +1240,7 @@ namespace corolib
         async_task_void& operator = (async_task_void&& other)
         {
             print(PRI2, "%p: async_task_void::async_task_void = (async_task&& other)\n", this);
+            destroy_coroutine_frame();
             m_coro_handle = other.m_coro_handle;
 #if USE_RESULT_FROM_COROUTINE_OBJECT
             m_result = std::move(s.m_result);
@@ -1269,6 +1386,39 @@ namespace corolib
 #endif
             }
 
+            /**
+             * @brief inform_interested_parties is an auxiliary function that
+             * informs the coroutine that references this async_task object using a when_all or a when_any
+             * or a function that awaits the completion of this async_task in a different thread
+             * that the async_task has completed.
+             * The function is called from return_void.
+             * See async_task_base<TYPE>::promise_type::inform_interested_parties and
+             * async_operation_base::inform_interested_parties for similar functions.
+             */
+            void inform_interested_parties()
+            {
+                print(PRI2, "%p: async_task_void::promise_type::inform_interested_parties():\n\tm_ctr = %p, m_waitany = %p, m_continuation = %p\n",
+                    this, m_ctr, m_waitany, m_continuation);
+                if (m_ctr)
+                {
+                    print(PRI2, "%p: async_task_void::promise_type::inform_interested_parties(): before m_ctr->completed();\n", this);
+                    m_continuation = m_ctr->completed();
+                    print(PRI2, "%p: async_task_void::promise_type::inform_interested_parties(): after m_ctr->completed();\n", this);
+                }
+                else if (m_waitany)
+                {
+                    print(PRI2, "%p: async_task_void::promise_type::inform_interested_parties(): before m_waitany->completed();\n", this);
+                    m_continuation = m_waitany->completed();
+                    print(PRI2, "%p: async_task_void::promise_type::inform_interested_parties(): after m_waitany->completed();\n", this);
+                }
+                else if (m_result.wait_for_semaphore_release())
+                {
+                    print(PRI2, "%p: async_task_void::promise_type::inform_interested_parties(): before m_sema.signal();\n", this);
+                    m_sema.signal();
+                    print(PRI2, "%p: async_task_void::promise_type::inform_interested_parties(): after m_sema.signal();\n", this);
+                }
+            }
+
             void return_void()
             {
                 print(PRI2, "%p: async_task_void::promise_type::return_void(): begin\n", this);
@@ -1282,28 +1432,7 @@ namespace corolib
                 if (m_coroutine_valid)
                     m_coroutine_object->m_result.set_value(0);
 #endif
-                print(PRI2, "%p: async_task_void::promise_type::return_value(TYPE v):\n\tm_ctr = %p, m_waitany = %p, m_continuation = %p\n",
-                                this, m_ctr, m_waitany, m_continuation);
-                if (m_ctr)
-                {
-                    print(PRI2, "%p: async_task_void::promise_type::return_void(): before m_ctr->completed();\n", this);
-                    m_continuation = m_ctr->completed();
-                    print(PRI2, "%p: async_task_void::promise_type::return_void(): after m_ctr->completed();\n", this);
-                    return;
-                }
-                if (m_waitany)
-                {
-                    print(PRI2, "%p: async_task_void::promise_type::return_void(): before m_waitany->completed();\n", this);
-                    m_continuation = m_waitany->completed();
-                    print(PRI2, "%p: async_task_void::promise_type::return_void(): after m_waitany->completed();\n", this);
-                    return;
-                }
-                if (m_result.wait_for_semaphore_release())
-                {
-                    print(PRI2, "%p: async_task_void::promise_type::return_void(): before m_sema.signal();\n", this);
-                    m_sema.signal();
-                    print(PRI2, "%p: async_task_void::promise_type::return_void(): after m_sema.signal();\n", this);
-                }
+                inform_interested_parties();
                 print(PRI2, "%p: async_task_void::promise_type::return_void(): end\n", this);
             }
 
@@ -1383,6 +1512,9 @@ namespace corolib
     }; // class async_task_void
 
 
+    /**
+     * @brief class async_task<void>
+     */
     template<>
     class async_task<void> : public async_task_void
     {
@@ -1393,11 +1525,21 @@ namespace corolib
         struct promise_type;
         using handle_type_own = std::coroutine_handle<promise_type>;
 
+        /**
+         * @brief this constructor is called from promise_type::get_return_object()
+         */
         async_task(handle_type h)
             : async_task_void(h)
         {
             print(PRI2, "%p: async_task<void>::async_task(handle_type h)\n", this);
         }
+
+        /**
+         * @brief this constructor can be used to construct a "placeholder" async_task object
+         * to which a "real" async_task object (constructed by the previous constuctor)
+         * will be assigned.
+         */
+        async_task() = default;
 
         /**
          * @brief start is a dummy function for eager start coroutines, but it required because
@@ -1554,6 +1696,9 @@ namespace corolib
     }; // template<> class async_task<void>
     
 
+    /**
+     * @brief class async_ltask<void>
+     */
     template<>
     class async_ltask<void> : public async_task_void
     {
@@ -1563,11 +1708,21 @@ namespace corolib
         struct promise_type;
         using handle_type_own = std::coroutine_handle<promise_type>;
 
+        /**
+         * @brief this constructor is called from promise_type::get_return_object()
+         */
         async_ltask(handle_type h)
             : async_task_void(h)
         {
             print(PRI2, "%p: async_ltask<void>::async_ltask(handle_type h)\n", this);
         }
+
+        /**
+         * @brief this constructor can be used to construct a "placeholder" async_task object
+         * to which a "real" async_task object (constructed by the previous constuctor)
+         * will be assigned.
+         */
+        async_ltask() = default;
         
         /**
          * @brief start starts a lazy coroutine.
