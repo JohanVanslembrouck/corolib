@@ -131,7 +131,7 @@ int main()
 {
     set_print_level(0x01);        // Use 0x03 to follow the flow in corolib
 
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < 3; ++i)
     {
         print(PRI1, "main(): ---------- iteration %d ----------\n", i);
         print(PRI1, "main(): async_task<int> a1 = coroutine1();\n");
