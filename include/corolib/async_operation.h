@@ -135,6 +135,7 @@ namespace corolib
         }
 
     protected:
+        void inform_interested_parties();
         void cleanup();
 
     protected:

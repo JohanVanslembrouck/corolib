@@ -14,6 +14,8 @@
 #include "corolib/print.h"
 #include "corolib/commservice.h"
 
+#define REPORT_OUT_OF_SCOPE 0
+
 namespace corolib
 {
     /**
@@ -52,7 +54,7 @@ namespace corolib
         {
             m_service->update_entry(m_index, nullptr, m_timestamp);
         }
-        m_index = -1;
+        m_index = 0xdeadbeef;
 
         // m_awaitings          // RESUME_MULTIPLE_COROUTINES
         m_awaiting = nullptr;   // !RESUME_MULTIPLE_COROUTINES
@@ -171,11 +173,44 @@ namespace corolib
     }
 
     /**
+     * @brief async_operation_base::inform_interested_parties is an auxiliary function
+     * that informs the coroutine that references this async_operation object using a when_all or a when_any
+     * that the operation has completed.
+     * If there are no interested parties (yet), m_ready is set to true.
+     * The function is called from async_operation_base::completed.
+     * See async_task_base<TYPE>::promise_type::inform_interested_parties 
+     * and async_task_void::promise_type::inform_interested_parties for similar functions.
+     */
+    void async_operation_base::inform_interested_parties()
+    {
+        if (m_ctr)
+        {
+            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, before m_ctr->completed();\n", this, m_index);
+            std::coroutine_handle<> handle = m_ctr->completed();
+            handle.resume();
+            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, after m_ctr->completed();\n", this, m_index);
+        }
+        else if (m_waitany)
+        {
+            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, before m_waitany->completed();\n", this, m_index);
+            std::coroutine_handle<> handle = m_waitany->completed();
+            handle.resume();
+            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, after m_waitany->completed();\n", this, m_index);
+        }
+        else
+        {
+            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, m_awaiting not (yet) initialized!\n", this, m_index);
+            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, operation completed before co_waited!\n", this, m_index);
+            m_ready = true;     // Set to completed.
+        }
+    }
+
+    /**
      * @brief async_operation_base::completed
      */
     void async_operation_base::completed()
     {
-        print(PRI2, "%p: async_operation_base::completed(): m_index = %d\n", this, m_index);
+        print(PRI2, "%p: async_operation_base::completed(): m_index = %d = 0x%x\n", this, m_index, m_index);
 
         bool hasCompleted = false;
         if (corolib::_resume_multiple_coroutines)
@@ -199,7 +234,13 @@ namespace corolib
                 {
                     print(PRI2, "%p: async_operation_base::completed(): before tmp[%d].resume();\n", this, i);
                     tmp[i].resume();
-                    print(PRI2, "%p: async_operation_base::completed(): after tmp[%d].resume();\n", this, i);
+#if REPORT_OUT_OF_SCOPE
+                    // See explanation below
+                    if (m_index == std::make_signed_t<int>(0xdeadbeef) || m_index == std::make_signed_t<int>(0xdddddddd))
+                        print(PRI1, "%p: async_operation_base::completed(): after tmp[%d].resume(); ACCESSING OUT-OF-SCOPE MEMORY!!!\n", this);
+                    else
+                        print(PRI2, "%p: async_operation_base::completed(): m_index = %d, after tmp[%d].resume();\n", this, m_index, i);
+#endif
                 }
                 m_ready = true;
 
@@ -210,35 +251,29 @@ namespace corolib
         {
             if (m_awaiting)
             {
-                print(PRI2, "%p: async_operation_base::completed(): : m_index = %d, before m_awaiting.resume();\n", this, m_index);
+                print(PRI2, "%p: async_operation_base::completed(): m_index = %d, before m_awaiting.resume();\n", this, m_index);
                 m_awaiting.resume();
-                print(PRI2, "%p: async_operation_base::completed(): m_index = %d, after m_awaiting.resume();\n", this, m_index);
-
+#if REPORT_OUT_OF_SCOPE
+                // async_operations are usually (always) created as local variables in a coroutine,
+                // i.e. these objects are placed on the stack.
+                // When an async_operation completes, the coroutine to which it belongs may also be destroyed.
+                // The coroutine's stack frame will be released, including the space for the asyn_operation object.
+                // The async_operation's destructor writes 0xdeadbeef to m_index.
+                // On Windows, the OS will fill the content of the released stack frame with 0xdddddddd (for 4 bytes).
+                // The following print statements can be used to identify those places where this occurs.
+                // There should be no reason to access async_operation data members after the resume() call.
+                if (m_index == std::make_signed_t<int>(0xdeadbeef) || m_index == std::make_signed_t<int>(0xdddddddd))
+                    print(PRI1, "%p: async_operation_base::completed(): after m_awaiting.resume(); ACCESSING OUT-OF-SCOPE MEMORY!!!\n", this);
+                else
+                    print(PRI2, "%p: async_operation_base::completed(): m_index = %d, after m_awaiting.resume();\n", this, m_index);
+#endif
                 hasCompleted = true;
             }
         }
         
-        if (hasCompleted)
-            ; // already handled above
-        else if (m_ctr)
+        if (!hasCompleted)
         {
-            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, before m_ctr->completed();\n", this, m_index);
-            std::coroutine_handle<> handle = m_ctr->completed();
-            handle.resume();
-            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, after m_ctr->completed();\n", this, m_index);
-        }
-        else if (m_waitany)
-        {
-            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, before m_waitany->completed();\n", this, m_index);
-            std::coroutine_handle<> handle = m_waitany->completed();
-            handle.resume();
-            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, after m_waitany->completed();\n", this, m_index);
-        }
-        else
-        {
-            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, m_awaiting not (yet) initialized!\n", this, m_index);
-            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, operation completed before co_waited!\n", this, m_index);
-            m_ready = true;     // Set to completed.
+            inform_interested_parties();
         }
     }
    
