@@ -5,21 +5,29 @@
  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
-#include <chrono>
-
 #include <corolib/print.h>
 #include <corolib/commservice.h>
+
+int next_pow2(int x) {
+    int p = 1;
+    while (p < x)
+        p <<= 1;
+    return p;
+}
 
 namespace corolib
 {
 
 async_operation_base CommService::reserved;
 
-CommService::CommService()
-    : m_index(-1)
+CommService::CommService(int nr_operations)
+    : m_nr_operations(next_pow2(nr_operations))
+    , m_index(-1)
 {
     print(PRI2, "%p: CommService::CommService()\n", this);
-    for (int i = 0; i < NROPERATIONS; i++)
+
+    m_async_operation_info = std::make_unique<async_operation_info[]>(m_nr_operations);
+    for (int i = 0; i < m_nr_operations; i++)
     {
         m_async_operation_info[i].async_operation = nullptr;
         m_async_operation_info[i].start = std::chrono::high_resolution_clock::now();
@@ -29,6 +37,8 @@ CommService::CommService()
 CommService::~CommService()
 {
     print(PRI2, "%p: CommService::~CommService()\n", this);
+    m_nr_operations = 0;
+    m_index = -1;
 }
 
 int CommService::get_free_index_ts()

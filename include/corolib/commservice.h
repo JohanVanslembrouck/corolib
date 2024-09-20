@@ -26,6 +26,7 @@
 
 #include <string>
 #include <chrono>
+#include <memory>
 #include <assert.h>
 
 #include "async_operation.h"
@@ -247,16 +248,17 @@ namespace corolib
         constexpr int get_table_entries() { return NROPERATIONS; }
 
     protected:
-        CommService();
-        virtual ~CommService();
-
         static const int NROPERATIONS = 128;    // use 2^N (a power of 2)
+
+        CommService(int nr_operations = NROPERATIONS);
+        virtual ~CommService();
 
     private:
         static async_operation_base reserved;
 
+        std::shared_ptr<async_operation_info[]> m_async_operation_info;
+        int m_nr_operations;
         int m_index;
-        async_operation_info m_async_operation_info[NROPERATIONS];
     };
 }
 
