@@ -85,7 +85,7 @@ namespace corolib
         when_any(AsyncBaseTypes&... others)
         {
             print(PRI2, "%p: when_any::make_when_any(AsyncBaseTypes&... others)\n", this);
-            int len = make_when_any_len(0, others...);
+            int len = sizeof... (others);
             print(PRI2, "%p: when_any::make_when_any(AsyncBaseTypes&... others): len = %d\n", this, len);
             m_when_any_info_vector.reserve(len);
             make_when_any(0, others...);
@@ -252,24 +252,6 @@ namespace corolib
 
     protected:
 
-        // ---------------------------------------------------------
-        
-        template<typename... AsyncBaseTypes>
-        int make_when_any_len(int len, AsyncBaseTypes&... others);
-
-        template<typename T, typename... AsyncBaseTypes,
-                 typename std::enable_if<std::is_base_of_v<async_base, T>, int>::type = 0>
-        int make_when_any_len(int len, T& t, AsyncBaseTypes&... others) {
-            return make_when_any_len(len + 1, others...);
-        };
-
-        //template<>      // g++:  error: explicit specialization in non-namespace scope ‘class corolib::when_any’
-        int make_when_any_len(int len) {
-            return len;
-        };
-
-        // ---------------------------------------------------------
-
         template<typename... AsyncBaseTypes>
         void make_when_any(int i, AsyncBaseTypes&... others);
 
@@ -293,8 +275,6 @@ namespace corolib
         //template<>      // g++:  error: explicit specialization in non-namespace scope ‘class corolib::when_any’
         void make_when_any(int i) {
         };
-
-        // ---------------------------------------------------------
 
     private:
         std::vector<when_any_info> m_when_any_info_vector;
