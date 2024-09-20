@@ -19,3 +19,9 @@ target_link_libraries(timer05_async_queue corolib)
 
 add_executable(timer06_async_semaphore timermain06_async_semaphore.cpp timer06_async_semaphore.cpp)
 target_link_libraries(timer06_async_semaphore corolib)
+
+add_executable(timer07 timermain07.cpp timer07.cpp)
+target_link_libraries(timer07 corolib)
+
+add_executable(timer08 timermain08.cpp timer08.cpp)
+target_link_libraries(timer08 corolib)

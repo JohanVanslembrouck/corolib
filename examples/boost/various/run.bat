@@ -4,3 +4,5 @@ timer03.exe
 timer04.exe
 timer05_async_queue.exe
 timer06_async_semaphore.exe
+timer07.exe
+timer08.exe
