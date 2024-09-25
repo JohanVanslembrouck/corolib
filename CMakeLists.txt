@@ -66,15 +66,7 @@ endif()
 
 add_subdirectory(examples/tutorial)
 
-add_subdirectory(examples/why-coroutines)
-
-add_subdirectory(examples/corolab)
-
-add_subdirectory(examples/transform)
-
-add_subdirectory(examples/study-initial_suspend)
-
-add_subdirectory(examples/study-final_suspend)
+add_subdirectory(studies)
 
 if (USE_GOOGLETEST)
     if (NOT googletest)

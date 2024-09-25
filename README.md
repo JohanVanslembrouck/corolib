@@ -13,10 +13,10 @@ corolib has two main objectives:
   
 * Learning about and experimenting with coroutines
 
-  * Directory examples/corolab (short for "coroutine laboratory") contains simple stand-alone programs that also include a coroutine definition; the reader just has to open a single file to have access to all source code.
+  * Directory studies/corolab (short for "coroutine laboratory") contains simple stand-alone programs that also include a coroutine definition; the reader just has to open a single file to have access to all source code.
   * Directory examples/tutorial contains many examples using one or more corolib classes (async_task, async_operation, ...), but without using any communication framework.
-  * Directory examples/why-coroutines explains why you should consider the use of coroutines, by comparing three programming styles: synchronous, asynchronous (with callbacks) and coroutines.
-  * Directory examples/transform explains how coroutines are transformed or lowered to non-coroutine C++ code.
+  * Directory studies/why-coroutines explains why you should consider the use of coroutines, by comparing three programming styles: synchronous, asynchronous (with callbacks) and coroutines.
+  * Directory studies/transform explains how coroutines are transformed or lowered to non-coroutine C++ code.
   * corolib contains a dedicated print function, taking a print level as first argument; this allows following the control flow of a coroutine program at various levels: application level, corolib level, user-specific level, ...
   * corolib contains tracking functions that allow verifying whether all coroutine return type objects, operation objects, promise objects and final awaiter objects are released.
   * Class async_task can be tailored, allowing to experiment with the three await_suspend return types (void, bool, std::coroutine_typs<>), so that the user can compare the pros and cons of these variants.
