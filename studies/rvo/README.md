@@ -262,7 +262,7 @@ Because the async_operation object(s) are located on the stack, this does not le
 but it can lead to faulty behavior if its memory has been taken by another object (or objects), whose value
 will be overwritten.
 
-### test04: auwiliary function returns async_operation
+### test04: auxiliary function returns async_operation
 
 Function test04() is implemented as follows:
 
@@ -274,7 +274,7 @@ async_operation test04a() {
 }
 
 void test04() {
-    printf("\n--- test04: auwiliary function returns async_operation ---\n");
+    printf("\n--- test04: auxiliary function returns async_operation ---\n");
     async_operation ao = test04a();
     eventHandler.run();
     printf("test04: res = %d\n", ao.get_value());
@@ -284,7 +284,7 @@ void test04() {
 This is the output when compiled with MSVC with 'set(CMAKE_CXX_STANDARD 11)' in CMakeLists.txt (executable rvo1a.exe):
 
 ```
---- test04: auwiliary function returns async_operation ---
+--- test04: auxiliary function returns async_operation ---
 0000004DCDAFFA58: async_operation::async_operation()
 0000004DCDAFFA58 = ao: start_operation_impl
 EventHandler::set(..., 400)
@@ -304,7 +304,7 @@ test04: res = -1
 This is the output when compiled with MSVC with 'set(CMAKE_CXX_STANDARD 20)' in CMakeLists.txt (executable rvo1b.exe):
 
 ```
---- test04: auwiliary function returns async_operation ---
+--- test04: auxiliary function returns async_operation ---
 00000002DE0FFCF8: async_operation::async_operation()
 00000002DE0FFCF8 = ao: start_operation_impl
 EventHandler::set(..., 400)
@@ -474,12 +474,12 @@ This assumes, of course, that the entry has not yet been taken by another object
 This can be assured by making the array large enough, or better,
 by using a timestamp that is passed to the lambda function at the moment the original object is created.
 
-### test04: auwiliary function returns async_operation
+### test04: auxiliary function returns async_operation
 
 This is the output when compiled with MSVC with 'set(CMAKE_CXX_STANDARD 11)' in CMakeLists.txt (executable rvo2a.exe):
 
 ```
---- test04: auwiliary function returns async_operation ---
+--- test04: auxiliary function returns async_operation ---
 00000085B12FFC58: async_operation::async_operation(3)
 00000085B12FFC58 = &ret: start_operation, idx = 3
 EventHandler::set(..., 400)
@@ -499,7 +499,7 @@ test04: res = 400
 This is the output when compiled with MSVC with 'set(CMAKE_CXX_STANDARD 20)' in CMakeLists.txt (executable rvo2b.exe):
 
 ```
---- test04: auwiliary function returns async_operation ---
+--- test04: auxiliary function returns async_operation ---
 0000004DE58FF7C8: async_operation::async_operation(3)
 0000004DE58FF7C8 = &ret: start_operation, idx = 3
 EventHandler::set(..., 400)

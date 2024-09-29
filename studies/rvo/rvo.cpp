@@ -58,7 +58,7 @@ async_operation test04a() {
 }
 
 void test04() {
-    printf("\n--- test04: auwiliary function returns async_operation ---\n");
+    printf("\n--- test04: auxiliary function returns async_operation ---\n");
     async_operation ao = test04a();
     eventHandler.run();
     printf("test04: res = %d\n", ao.get_value());
