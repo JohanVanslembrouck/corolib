@@ -10,3 +10,4 @@ set -x
 ./timer06_async_semaphore
 ./timer07
 ./timer08
+./timer09

@@ -25,3 +25,6 @@ target_link_libraries(timer07 corolib)
 
 add_executable(timer08 timermain08.cpp timer08.cpp)
 target_link_libraries(timer08 corolib)
+
+add_executable(timer09 timermain09.cpp timer09.cpp)
+target_link_libraries(timer09 corolib)

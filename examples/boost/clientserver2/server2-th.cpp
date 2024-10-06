@@ -1,12 +1,13 @@
 /**
- * @file server2.cpp
+ * @file server2-th.cpp
  * @brief
  * This example illustrates the use of coroutines
  * in combination with Boost ASIO to implement a server application.
- *
+ * It is a variant of server.cpp that uses class TaskHolder instead of oneway_task.
+ * 
  * See README.md for further information.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
  
 #include <boost/asio/signal_set.hpp>
@@ -14,8 +15,8 @@
 #include <corolib/print.h>
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
-#include <corolib/oneway_task.h>
 #include <corolib/when_any.h>
+#include <corolib/taskholder.h>
 
 #include <commserver.h>
 
@@ -145,7 +146,7 @@ public:
      * @param commClient is a shared pointer to a client object
      * @return oneway_task
      */
-    oneway_task one_client(spCommCore commClient)
+    async_task<int> one_client(spCommCore commClient)
     {
         bool done = true;
         int counter = 0;
@@ -247,8 +248,8 @@ public:
         print(PRI1, "one_client: clientSession->close();\n");
         commClient->stop();
         
-        print(PRI1, "one_client: co_return;\n");
-        co_return;
+        print(PRI1, "one_client: co_return 0;\n");
+        co_return 0;
     }
 
     /**
@@ -261,6 +262,9 @@ public:
      */
     async_task<int> mainflow()
     {
+        const static int NR_TASKS = 16;
+        TaskHolder<NR_TASKS, int> taskHolder;
+
         int counter = 0;
         while (1)
         {
@@ -273,10 +277,11 @@ public:
             print(PRI1, "mainflow: co_await sa;\n");
             co_await sa;
 
-            // Start communicating asynchronously with the new client.
-            // Start accepting new connections immediately.
-            print(PRI1, "mainflow: (void)one_client(commCore);\n");
-            (void)one_client(commCore);
+            print(PRI1, "mainflow: int i = co_await taskHolder.wait_free_index(true);\n");
+            int i = co_await taskHolder.wait_free_index(true);
+
+            print(PRI1, "mainflow: taskHolder.assign(%d, std::move(one_client(commCore)));\n", i);
+            taskHolder.assign(i, std::move(one_client(commCore)));
         }
 
         print(PRI1, "mainflow: co_return 0;\n");
