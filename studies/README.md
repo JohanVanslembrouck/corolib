@@ -6,6 +6,9 @@ The following subdirectories do not use any third-party communication framework,
 
 * corolab contains examples that do not use corolib, but were the basis from where corolib has been "distilled".
 
+* corba studies the various CORBA invocation variants (synchronous, asynchronous using callback, 
+asynchronous using (non-)blocking polling) and adds the use of coroutines.
+
 * initial_suspend studies lazy- and eager-start coroutines, i.e. coroutines that return std::suspend_always 
 or std::suspend_never at their initial suspend point, respectively.
 

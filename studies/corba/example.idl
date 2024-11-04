@@ -1,0 +1,15 @@
+/**
+ * @file example.idl
+ * @brief
+ * This file contains the IDL (Interface Definition Language) definition 
+ * of an simple interface with 1 operation, operation1.
+ * The operation has one 'in', 'inout' and 'out' parameter and a return value.
+ *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ */
+
+module moduleA {
+    interface interfaceA {
+        short operation1(in long in_val, inout double inout_val, out short out_val);
+    };
+};
