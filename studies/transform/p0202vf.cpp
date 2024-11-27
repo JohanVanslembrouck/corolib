@@ -1,5 +1,5 @@
 /**
- *  Filename: p0202.cpp
+ *  Filename: p0202vf.cpp
  *  Description:
  *  Simplified variant of p0200.cpp without use of auto_reset_event.
  *  The coroutines behave like functions, i.e. there is no suspend/resume.
@@ -7,7 +7,7 @@
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
-#include "config.h"
+#include "configvf.h"
 #include "print.h"
 
 #define AWAIT_SUSPEND_RETURNS_VOID 1
@@ -17,8 +17,8 @@
 #if USE_TRANSFORMED_CODE
 
 #include "helpers.h"
-#include "p0202-F.h"
-#include "p0200-g.h"
+#include "p0202vf-f.h"
+#include "p0200vf-g.h"
 
 #else
 

@@ -10,11 +10,17 @@ endif()
 
 foreach(_target
     p0200
+    p0200vf
     p0202
+    p0202vf
     p0204
+    p0204vf
     p0206
+    p0206vf
     p0210
+    p0210vf
     p0216
+    p0216vf
 
     p0220
     p0226
@@ -84,11 +90,17 @@ endif()
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     foreach(_target
         p0200
+        p0200vf
         p0202
+        p0202vf
         p0204
+        p0204vf
         p0206
+        p0206vf
         p0210
+        p0210vf
         p0216
+        p0216vf
 
         p0220
         p0226
@@ -181,7 +193,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
       add_executable(tr-${_target}trf ${_target}.cpp print.cpp tracker.cpp)
     endforeach()
 
-     foreach(_target
+    foreach(_target
         p0300
         p0302
         p0304
@@ -209,3 +221,14 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     endforeach()
 endif()
 
+# The vf variants build with MSVC and GHU
+foreach(_target
+    p0200vf
+    p0202vf
+    p0204vf
+    p0206vf
+    p0210vf
+    p0216vf
+  )
+  add_executable(tr-${_target}trf ${_target}.cpp print.cpp tracker.cpp)
+endforeach()

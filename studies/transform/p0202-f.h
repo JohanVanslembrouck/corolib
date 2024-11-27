@@ -8,7 +8,7 @@
  *      co_return 42 + x;
  *  }
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ *  Author: Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _P0202_F_H_
@@ -84,8 +84,6 @@ task f(int x) {
 
 __coroutine_state* __f_resume(__coroutine_state* s) {
     auto* state = static_cast<__f_state*>(s);
-
-    std::coroutine_handle<void> coro_to_resume;
 
     try {
         switch (state->__suspend_point) {

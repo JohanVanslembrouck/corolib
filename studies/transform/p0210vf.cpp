@@ -1,28 +1,32 @@
 /**
- *  Filename: p0202.cpp
+ *  Filename: p0210vf.cpp
  *  Description:
- *  Simplified variant of p0200.cpp without use of auto_reset_event.
- *  The coroutines behave like functions, i.e. there is no suspend/resume.
+ *  Same as p0200.cpp apart from the use of USE_FINAL_AWAITER = 1.
  * 
  *  Author: Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
-#include "config.h"
+#include "configvf.h"
 #include "print.h"
+#include "auto_reset_event.h"
 
 #define AWAIT_SUSPEND_RETURNS_VOID 1
-#define USE_FINAL_AWAITER 0
+#define USE_FINAL_AWAITER 1
 #include "p0200.h"
+
+auto_reset_event are1;
 
 #if USE_TRANSFORMED_CODE
 
 #include "helpers.h"
-#include "p0202-F.h"
-#include "p0200-g.h"
+#include "p0200vf-f.h"
+#include "p0200vf-g.h"
 
 #else
 
 task f(int x) {
+    print(PRI1, "f(%d): co_await are1;\n", x);
+    co_await are1;
     print(PRI1, "f(%d): co_return 42 + x (= %d);\n", x, 42 + x);
     co_return 42 + x;
 }
@@ -39,6 +43,8 @@ int main() {
     priority = 0x07;
     print(PRI1, "main(): task gt = g(5);\n");
     task gt = g(5);
+    print(PRI1, "main(): are1.resume();\n");
+    are1.resume();
     print(PRI1, "main(): int i = gt.get();\n");
     int i = gt.get();
     print(PRI1, "main(): i = %d\n", i);

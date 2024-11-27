@@ -1,11 +1,23 @@
 
 .\tr-p0200
+.\tr-p0200vf
+.\tr-p0200vftrf
 .\tr-p0202
+.\tr-p0202vf
+.\tr-p0202vftrf
 .\tr-p0204
+.\tr-p0204vf
+.\tr-p0204vftrf
 .\tr-p0206
+.\tr-p0206vf
+.\tr-p0206vftrf
 
 .\tr-p0210
+.\tr-p0210vf
+.\tr-p0210vftrf
 .\tr-p0216
+.\tr-p0216vf
+.\tr-p0216vftrf
 
 .\tr-p0220
 .\tr-p0226
