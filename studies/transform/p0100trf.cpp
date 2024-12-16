@@ -320,6 +320,7 @@ inline std::suspend_always task::promise_type::initial_suspend() noexcept {
     return {};
 }
 
+// MSVC: error C5231: the expression 'co_await promise.final_suspend()' must be non-throwing
 inline task::promise_type::final_awaiter task::promise_type::final_suspend() noexcept {
     return {};
 }

@@ -152,6 +152,7 @@ set -x
 
 ./tr-p1200
 ./tr-p1200lb
+./tr-p1200trf
 
 ./tr-p1204
 ./tr-p1204lb
@@ -169,6 +170,7 @@ set -x
 
 ./tr-p1240
 ./tr-p1240lb
+./tr-p1240trf
 
 ./tr-p1246
 ./tr-p1246lb
@@ -176,6 +178,7 @@ set -x
 
 ./tr-p1300
 ./tr-p1300lb
+./tr-p1300trf
 
 ./tr-p1304
 ./tr-p1304lb
@@ -196,6 +199,7 @@ set -x
 
 ./tr-p1340
 ./tr-p1340lb
+./tr-p1340trf
 
 ./tr-p1344
 ./tr-p1344lb

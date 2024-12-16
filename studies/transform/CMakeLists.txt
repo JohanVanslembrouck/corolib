@@ -168,67 +168,59 @@ else()
     message("Unsupported compiler")
 endif()
 
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    foreach(_target
-        p0200
-        p0202
-        p0204
-        p0206
-        p0210
-        p0216
-
-        p0220
-        p0226
-        p0230
-        p0236
-
-        p0240
-        p0246
-        p0250
-        p0256
-
-        p1200
-        p1240
-      )
-      add_executable(tr-${_target}trf ${_target}.cpp print.cpp tracker.cpp)
-    endforeach()
-
-    foreach(_target
-        p0300
-        p0302
-        p0304
-        p0306
-
-        p0320
-        p0322
-        p0324
-        p0326
-
-        p0330
-        p0332
-        p0334
-        p0336
-
-        p0340
-        p0342
-        p0344
-        p0346
-
-        p1300
-        p1340
-      )
-      add_executable(tr-${_target}trf ${_target}.cpp print.cpp tracker.cpp)
-    endforeach()
-endif()
-
-# The vf variants build with MSVC and GHU
 foreach(_target
+    p0200
     p0200vf
+    p0202
     p0202vf
+    p0204
     p0204vf
+    p0206
     p0206vf
+    p0210
     p0210vf
+    p0216
     p0216vf
-  )
-  add_executable(tr-${_target}trf ${_target}.cpp print.cpp tracker.cpp)
+
+    p0220
+    p0226
+    p0230
+    p0236
+
+    p0240
+    p0246
+    p0250
+    p0256
+
+    p1200
+    p1240
+    )
+    add_executable(tr-${_target}trf ${_target}.cpp print.cpp tracker.cpp)
+endforeach()
+
+foreach(_target
+    p0300
+    p0302
+    p0304
+    p0306
+
+    p0320
+    p0322
+    p0324
+    p0326
+
+    p0330
+    p0332
+    p0334
+    p0336
+
+    p0340
+    p0342
+    p0344
+    p0346
+
+    p1300
+    p1340
+    )
+    add_executable(tr-${_target}trf ${_target}.cpp print.cpp tracker.cpp)
 endforeach()
