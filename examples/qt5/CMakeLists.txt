@@ -15,6 +15,7 @@ include(CMakePackageConfigHelpers)
 set(CMAKE_AUTOMOC ON)
 
 add_subdirectory(common)
+add_subdirectory(clientserver10)
 add_subdirectory(clientserver11)
 add_subdirectory(clientserver12)
 add_subdirectory(various)
