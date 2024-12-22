@@ -1,16 +1,14 @@
 /** 
- *  Filename: p0700s.cpp
- *  Description:
- *        This echo server is used for p07XX.cpp and p08XX.cpp clients.
+ *  @file server.cpp
+ *  @brief
+ *  This example is based upon studies/corolab/p0700c.c.
+ *  This example uses (where possible) lambdas instead of callback functions as in p0700c.c.
+ * 
+ *  This echo server is used for client1.cpp and client1.cpp clients.
  *
- *        Does not use coroutines.
+ *  This example does not use coroutines.
  *
- *  Tested with Visual Studio 2019.
- *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
- *  Based upon: Asio10-EchoServer2-async by Lieven de Cock 
- *             (Belgian C++ User Group presentation)
- *
+ *  @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
  
 #include <boost/asio.hpp>
@@ -90,9 +88,27 @@ public:
     {
         print("Server::start_accept()\n");
         auto newClient = std::make_shared<Clientx>(mIoContext);
+
         mAcceptor.async_accept(
             newClient->mSocket,
-            std::bind(&Server::acceptHandler, this, newClient, std::placeholders::_1));
+            [this, newClient](const boost::system::error_code& ec)
+            {
+                print("Server::acceptHandler(...)\n");
+                if (mStop)
+                {
+                    return;
+                }
+                if (ec)
+                {
+                    print("Server::acceptHandler(...): accept failed: %s\n", ec.message().c_str());
+                }
+                else
+                {
+                    start_read(newClient);
+                }
+
+                start_accept();
+            });
     }
 
     void stop()
@@ -100,27 +116,6 @@ public:
         print("Server::stop()\n");
         mStop = true;
         mAcceptor.cancel();
-    }
-
-    void acceptHandler(
-            ClientSession client,
-            const boost::system::error_code& ec)
-    {
-        print("Server::acceptHandler(...)\n");
-        if (mStop)
-        {
-            return;
-        }
-        if (ec)
-        {
-            print("Server::acceptHandler(...): accept failed: %s\n", ec.message().c_str());
-        }
-        else
-        {
-            start_read(client);
-        }
-
-        start_accept();
     }
 
     void start_read(ClientSession client)
@@ -163,6 +158,7 @@ public:
     void start_write(ClientSession client)
     {
         print("Server::start_write(ClientSession client)\n");
+
         boost::asio::async_write(
             client->mSocket,
             boost::asio::buffer(client->mSendBuffer),

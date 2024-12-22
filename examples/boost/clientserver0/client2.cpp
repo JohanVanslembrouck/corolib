@@ -1,24 +1,21 @@
 /**
- *  Filename: p0710.cpp
- *  Description:
- *        Using Boost ASIO to communicate between a client and an echo server.
- *        This example uses callback functions.
+ *  @file client2.cpp
+ *  @brief
+ *  Using Boost ASIO to communicate between a client and an echo server.
+ * 
+ *  This example is based upon studies/corolab/p0710c.c.
+ *  This example uses lambdas instead of callback functions as in p0700c.c.
  *
- *        In contrast to p0700.cpp, ioContext.run() is run on a separate thread,
- *        consequently also the callback functions are run on this thread.
+ *  In contrast to client1.cpp, ioContext.run() is run on a separate thread,
+ *  consequently also the lambda functions are run on this thread.
  *
- *        This allows defining the program flow in the main() function
- *        instead of "hard-coding" it in the callback functions as in p0700.cpp.
- *        The main thread and the callback thread synchronize by means of
- *        a semaphore.
+ *  This allows defining the program flow in the main() function
+ *  instead of "hard-coding" it in the lambda functions as in client1.cpp.
+ *  The main thread and the callback thread synchronize by means of a semaphore.
  *
- *        This example does not use coroutines.
+ *  This example does not use coroutines.
  *
- *  Tested with Visual Studio 2019.
- *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
- *  Based upon:
- *
+ *  @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #include <boost/asio.hpp>
@@ -49,8 +46,6 @@ CSemaphore sema;
 
 using boost::asio::steady_timer;
 using boost::asio::ip::tcp;
-using std::placeholders::_1;
-using std::placeholders::_2;
 
 class client
 {
@@ -73,7 +68,11 @@ public:
         // Start the deadline actor. You will note that we're not setting any
         // particular deadline here. Instead, the connect and input actors will
         // update the deadline prior to each asynchronous operation.
-        deadline_.async_wait(std::bind(&client::check_deadline, this));
+        deadline_.async_wait(
+            [this](const boost::system::error_code& error)
+            {
+                check_deadline();
+            });
     }
 
     // This function terminates all the actors to shut down the connection. It
@@ -100,49 +99,51 @@ public:
         // Set a deadline for the connect operation.
         deadline_.expires_after(std::chrono::seconds(60));
 
+        std::vector<boost::asio::ip::tcp::endpoint> eps;
+        eps.push_back(ep);
+
         // Start the asynchronous connect operation.
-        socket_.async_connect(
-            ep,
-            std::bind(&client::handle_connect, this, _1, endpoint_iter));
-    }
+        boost::asio::async_connect(
+            socket_,
+            eps,
+            [this](const boost::system::error_code& error,
+                const tcp::endpoint& result_endpoint)
+            {
+                print("client::handle_connect()\n");
 
-    void handle_connect(const boost::system::error_code& error,
-        tcp::resolver::results_type::iterator endpoint_iter)
-    {
-        print("client::handle_connect()\n");
+                if (stopped_)
+                    return;
 
-        if (stopped_)
-            return;
+                // The async_connect() function automatically opens the socket at the start
+                // of the asynchronous operation. If the socket is closed at this time then
+                // the timeout handler must have run first.
+                if (!socket_.is_open())
+                {
+                    print("Connect timed out\n");
 
-        // The async_connect() function automatically opens the socket at the start
-        // of the asynchronous operation. If the socket is closed at this time then
-        // the timeout handler must have run first.
-        if (!socket_.is_open())
-        {
-            print("Connect timed out\n");
+                    // Try the next available endpoint.
+                    start_connect();
+                }
 
-            // Try the next available endpoint.
-            start_connect();
-        }
+                // Check if the connect operation failed before the deadline expired.
+                else if (error)
+                {
+                    print("Connect error: %s\n", error.message().c_str());
 
-        // Check if the connect operation failed before the deadline expired.
-        else if (error)
-        {
-            print("Connect error: %s\n", error.message().c_str());
+                    // We need to close the socket used in the previous connection attempt
+                    // before starting a new one.
+                    socket_.close();
 
-            // We need to close the socket used in the previous connection attempt
-            // before starting a new one.
-            socket_.close();
+                    // Try the next available endpoint.
+                    start_connect();
+                }
 
-            // Try the next available endpoint.
-            start_connect();
-        }
-
-        // Otherwise we have successfully established a connection.
-        else
-        {
-            sema.signal();
-        }
+                // Otherwise we have successfully established a connection.
+                else
+                {
+                    sema.signal();
+                }
+            });
     }
 
     void start_write()
@@ -159,25 +160,24 @@ public:
         boost::asio::async_write(
             socket_,
             boost::asio::buffer(str, strlen(str)),
-            std::bind(&client::handle_write, this, _1));
-    }
+            [this](const boost::system::error_code& error,
+                std::size_t result_n)
+            {
+                print("client::handle_write()\n");
 
-    void handle_write(const boost::system::error_code& error)
-    {
-        print("client::handle_write()\n");
+                if (stopped_)
+                    return;
 
-        if (stopped_)
-            return;
-
-        if (!error)
-        {
-            sema.signal();
-        }
-        else
-        {
-            print("client::handle_write(): error on write: %s\n", error.message().c_str());
-            stop();
-        }
+                if (!error)
+                {
+                    sema.signal();
+                }
+                else
+                {
+                    print("client::handle_write(): error on write: %s\n", error.message().c_str());
+                    stop();
+                }
+            });
     }
 
     void start_read()
@@ -191,44 +191,38 @@ public:
         boost::asio::async_read_until(
             socket_,
             boost::asio::dynamic_buffer(input_buffer_), '\n',
-            std::bind(&client::handle_read, this, _1, _2));
-    }
-
-    void handle_read(const boost::system::error_code& error, std::size_t n)
-    {
-        print("client::handle_read()\n");
-
-        if (stopped_)
-            return;
-
-        if (!error)
-        {
-            // Extract the newline-delimited message from the buffer.
-            std::string line(input_buffer_.substr(0, n - 1));
-            input_buffer_.erase(0, n);
-
-            // Empty messages are heartbeats and so ignored.
-            if (!line.empty())
+            [this](const boost::system::error_code& error,
+                std::size_t n)
             {
-                print("client::handle_read(): received: %s\n", line.c_str());
-            }
-            sema.signal();
-            stop();
-        }
-        else
-        {
-            print("client::handle_read(): rror on receive: %s\n", error.message().c_str());
-            stop();
-        }
+                print("client::handle_read()\n");
+
+                if (stopped_)
+                    return;
+
+                if (!error)
+                {
+                    // Extract the newline-delimited message from the buffer.
+                    std::string line(input_buffer_.substr(0, n - 1));
+                    input_buffer_.erase(0, n);
+
+                    // Empty messages are heartbeats and so ignored.
+                    if (!line.empty())
+                    {
+                        print("client::handle_read(): received: %s\n", line.c_str());
+                    }
+                    sema.signal();
+                    stop();
+                }
+                else
+                {
+                    print("client::handle_read(): error on receive: %s\n", error.message().c_str());
+                    stop();
+                }
+            });
     }
 
-    void check_deadline()
+    void check_deadline_aux()
     {
-        print("client::check_deadline()\n");
-
-        if (stopped_)
-            return;
-
         // Check whether the deadline has passed. We compare the deadline against
         // the current time since a new asynchronous operation may have moved the
         // deadline before this actor had a chance to run.
@@ -243,9 +237,28 @@ public:
             // deadline is set.
             deadline_.expires_at(steady_timer::time_point::max());
         }
+    }
+
+    void check_deadline()
+    {
+        print("client::check_deadline()\n");
+
+        if (stopped_)
+            return;
+
+        check_deadline_aux();
 
         // Put the actor back to sleep.
-        deadline_.async_wait(std::bind(&client::check_deadline, this));
+        deadline_.async_wait(
+            [this](const boost::system::error_code& error)
+            {
+                print("client::check_deadline()\n");
+
+                if (stopped_)
+                    return;
+
+                check_deadline_aux();
+            });
     }
 
 private:

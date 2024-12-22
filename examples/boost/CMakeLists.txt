@@ -20,6 +20,7 @@ endif()
 link_directories(${Boost_LIBRARY_DIRS})
 
 add_subdirectory(common)
+add_subdirectory(clientserver0)
 add_subdirectory(clientserver1)
 add_subdirectory(clientserver2)
 add_subdirectory(clientserver3)
