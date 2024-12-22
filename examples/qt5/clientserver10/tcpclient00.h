@@ -16,18 +16,12 @@
 
 #include <chrono>
 
-#include <corolib/async_operation.h>
-#include <corolib/commservice.h>
-#include <corolib/async_task.h>
-
 #include "tcpconfig.h"
 #include "protocolmessage.h"
 #include "connectioninfo.h"
 #include "tcpclient.h"
 
-using namespace corolib;
-
-class TcpClient00 : public QObject, public CommService
+class TcpClient00 : public QObject
 {
     Q_OBJECT
 public:
@@ -75,8 +69,6 @@ private:    // functions
     ProtocolMessage         m_message;
 
     std::chrono::high_resolution_clock::time_point m_start;
-
-    QMetaObject::Connection m_connections[NROPERATIONS];
 };
 
 #endif // TCPCLIENT01_H
