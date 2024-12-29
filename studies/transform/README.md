@@ -105,13 +105,14 @@ There is no manually transformed code for these threaded versions available (yet
 
 The following table shows the used combinations:
 
-|                                      | std::suspend_always | task::promise_type::final_awaiter returns                 |
-| task::awaiter::await_suspend returns |                     | void         | bool         | std::coroutine_handle<>     |
+| task::awaiter::await_suspend returns | std::suspend_always | void (1)     | bool (1)     | std::coroutine_handle<> (1) |
 | ------------------------------------ | ------------------- | ------------ | ------------ | --------------------------- |
 | void                                 | p020X.cpp           | p021X.cpp    |              |                             |
 |                                      |                     | p030X.cpp    | p032X.cpp    | p034X.cpp                   |
 | bool                                 | p022X.cpp           | p023X.cpp    |              |                             |
 | std::coroutine_handle<>              | p024X.cpp           | p025X.cpp    |              |                             |
+
+(1) return type of task::promise_type::final_awaiter returns 
 
 https://blog.panicsoftware.com/co_awaiting-coroutines/ shows the kind of code a compiler generates for these three variants.
 The code in this article has been used as a guidance to tailor the manually transformed code 
