@@ -2,49 +2,7 @@
 
 ## Introduction
 
-There are lots of things to learn when you are new to C++ coroutines, especially when you want to develop a coroutine library yourself:
-
-* co_return, co_await, co_yield,
-* concepts (not in the sense of C++ concepts) such as 
-  * coroutine state or frame,
-  * coroutine type,
-  * continuation,
-  * eager and lazy start coroutines,
-  * awaitable and awaiter types (with its 3 functions await_ready(), await_suspend() and await_resume()),
-* suspend_always and suspend_never,
-* promise_type, with its many functions
-  * get_return_object(),
-  * initial_suspend(),
-  * final_suspend(), 
-  * return_value(), return_void(), yield_value(),
-  * unhandled_exception(),
-  * get_return_object_on_allocation_failure().
-
-Starting from simple implementations, you can make them more complete (and complex).
-
-A simple implementation often uses the following definitions for initial_suspend() and final_suspend():
-
-```c++
-class task {
-public:
-    class promise_type {
-    public:
-        // ...
-
-        std::suspend_never initial_suspend() noexcept {  // eager start coroutine
-            return {};
-        }
-
-        std::suspend_always final_suspend() noexcept {
-            return {};
-        }
-
-        // ...
-    };
-};
-```
-
-The reader is referred to ../study-initial_suspend for a comparison of eager and lazy start corouutines.
+The reader is referred to [awaiter type variants](../../docs/awaiter_type_variants.md) for an introduction to awaiter types.
 
 This text explores final_suspend().
 

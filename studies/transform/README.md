@@ -2,6 +2,8 @@
 
 ## Introduction
 
+The reader is referred to [awaiter type variants](../../docs/awaiter_type_variants.md) for an introduction to awaiter types.
+
 This directory contains examples that illustrate how a C++ compiler may transform coroutine code 
 to C++ code that can be compiled with a C++ compiler that does not support coroutines.
 
@@ -13,6 +15,18 @@ I added a main() function to make an executable.
 All modifications to the original code have been commented with // JVS.
 The program does not do anything useful (yet).
 
+## Include files
+
+The source files (indirectly) include one of the following 3 header files:
+* coroutine: the header file that comes with the compiler
+* lbcoroutine.h: the header file originally coded by Lewis Baker (lb)
+* lbcoroutinevf.h: a header file based on lbcoroutine.h but using virtual functions (vf)
+for __resume and __destroy instead of function pointers
+
+The selection between coroutine and lbcoroutine.h is done via config.h.
+The selection between coroutine and lbcoroutinevf.h is done via configvf.h.
+Either config.h or configvf.h is included in the source files and the selection is made in CMakeLists.txt.
+
 ## Dealing with the 3 variants of await_suspend(std::coroutine_handle<>)
 
 The await_suspend(std::coroutine_handle<>) function can return
@@ -20,12 +34,91 @@ The await_suspend(std::coroutine_handle<>) function can return
 * a bool
 * a std::coroutine_handle<>
 
-https://blog.panicsoftware.com/co_awaiting-coroutines/ shows the kind of code a compiler generates for these three variants.
-The code in the just mentioned article has been used as a guidance to tailor the manually transformed code 
-in the p02X0-g.h and p02X0-h.h files.
-(It is not applicable to the p02X0-h.h files.)
+These 3 variants will be used for 2 awaiter types, task::awaiter and task::promise_type::final_awaiter,
+giving 9 possible combinations in total.
+Also, final_suspend() can return std::suspend_always instead of the hand-coded task::promise_type::final_awaiter.
+This leads to 12 combinations.
+Notice that not all combinations will be used.
 
-### awaiter::await_suspend
+The following table gives an overview of all programs:
+
+| Source       | task::awaiter                              | task::promise_type::final_awaiter            |
+| ------------ | ------------------------------------------ | -------------------------------------------- |
+| p0200.cpp    | AWAIT_SUSPEND_RETURNS_VOID = 1             | USE_FINAL_AWAITER = 0                        |
+| p0200vf.cpp  | AWAIT_SUSPEND_RETURNS_VOID = 1             | USE_FINAL_AWAITER = 0                        |
+| p0202.cpp    | AWAIT_SUSPEND_RETURNS_VOID = 1             | USE_FINAL_AWAITER = 0                        |
+| p0202vf.cpp  | AWAIT_SUSPEND_RETURNS_VOID = 1             | USE_FINAL_AWAITER = 0                        |
+| p0204.cpp    | AWAIT_SUSPEND_RETURNS_VOID = 1             | USE_FINAL_AWAITER = 0                        |
+| p0204vf.cpp  | AWAIT_SUSPEND_RETURNS_VOID = 1             | USE_FINAL_AWAITER = 0                        |
+| p0206.cpp    | AWAIT_SUSPEND_RETURNS_VOID = 1             | USE_FINAL_AWAITER = 0                        |
+| p0206vf.cpp  | AWAIT_SUSPEND_RETURNS_VOID = 1             | USE_FINAL_AWAITER = 0                        |
+| p1200.cpp    | AWAIT_SUSPEND_RETURNS_VOID = 1             | USE_FINAL_AWAITER = 0                        |
+| p1204.cpp    | AWAIT_SUSPEND_RETURNS_VOID = 1             | USE_FINAL_AWAITER = 0                        |
+| p1206.cpp    | AWAIT_SUSPEND_RETURNS_VOID = 1             | USE_FINAL_AWAITER = 0                        |
+| p0210.cpp    | AWAIT_SUSPEND_RETURNS_VOID = 1             | USE_FINAL_AWAITER = 1                        |
+| p0210vf.cpp  | AWAIT_SUSPEND_RETURNS_VOID = 1             | USE_FINAL_AWAITER = 1                        |
+| p0216.cpp    | AWAIT_SUSPEND_RETURNS_VOID = 1             | USE_FINAL_AWAITER = 1                        |
+| p0216vf.cpp  | AWAIT_SUSPEND_RETURNS_VOID = 1             | USE_FINAL_AWAITER = 1                        |
+| p0220.cpp    | AWAIT_SUSPEND_RETURNS_BOOL = 1             | USE_FINAL_AWAITER = 0                        |
+| p0226.cpp    | AWAIT_SUSPEND_RETURNS_BOOL = 1             | USE_FINAL_AWAITER = 0                        |
+| p1220.cpp    | AWAIT_SUSPEND_RETURNS_BOOL = 1             | USE_FINAL_AWAITER = 0                        |
+| p1226.cpp    | AWAIT_SUSPEND_RETURNS_BOOL = 1             | USE_FINAL_AWAITER = 0                        |
+| p0230.cpp    | AWAIT_SUSPEND_RETURNS_BOOL = 1             | USE_FINAL_AWAITER = 1                        |
+| p0236.cpp    | AWAIT_SUSPEND_RETURNS_BOOL = 1             | USE_FINAL_AWAITER = 1                        |
+| p0240.cpp    | AWAIT_SUSPEND_RETURNS_COROUTINE_HANDLE = 1 | USE_FINAL_AWAITER = 0                        |
+| p0246.cpp    | AWAIT_SUSPEND_RETURNS_COROUTINE_HANDLE = 1 | USE_FINAL_AWAITER = 0                        |
+| p1240.cpp    | AWAIT_SUSPEND_RETURNS_COROUTINE_HANDLE = 1 | USE_FINAL_AWAITER = 0                        |
+| p1246.cpp    | AWAIT_SUSPEND_RETURNS_COROUTINE_HANDLE = 1 | USE_FINAL_AWAITER = 0                        |
+| p0250.cpp    | AWAIT_SUSPEND_RETURNS_COROUTINE_HANDLE = 1 | USE_FINAL_AWAITER = 1                        |
+| p0256.cpp    | AWAIT_SUSPEND_RETURNS_COROUTINE_HANDLE = 1 | USE_FINAL_AWAITER = 1                        |
+| p0300.cpp    | (await_suspend() returns void)             | FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_VOID = 1 |
+| p0302.cpp    | (await_suspend() returns void)             | FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_VOID = 1 |
+| p0304.cpp    | (await_suspend() returns void)             | FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_VOID = 1 |
+| p0306.cpp    | (await_suspend() returns void)             | FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_VOID = 1 |
+| p1300.cpp    | (await_suspend() returns void)             | FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_VOID = 1 |
+| p1304.cpp    | (await_suspend() returns void)             | FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_VOID = 1 |
+| p1306.cpp    | (await_suspend() returns void)             | FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_VOID = 1 |
+| p0320.cpp    | (await_suspend() returns void)             | FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL = 1 |
+| p0322.cpp    | (await_suspend() returns void)             | FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL = 1 |
+| p0324.cpp    | (await_suspend() returns void)             | FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL = 1 |
+| p0326.cpp    | (await_suspend() returns void)             | FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL = 1 |
+| p0330.cpp    | (await_suspend() returns void)             | FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL = 1 |
+| p0332.cpp    | (await_suspend() returns void)             | FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL = 1 |
+| p0334.cpp    | (await_suspend() returns void)             | FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL = 1 |
+| p0336.cpp    | (await_suspend() returns void)             | FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL = 1 |
+| p1320.cpp    | (await_suspend() returns void)             | FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL = 1 |
+| p1324.cpp    | (await_suspend() returns void)             | FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL = 1 |
+| p1326.cpp    | (await_suspend() returns void)             | FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL = 1 |
+| p0340.cpp    | (await_suspend() returns void)             | FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_COROUTINE_HANDLE = 1 |
+| p0342.cpp    | (await_suspend() returns void)             | FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_COROUTINE_HANDLE = 1 |
+| p0344.cpp    | (await_suspend() returns void)             | FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_COROUTINE_HANDLE = 1 |
+| p0346.cpp    | (await_suspend() returns void)             | FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_COROUTINE_HANDLE = 1 |
+| p1340.cpp    | (await_suspend() returns void)             | FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_COROUTINE_HANDLE = 1 |
+| p1344.cpp    | (await_suspend() returns void)             | FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_COROUTINE_HANDLE = 1 |
+| p1346.cpp    | (await_suspend() returns void)             | FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_COROUTINE_HANDLE = 1 |
+
+Remarks:
+* USE_FINAL_AWAITER = 0: final_suspend() returns std::suspend_always
+* USE_FINAL_AWAITER = 1: final_suspend() returns task::promise_type::final_awaiter; task::promise_type::final_awaiter::await_suspend returns void
+* The p1XXX.cpp examples use a thread to resume the program on. For example, p1246.cpp is the threaded equivalent of p0246.cpp.
+There is no manually transformed code for these threaded versions available (yet).
+
+The following table shows the used combinations:
+
+|                                      | std::suspend_always | task::promise_type::final_awaiter returns                 |
+| task::awaiter::await_suspend returns |                     | void         | bool         | std::coroutine_handle<>     |
+| ------------------------------------ | ------------------- | ------------ | ------------ | --------------------------- |
+| void                                 | p020X.cpp           | p021X.cpp    |              |                             |
+|                                      |                     | p030X.cpp    | p032X.cpp    | p034X.cpp                   |
+| bool                                 | p022X.cpp           | p023X.cpp    |              |                             |
+| std::coroutine_handle<>              | p024X.cpp           | p025X.cpp    |              |                             |
+
+https://blog.panicsoftware.com/co_awaiting-coroutines/ shows the kind of code a compiler generates for these three variants.
+The code in this article has been used as a guidance to tailor the manually transformed code 
+in the p02X0-g.h and p02X0-h.h files.
+(It is not applicable to the p02X0-f.h files.)
+
+### awaiter::await_suspend variants
 
 This section describes the p02XX series of exaamples.
 
@@ -144,7 +237,7 @@ This variant of p0200.h is used in the p024X.cpp and p25X.cpp program files.
 The files p0240-g.h and p0240-h.h contain the transformation 
 of the g and h coroutines used in the program files just mentioned.
 
-### final_awaiter::await_suspend
+### task::promise_type::final_awaiter::await_suspend variants
 
 This section describes the p03XX series of exaamples.
 

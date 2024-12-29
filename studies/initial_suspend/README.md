@@ -2,6 +2,8 @@
 
 ## Introduction
 
+The reader is referred to [awaiter type variants](../../docs/awaiter_type_variants.md) for an introduction to awaiter types.
+
 The examples in this folder are heavily inspired by the article
 https://lewissbaker.github.io/2020/05/11/understanding_symmetric_transfer 
 and the corresponding code in https://godbolt.org/z/-Kw6Nf, https://godbolt.org/z/gy5Q8q, https://godbolt.org/z/7fm8Za 
