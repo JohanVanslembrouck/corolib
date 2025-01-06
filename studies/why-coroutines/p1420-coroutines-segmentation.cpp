@@ -20,48 +20,8 @@ using namespace corolib;
 #include "p1400co.h"
 
 RemoteObjectImpl remoteObjImpl;
-RemoteObjectImplCo remoteObjImplco{remoteObjImpl};
-
-class RemoteObject1Co
-{
-public:
-    async_task<Msg> op1(Msg msg)
-    {
-        // Write part
-        Buffer writebuffer;
-        printf("RemoteObject1Co::op1()\n");
-        // Marshall msg into the buffer
-        // (code not present)
-        // Write the buffer in segments of size SEGMENT_LENGTH (onto the remote object)
-        // until the whole buffer has been written (offset >= writebuffer.length())
-        int buflength = writebuffer.length();
-        for (int offset = 0; offset < buflength; offset += SEGMENT_LENGTH)
-        {
-            int bytestowrite = (buflength - offset) > SEGMENT_LENGTH ? SEGMENT_LENGTH : buflength - offset;
-            printf("RemoteObject1Co::op1(): calling write_segment: offset = %d\n", offset);
-            co_await remoteObjImplco.start_write_segment(writebuffer.buffer(), offset, bytestowrite);
-        }
-        
-        // Read part
-        bool completed = false;
-        Buffer readbuffer;
-        Msg res;
-        remoteObjImplco.init();
-        // Read the buffer in segments of size SEGMENT_LENGTH
-        // until start_read_segment reports that the read is complete.
-        for (int offset = 0; !completed; offset += SEGMENT_LENGTH)
-        {
-            printf("RemoteObject1Co::op1(): calling read_segment: offset = %d\n", offset);
-            completed = co_await remoteObjImplco.start_read_segment(readbuffer.buffer(), offset, SEGMENT_LENGTH);
-        }
-        // Unmarshall Msg from readbuffer
-        // (code not present)
-        // return the msg to the caller
-        co_return res;
-    }
-};
-
-RemoteObject1Co remoteObj1co;
+RemoteObjectImplCo remoteObjImplco{ remoteObjImpl };
+RemoteObject1Co remoteObj1co{ remoteObjImplco };
 
 class Class01
 {
@@ -88,15 +48,18 @@ public:
     }
 };
 
-Class01 class01;
+Class01 class01a;
+Class01 class01b;
 
 EventQueue eventQueue;
 
 int main()
 {
     printf("main();\n");
-    async_task<void> t1 = class01.coroutine1();
-    //async_task<void> t2 = class01.coroutine1();
+    async_task<void> t1 = class01a.coroutine1();
+    async_task<void> t2 = class01b.coroutine1();
     eventQueue.run();
+    t1.wait();
+    t2.wait();
     return 0;
 }

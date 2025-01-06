@@ -61,7 +61,7 @@ public:
     
     /**
      * @brief alternative version of function1 that avoids the introduction of callback functions
-     * by placing the original code in lambdas in lambdas.
+     * by placing the original code in lambdas.
      *
      */
     void function1alt(int in1, int in2)

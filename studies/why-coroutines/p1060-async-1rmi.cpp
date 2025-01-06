@@ -1,5 +1,5 @@
 /**
- * @file p1010-async-1rmi.cpp
+ * @file p1060-async-1rmi.cpp
  * @brief
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
@@ -9,18 +9,19 @@
 
 #include "common.h"
 #include "eventqueue.h"
-#include "p1000.h"
+#include "p1050.h"                              // difference with p1010-async-1rmi.cpp
 
-RemoteObject1 remoteObj1;
+RemoteObjectImpl remoteObjImpl;                 // difference with p1010-async-1rmi.cpp
+RemoteObject1 remoteObj1{ remoteObjImpl };      // difference with p1010-async-1rmi.cpp
 
 /**
- * @brief Asynchronous version of Class01 in p1000-sync-1rmi.cpp
+ * @brief Asynchronous version of Class01 in p1050-sync-1rmi.cpp
  *
  */
 class Class01
 {
 public:
-    
+
     struct function1_cxt_t
     {
         int in1;
@@ -60,7 +61,7 @@ public:
         *ctxt->ret = ctxt->in1 + ctxt->in2 + out1 + out2 + ret1;
         delete ctxt;
     }
-    
+
     /**
      * @brief alternative version of function1 that avoids the introduction
      * of a callback function by placing part 2 of the original synchronous function

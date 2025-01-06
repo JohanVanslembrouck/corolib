@@ -62,7 +62,7 @@ public:
         async_task<int> op2 = remoteObj2co.op1(in1, in2, out21, out22);
         async_task<int> op3 = remoteObj3co.op1(in1, in2, out31, out32);
 #if 0
-        // g++ 11 does not like this one-liner
+        // The following statement does not compile with g++ 11.3.0
         co_await when_all({ &op1, &op2, &op3 });
 #else
         when_all wa({ &op1, &op2, &op3 });

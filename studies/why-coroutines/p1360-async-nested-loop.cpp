@@ -1,5 +1,5 @@
 /**
- * @file p1310-async-nested-loop.cpp
+ * @file p1360-async-nested-loop.cpp
  * @brief
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
@@ -12,9 +12,10 @@
 #include "eventqueue.h"
 #include "buf+msg.h"
 
-#include "p1300.h"
+#include "p1350.h"                              // difference with p1310-async-nested-loop.cpp
 
-RemoteObject1 remoteObj1;
+RemoteObjectImpl remoteObjImpl;                 // difference with p1310-async-nested-loop.cpp
+RemoteObject1 remoteObj1{ remoteObjImpl };      // difference with p1310-async-nested-loop.cpp
 
 class Class01
 {

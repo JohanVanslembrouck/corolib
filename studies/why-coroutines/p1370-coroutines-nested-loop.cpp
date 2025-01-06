@@ -1,5 +1,5 @@
 /**
- * @file p1320-coroutines-nested-loop.cpp
+ * @file p1370-coroutines-nested-loop.cpp
  * @brief
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
@@ -16,10 +16,11 @@ using namespace corolib;
 #include "eventqueue.h"
 #include "buf+msg.h"
 
-#include "p1300co.h"
+#include "p1350co.h"                                        // difference with p1320-coroutines-nested-loop.cpp
 
-RemoteObject1 remoteObj1;
-RemoteObject1Co remoteObj1co{remoteObj1};
+RemoteObjectImpl remoteObjImpl;                             // difference with p1320-coroutines-nested-loop.cpp
+RemoteObjectImplCo remoteObjImplco{ remoteObjImpl };        // difference with p1320-coroutines-nested-loop.cpp
+RemoteObject1Co remoteObj1co{ remoteObjImplco };            // difference with p1320-coroutines-nested-loop.cpp
 
 class Class01
 {
@@ -36,7 +37,7 @@ public:
             for (int j = 0; j < NR_MSGS_TO_SEND; j++)
             {
                 printf("Class02::coroutine1(): i = %d, j = %d, counter = %d\n", i, j, counter++);
-                async_operation<int> op1 = remoteObj1co.start_op1(msg);
+                async_task<int> op1 = remoteObj1co.op1(msg);
                 int ret1 = co_await op1;
                 (void)ret1;
             }

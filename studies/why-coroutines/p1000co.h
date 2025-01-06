@@ -37,7 +37,7 @@ public:
      */
     async_task<int> op1(int in1, int in2, int& out1, int& out2)
     {
-        async_operation<op1_ret_t> op1 = start_op1(in1, in2);
+        async_operation<op1_ret_t> op1 = start_op1(in1, in2);   // See below
         op1_ret_t res = co_await op1;
         out1 = res.out1;
         out2 = res.out2;

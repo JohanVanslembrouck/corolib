@@ -1,6 +1,6 @@
 /**
- * @file p1110-async-callstack-1rmi.cpp
- * @brief Asynchronous implementation of p1100-sync-callstack-1rmi.cpp.
+ * @file p1160-async-callstack-1rmi.cpp
+ * @brief Asynchronous implementation of p1150-sync-callstack-1rmi.cpp.
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
@@ -10,9 +10,10 @@
 #include "common.h"
 #include "eventqueue.h"
 
-#include "p1000.h"
+#include "p1050.h"                              // difference with p1110-async-callstack-1rmi.cpp
 
-RemoteObject1 remoteObj1;
+RemoteObjectImpl remoteObjImpl;                 // difference with p1110-async-callstack-1rmi.cpp
+RemoteObject1 remoteObj1{ remoteObjImpl };      // difference with p1110-async-callstack-1rmi.cpp
 
 /**
  * @brief Layer01 is the lowest level in the application stack

@@ -16,14 +16,14 @@ class RemoteObject1
 public:
     int op1(Msg& msg)
     {
-        printf("RemoteObject1::op1(msg)\n");
+        printf("RemoteObject1::op1(msg): msg.m_length = %d\n", msg.m_length);
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         return 0;
     }
     
     void sendc_op1(Msg& msg, lambda_void_t lambda)
     {
-        printf("RemoteObject1::sendc_op1(msg, lambda)\n");
+        printf("RemoteObject1::sendc_op1(msg, lambda): msg.m_length = %d\n", msg.m_length);
 		registerCB(lambda);
     }
 };

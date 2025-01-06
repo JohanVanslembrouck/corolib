@@ -11,9 +11,11 @@
 #include "variables.h"
 #include "eventqueue.h"
 #include "buf+msg.h"
-#include "p1300.h"
 
-RemoteObject1 remoteObj1;
+#include "p1350.h"                              // difference with p1300-sync-nested-loop.cpp
+
+RemoteObjectImpl remoteObjImpl;                 // difference with p1300-sync-nested-loop.cpp
+RemoteObject1 remoteObj1{ remoteObjImpl };      // difference with p1300-sync-nested-loop.cpp
 
 class Class01
 {

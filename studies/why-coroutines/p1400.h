@@ -18,11 +18,6 @@
 class RemoteObjectImpl
 {
 public:
-    void init()
-    {
-        m_readOffset = 0;
-    }
-    
     /**
      * @brief synchronous version
      * @param p: pointer to the buffer
@@ -49,9 +44,8 @@ public:
         assert(bytestoread == SEGMENT_LENGTH);
         
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        m_readOffset += bytestoread;
         // We don't really read. Just check if we have read the complete buffer.
-        bool read_complete = (m_readOffset > INBUFFER_LENGTH);
+        bool read_complete = (offset + bytestoread > INBUFFER_LENGTH);
         return read_complete;
     }
     
@@ -81,18 +75,127 @@ public:
     {
         printf("RemoteObjectImpl::sendc_read_segment(p, offset = %d, bytestoread = %d)\n", offset, bytestoread);
         assert(bytestoread == SEGMENT_LENGTH);
-        m_readOffset += bytestoread;
-        
         // We don't really read. Just check if we have read the complete buffer.
-        bool read_complete = (m_readOffset > INBUFFER_LENGTH);
+        bool read_complete = (offset + bytestoread > INBUFFER_LENGTH);
         
         // There isn't an I/O system that will place the lambda in the event queue
         // when an I/O event arrives. Therefore we do it ourselves.
         eventQueue.push([read_complete, lambda]() { lambda(read_complete); });
     }
+};
 
-private:
-    int m_readOffset;
+
+using lambda_msg_t = typename std::function<void(Msg)>;
+
+class RemoteObject1
+{
+public:
+    RemoteObject1(RemoteObjectImpl& remoteObjImpl)
+        : m_remoteObjImpl(remoteObjImpl)
+    {
+    }
+
+    Msg op1(Msg msg)
+    {
+        // Write part
+        Buffer writebuffer;
+        printf("RemoteObject1::op1()\n");
+        // Marshall msg into the buffer
+        // (code not present)
+        // Write the buffer in segments of size SEGMENT_LENGTH (onto the remote object)
+        // until the whole buffer has been written (offset >= writebuffer.length())
+        int buflength = writebuffer.length();
+        for (int offset = 0; offset < buflength; offset += SEGMENT_LENGTH)
+        {
+            int bytestowrite = (buflength - offset) > SEGMENT_LENGTH ? SEGMENT_LENGTH : buflength - offset;
+            printf("RemoteObject1::op1(): calling write_segment: offset = %d\n", offset);
+            m_remoteObjImpl.write_segment(writebuffer.buffer(), offset, bytestowrite);
+        }
+
+        // Read part
+        bool completed = false;
+        Buffer readbuffer;
+        Msg res;
+        // Read the buffer in segments of size SEGMENT_LENGTH
+        // until read_segment reports that the read is complete.
+        for (int offset = 0; !completed; offset += SEGMENT_LENGTH)
+        {
+            printf("RemoteObject1::op1(): calling read_segment: offset = %d\n", offset);
+            completed = m_remoteObjImpl.read_segment(readbuffer.buffer(), offset, SEGMENT_LENGTH);
+        }
+        // Unmarshall Msg from readbuffer
+        // (code not present)
+        // return the msg to the caller
+        return res;
+    }
+
+    struct op1_context
+    {
+        int offset = 0;
+        Buffer writebuffer;
+        Buffer readbuffer;
+        lambda_msg_t lambda;
+    };
+
+    void sendc_op1(Msg msg, lambda_msg_t op1_cb)
+    {
+        printf("RemoteObject1::sendc_op1(): calling write_segment\n");
+
+        op1_context* ctxt = new op1_context;
+        ctxt->lambda = op1_cb;
+        //m_lambda = op1_cb;
+
+        // Write part
+        // Marshall msg into writebuffer
+        // (code not present)
+        // Write the first segment
+        int buflength = ctxt->writebuffer.length();
+        int bytestowrite = (buflength - ctxt->offset) > SEGMENT_LENGTH ? SEGMENT_LENGTH : buflength - ctxt->offset;
+        m_remoteObjImpl.sendc_write_segment(ctxt->writebuffer.buffer(), ctxt->offset, bytestowrite,
+            [this, ctxt]() { this->handle_write_segment_op1(ctxt); });
+        ctxt->offset += SEGMENT_LENGTH;
+    }
+
+    void handle_write_segment_op1(op1_context *ctxt)
+    {
+        int buflength = ctxt->writebuffer.length();
+        if (ctxt->offset < buflength) {
+            printf("RemoteObject1::handle_write_segment_op1(%p): calling sendc_write_segment\n", ctxt);
+            int bytestowrite = (buflength - ctxt->offset) > SEGMENT_LENGTH ? SEGMENT_LENGTH : buflength - ctxt->offset;
+            m_remoteObjImpl.sendc_write_segment(ctxt->writebuffer.buffer(), ctxt->offset, bytestowrite,
+                [this, ctxt]() { this->handle_write_segment_op1(ctxt); });
+            ctxt->offset += SEGMENT_LENGTH;
+        }
+        else {
+            // Read part
+            ctxt->offset = 0;
+            printf("RemoteObject1::handle_write_segment_op1(%p): calling sendc_read_segment\n", ctxt);
+            m_remoteObjImpl.sendc_read_segment(ctxt->readbuffer.buffer(), ctxt->offset, SEGMENT_LENGTH,
+                [this, ctxt](bool res) { this->handle_read_segment_op1(ctxt, res); });
+            ctxt->offset += SEGMENT_LENGTH;
+        }
+    }
+
+    void handle_read_segment_op1(op1_context* ctxt, bool complete)
+    {
+        printf("RemoteObject1::handle_read_segment_op1(%p, %d): calling sendc_read_segment\n", ctxt, complete);
+        Msg msg;
+        if (!complete) {
+            m_remoteObjImpl.sendc_read_segment(ctxt->readbuffer.buffer(), ctxt->offset, SEGMENT_LENGTH,
+                [this, ctxt](bool res) { this->handle_read_segment_op1(ctxt, res); });
+            ctxt->offset += SEGMENT_LENGTH;
+        }
+        else {
+            // Unmarshall msg from buf
+            // (code not present)
+            // Invoke the lambda passing the result
+            ctxt->lambda(msg);
+            delete ctxt;
+        }
+    }
+
+protected:
+    RemoteObjectImpl& m_remoteObjImpl;
 };
 
 #endif

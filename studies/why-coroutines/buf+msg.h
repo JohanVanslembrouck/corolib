@@ -18,7 +18,11 @@ struct Buffer
 
 struct Msg
 {
-    Msg(int i = 0) {}               // i = indication for the message length, but currently ignored
+    Msg(int length = 0)
+        : m_length(length)
+    {}
+
+    int m_length;
 };
 
 const int INBUFFER_LENGTH = 35;     // Fixed buffer length for read buffers

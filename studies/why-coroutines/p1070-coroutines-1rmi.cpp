@@ -1,5 +1,5 @@
 /**
- * @file p1020-coroutines-1rmi.cpp
+ * @file p1070-coroutines-1rmi.cpp
  * @brief
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
@@ -12,10 +12,11 @@
 using namespace corolib;
 
 #include "common.h"
-#include "p1000co.h"
+#include "p1050co.h"                                        // difference with p1020-coroutine-1rmi.cpp
 
-RemoteObject1 remoteObj1;
-RemoteObject1Co remoteObj1co{remoteObj1};
+RemoteObjectImpl remoteObjImpl;                             // difference with p1020-coroutine-1rmi.cpp
+RemoteObjectImplCo remoteObjImplco{ remoteObjImpl };        // difference with p1020-coroutine-1rmi.cpp
+RemoteObject1Co remoteObj1co{ remoteObjImplco };            // difference with p1020-coroutine-1rmi.cpp
 
 class Class01a
 {
@@ -23,15 +24,15 @@ public:
     async_task<int> coroutine1(int in1, int in2)
     {
         printf("Class01a::coroutine1(in1 = %d, in2 = %d)\n", in1, in2);
-        op1_ret_t ret = co_await remoteObj1co.start_op1(in1, in2);
+        op1_ret_t ret = co_await remoteObj1co.op1(in1, in2);
         printf("Class01a::coroutine1(): ret.out1 = %d, ret.out2 = %d, ret.ret = %d\n", ret.out1, ret.out2, ret.ret);
         co_return in1 + in2 + ret.out1 + ret.out2 + ret.ret;
     }
-    
+
     async_task<int> coroutine1a(int in1, int in2)
     {
         printf("Class01a::coroutine1(in1 = %d, in2 = %d)\n", in1, in2);
-        async_operation<op1_ret_t> op1 = remoteObj1co.start_op1(in1, in2);
+        async_task<op1_ret_t> op1 = remoteObj1co.op1(in1, in2);
         op1_ret_t ret = co_await op1;
         printf("Class01a::coroutine1a(): ret.out1 = %d, ret.out2 = %d, ret.ret = %d\n", ret.out1, ret.out2, ret.ret);
         co_return in1 + in2 + ret.out1 + ret.out2 + ret.ret;

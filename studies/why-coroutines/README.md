@@ -6,8 +6,12 @@ for writing (distributed) applications.
 Consider a program name p1XYZ-purpose-of-the-program.cpp:
 
 * X stands for programs with the same functionality for the same value of X.
-* Y = 0 is used for the synchronous version, Y = 1 is used for the asynchronous version and Y = 2 is used for the coroutine version.
+* Y = 0 or Y = 5 is used for the synchronous version, Y = 1 or Y = 6 is used for the asynchronous version and Y = 2 or Y = 7 is used for the coroutine version.
 * Z = 0 is used for the base version. Variants are numbered 2, 4, etc.
+
+The main difference between the Y = 0, 1, 2 variants on the one hand, and the Y = 5, 6, 7 variants on the other hand,
+is that the latter variants use (dummy) implementations for the write and read functions.
+These implementations are missing in the former variants.
 
 No real remote method invocations (RMIs) are used in the examples.
 Instead, the delay that may result of the invocation is simulated by means of a timer.
@@ -136,6 +140,45 @@ public:
 
 It is very close to the synchronous implementation, but it is reactive.
 
+### p1050-sync-1rmi.cpp
+
+The application code is the same as that of p1000-sync-1rmi.cpp.
+Only 3 lines are different:
+
+```c++
+#include "p1050.h"                              // difference with p1000-sync-1rmi.cpp
+
+RemoteObjectImpl remoteObjImpl;                 // difference with p1000-sync-1rmi.cpp
+RemoteObject1 remoteObj1{ remoteObjImpl };      // difference with p1000-sync-1rmi.cpp
+```
+
+### p1060-async-1rmi.cpp
+
+The application code is the same as that of p1010-async-1rmi.cpp.
+Only 3 lines are different:
+
+```c++
+#include "p1050.h"                              // difference with p1010-async-1rmi.cpp
+
+RemoteObjectImpl remoteObjImpl;                 // difference with p1010-async-1rmi.cpp
+RemoteObject1 remoteObj1{ remoteObjImpl };      // difference with p1010-async-1rmi.cpp
+
+```
+
+### p1070-coroutines-1rmi.cpp
+
+The application code is the same as that of p1020-coroutines-1rmi.cpp.
+Only 4 lines are different:
+
+```c++
+#include "p1050co.h"                                        // difference with p1020-coroutine-1rmi.cpp
+
+RemoteObjectImpl remoteObjImpl;                             // difference with p1020-coroutine-1rmi.cpp
+RemoteObjectImplCo remoteObjImplco{ remoteObjImpl };        // difference with p1020-coroutine-1rmi.cpp
+RemoteObject1Co remoteObj1co{ remoteObjImplco };            // difference with p1020-coroutine-1rmi.cpp
+```
+
+
 ## Case 2: program with callstack and 1 RMI
 
 The remote operation can be invoked from a function called from another function called from another function, etc.
@@ -191,7 +234,6 @@ public:
 };
 
 Layer03 layer03;
-
 ```
 
 ### p1110-async-callstack-1rmi.cpp
@@ -303,7 +345,8 @@ public:
 Layer03 layer03;
 ```
 
-In this implementation, Layer01 and Layer02 use a data member to store the lambda (used as callback function) passed from their calling layer.
+In this implementation, Layer01 and Layer02 use a data member to store the lambda 
+(used as callback function) passed from their calling layer.
 
 ### p1112-async-callstack-1rmi-queue-cs.cpp
 
@@ -492,7 +535,46 @@ public:
 Layer03 layer03;
 ```
 
-The coroutine mechanism takes care of returning control to the upper layers, even in case several RMIs are invoked one after the other.
+The coroutine mechanism takes care of returning control to the upper layers, 
+even in case several RMIs are invoked one after the other.
+
+### p1150-sync-callstack-1rmi.cpp
+
+The application code is the same as that of p1100-sync-callstack-1rmi.cpp.
+Only 3 lines are different:
+
+```c++
+#include "p1050.h"                              // difference with p1100-sync-callstack-1rmi.cpp
+
+RemoteObjectImpl remoteObjImpl;                 // difference with p1100-sync-callstack-1rmi.cpp
+RemoteObject1 remoteObj1{ remoteObjImpl };      // difference with p1100-sync-callstack-1rmi.cpp
+
+```
+
+### p1160-async-callstack-1rmi.cpp
+
+The application code is the same as that of p1110-async-callstack-1rmi.cpp.
+Only 3 lines are different:
+
+```c++
+#include "p1050.h"                              // difference with p1110-async-callstack-1rmi.cpp
+
+RemoteObjectImpl remoteObjImpl;                 // difference with p1110-async-callstack-1rmi.cpp
+RemoteObject1 remoteObj1{ remoteObjImpl };      // difference with p1110-async-callstack-1rmi.cpp
+```
+
+### p1170-coroutines-callstack-1rmi.cpp
+
+The application code is the same as that of p1120-coroutines-callstack-1rmi.cpp.
+Only 4 lines are different:
+
+```c++
+#include "p1050co.h"                                        // difference with p1120-coroutines-callstack-1rmi.cpp
+
+RemoteObjectImpl remoteObjImpl;                             // difference with p1120-coroutines-callstack-1rmi.cpp
+RemoteObjectImplCo remoteObjImplco{ remoteObjImpl };        // difference with p1120-coroutines-callstack-1rmi.cpp
+RemoteObject1Co remoteObj1co{ remoteObjImplco };            // difference with p1120-coroutines-callstack-1rmi.cpp
+```
 
 ## Case 3: program with if-then-else and 3 RMIs
 
@@ -590,7 +672,7 @@ public:
     
     /**
      * @brief alternative version of function1 that avoids the introduction of callback functions
-     * by placing the original code in lambdas in lambdas.
+     * by placing the original code in lambdas.
      *
      */
     void function1alt(int in1, int in2)
@@ -831,7 +913,7 @@ public:
         async_task<int> op2 = remoteObj2co.op1(in1, in2, out21, out21);
         async_task<int> op3 = remoteObj3co.op1(in1, in2, out31, out32);
 #if 0
-        // g++ 11 does not like this one-liner
+        // The following statement does not compile with g++ 11.3.0
         co_await when_all({ &op1, &op2, &op3 });
 #else
         when_all wa({ &op1, &op2, &op3 });
@@ -866,11 +948,12 @@ public:
         for (int i = 0; i < MAX_MSG_LENGTH; i++)
         {
             printf("Class04::function1(): i = %d\n", i);
-            Msg msg(i);
+            Msg msg(i * 10);
             for (int j = 0; j < NR_MSGS_TO_SEND; j++)
             {
                 printf("Class04::function1(): i = %d, j = %d, counter = %d\n", i, j, counter++);
                 int ret1 = remoteObj1.op1(msg);
+                (void)ret1;
             }
         }
         elapsed_time = get_current_time() - start_time;
@@ -907,7 +990,7 @@ public:
             j = 0;
             i++;
             if (i < MAX_MSG_LENGTH) {
-                msg = Msg(i);
+                msg = Msg(i * 10);
                 printf("Class01::function1a(): i = %d, j = %d, counter = %d\n", i, j, counter);
                 remoteObj1.sendc_op1(msg, [this]() { this->function1a(); });
                 j++;
@@ -941,7 +1024,7 @@ public:
         for (int i = 0; i < MAX_MSG_LENGTH; i++)
         {
             printf("Class01::coroutine1(): i = %d\n", i);
-            Msg msg(i);
+            Msg msg(i * 10);
             for (int j = 0; j < NR_MSGS_TO_SEND; j++)
             {
                 printf("Class02::coroutine1(): i = %d, j = %d, counter = %d\n", i, j, counter++);
@@ -952,6 +1035,43 @@ public:
         elapsed_time = get_current_time() - start_time;
     }
 };
+```
+
+### p1350-sync-nested-loop.cpp
+
+The application code is the same as that of p1300-sync-nested-loop.cpp.
+Only 3 lines are different:
+
+```c++
+#include "p1350.h"                              // difference with p1300-sync-nested-loop.cpp
+
+RemoteObjectImpl remoteObjImpl;                 // difference with p1300-sync-nested-loop.cpp
+RemoteObject1 remoteObj1{ remoteObjImpl };      // difference with p1300-sync-nested-loop.cpp
+```
+
+### p1360-async-nested-loop.cpp
+
+The application code is the same as that of p1310-async-nested-loop.cpp.
+Only 3 lines are different:
+
+```c++
+#include "p1350.h"                              // difference with p1310-async-nested-loop.cpp
+
+RemoteObjectImpl remoteObjImpl;                 // difference with p1310-async-nested-loop.cpp
+RemoteObject1 remoteObj1{ remoteObjImpl };      // difference with p1310-async-nested-loop.cpp
+```
+
+### p1370-coroutines-nested-loop.cpp
+
+The application code is the same as that of p1320-coroutines-nested-loop.cpp.
+Only 4 lines are different:
+
+```c++
+#include "p1350co.h"                                        // difference with p1320-coroutines-nested-loop.cpp
+
+RemoteObjectImpl remoteObjImpl;                             // difference with p1320-coroutines-nested-loop.cpp
+RemoteObjectImplCo remoteObjImplco{ remoteObjImpl };        // difference with p1320-coroutines-nested-loop.cpp
+RemoteObject1Co remoteObj1co{ remoteObjImplco };            // difference with p1320-coroutines-nested-loop.cpp
 ```
 
 ## Case 6: Segmentation: adding two loops at the infrastructure level
@@ -1046,79 +1166,86 @@ public:
 
 ### p1410-async-segmentation.cpp
 
-The implementation of op1 now looks as follows:
+The implementation of sendc_op1 now looks as follows:
 
 ```c++
 class RemoteObject1
 {
 public:
-    void init()
+    RemoteObject1(RemoteObjectImpl& remoteObjImpl)
+        : m_remoteObjImpl(remoteObjImpl)
     {
-        offset = 0;
-        completed = false;
     }
-    
+
+    // ...
+
+    struct op1_context
+    {
+        int offset = 0;
+        Buffer writebuffer;
+        Buffer readbuffer;
+        lambda_msg_t lambda;
+    };
+
     void sendc_op1(Msg msg, lambda_msg_t op1_cb)
     {
         printf("RemoteObject1::sendc_op1(): calling write_segment\n");
-        lambda = op1_cb;
-        
+
+        op1_context* ctxt = new op1_context;
+        ctxt->lambda = op1_cb;
+        //m_lambda = op1_cb;
+
         // Write part
         // Marshall msg into writebuffer
         // (code not present)
         // Write the first segment
-        int buflength = writebuffer.length();
-        int bytestowrite = (buflength - offset) > SEGMENT_LENGTH ? SEGMENT_LENGTH : buflength - offset;
-        remoteObjImpl.sendc_write_segment(writebuffer.buffer(), offset, bytestowrite,
-                                            [this]() { this->handle_write_segment(); });
-        offset += SEGMENT_LENGTH;
+        int buflength = ctxt->writebuffer.length();
+        int bytestowrite = (buflength - ctxt->offset) > SEGMENT_LENGTH ? SEGMENT_LENGTH : buflength - ctxt->offset;
+        m_remoteObjImpl.sendc_write_segment(ctxt->writebuffer.buffer(), ctxt->offset, bytestowrite,
+            [this, ctxt]() { this->handle_write_segment_op1(ctxt); });
+        ctxt->offset += SEGMENT_LENGTH;
     }
 
-    void handle_write_segment()
+    void handle_write_segment_op1(op1_context *ctxt)
     {
-        printf("RemoteObject1::handle_write_segment()\n");
-        int buflength = writebuffer.length();
-        if (offset < buflength) {
-            printf("RemoteObject1::handle_write_segment(): calling sendc_write_segment\n");
-            int bytestowrite = (buflength - offset) > SEGMENT_LENGTH ? SEGMENT_LENGTH : buflength - offset;
-            remoteObjImpl.sendc_write_segment(writebuffer.buffer(), offset, bytestowrite,
-                                                [this]() { this->handle_write_segment(); });
-            offset += SEGMENT_LENGTH;
+        int buflength = ctxt->writebuffer.length();
+        if (ctxt->offset < buflength) {
+            printf("RemoteObject1::handle_write_segment_op1(%p): calling sendc_write_segment\n", ctxt);
+            int bytestowrite = (buflength - ctxt->offset) > SEGMENT_LENGTH ? SEGMENT_LENGTH : buflength - ctxt->offset;
+            m_remoteObjImpl.sendc_write_segment(ctxt->writebuffer.buffer(), ctxt->offset, bytestowrite,
+                [this, ctxt]() { this->handle_write_segment_op1(ctxt); });
+            ctxt->offset += SEGMENT_LENGTH;
         }
         else {
             // Read part
-            offset = 0;
-            remoteObjImpl.init();
-            printf("RemoteObject1::handle_write_segment(): calling sendc_read_segment\n");
-            remoteObjImpl.sendc_read_segment(readbuffer.buffer(), offset, SEGMENT_LENGTH, 
-                                                            [this](bool res) { this->handle_read_segment(res); });
-            offset += SEGMENT_LENGTH;
+            ctxt->offset = 0;
+            printf("RemoteObject1::handle_write_segment_op1(%p): calling sendc_read_segment\n", ctxt);
+            m_remoteObjImpl.sendc_read_segment(ctxt->readbuffer.buffer(), ctxt->offset, SEGMENT_LENGTH,
+                [this, ctxt](bool res) { this->handle_read_segment_op1(ctxt, res); });
+            ctxt->offset += SEGMENT_LENGTH;
         }
     }
 
-    void handle_read_segment(bool complete)
+    void handle_read_segment_op1(op1_context* ctxt, bool complete)
     {
+        printf("RemoteObject1::handle_read_segment_op1(%p, %d): calling sendc_read_segment\n", ctxt, complete);
         Msg msg;
         if (!complete) {
-            printf("RemoteObject1::handle_read_segment(): calling sendc_read_segment\n");
-            remoteObjImpl.sendc_read_segment(readbuffer.buffer(), offset, SEGMENT_LENGTH, 
-                                                            [this](bool res) { this->handle_read_segment(res); });
-            offset += SEGMENT_LENGTH;
+            m_remoteObjImpl.sendc_read_segment(ctxt->readbuffer.buffer(), ctxt->offset, SEGMENT_LENGTH,
+                [this, ctxt](bool res) { this->handle_read_segment_op1(ctxt, res); });
+            ctxt->offset += SEGMENT_LENGTH;
         }
         else {
             // Unmarshall msg from buf
             // (code not present)
             // Invoke the lambda passing the result
-            lambda(msg);
+            ctxt->lambda(msg);
+            delete ctxt;
         }
     }
 
-private:
-    int offset = 0;
-    Buffer writebuffer;
-    bool completed = false;
-    Buffer readbuffer;
-    lambda_msg_t lambda;
+protected:
+    RemoteObjectImpl& m_remoteObjImpl;
 };
 ```
 
@@ -1136,7 +1263,6 @@ public:
         
         start_time = get_current_time();
         msg = Msg(0);
-        remoteObj1.init();
         remoteObj1.sendc_op1(msg, [this](Msg msg) { this->function1a(msg); });
     }
 
@@ -1145,7 +1271,6 @@ public:
         // Do something with msgout
         printf("Class01::function1a(Msg): counter = %d\n", counter);
         if (j < NR_MSGS_TO_SEND) {
-            remoteObj1.init();
             printf("Class01::function1a(): i = %d, j = %d, counter = %d\n", i, j, counter);
             remoteObj1.sendc_op1(msg, [this](Msg msg) { this->function1a(msg); });
             j++;
@@ -1157,7 +1282,6 @@ public:
             i++;
             if (i < MAX_MSG_LENGTH) {
                 msg = Msg(i);
-                remoteObj1.init();
                 printf("Class01::function1a(): i = %d, j = %d, counter = %d\n", i, j, counter);
                 remoteObj1.sendc_op1(msg, [this](Msg msg) { this->function1a(msg); });
                 j++;
@@ -1185,6 +1309,11 @@ The implementation of op1 now looks as follows:
 class RemoteObject1Co
 {
 public:
+    RemoteObject1Co(RemoteObjectImplCo& remoteObjImplCo)
+        : m_remoteObjImplCo(remoteObjImplCo)
+    {
+    }
+
     async_task<Msg> op1(Msg msg)
     {
         // Write part
@@ -1199,26 +1328,28 @@ public:
         {
             int bytestowrite = (buflength - offset) > SEGMENT_LENGTH ? SEGMENT_LENGTH : buflength - offset;
             printf("RemoteObject1Co::op1(): calling write_segment: offset = %d\n", offset);
-            co_await remoteObjImplco.start_write_segment(writebuffer.buffer(), offset, bytestowrite);
+            co_await m_remoteObjImplCo.start_write_segment(writebuffer.buffer(), offset, bytestowrite);
         }
-        
+
         // Read part
         bool completed = false;
         Buffer readbuffer;
         Msg res;
-        remoteObjImplco.init();
         // Read the buffer in segments of size SEGMENT_LENGTH
         // until start_read_segment reports that the read is complete.
         for (int offset = 0; !completed; offset += SEGMENT_LENGTH)
         {
             printf("RemoteObject1Co::op1(): calling read_segment: offset = %d\n", offset);
-            completed = co_await remoteObjImplco.start_read_segment(readbuffer.buffer(), offset, SEGMENT_LENGTH);
+            completed = co_await m_remoteObjImplCo.start_read_segment(readbuffer.buffer(), offset, SEGMENT_LENGTH);
         }
         // Unmarshall Msg from readbuffer
         // (code not present)
         // return the msg to the caller
         co_return res;
     }
+
+protected:
+    RemoteObjectImplCo& m_remoteObjImplCo;
 };
 ```
 
