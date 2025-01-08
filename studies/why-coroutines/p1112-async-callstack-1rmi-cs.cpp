@@ -293,7 +293,7 @@ int main() {
     layer03.function1(2, ret1);
     int ret2 = -1;
     layer03.function2(3, ret2);
-    printf("main(): eventQueue.run();\n");
+
     eventQueue.run();
     printf("main(): ret1 = %d\n", ret1);
     printf("main(): ret2 = %d\n", ret2);

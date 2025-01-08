@@ -60,7 +60,6 @@ public:
     {
         printf("RemoteObjectImpl::sendc_write_segment(p, offset = %d, bytestowrite = %d)\n", offset, bytestowrite);
         assert(bytestowrite <= SEGMENT_LENGTH);
-        
         registerCB(lambda);
     }
 
@@ -77,10 +76,7 @@ public:
         assert(bytestoread == SEGMENT_LENGTH);
         // We don't really read. Just check if we have read the complete buffer.
         bool read_complete = (offset + bytestoread > INBUFFER_LENGTH);
-        
-        // There isn't an I/O system that will place the lambda in the event queue
-        // when an I/O event arrives. Therefore we do it ourselves.
-        eventQueue.push([read_complete, lambda]() { lambda(read_complete); });
+        registerCB(lambda, read_complete);
     }
 };
 

@@ -58,7 +58,7 @@ public:
     async_operation<op1_ret_t> start_op1(int in1, int in2)
     {
         int index = get_free_index();
-        print(PRI1, "%p: RemoteObj1::start_op1(): index = %d\n", this, index);
+        print(PRI2, "%p: RemoteObj1::start_op1(%d, %d): index = %d\n", this, in1, in2, index);
         start_op1_impl(index, in1, in2);
         return { this, index };
     }
@@ -66,7 +66,7 @@ public:
     async_operation<op2_ret_t> start_op2(int in1, int in2)
     {
         int index = get_free_index();
-        print(PRI1, "%p: RemoteObj1::start_op2(): index = %d\n", this, index);
+        print(PRI2, "%p: RemoteObj1::start_op2(%d, %d): index = %d\n", this, in1, in2, index);
         start_op2_impl(index, in1, in2);
         return { this, index };
     }
@@ -74,7 +74,7 @@ public:
     async_operation<op1_ret_t> start_op3(int in1)
     {
         int index = get_free_index();
-        print(PRI1, "%p: RemoteObj1::start_op3(): index = %d\n", this, index);
+        print(PRI2, "%p: RemoteObj1::start_op3(%d): index = %d\n", this, in1, index);
         start_op3_impl(index, in1);
         return { this, index };
     }

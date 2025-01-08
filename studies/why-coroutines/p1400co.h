@@ -26,8 +26,7 @@ public:
     async_operation<void> start_write_segment(char* p, int offset, int bytestowrite)
     {
         int index = get_free_index();
-        //printf("RemoteObjectImplCo::start_write_segment(p, offset = %d): index = %d\n", offset, index);
-        printf("RemoteObjectImplCo::start_write_segment(p, offset = %d)\n", offset);
+        print(PRI2, "RemoteObjectImplCo::start_write_segment(p, offset = %d)\n", offset);
         start_write_segment_impl(index, p, offset, bytestowrite);
         return { this, index };
     }
@@ -35,8 +34,7 @@ public:
     async_operation<bool> start_read_segment(char* p, int offset, int length)
     {
         int index = get_free_index();
-        //printf("RemoteObjectImplCo::start_read_segment(p, offset = %d, length = %d): index = %d\n", offset, length, index);
-        printf("RemoteObjectImplCo::start_read_segment(p, offset = %d, length = %d)\n", offset, length);
+        print(PRI2, "RemoteObjectImplCo::start_read_segment(p, offset = %d, length = %d)\n", offset, length);
         start_read_segment_impl(index, p, offset, length);
         return { this, index };
     }

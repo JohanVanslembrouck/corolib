@@ -24,7 +24,9 @@ RemoteObject1Co remoteObj1co{ remoteObjImplco };            // difference with p
  * @brief Layer01 is the lowest level in the application stack
  * Lower layer: RemoteObject1Co
  * Upper layer: Layer02 (but not known by Layer01)
- *
+ * Note: At the co_await statement:
+ *     Warning C26811: Lifetime of the memory referenced by parameter 'out1' might end by the time the coroutine is resumed.
+ * https://learn.microsoft.com/en-us/cpp/code-quality/c26811?view=msvc-170
  */
 class Layer01
 {
@@ -44,7 +46,9 @@ Layer01 layer01;
  * @brief Layer02 is the middle layer in the application stack
  * Lower layer: Layer01
  * Upper layer: Layer03 (but not known by Layer02)
- *
+ * Note: At the co_await statement:
+ *     Warning C26811: Lifetime of the memory referenced by parameter 'out1' might end by the time the coroutine is resumed.
+ * https://learn.microsoft.com/en-us/cpp/code-quality/c26811?view=msvc-170
  */
 class Layer02
 {

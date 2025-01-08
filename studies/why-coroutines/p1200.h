@@ -47,19 +47,38 @@ public:
     
     void sendc_op1(int in1, int in2, lambda_3int_t lambda)
     {
-        printf("RemoteObject1::sendc_op1(%d, %d, l)\n", in1, in2);
+        printf("RemoteObject1::sendc_op1(%d, %d, lambda)\n", in1, in2);
         registerCB(lambda, in1, in2);
     }
 
     void sendc_op2(int in1, int in2, lambda_2int_t lambda)
     {
-        printf("RemoteObject1::sendc_op2(%d, %d, l)\n", in1, in2);
+        printf("RemoteObject1::sendc_op2(%d, %d, lambda)\n", in1, in2);
         registerCB(lambda, in1, in2);
     }
 
     void sendc_op3(int in1, lambda_3int_t lambda)
     {
-        printf("RemoteObject1::sendc_op3(%d, l)\n", in1);
+        printf("RemoteObject1::sendc_op3(%d, lambda)\n", in1);
+        registerCB(lambda, in1, 0);
+    }
+
+
+    void sendc_op1(int in1, int in2, lambda_op1_ret_t lambda)
+    {
+        printf("RemoteObject1::sendc_op1(%d, %d, lambda)\n", in1, in2);
+        registerCB(lambda, in1, in2);
+    }
+
+    void sendc_op2(int in1, int in2, lambda_op2_ret_t lambda)
+    {
+        printf("RemoteObject1::sendc_op2(%d, %d, lambda)\n", in1, in2);
+        registerCB(lambda, in1, in2);
+    }
+
+    void sendc_op3(int in1, lambda_op1_ret_t lambda)
+    {
+        printf("RemoteObject1::sendc_op3(%d, lambda)\n", in1);
         registerCB(lambda, in1, 0);
     }
 };

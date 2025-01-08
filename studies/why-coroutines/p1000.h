@@ -71,48 +71,26 @@ public:
 
     /**
     * @brief asynchronous operation; asynchronous variant of op1
-    * This function is identical to sendc_op above, except the ordering of the parameters
-    * @param lambda
-    * @param in1
-    * @param in2
-    */
-    void sendc_op1(lambda_3int_t lambda, int in1, int in2)
-    {
-        printf("RemoteObject1::sendc_op1(lambda_3int_t, in1 = %d, in2 = %d)\n", in1, in2);
-        // Marshal in1 and in2 into a buffer to write to the remote object.
-        // Write the buffer to the remote object.
-        // (write code is not present.)
-
-        // Start reading the response.
-        // (read code not present.)
-        
-        // Register the lambda with the "communication framework".
-        // The framework will call the lambda when it has received the response.
-        registerCB(lambda, in1, in2);
-    }
-
-    /**
-    * @brief asynchronous operation; asynchronous variant of op1
     * In this variant, the applicationn level function passes a context
     * whose content is opaque to send_c
     * @param context
-    * @param lambda
     * @param in1
     * @param in2
+    * @param lambda
     */
-    void sendc_op1(void* context, lambda_vp_3int_t lambda, int in1, int in2)
+    void sendc_op1(void* context, int in1, int in2, lambda_vp_3int_t lambda)
     {
-        printf("RemoteObject1::sendc_op1(context, lambda_vp_3int_t, in1 = %d, in2 = %d)\n", in1, in2);
+        printf("RemoteObject1::sendc_op1(context = %p, in1 = %d, in2 = %d, lambda_vp_3int_t)\n", context, in1, in2);
         // Marshal in1 and in2 into a buffer to write to the remote object.
         // Write the buffer to the remote object.
         // (write code is not present.)
-        
+
         // Start reading the response.
         // (read code not present.)
-        
+
         // Register the lambda with the "communication framework".
         // The framework will call the lambda when it has received the response.
-        registerCB(context, lambda, in1, in2);
+        registerCB(lambda, context, in1, in2);
     }
 };
 

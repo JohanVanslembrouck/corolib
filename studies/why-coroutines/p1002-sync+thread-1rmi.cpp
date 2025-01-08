@@ -37,9 +37,11 @@ int main()
     printf("main();\n");
     std::future<int> t1 = std::async(std::launch::async, []() { return class01.function1(11, 12); });
     int ret1 = t1.get();
-    printf("main(): ret1 = %d\n", ret1);
     std::future<int> t2 = std::async(std::launch::async, []() { return class01.function1(21, 22); });
     int ret2 = t2.get();
+    printf("\n");
+
+    printf("main(): ret1 = %d\n", ret1);
     printf("main(): ret2 = %d\n", ret2);
     return 0;
 }

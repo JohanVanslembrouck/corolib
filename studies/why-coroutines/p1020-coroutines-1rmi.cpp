@@ -72,9 +72,11 @@ int main()
     printf("main();\n");
     async_task<int> t1 = class01a.coroutine1(11, 12);
     async_task<int> t2 = class01a.coroutine1a(21, 22);
-    async_task<int> t3 = class01.coroutine1(11, 12);
-    async_task<int> t4 = class01.coroutine1a(21, 22);
+    async_task<int> t3 = class01.coroutine1(31, 32);
+    async_task<int> t4 = class01.coroutine1a(41, 42);
     eventQueue.run();
+    printf("\n");
+
     int ret1 = t1.get_result();
     printf("main(): ret1 = %d\n", ret1);
     int ret2 = t2.get_result();

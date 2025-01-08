@@ -204,6 +204,11 @@ public:
         : Layer01(remoteObj1co, layer02)
     {}
 
+    /**
+     * Note: At the co_await statement:
+     *     Warning C26811: Lifetime of the memory referenced by parameter 'out1' might end by the time the coroutine is resumed.
+     * https://learn.microsoft.com/en-us/cpp/code-quality/c26811?view=msvc-170
+     */
     async_task<int> coroutine1d(int in1, int& out1, int& out2) override
     {
         printf("Layer01::coroutine1d(): part 1\n");
@@ -213,6 +218,11 @@ public:
         co_return in1 + ret1;
     }
 
+    /**
+     * Note: At the co_await statement:
+     *     Warning C26811: Lifetime of the memory referenced by parameter 'out1' might end by the time the coroutine is resumed.
+     * https://learn.microsoft.com/en-us/cpp/code-quality/c26811?view=msvc-170
+     */
     async_task<int> coroutine1u(int in1, int& out1, int& out2) override
     {
         printf("Layer01::coroutine1u(): part 1\n");
@@ -230,6 +240,11 @@ public:
         : Layer02(layer01, layer03)
     {}
 
+    /**
+     * Note: At the co_await statement:
+     *     Warning C26811: Lifetime of the memory referenced by parameter 'out1' might end by the time the coroutine is resumed.
+     * https://learn.microsoft.com/en-us/cpp/code-quality/c26811?view=msvc-170
+     */
     async_task<int> coroutine1d(int in1, int& out1) override
     {
         printf("Layer02::coroutine1d(): part 1\n");
@@ -240,6 +255,11 @@ public:
         co_return in1 + out2 + ret1;
     }
 
+    /**
+     * Note: At the co_await statement:
+     *     Warning C26811: Lifetime of the memory referenced by parameter 'out1' might end by the time the coroutine is resumed.
+     * https://learn.microsoft.com/en-us/cpp/code-quality/c26811?view=msvc-170
+     */
     async_task<int> coroutine1u(int in1, int& out1) override
     {
         printf("Layer02::coroutine1u(): part 1\n");
@@ -282,7 +302,9 @@ public:
     /**
      * @brief upstream coroutine at the highest level: we invoke our own downstream coroutine
      * that will go down the protocol stack
-     *
+     * Note: At the co_await statement:
+     *     Warning C26811: Lifetime of the memory referenced by parameter 'out1' might end by the time the coroutine is resumed.
+     * https://learn.microsoft.com/en-us/cpp/code-quality/c26811?view=msvc-170
      */
     async_task<int> coroutine1u(int in1, int& out1, int& out2) override
     {

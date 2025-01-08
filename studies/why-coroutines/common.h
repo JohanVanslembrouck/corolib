@@ -9,6 +9,7 @@
 #define _COMMON_H_
 
 #include <functional>
+#include <stdio.h>
 
 #include "eventqueue.h"
 
@@ -52,54 +53,44 @@ extern EventQueue eventQueue;
 
 inline void registerCB(lambda_3int_t lambda, int in1, int in2)
 {
+    //printf("registerCB(lambda_3int_t lambda, %d, %d)\n", in1, in2);
     eventQueue.push([lambda, in1, in2]() { lambda(1, 2, in1 + in2); });
 }
 
 inline void registerCB(lambda_2int_t lambda, int in1, int in2)
 {
-    eventQueue.push([lambda]() { lambda(1, 2); });
+    //printf("registerCB(lambda_2int_t lambda, %d, %d)\n", in1, in2);
+    eventQueue.push([lambda, in1, in2]() { lambda(1, in1 + in2); });
 }
 
 inline void registerCB(lambda_void_t lambda)
 {
+    //printf("registerCB(lambda_void_t lambda)\n");
     eventQueue.push(lambda);
 }
 
 inline void registerCB(lambda_op1_ret_t lambda, int in1, int in2)
 {
-    eventQueue.push([lambda]() { lambda({ 1, 2, 3 }); });
+    //printf("registerCB(lambda_op1_ret_t lambda, %d, %d)\n", in1, in2);
+    eventQueue.push([lambda, in1, in2]() { lambda({ 1, 2, in1 + in2 }); });
 }
 
 inline void registerCB(lambda_op2_ret_t lambda, int in1, int in2)
 {
-    eventQueue.push([lambda]() { lambda({ 1, 2 }); });
+    //printf("registerCB(lambda_op2_ret_t lambda, %d, %d)\n", in1, in2);
+    eventQueue.push([lambda, in1, in2]() { lambda({ 1, in1 + in2 }); });
+}
+
+inline void registerCB(lambda_bool_t lambda, bool val)
+{
+    eventQueue.push([lambda, val]() { lambda(val); });
 }
 
 
-
-inline void registerCB(void* context, lambda_vp_3int_t lambda, int in1, int in2)
+inline void registerCB(lambda_vp_3int_t lambda, void* context, int in1, int in2)
 {
+    //printf("registerCB(lambda_vp_3int_t lambda, void* context, %d, %d)\n", in1, in2);
     eventQueue.push([lambda, context, in1, in2]() { lambda(context, 1, 2, in1 + in2); });
-}
-
-inline void registerCB(void* context, lambda_vp_2int_t lambda, int in1, int in2)
-{
-    eventQueue.push([lambda, context]() { lambda(context, 1, 2); });
-}
-
-inline void registerCB(void* context, lambda_vp_t lambda)
-{
-    eventQueue.push([lambda, context]() { lambda(context); });
-}
-
-inline void registerCB(void* context, lambda_vp_op1_ret_t lambda, int in1, int in2)
-{
-    eventQueue.push([lambda, context]() { lambda(context, { 1, 2, 3 }); });
-}
-
-inline void registerCB(void* context, lambda_vp_op2_ret_t lambda, int in1, int in2)
-{
-    eventQueue.push([lambda, context]() { lambda(context, { 1, 2 }); });
 }
 
 #endif

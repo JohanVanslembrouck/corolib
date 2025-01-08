@@ -58,7 +58,7 @@ public:
     async_operation<op1_ret_t> start_op1(int in1, int in2)
     {
         int index = get_free_index();
-        print(PRI1, "%p: RemoteObject1Co::start_op1(): index = %d\n", this, index);
+        print(PRI2, "%p: RemoteObject1Co::start_op1(%d, %d): index = %d\n", this, in1, in2, index);
         start_op1_impl(index, in1, in2);
         return { this, index };
     }
@@ -66,7 +66,7 @@ public:
     async_operation<op2_ret_t> start_op2(int in1, int in2)
     {
         int index = get_free_index();
-        print(PRI1, "%p: RemoteObject1Co::start_op2(): index = %d\n", this, index);
+        print(PRI2, "%p: RemoteObject1Co::start_op2(%d, %d): index = %d\n", this, in1, in2, index);
         start_op2_impl(index, in1, in2);
         return { this, index };
     }
@@ -74,7 +74,7 @@ public:
     async_operation<op1_ret_t> start_op3(int in1)
     {
         int index = get_free_index();
-        print(PRI1, "%p: RemoteObject1Co::start_op3(): index = %d\n", this, index);
+        print(PRI2, "%p: RemoteObject1Co::start_op3(%d): index = %d\n", this, in1, index);
         start_op3_impl(index, in1);
         return { this, index };
     }
@@ -82,7 +82,7 @@ public:
     template<class TYPE>
     void genericCompletionHandler(int idx, TYPE in)
     {
-        print(PRI1, "%p: RemoteObject1Co::genericCompletionHandler(%d)\n", this, idx);
+        print(PRI2, "%p: RemoteObject1Co::genericCompletionHandler(%d)\n", this, idx);
 
         async_operation_base* om_async_operation = get_async_operation(idx);
         async_operation<TYPE>* om_async_operation_t =
@@ -90,36 +90,15 @@ public:
 
         if (om_async_operation_t)
         {
-            print(PRI1, "%p: RemoteObject1Co::genericCompletionHandler(%d): om_async_operation_t->set_result()\n", this, idx);
+            print(PRI2, "%p: RemoteObject1Co::genericCompletionHandler(%d): om_async_operation_t->set_result()\n", this, idx);
             om_async_operation_t->set_result(in);
             om_async_operation_t->completed();
         }
         else
         {
             // This can occur when the async_operation_base has gone out of scope.
-            print(PRI1, "%p: RemoteObject1Co::genericCompletionHandler(%d): Warning: om_async_operation_t == nullptr\n", this, idx);
+            print(PRI2, "%p: RemoteObject1Co::genericCompletionHandler(%d): Warning: om_async_operation_t == nullptr\n", this, idx);
         }
-    }
-
-    // Lower level functions (also defined in p1200.h, but with a different lambda type)
-    // ---------------------
-    
-    void sendc_op1(int in1, int in2, lambda_op1_ret_t lambda)
-    {
-        printf("RemoteObject1Co::sendc_op1(%d, %d, l)\n", in1, in2);
-        registerCB(lambda, in1, in2);
-    }
-
-    void sendc_op2(int in1, int in2, lambda_op2_ret_t lambda)
-    {
-        printf("RemoteObject1Co::sendc_op2(%d, %d, l)\n", in1, in2);
-        registerCB(lambda, in1, in2);
-    }
-
-    void sendc_op3(int in1, lambda_op1_ret_t lambda)
-    {
-        printf("RemoteObject1Co::sendc_op3(%d, l)\n", in1);
-        registerCB(lambda, in1, 0);
     }
 
 protected:

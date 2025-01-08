@@ -3,7 +3,7 @@
  * @brief
  * See the event queue description in tutorial/eventqueue.h
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _EVENTQUEUE_H_

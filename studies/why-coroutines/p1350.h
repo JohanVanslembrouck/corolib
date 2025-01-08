@@ -38,10 +38,7 @@ public:
     void sendc_read(char* p, int bytestoread, lambda_void_t lambda)
     {
         printf("RemoteObjectImpl::sendc_read(p, bytestoread = %d)\n", bytestoread);
-
-        // There isn't an I/O system that will place the lambda in the event queue
-        // when an I/O event arrives. Therefore we do it ourselves.
-        eventQueue.push([lambda]() { lambda(); });
+        registerCB(lambda);
     }
 };
 

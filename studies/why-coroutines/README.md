@@ -47,9 +47,15 @@ int main()
 {
     printf("main();\n");
     int ret1 = class01.function1(11, 12);
-    printf("main(): ret1 = %d\n", ret1);
     int ret2 = class01.function1(21, 22);
+    int ret3 = class01.function1(31, 32);
+    int ret4 = class01.function1(41, 42);
+    printf("\n");
+
+    printf("main(): ret1 = %d\n", ret1);
     printf("main(): ret2 = %d\n", ret2);
+    printf("main(): ret3 = %d\n", ret3);
+    printf("main(): ret4 = %d\n", ret4);
     return 0;
 }
 ```
@@ -65,9 +71,11 @@ int main()
     printf("main();\n");
     std::future<int> t1 = std::async(std::launch::async, []() { return class01.function1(11, 12); });
     int ret1 = t1.get();
-    printf("main(): ret1 = %d\n", ret1);
     std::future<int> t2 = std::async(std::launch::async, []() { return class01.function1(21, 22); });
     int ret2 = t2.get();
+    printf("\n");
+
+    printf("main(): ret1 = %d\n", ret1);
     printf("main(): ret2 = %d\n", ret2);
     return 0;
 }
@@ -84,29 +92,37 @@ public:
     
     struct function1_cxt_t
     {
+        ~function1_cxt_t() { printf("function1_cxt_t::~function1_cxt_t()\n"); }
+
         int in1;
         int in2;
         int* ret;
     };
 
+    /**
+     * @brief
+     *
+     */
     void function1(int in1, int in2, int& ret)
     {
         printf("Class01::function1(in1 = %d, in2 = %d, ret = %d)\n", in1, in2, ret);
         void* ctxt = new function1_cxt_t{ in1, in2, &ret };
         printf("Class01::function1(): ctxt = %p\n", ctxt);
 
-        remoteObj1.sendc_op1(ctxt,
+        remoteObj1.sendc_op1(ctxt, in1, in2,
             [this](void* context, int out1, int out2, int ret1)
             {
                 this->function1_cb(context, out1, out2, ret1);
-            },
-            in1, in2);
+            });
     }
 
+    /**
+     * @brief callback function with the out parameters and the return value
+     *
+     */
     void function1_cb(void* context, int out1, int out2, int ret1)
     {
         printf("Class01::function1_cb(context = %p, out1 = %d, out2 = %d, ret1 = %d)\n", context, out1, out2, ret1);
-
         function1_cxt_t* ctxt = static_cast<function1_cxt_t*>(context);
 
         printf("Class01::function1_cb(): ctxt->in1 = %d, ctxt->in2 = %d, ctxt->ret = %p, ctxt->ret = %d)\n", 
@@ -177,7 +193,6 @@ RemoteObjectImpl remoteObjImpl;                             // difference with p
 RemoteObjectImplCo remoteObjImplco{ remoteObjImpl };        // difference with p1020-coroutine-1rmi.cpp
 RemoteObject1Co remoteObj1co{ remoteObjImplco };            // difference with p1020-coroutine-1rmi.cpp
 ```
-
 
 ## Case 2: program with callstack and 1 RMI
 
@@ -256,12 +271,12 @@ public:
         printf("Layer01::function1(in1 = %d)\n", in1);
         void* ctxt = new function1_cxt_t{ ctxt1, lambda, in1 };
 
-        remoteObj1.sendc_op1(ctxt,
+        // int ret1 = remoteObj1.op1(in1, in1, out1, out2);
+        remoteObj1.sendc_op1(ctxt, in1, in1,
             [this](void* context, int out1, int out2, int ret1)
             {
                 this->function1_cb(context, out1, out2, ret1);
-            },
-            in1, in1);
+            });
     }
 
     void function1_cb(void* context, int out1, int out2, int ret1)
@@ -269,8 +284,9 @@ public:
         printf("Layer01::function1_cb(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);
         function1_cxt_t* ctxt = static_cast<function1_cxt_t*>(context);
         // call function1_cb of upper layer
+        // return in1 + ret1;
         ctxt->lambda(ctxt->ctxt, out1, out2, ctxt->in1 + ret1);
-        delete context;
+        delete ctxt;
     }
 };
 
@@ -279,7 +295,6 @@ Layer01 layer01;
 class Layer02
 {
 public:
-
     struct function1_cxt_t
     {
         void* ctxt;
@@ -292,6 +307,7 @@ public:
         printf("Layer02::function1(in1 = %d)\n", in1);
         void* ctxt = new function1_cxt_t{ ctxt1, lambda, in1 };
 
+        // int ret1 = layer01.function1(in1, out1, out2);
         layer01.function1(
             ctxt,
             [this](void* ctxt1, int out1, int out2, int ret1) { 
@@ -305,7 +321,9 @@ public:
         printf("Layer02::function1_cb(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);
         function1_cxt_t* ctxt = static_cast<function1_cxt_t*>(context);
         // call function1_cb of upper layer
+        // return in1 + out2 + ret1;
         ctxt->lambda(ctxt->ctxt, out1, ctxt->in1 + out2 + ret1);
+        delete ctxt;
     }
 };
 
@@ -314,7 +332,6 @@ Layer02 layer02;
 class Layer03
 {
 public:
-
     struct function1_cxt_t
     {
         int* ret;
@@ -326,6 +343,7 @@ public:
         printf("Layer03::function1(in1 = %d)\n", in1);
         void* ctxt = new function1_cxt_t{ &ret1, in1 };
 
+        // int ret1 = layer02.function1(in1, out1);
         layer02.function1(ctxt,
             [this](void *ctxt, int out1, int ret1) {
                 this->function1_cb(ctxt, out1, ret1);
@@ -337,6 +355,35 @@ public:
     {
         printf("Layer03::function1_cb(out1 = %d, ret1 = %d)\n", out1, ret1);
         function1_cxt_t* ctxt = static_cast<function1_cxt_t*>(context);
+        // return in1 + out1 + ret1;
+        *ctxt->ret = ctxt->in1 + out1 + ret1;
+        delete ctxt;
+    }
+
+    struct function2_cxt_t
+    {
+        int* ret;
+        int in1;
+    };
+
+    void function2(int in1, int& ret1)
+    {
+        printf("Layer03::function2(in1 = %d)\n", in1);
+        void* ctxt = new function1_cxt_t{ &ret1, in1 };
+
+        // int ret1 = layer02.function1(in1, out1);
+        layer02.function1(ctxt,
+            [this](void* ctxt, int out1, int ret1) {
+                this->function2_cb(ctxt, out1, ret1);
+            },
+            in1);
+    }
+
+    void function2_cb(void* context, int out1, int ret1)
+    {
+        printf("Layer03::function2_cb(out1 = %d, ret1 = %d)\n", out1, ret1);
+        function1_cxt_t* ctxt = static_cast<function1_cxt_t*>(context);
+        // return in1 + out1 + ret1;
         *ctxt->ret = ctxt->in1 + out1 + ret1;
         delete ctxt;
     }
@@ -344,9 +391,6 @@ public:
 
 Layer03 layer03;
 ```
-
-In this implementation, Layer01 and Layer02 use a data member to store the lambda 
-(used as callback function) passed from their calling layer.
 
 ### p1112-async-callstack-1rmi-queue-cs.cpp
 
@@ -462,7 +506,7 @@ private:
 Layer03 layer03;
 ```
 
-The implmentation is rather complex and it uses dynamic memory.
+The implementation is rather complex and it uses dynamic memory.
 
 ### p1120-coroutines-callstack-1rmi.cpp
 
@@ -483,12 +527,6 @@ public:
 
 Layer01 layer01;
 
-/**
- * @brief Layer02 is the middle layer in the application stack
- * Lower layer: Layer01
- * Upper layer: Layer03 (but not known by Layer02)
- *
- */
 class Layer02
 {
 public:
@@ -504,12 +542,6 @@ public:
 
 Layer02 layer02;
 
-/**
- * @brief Layer03 is the upper layer in the application stack
- * Lower layer: Layer02
- * Upper layer: application (but not known by Layer03)
- *
- */
 class Layer03
 {
 public:
@@ -589,26 +621,38 @@ The application class looks as follows:
 class Class01
 {
 public:
-    void function1(int in1, int in2)
+    void function1(int in1, int in2, int testval)
     {
-        printf("Class01::function1(in1 = %d, in2 = %d)\n", in1, in2);
+        printf("Class01::function1(in1 = %d, in2 = %d, testval = %d)\n", in1, in2, testval);
         int out1 = -1, out2 = -1;
         int ret1 = remoteObj1.op1(in1, in2, out1, out2);
+        printf("Class01::function: 1: out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
         // 1 Do stuff
-        if (ret1 == gval1) {
+        if (ret1 == testval) {
             int out3 = -1;
             int ret2 = remoteObj2.op2(in1, in2, out3);
-            (void)ret2;
+            printf("Class01::function: 2: out3 = %d, ret2 = %d\n", out3, ret2);
             // 2 Do stuff
         }
         else {
             int out4 = -1, out5 = -1;
             int ret3 = remoteObj3.op3(in1, out4, out5);
-            (void)ret3;
+            printf("Class01::function: 3: out4 = %d, out5 = %d, ret3 = %d\n", out4, out5, ret3);
             // 3 Do stuff
         }
     }
 };
+
+Class01 class01;
+
+int main()
+{
+    printf("main();\n");
+    class01.function1(11, 12, 10);
+    printf("\n");
+    class01.function1(11, 12, 23);
+    return 0;
+}
 ```
 
 ### p1202-sync+thread-3rmis.cpp
@@ -620,8 +664,8 @@ The implementation of function1 does not have to be changed. This can be done as
 int main()
 {
     printf("main();\n");
-    std::thread th1(&Class01::function1, &class01, 11, 12); th1.join();
-    std::thread th2(&Class01::function1, &class01, 21, 22); th2.join();
+    std::thread th1(&Class01::function1, &class01, 11, 12, 10); th1.join();
+    std::thread th2(&Class01::function1, &class01, 11, 12, 23); th2.join();
     return 0;
 }
 ```
@@ -634,69 +678,75 @@ The application class now looks as follows:
 class Class01
 {
 public:
-    void function1(int in1, int in2)
+    void function1(int in1, int in2, int testval)
     {
-        printf("Class01::function1(in1 = %d, in2 = %d)\n", in1, in2);
+        printf("Class01::function1(in1 = %d, in2 = %d, testval = %d)\n", in1, in2, testval);
         remoteObj1.sendc_op1(in1, in2, 
-            [this](int out1, int out2, int ret1) { this->function1a(out1, out2, ret1); });
+            [this, in1, in2, testval](int out1, int out2, int ret1) {
+                this->function1a(in1, in2, testval, out1, out2, ret1);
+            });
         // 1a Do stuff that doesn't need the result of the RMI
     }
 
-    void function1a(int out1, int out2, int ret1)
+    void function1a(int in1, int in2, int testval, int out1, int out2, int ret1)
     {
-        printf("Class01::function1a(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);
+        printf("Class01::function1a(out1 = %d, out2 = %d, ret1 = %d, testval = %d)\n", out1, out2, ret1, testval);
         // 1b Do stuff that needs the result of the RMI
-        if (ret1 == gval1) {
-            remoteObj2.sendc_op2(gin21, gin22,
-                [this](int out1, int ret1){ this->function1b(out1, ret1); });
+        if (ret1 == testval) {
+            remoteObj2.sendc_op2(in1, in2,
+                [this](int out1, int ret1) {
+                    this->function1b(out1, ret1);
+                });
             // 2a Do stuff that doesn't need the result of the RMI
         }
         else {
-            remoteObj3.sendc_op3(gin31, 
-                [this](int out1, int out2, int ret1) { this->function1c(out1, out2, ret1); });
+            remoteObj3.sendc_op3(in1,
+                [this](int out1, int out2, int ret1) {
+                    this->function1c(out1, out2, ret1);
+                });
             // 3a Do stuff that doesn't need the result of the RMI
         }
     }
 
-    void function1b(int out1, int ret2)
+    void function1b(int out3, int ret2)
     {
-        printf("Class01::function1b(out1 = %d, ret2 = %d)\n", out1, ret2);
+        printf("Class01::function1b(out3 = %d, ret2 = %d)\n", out3, ret2);
         // 2b Do stuff that needs the result of the RMI
     }
 
-    void function1c(int out1, int out2, int ret3)
+    void function1c(int out4, int out5, int ret3)
     {
-        printf("Class01::function1c(out1 = %d, out2 = %d, ret3 = %d)\n", out1, out2, ret3);
+        printf("Class01::function1c(out4 = %d, out5 = %d, ret3 = %d)\n", out4, out5, ret3);
         // 3b Do stuff that needs the result of the RMI
     }
-    
+
     /**
      * @brief alternative version of function1 that avoids the introduction of callback functions
      * by placing the original code in lambdas.
      *
      */
-    void function1alt(int in1, int in2)
+    void function1alt(int in1, int in2, int testval)
     {
-        printf("Class01::function1alt(in1 = %d, in2 = %d)\n", in1, in2);
+        printf("Class01::function1alt(in1 = %d, in2 = %d, testval = %d)\n", in1, in2, testval);
         remoteObj1.sendc_op1(in1, in2, 
-            [this](int out1, int out2, int ret1)
+            [this, in1, in2, testval](int out1, int out2, int ret1)
             { 
-                printf("Class01::function1alt(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);
+                printf("Class01::function1alt: 1: out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
                 // 1b Do stuff that needs the result of the RMI
-                if (ret1 == gval1) {
-                    remoteObj2.sendc_op2(gin21, gin22,
-                        [this](int out1, int ret1)
+                if (ret1 == testval) {
+                    remoteObj2.sendc_op2(in1, in2,
+                        [this](int out3, int ret2)
                         {
-                            printf("Class01::function1alt(out1 = %d, ret1 = %d)\n", out1, ret1);
-                            // 2b Do stuff that needs the result of the RMI 
+                            printf("Class01::function1alt: 2: out3 = %d, ret2 = %d\n", out3, ret2);
+                            // 2b Do stuff that needs the result of the RMI
                         });
                     // 2a Do stuff that doesn't need the result of the RMI
                 }
                 else {
-                    remoteObj3.sendc_op3(gin31, 
-                        [this](int out1, int out2, int ret1) 
+                    remoteObj3.sendc_op3(in1,
+                        [this](int out4, int out5, int ret3) 
                         {
-                            printf("Class01::function1alt(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);
+                            printf("Class01::function1alt: 3: out4 = %d, out5 = %d, ret3 = %d\n", out4, out5, ret3);
                             // 3b Do stuff that needs the result of the RMI
                         });
                     // 3a Do stuff that doesn't need the result of the RMI
@@ -720,49 +770,54 @@ The application class looks as follows:
 class Class01
 {
 public:
-    void function1(int in1, int in2)
+    void function1(int in1, int in2, int testval)
     {
-        printf("Class01::function1(in1 = %d, in2 = %d)\n", in1, in2);
+        int lret1 = -1;
+        printf("Class01::function1(in1 = %d, in2 = %d, testval = %d)\n", in1, in2, testval);
         remoteObj1.sendc_op1(in1, in2,
-            [this](int out1, int out2, int ret1) { this->callback1(out1, out2, ret1); });
+            [this, &lret1](int out1, int out2, int ret1)
+            {
+                lret1 = this->callback1(out1, out2, ret1);
+            });
         // 1a Do some stuff that doesn't need the result of the RMI
         eventQueue.run();
         // 1b Do stuff that needs the result of the RMI
-        if (gret1 == gval1) {
+        if (lret1 == testval) {
             remoteObj2.sendc_op2(in1, in2, 
-                [this](int out1, int ret1) { this->callback2(out1, ret1); });
+                [this](int out1, int ret1)
+                {
+                    this->callback2(out1, ret1);
+                });
             // 2a Do some stuff that doesn't need the result of the RMI
             eventQueue.run();
             // 2b Do stuff that needs the result of the RMI
         }
         else {
             remoteObj3.sendc_op3(in1, 
-                [this](int out1, int out2, int ret1) { this->callback3(out1, out2, ret1); });
+                [this](int out1, int out2, int ret1)
+                {
+                    this->callback3(out1, out2, ret1);
+                });
             // 3a Do some stuff that doesn't need the result of the RMI
             eventQueue.run();
             // 3b Do stuff that needs the result of the RMI
         }
     }
 
-    void callback1(int out11, int out12, int ret1)
+    int callback1(int out1, int out2, int ret1)
     { 
-        printf("Class01::callback1(out11 = %d, out12 = %d, ret1 = %d)\n", out11, out12, ret1);
+        printf("Class01::callback1(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);
         // copy to local variables
-        gret1 = ret1;
+        return ret1;
     }
     
-    void callback2(int out21, int ret2) { 
-        printf("Class01::callback2(out21 = %d, ret2 = %d)\n", out21, ret2);
-        // copy to local variables
-    }
-    
-    void callback3(int out31, int out32, int ret3) {
-        printf("Class01::callback3(out31 = %d, out32 = %d, ret3 = %d)\n", out31, out32, ret3);
+    void callback2(int out3, int ret2) { 
+        printf("Class01::callback2(out3 = %d, ret2 = %d)\n", out3, ret2);
         // copy to local variables
     }
     
-    void function2() { 
-        printf("Class01::function2()\n");
+    void callback3(int out4, int out5, int ret3) {
+        printf("Class01::callback3(out4 = %d, out5 = %d, ret3 = %d)\n", out4, out5, ret3);
     }
 };
 ```
@@ -774,40 +829,42 @@ The application class looks as follows:
 ```c++
 struct Class01
 {
-    async_task<void> coroutine1(int in1, int in2)
+    async_task<void> coroutine1(int in1, int in2, int testval)
     {
-        printf("Class01::coroutine1(in1 = %d, in2 = %d)\n", in1, in2);
+        printf("Class01::coroutine1(in1 = %d, in2 = %d, testval = %d)\n", in1, in2, testval);
         int out1 = -1, out2 = -1;
         int ret1 = co_await remoteObj1co.op1(in1, in2, out1, out2);
+        printf("Class01::coroutine1: 1: out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
         // 1 Do stuff
-        if (ret1 == gval1) {
+        if (ret1 == testval) {
             int out3 = -1;
             int ret2 = co_await remoteObj2co.op2(in1, in2, out3);
-            (void)ret2;
+            printf("Class01::coroutine1: 2: out3 = %d, ret2 = %d\n", out3, ret2);
             // 2 Do stuff
         }
         else {
             int out4 = -1, out5 = -1;
             int ret3 = co_await remoteObj3co.op3(in1, out4, out5);
-            (void)ret3;
+            printf("Class01::coroutine1: 3: out4 = %d, out5 = %d, ret3 = %d\n", out4, out5, ret3);
             // 3 Do stuff
         }
     }
     
-    async_task<void> coroutine1a(int in1, int in2)
+    async_task<void> coroutine1a(int in1, int in2, int testval)
     {
-        printf("Class01::coroutine1a(in1 = %d, in2 = %d)\n", in1, in2);
+        printf("Class01::coroutine1a(in1 = %d, in2 = %d, testval = %d)\n", in1, in2, testval);
         int out1 = -1, out2 = -1;
         async_task<int> op1 = remoteObj1co.op1(in1, in2, out1, out2);
         // 1a Do some stuff that doesn't need the result of the RMI
         int ret1 = co_await op1;
+        printf("Class01::coroutine1a: 1: out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
         // 1b Do stuff that needs the result of the RMI
-        if (ret1 == gval1) {
+        if (ret1 == testval) {
             int out3 = -1;
             async_task<int> op2 = remoteObj2co.op2(in1, in2, out3);
             // 2a Do some stuff that doesn't need the result of the RMI
             int ret2 = co_await op2;
-            (void)ret2;
+            printf("Class01::coroutine1a: 2: out3 = %d, ret2 = %d\n", out3, ret2);
             // 2b Do stuff that needs the result of the RMI
         }
         else {
@@ -815,7 +872,7 @@ struct Class01
             async_task<int> op3 = remoteObj3co.op3(in1, out4, out5);
             // 3a Do some stuff that doesn't need the result of the RMI
             int ret3 = co_await op3;
-            (void)ret3;
+            printf("Class01::coroutine1a: 3: out4 = %d, out5 = %d, ret3 = %d\n", out4, out5, ret3);
             // 3b Do stuff that needs the result of the RMI
         }
     }
@@ -1100,6 +1157,11 @@ The implementation of op1 looks as follows:
 class RemoteObject1
 {
 public:
+    RemoteObject1(RemoteObjectImpl& remoteObjImpl)
+        : m_remoteObjImpl(remoteObjImpl)
+    {
+    }
+
     Msg op1(Msg msg)
     {
         // Write part
@@ -1114,26 +1176,30 @@ public:
         {
             int bytestowrite = (buflength - offset) > SEGMENT_LENGTH ? SEGMENT_LENGTH : buflength - offset;
             printf("RemoteObject1::op1(): calling write_segment: offset = %d\n", offset);
-            remoteObjImpl.write_segment(writebuffer.buffer(), offset, bytestowrite);
+            m_remoteObjImpl.write_segment(writebuffer.buffer(), offset, bytestowrite);
         }
-        
+
         // Read part
         bool completed = false;
         Buffer readbuffer;
         Msg res;
-        remoteObjImpl.init();
         // Read the buffer in segments of size SEGMENT_LENGTH
         // until read_segment reports that the read is complete.
         for (int offset = 0; !completed; offset += SEGMENT_LENGTH)
         {
             printf("RemoteObject1::op1(): calling read_segment: offset = %d\n", offset);
-            completed = remoteObjImpl.read_segment(readbuffer.buffer(), offset, SEGMENT_LENGTH);
+            completed = m_remoteObjImpl.read_segment(readbuffer.buffer(), offset, SEGMENT_LENGTH);
         }
         // Unmarshall Msg from readbuffer
         // (code not present)
         // return the msg to the caller
         return res;
     }
+
+    // ...
+
+protected:
+    RemoteObjectImpl& m_remoteObjImpl;
 };
 ```
 

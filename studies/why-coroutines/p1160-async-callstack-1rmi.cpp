@@ -36,12 +36,11 @@ public:
         void* ctxt = new function1_cxt_t{ ctxt1, lambda, in1 };
 
         // int ret1 = remoteObj1.op1(in1, in1, out1, out2);
-        remoteObj1.sendc_op1(ctxt,
+        remoteObj1.sendc_op1(ctxt, in1, in1,
             [this](void* context, int out1, int out2, int ret1)
             {
                 this->function1_cb(context, out1, out2, ret1);
-            },
-            in1, in1);
+            });
     }
 
     void function1_cb(void* context, int out1, int out2, int ret1)
@@ -175,7 +174,7 @@ int main() {
     layer03.function1(2, ret1);
     int ret2 = -1;
     layer03.function1(3, ret2);
-    printf("main(): eventQueue.run();\n");
+    
     eventQueue.run();
     printf("main(): ret1 = %d\n", ret1);
     printf("main(): ret2 = %d\n", ret2);

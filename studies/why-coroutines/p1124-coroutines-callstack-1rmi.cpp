@@ -44,6 +44,12 @@ protected:
     RemoteObject1Co& m_remoteObj1co;
 };
 
+/**
+ * @brief Layer01d
+ * Note: At the co_await statement:
+ *     Warning C26811: Lifetime of the memory referenced by parameter 'out1' might end by the time the coroutine is resumed.
+ * https://learn.microsoft.com/en-us/cpp/code-quality/c26811?view=msvc-170
+ */
 class Layer01d : public Layer01
 {
 public:
@@ -79,6 +85,12 @@ protected:
     Layer01& m_layer01;
 };
 
+/**
+ * @brief Layer02d
+ * Note: At the co_await statement:
+ *     Warning C26811: Lifetime of the memory referenced by parameter 'out1' might end by the time the coroutine is resumed.
+ * https://learn.microsoft.com/en-us/cpp/code-quality/c26811?view=msvc-170
+ */
 class Layer02d : public Layer02
 {
 public:

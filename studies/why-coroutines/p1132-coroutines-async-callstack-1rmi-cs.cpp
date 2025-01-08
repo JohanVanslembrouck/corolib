@@ -373,7 +373,7 @@ int main() {
     layer03.function1(2, ret0);
     async_task<int> t1 = layer03co.coroutine1(2);
     async_task<int> t2 = layer03co.coroutine2(3);
-    printf("main(): eventQueue.run();\n");
+    
     eventQueue.run();
     printf("main(): ret0 = %d\n", ret0);
     int ret1 = t1.get_result();

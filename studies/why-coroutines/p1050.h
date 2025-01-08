@@ -38,10 +38,7 @@ public:
     void sendc_read(char* p, int bytestoread, lambda_void_t lambda)
     {
         printf("RemoteObjectImpl::sendc_read(p, bytestoread = %d)\n", bytestoread);
-
-        // There isn't an I/O system that will place the lambda in the event queue
-        // when an I/O event arrives. Therefore we do it ourselves.
-        eventQueue.push([lambda]() { lambda(); });
+        registerCB(lambda);
     }
 };
 
@@ -98,12 +95,12 @@ public:
     {
         Buffer writebuffer;
         Buffer readbuffer;
-        void* user_context;
+        void* user_context = nullptr;
     };
 
     /**
      * @brief asynchronous operation; asynchronous variant of op1
-     * This synchronous function has been split into sendc_op1, handle_write_op1 and handle_read_op1
+     * This synchronous function has been split into sendc_op1, handle_write_op1 and handle_read_op1.
      * 
      * @param context
      * @param lambda
@@ -111,9 +108,9 @@ public:
      * @param in2
      * @return
      */
-    void sendc_op1(void* context, lambda_vp_3int_t lambda, int in1, int in2)
+    void sendc_op1(void* context, int in1, int in2, lambda_vp_3int_t lambda)
     {
-        printf("RemoteObject1::sendc_op1(context = %p, lambda, in1 = %d, in2 = %d)\n", context, in1, in2);
+        printf("RemoteObject1::sendc_op1(context = %p, in1 = %d, in2 = %d, lambda)\n", context, in1, in2);
 
         // Create a context object and place the context passed by the application
         // in the user_context field.
@@ -126,34 +123,88 @@ public:
         
         m_remoteObjImpl.sendc_write(ctxt->writebuffer.buffer(), ctxt->writebuffer.length(),
             [this, ctxt, lambda, in1, in2]() {
-                this->handle_write_op1(ctxt, lambda, in1, in2);
+                this->handle_write_op1(ctxt, in1, in2, lambda);
             });
     }
 
-    void handle_write_op1(op1_context* ctxt, lambda_vp_3int_t lambda, int in1, int in2)
+    void handle_write_op1(op1_context* ctxt,  int in1, int in2, lambda_vp_3int_t lambda)
     {
-        printf("RemoteObject1::handle_write_op1(ctxt = %p, lambda, in1 = %d, in2 = %d)\n", ctxt, in1, in2);
+        printf("RemoteObject1::handle_write_op1(ctxt = %p, in1 = %d, in2 = %d, lambda)\n", ctxt, in1, in2);
 
         m_remoteObjImpl.sendc_read(ctxt->readbuffer.buffer(), ctxt->readbuffer.length(),
             [this, ctxt, lambda, in1, in2]() {
-                this->handle_read_op1(ctxt, lambda, in1, in2);
+                this->handle_read_op1(ctxt, in1, in2, lambda);
             });
     }
 
-    void handle_read_op1(op1_context* ctxt, lambda_vp_3int_t lambda, int in1, int in2)
+    void handle_read_op1(op1_context* ctxt, int in1, int in2, lambda_vp_3int_t lambda)
     {
-        printf("RemoteObject1::handle_read_op1(ctxt = %p, lambda, in1 = %d, in2 = %d)\n", ctxt, in1, in2);
+        printf("RemoteObject1::handle_read_op1(ctxt = %p, in1 = %d, in2 = %d, lambda)\n", ctxt, in1, in2);
 
         // Unmarshall msg from m_readbuffer
         // (code not present)
  
         // Invoke the lambda passing the result
-        registerCB(ctxt->user_context, lambda, in1, in2);
+        registerCB(lambda, ctxt->user_context, in1, in2);
 
         // Delete the ctxt object created in sendc_op1
         delete ctxt;
     }
     
+
+    /**
+     * @brief asynchronous operation; asynchronous variant of op1
+     * This synchronous function has been split into sendc_op1, handle_write_op1 and handle_read_op1.
+     * Notice that this variant does not have void* context as first parameter.
+     * 
+     * @param in1
+     * @param in2
+     * @param lambda
+     * @return
+     */
+    void sendc_op1(int in1, int in2, lambda_3int_t lambda)
+    {
+        printf("RemoteObject1::sendc_op1(in1 = %d, in2 = %d, lambda)\n", in1, in2);
+
+        // Create a context object and place the context passed by the application
+        // in the user_context field.
+        op1_context* ctxt = new op1_context;
+        ctxt->user_context = nullptr;
+
+        // Marshal in1 and in2 into the writebuffer to write to the remote object.
+        // Write the buffer to the remote object.
+        // (write code is not present.)
+
+        m_remoteObjImpl.sendc_write(ctxt->writebuffer.buffer(), ctxt->writebuffer.length(),
+            [this, ctxt, lambda, in1, in2]() {
+                this->handle_write_op1(ctxt, in1, in2, lambda);
+            });
+    }
+
+    void handle_write_op1(op1_context* ctxt, int in1, int in2, lambda_3int_t lambda)
+    {
+        printf("RemoteObject1::handle_write_op1(ctxt = %p, in1 = %d, in2 = %d, lambda)\n", ctxt, in1, in2);
+
+        m_remoteObjImpl.sendc_read(ctxt->readbuffer.buffer(), ctxt->readbuffer.length(),
+            [this, ctxt, lambda, in1, in2]() {
+                this->handle_read_op1(ctxt, in1, in2, lambda);
+            });
+    }
+
+    void handle_read_op1(op1_context* ctxt, int in1, int in2, lambda_3int_t lambda)
+    {
+        printf("RemoteObject1::handle_read_op1(ctxt = %p, in1 = %d, in2 = %d, lambda)\n", ctxt, in1, in2);
+
+        // Unmarshall msg from m_readbuffer
+        // (code not present)
+
+        // Invoke the lambda passing the result
+        registerCB(lambda, in1, in2);
+
+        // Delete the ctxt object created in sendc_op1
+        delete ctxt;
+    }
+
 protected:
     RemoteObjectImpl& m_remoteObjImpl;
 };
