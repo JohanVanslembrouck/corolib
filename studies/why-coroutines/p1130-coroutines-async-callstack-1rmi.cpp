@@ -35,7 +35,7 @@ RemoteObject1 remoteObj1;
  */
 class Layer01
 {
-public:
+private:
     struct function1_cxt_t
     {
         void* ctxt;
@@ -43,6 +43,7 @@ public:
         int in1;
     };
 
+public:
     void function1(void* ctxt1, lambda_vp_3int_t lambda, int in1)
     {
         printf("Layer01::function1(in1 = %d)\n", in1);
@@ -56,6 +57,7 @@ public:
             });
     }
 
+protected:
     void function1_cb(void* context, int out1, int out2, int ret1)
     {
         printf("Layer01::function1_cb(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);
@@ -76,8 +78,7 @@ Layer01 layer01;
  */
 class Layer02
 {
-public:
-
+private:
     struct function1_cxt_t
     {
         void* ctxt;
@@ -85,6 +86,7 @@ public:
         int in1;
     };
 
+public:
     void function1(void* ctxt1, lambda_vp_2int_t lambda, int in1)
     {
         printf("Layer02::function1(in1 = %d)\n", in1);
@@ -99,6 +101,7 @@ public:
             in1);
     }
 
+protected:
     void function1_cb(void* context, int out1, int out2, int ret1)
     {
         printf("Layer02::function1_cb(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);
@@ -120,18 +123,18 @@ Layer02 layer02;
  */
 class Layer03
 {
-public:
     // Synchronous function:
     // int function1(int in1);
 
     // Alternative 1
-
+private:
     struct function1_cxt_t
     {
         int* ret;
         int in1;
     };
 
+public:
     void function1(int in1, int& ret1)
     {
         printf("Layer03::function1(in1 = %d)\n", in1);
@@ -145,6 +148,7 @@ public:
             in1);
     }
 
+protected:
     void function1_cb(void* context, int out1, int ret1)
     {
         printf("Layer03::function1_cb(out1 = %d, ret1 = %d)\n", out1, ret1);
@@ -154,6 +158,7 @@ public:
         delete ctxt;
     }
 
+public:
     void function1(int in1, lambda_vp_2int_t lambda)
     {
         printf("Layer03::function1(in1 = %d)\n", in1);
@@ -169,7 +174,7 @@ public:
     // int function2(int in1);
 
     // Alternative 2
-
+public:
     void function2(async_operation<int>& op1, int in1)
     {
         printf("Layer03::function2(in1 = %d)\n", in1);
@@ -242,7 +247,9 @@ int main() {
     int ret0 = -1;
     layer03.function1(2, ret0);
     async_task<int> t1 = layer03co.coroutine1(2);
-    async_task<int> t2 = layer03co.coroutine2(3);
+    async_task<int> t2 = layer03co.coroutine1(3);
+    async_task<int> t3 = layer03co.coroutine2(2);
+    async_task<int> t4 = layer03co.coroutine2(3);
     
     eventQueue.run();
     printf("main(): ret0 = %d\n", ret0);
@@ -250,5 +257,9 @@ int main() {
     printf("main(): ret1 = %d\n", ret1);
     int ret2 = t2.get_result();
     printf("main(): ret2 = %d\n", ret2);
+    int ret3 = t3.get_result();
+    printf("main(): ret3 = %d\n", ret3);
+    int ret4 = t4.get_result();
+    printf("main(): ret4 = %d\n", ret4);
     return 0;
 }

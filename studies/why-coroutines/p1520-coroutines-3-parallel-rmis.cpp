@@ -65,7 +65,7 @@ public:
         // The following statement does not compile with g++ 11.3.0
         co_await when_all({ &op1, &op2, &op3 });
 #else
-        when_all wa({ &op1, &op2, &op3 });
+        when_all wa(op1, op2, op3);
         co_await wa;
 #endif
         printf("Class01::coroutine1(): result = %d\n", op1.get_result() +  op2.get_result() + op3.get_result());
@@ -80,7 +80,15 @@ int main()
 {
     printf("main();\n");
     async_task<void> t1 = class01a.coroutine1(11, 12);
-    async_task<void> t2 = class01.coroutine1(21, 22);
+    async_task<void> t2 = class01a.coroutine1(21, 22);
+
+    async_task<void> t3 = class01.coroutine1(11, 12);
+    async_task<void> t4 = class01.coroutine1(21, 22);
     eventQueue.run();
+
+    t1.wait();
+    t2.wait();
+    t3.wait();
+    t4.wait();
     return 0;
 }

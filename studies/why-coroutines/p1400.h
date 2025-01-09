@@ -125,6 +125,7 @@ public:
         return res;
     }
 
+private:
     struct op1_context
     {
         int offset = 0;
@@ -133,6 +134,7 @@ public:
         lambda_msg_t lambda;
     };
 
+public:
     void sendc_op1(Msg msg, lambda_msg_t op1_cb)
     {
         printf("RemoteObject1::sendc_op1(): calling write_segment\n");
@@ -152,6 +154,7 @@ public:
         ctxt->offset += SEGMENT_LENGTH;
     }
 
+protected:
     void handle_write_segment_op1(op1_context *ctxt)
     {
         int buflength = ctxt->writebuffer.length();

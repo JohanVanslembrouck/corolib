@@ -83,9 +83,9 @@ inline void registerCB(lambda_op2_ret_t lambda, int in1, int in2)
 
 inline void registerCB(lambda_bool_t lambda, bool val)
 {
+    //printf("registerCB(lambda_bool_t lambda, %d)\n", val);
     eventQueue.push([lambda, val]() { lambda(val); });
 }
-
 
 inline void registerCB(lambda_vp_3int_t lambda, void* context, int in1, int in2)
 {

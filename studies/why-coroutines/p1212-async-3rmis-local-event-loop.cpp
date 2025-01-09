@@ -23,8 +23,7 @@ public:
         int lret1 = -1;
         printf("Class01::function1(in1 = %d, in2 = %d, testval = %d)\n", in1, in2, testval);
         remoteObj1.sendc_op1(in1, in2,
-            [this, &lret1](int out1, int out2, int ret1)
-            {
+            [this, &lret1](int out1, int out2, int ret1) {
                 lret1 = this->callback1(out1, out2, ret1);
             });
         // 1a Do some stuff that doesn't need the result of the RMI
@@ -32,8 +31,7 @@ public:
         // 1b Do stuff that needs the result of the RMI
         if (lret1 == testval) {
             remoteObj2.sendc_op2(in1, in2, 
-                [this](int out1, int ret1)
-                {
+                [this](int out1, int ret1) {
                     this->callback2(out1, ret1);
                 });
             // 2a Do some stuff that doesn't need the result of the RMI
@@ -42,8 +40,7 @@ public:
         }
         else {
             remoteObj3.sendc_op3(in1, 
-                [this](int out1, int out2, int ret1)
-                {
+                [this](int out1, int out2, int ret1) {
                     this->callback3(out1, out2, ret1);
                 });
             // 3a Do some stuff that doesn't need the result of the RMI
@@ -52,6 +49,7 @@ public:
         }
     }
 
+protected:
     int callback1(int out1, int out2, int ret1)
     { 
         printf("Class01::callback1(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);

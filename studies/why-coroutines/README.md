@@ -81,15 +81,36 @@ int main()
 }
 ```
 
+### p1004-sync+thread-1rmi.cpp
+
+This is a variant of p1002-sync+thread-1rmi.cpp.
+The main() function is defined as:
+
+```c++
+int main()
+{
+    printf("main();\n");
+    std::future<int> t1 = std::async(std::launch::async, []() { return class01.function1(11, 12); });
+    std::future<int> t2 = std::async(std::launch::async, []() { return class01.function1(21, 22); });
+    printf("\n");
+
+    int ret1 = t1.get();
+    printf("main(): ret1 = %d\n", ret1);
+    int ret2 = t2.get();
+    printf("main(): ret2 = %d\n", ret2);
+    return 0;
+}
+```
+
 ### p1010-async-1rmi.cpp
 
+This file contains an asynchronous implementation of p1000-sync-1rmi.cpp.
 The application class now looks as follows:
 
 ```c++
 class Class01
 {
-public:
-    
+private:
     struct function1_cxt_t
     {
         ~function1_cxt_t() { printf("function1_cxt_t::~function1_cxt_t()\n"); }
@@ -99,14 +120,16 @@ public:
         int* ret;
     };
 
+public:
     /**
-     * @brief
+     * @brief First variant.
+     * It uses a send_op1 function that takes a void* as first parameter
      *
      */
     void function1(int in1, int in2, int& ret)
     {
         printf("Class01::function1(in1 = %d, in2 = %d, ret = %d)\n", in1, in2, ret);
-        void* ctxt = new function1_cxt_t{ in1, in2, &ret };
+        function1_ctxt_t* ctxt = new function1_ctxt_t{ in1, in2, &ret };
         printf("Class01::function1(): ctxt = %p\n", ctxt);
 
         remoteObj1.sendc_op1(ctxt, in1, in2,
@@ -116,6 +139,7 @@ public:
             });
     }
 
+protected:
     /**
      * @brief callback function with the out parameters and the return value
      *
@@ -123,13 +147,14 @@ public:
     void function1_cb(void* context, int out1, int out2, int ret1)
     {
         printf("Class01::function1_cb(context = %p, out1 = %d, out2 = %d, ret1 = %d)\n", context, out1, out2, ret1);
-        function1_cxt_t* ctxt = static_cast<function1_cxt_t*>(context);
-
+        function1_ctxt_t* ctxt = static_cast<function1_ctxt_t*>(context);
         printf("Class01::function1_cb(): ctxt->in1 = %d, ctxt->in2 = %d, ctxt->ret = %p, ctxt->ret = %d)\n", 
             ctxt->in1, ctxt->in2, ctxt->ret, *ctxt->ret);
         *ctxt->ret = ctxt->in1 + ctxt->in2 + out1 + out2 + ret1;
         delete ctxt;
     }
+
+    // See source file for more variants
 ```
 
 function1() returns control to the event loop as soon as it has started the remote operation by calling sendc_op1.
@@ -137,6 +162,7 @@ When that operation completes, function1_cb is called from the event loop.
 
 ### p1020-coroutines-1rmi.cpp
 
+This file contains an coroutine-based implementation of p1000-sync-1rmi.cpp.
 The application class now looks as follows:
 
 ```c++
@@ -154,7 +180,7 @@ public:
 };
 ```
 
-It is very close to the synchronous implementation, but it is reactive.
+It is very close to the synchronous implementation, but this implementation is reactive.
 
 ### p1050-sync-1rmi.cpp
 
@@ -256,20 +282,28 @@ Layer03 layer03;
 The three application classes now look as follows:
 
 ```c++
+/**
+ * @brief Layer01 is the lowest level in the application stack
+ * Lower layer: RemoteObject1
+ * Upper layer: Layer02 (via m_lambda)
+ */
 class Layer01
 {
-public:
-    struct function1_cxt_t
+private:
+    struct function1_ctxt_t
     {
+        ~function1_ctxt_t() { printf("Layer01::function1_ctxt_t::~function1_ctxt_t()\n"); }
+
         void* ctxt;
         lambda_vp_3int_t lambda;
         int in1;
     };
 
+public:
     void function1(void* ctxt1, lambda_vp_3int_t lambda, int in1)
     {
         printf("Layer01::function1(in1 = %d)\n", in1);
-        void* ctxt = new function1_cxt_t{ ctxt1, lambda, in1 };
+        void* ctxt = new function1_ctxt_t{ ctxt1, lambda, in1 };
 
         // int ret1 = remoteObj1.op1(in1, in1, out1, out2);
         remoteObj1.sendc_op1(ctxt, in1, in1,
@@ -279,10 +313,11 @@ public:
             });
     }
 
+protected:
     void function1_cb(void* context, int out1, int out2, int ret1)
     {
         printf("Layer01::function1_cb(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);
-        function1_cxt_t* ctxt = static_cast<function1_cxt_t*>(context);
+        function1_ctxt_t* ctxt = static_cast<function1_ctxt_t*>(context);
         // call function1_cb of upper layer
         // return in1 + ret1;
         ctxt->lambda(ctxt->ctxt, out1, out2, ctxt->in1 + ret1);
@@ -292,20 +327,28 @@ public:
 
 Layer01 layer01;
 
+/**
+ * @brief Layer02 is the middle layer in the application stack
+ * Lower layer: Layer01
+ * Upper layer: Layer03 (via m_lambda)
+ */
 class Layer02
 {
-public:
-    struct function1_cxt_t
+private:
+    struct function1_ctxt_t
     {
+        ~function1_ctxt_t() { printf("Layer02::function1_ctxt_t::~function1_ctxt_t()\n"); }
+
         void* ctxt;
         lambda_vp_2int_t lambda;
         int in1;
     };
 
+public:
     void function1(void* ctxt1, lambda_vp_2int_t lambda, int in1)
     {
         printf("Layer02::function1(in1 = %d)\n", in1);
-        void* ctxt = new function1_cxt_t{ ctxt1, lambda, in1 };
+        void* ctxt = new function1_ctxt_t{ ctxt1, lambda, in1 };
 
         // int ret1 = layer01.function1(in1, out1, out2);
         layer01.function1(
@@ -316,10 +359,11 @@ public:
             in1);
     }
 
+protected:
     void function1_cb(void* context, int out1, int out2, int ret1)
     {
         printf("Layer02::function1_cb(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);
-        function1_cxt_t* ctxt = static_cast<function1_cxt_t*>(context);
+        function1_ctxt_t* ctxt = static_cast<function1_ctxt_t*>(context);
         // call function1_cb of upper layer
         // return in1 + out2 + ret1;
         ctxt->lambda(ctxt->ctxt, out1, ctxt->in1 + out2 + ret1);
@@ -329,19 +373,28 @@ public:
 
 Layer02 layer02;
 
+/**
+ * @brief Layer03 is the upper layer in the application stack
+ * Lower layer: Layer02
+ * Upper layer: application (not known by Layer03)
+ *
+ */
 class Layer03
 {
-public:
-    struct function1_cxt_t
+private:
+    struct function1_ctxt_t
     {
+        ~function1_ctxt_t() { printf("Layer03::function1_ctxt_t::~function1_ctxt_t()\n"); }
+
         int* ret;
         int in1;
     };
 
+public:
     void function1(int in1, int& ret1)
     {
         printf("Layer03::function1(in1 = %d)\n", in1);
-        void* ctxt = new function1_cxt_t{ &ret1, in1 };
+        void* ctxt = new function1_ctxt_t{ &ret1, in1 };
 
         // int ret1 = layer02.function1(in1, out1);
         layer02.function1(ctxt,
@@ -351,25 +404,30 @@ public:
             in1);
     }
 
+protected:
     void function1_cb(void* context, int out1, int ret1)
     {
         printf("Layer03::function1_cb(out1 = %d, ret1 = %d)\n", out1, ret1);
-        function1_cxt_t* ctxt = static_cast<function1_cxt_t*>(context);
+        function1_ctxt_t* ctxt = static_cast<function1_ctxt_t*>(context);
         // return in1 + out1 + ret1;
         *ctxt->ret = ctxt->in1 + out1 + ret1;
         delete ctxt;
     }
 
-    struct function2_cxt_t
+private:
+    struct function2_ctxt_t
     {
+        ~function2_ctxt_t() { printf("Layer03::function2_ctxt_t::~function2_ctxt_t()\n"); }
+
         int* ret;
         int in1;
     };
 
+public:
     void function2(int in1, int& ret1)
     {
         printf("Layer03::function2(in1 = %d)\n", in1);
-        void* ctxt = new function1_cxt_t{ &ret1, in1 };
+        void* ctxt = new function2_ctxt_t{ &ret1, in1 };
 
         // int ret1 = layer02.function1(in1, out1);
         layer02.function1(ctxt,
@@ -379,10 +437,11 @@ public:
             in1);
     }
 
+protected:
     void function2_cb(void* context, int out1, int ret1)
     {
         printf("Layer03::function2_cb(out1 = %d, ret1 = %d)\n", out1, ret1);
-        function1_cxt_t* ctxt = static_cast<function1_cxt_t*>(context);
+        function2_ctxt_t* ctxt = static_cast<function2_ctxt_t*>(context);
         // return in1 + out1 + ret1;
         *ctxt->ret = ctxt->in1 + out1 + ret1;
         delete ctxt;
@@ -402,105 +461,193 @@ Several RMIs can be invoked one after the other, because they will use a dedicat
 The three application classes look as follows:
 
 ```c++
+/**
+ * @brief Layer01 is the lowest level in the application stack
+ * Lower layer: RemoteObject1
+ * Upper layer: Layer02 (but not known by Layer01)
+ *
+ */
 class Layer01
 {
+private:
+    struct function1_ctxt_t
+    {
+        ~function1_ctxt_t() { printf("Layer01::function1_ctxt_t::~function1_ctxt_t()\n"); }
+
+        int in1;
+    };
+
 public:
-    void function1(CallStack& callstack, int in1) 
+    void function1(CallStack* callstack, int in1) 
     {
         printf("Layer01::function1(in1 = %d)\n", in1);
         lambda_cs_3int_t* op = new lambda_cs_3int_t(
-            [this](CallStack& callstack, int out1, int out2, int ret1)
+            [this](CallStack* callstack, int out1, int out2, int ret1)
             {
                 this->function1_cb(callstack, out1, out2, ret1);
             });
-        callstack.push(op);
+        void* ctxt = new function1_ctxt_t{ in1 };
+        StackElement* se = new StackElement(ctxt, op);
+        callstack->push(se);
+
         remoteObj1.sendc_op1(callstack, in1, in1);
-        printf("Layer01::function1(): return\n");
     }
 
-    void function1_cb(CallStack& callstack, int out1, int out2, int ret1) 
+protected:
+    void function1_cb(CallStack* callstack, int out1, int out2, int ret1) 
     {
         printf("Layer01::function1_cb(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);
-        // call function1_cb of upper layer (Layer02)
-        lambda_cs_2int_t* op = static_cast<lambda_cs_2int_t*>(callstack.top_pop());
-        (*op)(callstack, out1, ret1);
-        printf("Layer01::function1_cb(): delete %p\n", op);
+
+        StackElement* se = callstack->top_pop();
+        function1_ctxt_t* ctxt = static_cast<function1_ctxt_t*>(se->context);
+
+        StackElement* se2 = callstack->top();
+        lambda_cs_3int_t* op = static_cast<lambda_cs_3int_t*>(se2->lambda);
+        (*op)(callstack, out1, out2, ctxt->in1 + ret1);
         delete op;
+        delete ctxt;
+        delete se;
     }
 };
 
 Layer01 layer01;
 
+/**
+ * @brief Layer02 is the middle layer in the application stack
+ * Lower layer: Layer01
+ * Upper layer: Layer03 (but not known by Layer02)
+ */
 class Layer02
 {
-public:    
-    void function1(CallStack& callstack, int in1)
+private:    
+    struct function1_ctxt_t
+    {
+        ~function1_ctxt_t() { printf("Layer02::function1_ctxt_t::~function1_ctxt_t()\n"); }
+
+        int in1;
+    };
+    
+public:
+    void function1(CallStack* callstack, int in1)
     {
         printf("Layer02::function1(in1 = %d)\n", in1);
-        lambda_cs_2int_t* op = new lambda_cs_2int_t(
-            [this](CallStack& callstack, int out1, int ret1)
+
+        lambda_cs_3int_t* op = new lambda_cs_3int_t(
+            [this](CallStack* callstack, int out1, int out2, int ret1)
             {
-                this->function1_cb(callstack, out1, ret1);
+                this->function1_cb(callstack, out1, out2, ret1);
             });
-        callstack.push(op);
+        void* ctxt = new function1_ctxt_t{ in1 };
+        StackElement* se = new StackElement(ctxt, op);
+        callstack->push(se);
+
         layer01.function1(callstack, in1);
-        printf("Layer02::function1(): return\n");
     }
 
-    void function1_cb(CallStack& callstack, int out1, int ret1)
+protected:
+    void function1_cb(CallStack* callstack, int out1, int out2, int ret1)
     {
-        printf("Layer02::function1_cb(out1 = %d, ret1 = %d)\n", out1, ret1);
-        // call function1_cb of upper layer (Layer03)
-        lambda_cs_1int_t* op = static_cast<lambda_cs_1int_t*>(callstack.top_pop());
-        (*op)(callstack, ret1);
-        printf("Layer02::function1_cb(): delete %p\n", op);
+        printf("Layer02::function1_cb(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);
+        StackElement* se = callstack->top_pop();
+        function1_ctxt_t* ctxt = static_cast<function1_ctxt_t*>(se->context);
+
+        StackElement* se2 = callstack->top();
+        lambda_cs_2int_t* op = static_cast<lambda_cs_2int_t*>(se2->lambda);
+
+        (*op)(callstack, 1, ctxt->in1 + out2 + ret1);
         delete op;
+        delete ctxt;
+        delete se;
     }
 };
 
 Layer02 layer02;
 
+/**
+ * @brief Layer03 is the upper layer in the application stack
+ * Lower layer: Layer02
+ * Upper layer: application (but not known by Layer03)
+ *
+ */
 class Layer03
 {
-public:       
-    void function1(int in1)
+private:
+    struct function1_ctxt_t
+    {
+        ~function1_ctxt_t() { printf("Layer03::function1_ctxt_t::~function1_ctxt_t()\n"); }
+
+        int* ret;
+        int in1;
+    };
+
+public:
+    void function1(int in1, int& ret1)
     {
         printf("Layer03::function1(in1 = %d)\n", in1);
-        lambda_cs_1int_t* p = new lambda_cs_1int_t(
-            [this](CallStack& callstack, int ret1)
+        CallStack* callstack = new CallStack;
+         
+        lambda_cs_2int_t* p = new lambda_cs_2int_t(
+            [this](CallStack* callstack, int out1, int ret1)
             {
-                this->function1_cb(callstack, ret1);
+                this->function1_cb(callstack, out1, ret1);
             });
-        m_callstack1.push(p);
-        layer02.function1(m_callstack1, in1);
-        printf("Layer03::function1(): return\n");
+        void* ctxt = new function1_ctxt_t{ &ret1, in1 };
+        StackElement* se = new StackElement(ctxt, p);
+        callstack->push(se);
+
+        layer02.function1(callstack, in1);
     }
 
-    void function1_cb(CallStack&, int ret1)
+protected:
+    void function1_cb(CallStack* callstack, int out1, int ret1)
     {
-        printf("Layer03::function1_cb(ret1 = %d)\n", ret1);
-    }
-    
-    void function2(int in1)
-    {
-        printf("Layer03::function2(in1 = %d)\n", in1);
-        lambda_cs_1int_t* p = new lambda_cs_1int_t(
-            [this](CallStack& callstack, int ret1)
-            {
-                this->function2_cb(callstack, ret1);
-            });
-        m_callstack2.push(p);
-        layer02.function1(m_callstack2, in1);
-    }
-
-    void function2_cb(CallStack&, int ret1)
-    {
-        printf("Layer03::function2_cb(ret1 = %d)\n", ret1);
+        printf("Layer03::function1_cb(out1 = %d, ret1 = %d)\n", out1, ret1);
+        StackElement* se = callstack->top_pop();
+        function1_ctxt_t* ctxt = static_cast<function1_ctxt_t*>(se->context);
+        *ctxt->ret = ctxt->in1 + out1 + ret1;
+        delete ctxt;
+        delete se;
+        delete callstack;
     }
 
 private:
-    CallStack m_callstack1;
-    CallStack m_callstack2;
+    struct function2_ctxt_t
+    {
+        ~function2_ctxt_t() { printf("Layer03::function2_ctxt_t::~function2_ctxt_t()\n"); }
+
+        int* ret;
+        int in1;
+    };
+    
+public:
+    void function2(int in1, int& ret1)
+    {
+        printf("Layer03::function2(in1 = %d)\n", in1);
+        CallStack* callstack = new CallStack;
+
+        lambda_cs_2int_t* p = new lambda_cs_2int_t(
+            [this](CallStack* callstack, int out1, int ret1)
+            {
+                this->function2_cb(callstack, out1, ret1);
+            });
+        void* ctxt = new function2_ctxt_t{ &ret1, in1 };
+        StackElement* se = new StackElement(ctxt, p);
+        callstack->push(se);
+
+        layer02.function1(callstack, in1);
+    }
+
+protected:
+    void function2_cb(CallStack* callstack, int out1, int ret1)
+    {
+        printf("Layer03::function2_cb(out1 = %d, ret1 = %d)\n", out1, ret1);
+        StackElement* se = callstack->top_pop();
+        function2_ctxt_t* ctxt = static_cast<function2_ctxt_t*>(se->context);
+        *ctxt->ret = ctxt->in1 + out1 + ret1;
+        delete ctxt;
+        delete se;
+        delete callstack;
+    }
 };
 
 Layer03 layer03;
@@ -677,35 +824,48 @@ The application class now looks as follows:
 ```c++
 class Class01
 {
+private:
+    struct function1_ctxt_t
+    {
+        ~function1_ctxt_t() { printf("function1_ctxt_t::~function1_ctxt_t()\n"); }
+
+        int in1;
+        int in2;
+        int testval;
+    };
+
 public:
     void function1(int in1, int in2, int testval)
     {
         printf("Class01::function1(in1 = %d, in2 = %d, testval = %d)\n", in1, in2, testval);
+        function1_ctxt_t* ctxt = new function1_ctxt_t{in1, in2, testval};
         remoteObj1.sendc_op1(in1, in2, 
-            [this, in1, in2, testval](int out1, int out2, int ret1) {
-                this->function1a(in1, in2, testval, out1, out2, ret1);
+            [this, ctxt](int out1, int out2, int ret1) {
+                this->function1a(ctxt, out1, out2, ret1);
             });
         // 1a Do stuff that doesn't need the result of the RMI
     }
 
-    void function1a(int in1, int in2, int testval, int out1, int out2, int ret1)
+protected:
+    void function1a(function1_ctxt_t* ctxt, int out1, int out2, int ret1)
     {
-        printf("Class01::function1a(out1 = %d, out2 = %d, ret1 = %d, testval = %d)\n", out1, out2, ret1, testval);
+        printf("Class01::function1a(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);
         // 1b Do stuff that needs the result of the RMI
-        if (ret1 == testval) {
-            remoteObj2.sendc_op2(in1, in2,
+        if (ret1 == ctxt->testval) {
+            remoteObj2.sendc_op2(ctxt->in1, ctxt->in2,
                 [this](int out1, int ret1) {
                     this->function1b(out1, ret1);
                 });
             // 2a Do stuff that doesn't need the result of the RMI
         }
         else {
-            remoteObj3.sendc_op3(in1,
+            remoteObj3.sendc_op3(ctxt->in1,
                 [this](int out1, int out2, int ret1) {
                     this->function1c(out1, out2, ret1);
                 });
             // 3a Do stuff that doesn't need the result of the RMI
         }
+        delete ctxt;
     }
 
     void function1b(int out3, int ret2)
@@ -720,6 +880,7 @@ public:
         // 3b Do stuff that needs the result of the RMI
     }
 
+public:
     /**
      * @brief alternative version of function1 that avoids the introduction of callback functions
      * by placing the original code in lambdas.
@@ -728,29 +889,29 @@ public:
     void function1alt(int in1, int in2, int testval)
     {
         printf("Class01::function1alt(in1 = %d, in2 = %d, testval = %d)\n", in1, in2, testval);
+        function1_ctxt_t* ctxt = new function1_ctxt_t{ in1, in2, testval };
         remoteObj1.sendc_op1(in1, in2, 
-            [this, in1, in2, testval](int out1, int out2, int ret1)
+            [this, ctxt](int out1, int out2, int ret1)
             { 
                 printf("Class01::function1alt: 1: out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
                 // 1b Do stuff that needs the result of the RMI
-                if (ret1 == testval) {
-                    remoteObj2.sendc_op2(in1, in2,
-                        [this](int out3, int ret2)
-                        {
+                if (ret1 == ctxt->testval) {
+                    remoteObj2.sendc_op2(ctxt->in1, ctxt->in2,
+                        [this](int out3, int ret2) {
                             printf("Class01::function1alt: 2: out3 = %d, ret2 = %d\n", out3, ret2);
                             // 2b Do stuff that needs the result of the RMI
                         });
                     // 2a Do stuff that doesn't need the result of the RMI
                 }
                 else {
-                    remoteObj3.sendc_op3(in1,
-                        [this](int out4, int out5, int ret3) 
-                        {
+                    remoteObj3.sendc_op3(ctxt->in1,
+                        [this](int out4, int out5, int ret3) {
                             printf("Class01::function1alt: 3: out4 = %d, out5 = %d, ret3 = %d\n", out4, out5, ret3);
                             // 3b Do stuff that needs the result of the RMI
                         });
                     // 3a Do stuff that doesn't need the result of the RMI
                 }
+                delete ctxt;
             });
         // 1a Do stuff that doesn't need the result of the RMI
     }
@@ -775,8 +936,7 @@ public:
         int lret1 = -1;
         printf("Class01::function1(in1 = %d, in2 = %d, testval = %d)\n", in1, in2, testval);
         remoteObj1.sendc_op1(in1, in2,
-            [this, &lret1](int out1, int out2, int ret1)
-            {
+            [this, &lret1](int out1, int out2, int ret1) {
                 lret1 = this->callback1(out1, out2, ret1);
             });
         // 1a Do some stuff that doesn't need the result of the RMI
@@ -784,8 +944,7 @@ public:
         // 1b Do stuff that needs the result of the RMI
         if (lret1 == testval) {
             remoteObj2.sendc_op2(in1, in2, 
-                [this](int out1, int ret1)
-                {
+                [this](int out1, int ret1) {
                     this->callback2(out1, ret1);
                 });
             // 2a Do some stuff that doesn't need the result of the RMI
@@ -794,8 +953,7 @@ public:
         }
         else {
             remoteObj3.sendc_op3(in1, 
-                [this](int out1, int out2, int ret1)
-                {
+                [this](int out1, int out2, int ret1) {
                     this->callback3(out1, out2, ret1);
                 });
             // 3a Do some stuff that doesn't need the result of the RMI
@@ -804,6 +962,7 @@ public:
         }
     }
 
+protected:
     int callback1(int out1, int out2, int ret1)
     { 
         printf("Class01::callback1(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);
@@ -936,6 +1095,7 @@ public:
             [this](int out1, int out2, int ret1) { this->function1a(2, out1, out2, ret1); });
     }
 
+protected:
     void function1a(int index, int out1, int out2, int ret1)
     {
         printf("Class01::function1a(%d, %d, %d)\n", out1, out2, ret1);
@@ -967,13 +1127,13 @@ public:
         int out31 = -1, out32 = -1;
 
         async_task<int> op1 = remoteObj1co.op1(in1, in2, out11, out12);
-        async_task<int> op2 = remoteObj2co.op1(in1, in2, out21, out21);
+        async_task<int> op2 = remoteObj2co.op1(in1, in2, out21, out22);
         async_task<int> op3 = remoteObj3co.op1(in1, in2, out31, out32);
 #if 0
         // The following statement does not compile with g++ 11.3.0
         co_await when_all({ &op1, &op2, &op3 });
 #else
-        when_all wa({ &op1, &op2, &op3 });
+        when_all wa(op1, op2, op3);
         co_await wa;
 #endif
         printf("Class01::coroutine1(): result = %d\n", op1.get_result() +  op2.get_result() + op3.get_result());
@@ -1001,7 +1161,7 @@ public:
     {
         int counter = 0;
         printf("Class01::function1()\n");
-        start_time = get_current_time();
+        std::chrono::high_resolution_clock::time_point start_time = std::chrono::high_resolution_clock::now();
         for (int i = 0; i < MAX_MSG_LENGTH; i++)
         {
             printf("Class04::function1(): i = %d\n", i);
@@ -1013,7 +1173,9 @@ public:
                 (void)ret1;
             }
         }
-        elapsed_time = get_current_time() - start_time;
+        std::chrono::high_resolution_clock::time_point end_time = std::chrono::high_resolution_clock::now();
+        double time_taken = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
+        printf("Class01::function1a(): time_taken = %f s\n", time_taken / 1000000000.0);
     }
 };
 ```
@@ -1025,43 +1187,68 @@ The application class now looks as follows:
 ```c++
 class Class01
 {
+private:
+    struct function1_ctxt_t
+    {
+        ~function1_ctxt_t() { printf("function1_ctxt_t::~function1_ctxt_t()\n"); }
+
+        Msg msg;
+        int i = 0;
+        int j = 0;
+        int counter = 0;
+        std::chrono::high_resolution_clock::time_point start_time;
+    };
+
 public:
     void function1()
     {
-        printf("Class01::function1(): counter = %d\n", counter);
-        start_time = get_current_time();
-        msg = Msg(0);
-        remoteObj1.sendc_op1(msg, [this]() { this->function1a(); });
+        function1_ctxt_t* ctxt = new function1_ctxt_t;
+
+        printf("Class01::function1(): counter = %d\n", ctxt->counter);
+        ctxt->start_time = std::chrono::high_resolution_clock::now();
+        ctxt->msg = Msg(0);
+        remoteObj1.sendc_op1(ctxt->msg,
+            [this, ctxt]() {
+                this->function1a(ctxt);
+            });
     }
 
-    void function1a()
+protected:
+    void function1a(function1_ctxt_t* ctxt)
     {
-        printf("Class01::function1a(): counter = %d\n", counter);
-        if (j < NR_MSGS_TO_SEND) {
-            printf("Class01::function1a(): i = %d, j = %d, counter = %d\n", i, j, counter);
-            remoteObj1.sendc_op1(msg, [this]() { this->function1a(); });
-            j++;
-            counter++;
+        printf("Class01::function1a(): counter = %d\n", ctxt->counter);
+        if (ctxt->j < NR_MSGS_TO_SEND) {
+            printf("Class01::function1a(): i = %d, j = %d, counter = %d\n", ctxt->i, ctxt->j, ctxt->counter);
+            remoteObj1.sendc_op1(ctxt->msg,
+                        [this, ctxt]() {
+                            this->function1a(ctxt);
+                        });
+            ctxt->j++;
+            ctxt->counter++;
         }
         else {
-            j = 0;
-            i++;
-            if (i < MAX_MSG_LENGTH) {
-                msg = Msg(i * 10);
-                printf("Class01::function1a(): i = %d, j = %d, counter = %d\n", i, j, counter);
-                remoteObj1.sendc_op1(msg, [this]() { this->function1a(); });
-                j++;
-                counter++;
+            ctxt->j = 0;
+            ctxt->i++;
+            if (ctxt->i < MAX_MSG_LENGTH) {
+                ctxt->msg = Msg(ctxt->i * 10);
+                printf("Class01::function1a(): i = %d, j = %d, counter = %d\n", ctxt->i, ctxt->j, ctxt->counter);
+                remoteObj1.sendc_op1(ctxt->msg,
+                            [this, ctxt]() {
+                                this->function1a(ctxt);
+                            });
+                ctxt->j++;
+                ctxt->counter++;
             }
-            else
-                elapsed_time = get_current_time() - start_time;
+            else {
+                // End of inner and outer loop
+                std::chrono::high_resolution_clock::time_point end_time = std::chrono::high_resolution_clock::now();
+                double time_taken =
+                    std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - ctxt->start_time).count();
+                printf("Class01::function1a(): time_taken = %f s\n", time_taken / 1000000000.0);
+                delete ctxt;
+            }
         }
     }
-    
-private:
-    int i = 0, j = 0;
-    Msg msg;
-    int counter = 0;
 };
 ```
 
@@ -1077,7 +1264,7 @@ public:
     {
         int counter = 0;
         printf("Class01::coroutine1()\n");
-        start_time = get_current_time();
+        std::chrono::high_resolution_clock::time_point start_time = std::chrono::high_resolution_clock::now();
         for (int i = 0; i < MAX_MSG_LENGTH; i++)
         {
             printf("Class01::coroutine1(): i = %d\n", i);
@@ -1086,10 +1273,13 @@ public:
             {
                 printf("Class02::coroutine1(): i = %d, j = %d, counter = %d\n", i, j, counter++);
                 async_operation<int> op1 = remoteObj1co.start_op1(msg);
-                int i = co_await op1;
+                int ret1 = co_await op1;
+                (void)ret1;
             }
         }
-        elapsed_time = get_current_time() - start_time;
+        std::chrono::high_resolution_clock::time_point end_time = std::chrono::high_resolution_clock::now();
+        double time_taken = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
+        printf("Class01::function1a(): time_taken = %f s\n", time_taken / 1000000000.0);
     }
 };
 ```
@@ -1213,7 +1403,7 @@ public:
     {
         int counter = 0;
         printf("Class01::function1()\n");
-        start_time = get_current_time();
+        std::chrono::high_resolution_clock::time_point start_time = std::chrono::high_resolution_clock::now();
         for (int i = 0; i < MAX_MSG_LENGTH; i++)
         {
             printf("Class01::function1(): i = %d\n", i);
@@ -1222,10 +1412,13 @@ public:
             {
                 printf("Class01::function1(): i = %d, j = %d, counter = %d\n", i, j, counter++);
                 Msg res = remoteObj1.op1(msg);
+                (void)res;
                 // Do something with msg
             }
         }
-        elapsed_time = get_current_time() - start_time;
+        std::chrono::high_resolution_clock::time_point end_time = std::chrono::high_resolution_clock::now();
+        double time_taken = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
+        printf("Class01::function1a(): time_taken = %f s\n", time_taken / 1000000000.0);
     }
 };
 ```
@@ -1235,6 +1428,8 @@ public:
 The implementation of sendc_op1 now looks as follows:
 
 ```c++
+using lambda_msg_t = typename std::function<void(Msg)>;
+
 class RemoteObject1
 {
 public:
@@ -1243,8 +1438,12 @@ public:
     {
     }
 
-    // ...
+    Msg op1(Msg msg)
+    {
+       // see source code
+    }
 
+private:
     struct op1_context
     {
         int offset = 0;
@@ -1253,6 +1452,7 @@ public:
         lambda_msg_t lambda;
     };
 
+public:
     void sendc_op1(Msg msg, lambda_msg_t op1_cb)
     {
         printf("RemoteObject1::sendc_op1(): calling write_segment\n");
@@ -1272,6 +1472,7 @@ public:
         ctxt->offset += SEGMENT_LENGTH;
     }
 
+protected:
     void handle_write_segment_op1(op1_context *ctxt)
     {
         int buflength = ctxt->writebuffer.length();
@@ -1320,50 +1521,69 @@ The application class now looks as follows:
 ```c++
 class Class01
 {
+private:
+    struct function1_ctxt_t
+    {
+        ~function1_ctxt_t() { printf("function1_ctxt_t::~function1_ctxt_t()\n"); }
+
+        Msg msg;
+        int i = 0;
+        int j = 0;
+        int counter = 0;
+        std::chrono::high_resolution_clock::time_point start_time;
+    };
+
 public:
     void function1()
     {
-		counter = 0;
-        printf("Class01::function1(): counter = %d\n", counter);
-        i = j = 0;
-        
-        start_time = get_current_time();
-        msg = Msg(0);
-        remoteObj1.sendc_op1(msg, [this](Msg msg) { this->function1a(msg); });
+        function1_ctxt_t* ctxt = new function1_ctxt_t;
+
+        ctxt->start_time = std::chrono::high_resolution_clock::now();
+        ctxt->msg = Msg(0);
+        remoteObj1.sendc_op1(ctxt->msg,
+            [this, ctxt](Msg msg) {
+                this->function1a(ctxt, msg);
+            });
     }
 
-    void function1a(Msg msgout)
+protected:
+    void function1a(function1_ctxt_t* ctxt, Msg msgout)
     {
         // Do something with msgout
-        printf("Class01::function1a(Msg): counter = %d\n", counter);
-        if (j < NR_MSGS_TO_SEND) {
-            printf("Class01::function1a(): i = %d, j = %d, counter = %d\n", i, j, counter);
-            remoteObj1.sendc_op1(msg, [this](Msg msg) { this->function1a(msg); });
-            j++;
-            counter++;
+        printf("Class01::function1a(Msg): counter = %d\n", ctxt->counter);
+        if (ctxt->j < NR_MSGS_TO_SEND) {
+            printf("Class01::function1a(): i = %d, j = %d, counter = %d\n", ctxt->i, ctxt->j, ctxt->counter);
+            remoteObj1.sendc_op1(ctxt->msg,
+                        [this, ctxt](Msg msg) {
+                            this->function1a(ctxt, msg);
+                        });
+            ctxt->j++;
+            ctxt->counter++;
         }
         else {
             // End of inner loop
-            j = 0;
-            i++;
-            if (i < MAX_MSG_LENGTH) {
-                msg = Msg(i);
-                printf("Class01::function1a(): i = %d, j = %d, counter = %d\n", i, j, counter);
-                remoteObj1.sendc_op1(msg, [this](Msg msg) { this->function1a(msg); });
-                j++;
-                counter++;
+            ctxt->j = 0;
+            ctxt->i++;
+            if (ctxt->i < MAX_MSG_LENGTH) {
+                ctxt->msg = Msg(ctxt->i);
+                printf("Class01::function1a(): i = %d, j = %d, counter = %d\n", ctxt->i, ctxt->j, ctxt->counter);
+                remoteObj1.sendc_op1(ctxt->msg,
+                                [this, ctxt](Msg msg) {
+                                    this->function1a(ctxt, msg);
+                                });
+                ctxt->j++;
+                ctxt->counter++;
             }
             else {
                 // End of inner and outer loop
-                elapsed_time = get_current_time() - start_time;
+                std::chrono::high_resolution_clock::time_point end_time = std::chrono::high_resolution_clock::now();
+                double time_taken =
+                    std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - ctxt->start_time).count();
+                printf("Class01::function1a(): time_taken = %f s\n", time_taken / 1000000000.0);
+                delete ctxt;
             }
         }
     }
-    
-private:
-    int i, j;
-    Msg msg;
-    int counter;
 };
 ```
 
@@ -1429,7 +1649,7 @@ public:
     {
         int counter = 0;
         printf("Class01::coroutine1()\n");
-        start_time = get_current_time();
+        std::chrono::high_resolution_clock::time_point start_time = std::chrono::high_resolution_clock::now();
         for (int i = 0; i < MAX_MSG_LENGTH; i++)
         {
             printf("Class01::coroutine1(): i = %d\n", i);
@@ -1437,12 +1657,15 @@ public:
             for (int j = 0; j < NR_MSGS_TO_SEND; j++)
             {
                 printf("Class01::coroutine1(): i = %d, j = %d, counter = %d\n", i, j, counter++);
-                async_task<Msg> op1 = remoteObj1.op1(msg);
+                async_task<Msg> op1 = remoteObj1co.op1(msg);
                 Msg res = co_await op1;
+                (void)res;
                 // Do something with msg
             }
         }
-        elapsed_time = get_current_time() - start_time;
+        std::chrono::high_resolution_clock::time_point end_time = std::chrono::high_resolution_clock::now();
+        double time_taken = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
+        printf("Class01::function1a(): time_taken = %f s\n", time_taken / 1000000000.0);
     }
 };
 ```

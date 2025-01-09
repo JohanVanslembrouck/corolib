@@ -39,8 +39,6 @@ public:
     }
 };
 
-Class01a class01a;
-
 class Class01
 {
 public:
@@ -64,6 +62,7 @@ public:
     }
 };
 
+Class01a class01a;
 Class01 class01;
 
 EventQueue eventQueue;

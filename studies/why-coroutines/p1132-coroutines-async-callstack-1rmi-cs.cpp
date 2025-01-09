@@ -26,10 +26,10 @@ using namespace corolib;
 
 class CallStack;
 
-typedef std::function<void(CallStack*, int, int, int)>  lambda_cs_3int_t;
-typedef std::function<void(CallStack*, int, int)>       lambda_cs_2int_t;
-typedef std::function<void(CallStack*, int)>            lambda_cs_1int_t;
-typedef std::function<void(CallStack*)>                 lambda_cs_t;
+using lambda_cs_3int_t = std::function<void(CallStack*, int, int, int)>;
+using lambda_cs_2int_t = std::function<void(CallStack*, int, int)>;
+using lambda_cs_1int_t = std::function<void(CallStack*, int)>;
+using lambda_cs_t = std::function<void(CallStack*)>;
 
 using namespace std;
 
@@ -59,9 +59,10 @@ struct StackElement
  */
 class CallStack
 {
+private:
     stack<StackElement*> q;
-public:
 
+public:
     void push(StackElement* val)
     {
         q.push(val);
@@ -122,33 +123,36 @@ RemoteObject1 remoteObj1;
  */
 class Layer01
 {
-public:
-    struct function1_cxt_t
+private:
+    struct function1_ctxt_t
     {
+        ~function1_ctxt_t() { printf("Layer01::function1_ctxt_t::~function1_ctxt_t()\n"); }
+
         int in1;
     };
 
+public:
     void function1(CallStack* callstack, int in1)
     {
         printf("Layer01::function1(in1 = %d)\n", in1);
         lambda_cs_3int_t* op = new lambda_cs_3int_t(
-            [this](CallStack* callstack, int out1, int out2, int ret1)
-            {
+            [this](CallStack* callstack, int out1, int out2, int ret1) {
                 this->function1_cb(callstack, out1, out2, ret1);
             });
-        void* ctxt = new function1_cxt_t{ in1 };
+        function1_ctxt_t* ctxt = new function1_ctxt_t{ in1 };
         StackElement* se = new StackElement(ctxt, op);
         callstack->push(se);
 
         remoteObj1.sendc_op1(callstack, in1, in1);
     }
 
+protected:
     void function1_cb(CallStack* callstack, int out1, int out2, int ret1)
     {
         printf("Layer01::function1_cb(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);
 
         StackElement* se = callstack->top_pop();
-        function1_cxt_t* ctxt = static_cast<function1_cxt_t*>(se->context);
+        function1_ctxt_t* ctxt = static_cast<function1_ctxt_t*>(se->context);
 
         StackElement* se2 = callstack->top();
         lambda_cs_3int_t* op = static_cast<lambda_cs_3int_t*>(se2->lambda);
@@ -168,12 +172,15 @@ Layer01 layer01;
  */
 class Layer02
 {
-public:
-    struct function1_cxt_t
+private:
+    struct function1_ctxt_t
     {
+        ~function1_ctxt_t() { printf("Layer02::function1_ctxt_t::~function1_ctxt_t()\n"); }
+
         int in1;
     };
 
+public:
     void function1(CallStack* callstack, int in1)
     {
         printf("Layer02::function1(in1 = %d)\n", in1);
@@ -183,18 +190,19 @@ public:
             {
                 this->function1_cb(callstack, out1, out2, ret1);
             });
-        void* ctxt = new function1_cxt_t{ in1 };
+        function1_ctxt_t* ctxt = new function1_ctxt_t{ in1 };
         StackElement* se = new StackElement(ctxt, op);
         callstack->push(se);
 
         layer01.function1(callstack, in1);
     }
 
+protected:
     void function1_cb(CallStack* callstack, int out1, int out2, int ret1)
     {
         printf("Layer02::function1_cb(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);
         StackElement* se = callstack->top_pop();
-        function1_cxt_t* ctxt = static_cast<function1_cxt_t*>(se->context);
+        function1_ctxt_t* ctxt = static_cast<function1_ctxt_t*>(se->context);
 
         StackElement* se2 = callstack->top();
         lambda_cs_2int_t* op = static_cast<lambda_cs_2int_t*>(se2->lambda);
@@ -216,18 +224,20 @@ Layer02 layer02;
  */
 class Layer03
 {
-public:
     // Synchronous function:
     // int function1(int in1);
 
     // Alternative 1
-
-    struct function1_cxt_t
+private:
+    struct function1_ctxt_t
     {
+        ~function1_ctxt_t() { printf("Layer03::function1_ctxt_t::~function1_ctxt_t()\n"); }
+
         int* ret;
         int in1;
     };
 
+public:
     void function1(int in1, int& ret1)
     {
         printf("Layer03::function1(in1 = %d)\n", in1);
@@ -238,28 +248,30 @@ public:
             {
                 this->function1_cb(callstack, out1, ret1);
             });
-        void* ctxt = new function1_cxt_t{ &ret1, in1 };
+        function1_ctxt_t* ctxt = new function1_ctxt_t{ &ret1, in1 };
         StackElement* se = new StackElement(ctxt, p);
         callstack->push(se);
 
         layer02.function1(callstack, in1);
     }
 
+protected:
     void function1_cb(CallStack* callstack, int out1, int ret1)
     {
         printf("Layer03::function1_cb(out1 = %d, ret1 = %d)\n", out1, ret1);
         StackElement* se = callstack->top_pop();
-        function1_cxt_t* ctxt = static_cast<function1_cxt_t*>(se->context);
+        function1_ctxt_t* ctxt = static_cast<function1_ctxt_t*>(se->context);
         *ctxt->ret = ctxt->in1 + out1 + ret1;
         delete ctxt;
         delete se;
         delete callstack;
     }
 
+public:
     void function1(int in1, lambda_cs_2int_t lambda)
     {
         printf("Layer03::function1(in1 = %d)\n", in1);
-        void* ctxt = new function1_cxt_t{ nullptr, in1 };
+        function1_ctxt_t* ctxt = new function1_ctxt_t{ nullptr, in1 };
 
         CallStack* callstack = new CallStack;
         lambda_cs_2int_t* p = new lambda_cs_2int_t(lambda);
@@ -372,13 +384,19 @@ int main() {
     int ret0 = -1;
     layer03.function1(2, ret0);
     async_task<int> t1 = layer03co.coroutine1(2);
-    async_task<int> t2 = layer03co.coroutine2(3);
-    
+    async_task<int> t2 = layer03co.coroutine1(3);
+    async_task<int> t3 = layer03co.coroutine2(2);
+    async_task<int> t4 = layer03co.coroutine2(3);
+
     eventQueue.run();
     printf("main(): ret0 = %d\n", ret0);
     int ret1 = t1.get_result();
     printf("main(): ret1 = %d\n", ret1);
     int ret2 = t2.get_result();
     printf("main(): ret2 = %d\n", ret2);
+    int ret3 = t3.get_result();
+    printf("main(): ret3 = %d\n", ret3);
+    int ret4 = t4.get_result();
+    printf("main(): ret4 = %d\n", ret4);
     return 0;
 }

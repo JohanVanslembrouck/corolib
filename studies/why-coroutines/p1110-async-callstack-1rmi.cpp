@@ -21,18 +21,21 @@ RemoteObject1 remoteObj1;
  */
 class Layer01
 {
-public:
-    struct function1_cxt_t
+private:
+    struct function1_ctxt_t
     {
+        ~function1_ctxt_t() { printf("Layer01::function1_ctxt_t::~function1_ctxt_t()\n"); }
+
         void* ctxt;
         lambda_vp_3int_t lambda;
         int in1;
     };
 
+public:
     void function1(void* ctxt1, lambda_vp_3int_t lambda, int in1)
     {
         printf("Layer01::function1(in1 = %d)\n", in1);
-        void* ctxt = new function1_cxt_t{ ctxt1, lambda, in1 };
+        function1_ctxt_t* ctxt = new function1_ctxt_t{ ctxt1, lambda, in1 };
 
         // int ret1 = remoteObj1.op1(in1, in1, out1, out2);
         remoteObj1.sendc_op1(ctxt, in1, in1,
@@ -42,10 +45,11 @@ public:
             });
     }
 
+protected:
     void function1_cb(void* context, int out1, int out2, int ret1)
     {
         printf("Layer01::function1_cb(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);
-        function1_cxt_t* ctxt = static_cast<function1_cxt_t*>(context);
+        function1_ctxt_t* ctxt = static_cast<function1_ctxt_t*>(context);
         // call function1_cb of upper layer
         // return in1 + ret1;
         ctxt->lambda(ctxt->ctxt, out1, out2, ctxt->in1 + ret1);
@@ -62,18 +66,21 @@ Layer01 layer01;
  */
 class Layer02
 {
-public:
-    struct function1_cxt_t
+private:
+    struct function1_ctxt_t
     {
+        ~function1_ctxt_t() { printf("Layer02::function1_ctxt_t::~function1_ctxt_t()\n"); }
+
         void* ctxt;
         lambda_vp_2int_t lambda;
         int in1;
     };
 
+public:
     void function1(void* ctxt1, lambda_vp_2int_t lambda, int in1)
     {
         printf("Layer02::function1(in1 = %d)\n", in1);
-        void* ctxt = new function1_cxt_t{ ctxt1, lambda, in1 };
+        function1_ctxt_t* ctxt = new function1_ctxt_t{ ctxt1, lambda, in1 };
 
         // int ret1 = layer01.function1(in1, out1, out2);
         layer01.function1(
@@ -84,10 +91,11 @@ public:
             in1);
     }
 
+protected:
     void function1_cb(void* context, int out1, int out2, int ret1)
     {
         printf("Layer02::function1_cb(out1 = %d, out2 = %d, ret1 = %d)\n", out1, out2, ret1);
-        function1_cxt_t* ctxt = static_cast<function1_cxt_t*>(context);
+        function1_ctxt_t* ctxt = static_cast<function1_ctxt_t*>(context);
         // call function1_cb of upper layer
         // return in1 + out2 + ret1;
         ctxt->lambda(ctxt->ctxt, out1, ctxt->in1 + out2 + ret1);
@@ -105,17 +113,20 @@ Layer02 layer02;
  */
 class Layer03
 {
-public:
-    struct function1_cxt_t
+private:
+    struct function1_ctxt_t
     {
+        ~function1_ctxt_t() { printf("Layer03::function1_ctxt_t::~function1_ctxt_t()\n"); }
+
         int* ret;
         int in1;
     };
 
+public:
     void function1(int in1, int& ret1)
     {
         printf("Layer03::function1(in1 = %d)\n", in1);
-        void* ctxt = new function1_cxt_t{ &ret1, in1 };
+        function1_ctxt_t* ctxt = new function1_ctxt_t{ &ret1, in1 };
 
         // int ret1 = layer02.function1(in1, out1);
         layer02.function1(ctxt,
@@ -125,25 +136,30 @@ public:
             in1);
     }
 
+protected:
     void function1_cb(void* context, int out1, int ret1)
     {
         printf("Layer03::function1_cb(out1 = %d, ret1 = %d)\n", out1, ret1);
-        function1_cxt_t* ctxt = static_cast<function1_cxt_t*>(context);
+        function1_ctxt_t* ctxt = static_cast<function1_ctxt_t*>(context);
         // return in1 + out1 + ret1;
         *ctxt->ret = ctxt->in1 + out1 + ret1;
         delete ctxt;
     }
 
-    struct function2_cxt_t
+private:
+    struct function2_ctxt_t
     {
+        ~function2_ctxt_t() { printf("Layer03::function2_ctxt_t::~function2_ctxt_t()\n"); }
+
         int* ret;
         int in1;
     };
 
+public:
     void function2(int in1, int& ret1)
     {
         printf("Layer03::function2(in1 = %d)\n", in1);
-        void* ctxt = new function1_cxt_t{ &ret1, in1 };
+        function2_ctxt_t* ctxt = new function2_ctxt_t{ &ret1, in1 };
 
         // int ret1 = layer02.function1(in1, out1);
         layer02.function1(ctxt,
@@ -153,10 +169,11 @@ public:
             in1);
     }
 
+protected:
     void function2_cb(void* context, int out1, int ret1)
     {
         printf("Layer03::function2_cb(out1 = %d, ret1 = %d)\n", out1, ret1);
-        function1_cxt_t* ctxt = static_cast<function1_cxt_t*>(context);
+        function2_ctxt_t* ctxt = static_cast<function2_ctxt_t*>(context);
         // return in1 + out1 + ret1;
         *ctxt->ret = ctxt->in1 + out1 + ret1;
         delete ctxt;
@@ -173,9 +190,15 @@ int main() {
     layer03.function1(2, ret1);
     int ret2 = -1;
     layer03.function1(3, ret2);
+    int ret3 = -1;
+    layer03.function2(2, ret3);
+    int ret4 = -1;
+    layer03.function2(3, ret4);
 
     eventQueue.run();
     printf("main(): ret1 = %d\n", ret1);
     printf("main(): ret2 = %d\n", ret2);
+    printf("main(): ret3 = %d\n", ret3);
+    printf("main(): ret4 = %d\n", ret4);
     return 0;
 }

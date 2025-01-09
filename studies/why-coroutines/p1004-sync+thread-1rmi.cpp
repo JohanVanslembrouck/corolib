@@ -1,6 +1,6 @@
 /**
- * @file p1002-sync+thread-1rmi.cpp
- * @brief
+ * @file p1004-sync+thread-1rmi.cpp
+ * @brief This is a variant of p1002-sync+thread-1rmi.cpp.
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */

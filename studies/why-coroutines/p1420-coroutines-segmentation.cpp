@@ -6,8 +6,9 @@
  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
+#include <chrono>
+
 #include "common.h"
-#include "variables.h"
 #include "eventqueue.h"
 #include "buf+msg.h"
 
@@ -30,7 +31,7 @@ public:
     {
         int counter = 0;
         printf("Class01::coroutine1()\n");
-        start_time = get_current_time();
+        std::chrono::high_resolution_clock::time_point start_time = std::chrono::high_resolution_clock::now();
         for (int i = 0; i < MAX_MSG_LENGTH; i++)
         {
             printf("Class01::coroutine1(): i = %d\n", i);
@@ -44,7 +45,9 @@ public:
                 // Do something with msg
             }
         }
-        elapsed_time = get_current_time() - start_time;
+        std::chrono::high_resolution_clock::time_point end_time = std::chrono::high_resolution_clock::now();
+        double time_taken = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
+        printf("Class01::function1a(): time_taken = %f s\n", time_taken / 1000000000.0);
     }
 };
 

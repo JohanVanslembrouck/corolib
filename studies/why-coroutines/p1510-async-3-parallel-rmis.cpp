@@ -29,6 +29,7 @@ public:
             [this](int out1, int out2, int ret1) { this->function1a(2, out1, out2, ret1); });
     }
 
+protected:
     void function1a(int index, int out1, int out2, int ret1)
     {
         printf("Class01::function1a(%d, %d, %d)\n", out1, out2, ret1);

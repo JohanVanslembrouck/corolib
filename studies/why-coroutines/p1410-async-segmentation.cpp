@@ -6,9 +6,9 @@
  */
 
 #include <stdio.h>
+#include <chrono>
 
 #include "common.h"
-#include "variables.h"
 #include "eventqueue.h"
 #include "buf+msg.h"
 
@@ -19,63 +19,80 @@ RemoteObject1 remoteObj1{remoteObjImpl};
 
 class Class01
 {
+private:
+    struct function1_ctxt_t
+    {
+        ~function1_ctxt_t() { printf("function1_ctxt_t::~function1_ctxt_t()\n"); }
+
+        Msg msg;
+        int i = 0;
+        int j = 0;
+        int counter = 0;
+        std::chrono::high_resolution_clock::time_point start_time;
+    };
+
 public:
     void function1()
     {
-		counter = 0;
-        printf("Class01::function1(): counter = %d\n", counter);
-        i = j = 0;
-        
-        start_time = get_current_time();
-        msg = Msg(0);
-        remoteObj1.sendc_op1(msg, [this](Msg msg) { this->function1a(msg); });
+        function1_ctxt_t* ctxt = new function1_ctxt_t;
+
+        ctxt->start_time = std::chrono::high_resolution_clock::now();
+        ctxt->msg = Msg(0);
+        remoteObj1.sendc_op1(ctxt->msg,
+            [this, ctxt](Msg msg) {
+                this->function1a(ctxt, msg);
+            });
     }
 
-    void function1a(Msg msgout)
+protected:
+    void function1a(function1_ctxt_t* ctxt, Msg msgout)
     {
         // Do something with msgout
-        printf("Class01::function1a(Msg): counter = %d\n", counter);
-        if (j < NR_MSGS_TO_SEND) {
-            printf("Class01::function1a(): i = %d, j = %d, counter = %d\n", i, j, counter);
-            remoteObj1.sendc_op1(msg, [this](Msg msg) { this->function1a(msg); });
-            j++;
-            counter++;
+        printf("Class01::function1a(Msg): counter = %d\n", ctxt->counter);
+        if (ctxt->j < NR_MSGS_TO_SEND) {
+            printf("Class01::function1a(): i = %d, j = %d, counter = %d\n", ctxt->i, ctxt->j, ctxt->counter);
+            remoteObj1.sendc_op1(ctxt->msg,
+                        [this, ctxt](Msg msg) {
+                            this->function1a(ctxt, msg);
+                        });
+            ctxt->j++;
+            ctxt->counter++;
         }
         else {
             // End of inner loop
-            j = 0;
-            i++;
-            if (i < MAX_MSG_LENGTH) {
-                msg = Msg(i);
-                printf("Class01::function1a(): i = %d, j = %d, counter = %d\n", i, j, counter);
-                remoteObj1.sendc_op1(msg, [this](Msg msg) { this->function1a(msg); });
-                j++;
-                counter++;
+            ctxt->j = 0;
+            ctxt->i++;
+            if (ctxt->i < MAX_MSG_LENGTH) {
+                ctxt->msg = Msg(ctxt->i);
+                printf("Class01::function1a(): i = %d, j = %d, counter = %d\n", ctxt->i, ctxt->j, ctxt->counter);
+                remoteObj1.sendc_op1(ctxt->msg,
+                                [this, ctxt](Msg msg) {
+                                    this->function1a(ctxt, msg);
+                                });
+                ctxt->j++;
+                ctxt->counter++;
             }
             else {
                 // End of inner and outer loop
-                elapsed_time = get_current_time() - start_time;
+                std::chrono::high_resolution_clock::time_point end_time = std::chrono::high_resolution_clock::now();
+                double time_taken =
+                    std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - ctxt->start_time).count();
+                printf("Class01::function1a(): time_taken = %f s\n", time_taken / 1000000000.0);
+                delete ctxt;
             }
         }
     }
-    
-private:
-    int i, j;
-    Msg msg;
-    int counter;
 };
 
-Class01 class01a;
-Class01 class01b;
-Msg gmsg1;
+Class01 class01;
 
 EventQueue eventQueue;
 
 int main()
 {
     printf("main();\n");
-    class01a.function1();
-    class01b.function1();
+    class01.function1();
+    class01.function1();
     eventQueue.run();
     return 0;
 }
