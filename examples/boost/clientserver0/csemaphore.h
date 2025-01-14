@@ -23,12 +23,12 @@ public:
     {
     }
 
-    void signal()
+    void release()
     {
         m_binsema.release();
     }
 
-    void wait()
+    void acquire()
     {
         m_binsema.acquire();
     }
@@ -56,13 +56,13 @@ public:
         count_ = 0;
     }
 
-    void signal() {
+    void release() {
         std::unique_lock<std::mutex> lock(mutex_);
         ++count_;
         condition_.notify_one();
     }
 
-    void wait() {
+    void acquire() {
         std::unique_lock < std::mutex > lock(mutex_);
         while (!count_)
             condition_.wait(lock);

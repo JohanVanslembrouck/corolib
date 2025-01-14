@@ -1,19 +1,17 @@
 /**
- *  @file client2.cpp
+ *  @file client3.cpp
  *  @brief
  *  Using Boost ASIO to communicate between a client and an echo server.
  *
- *  This example is based upon studies/corolab/p0710c.c.
- *  This example uses lambdas instead of callback functions as in p0710c.c.
- *
- *  In contrast to client1.cpp, ioContext.run() is run on a separate thread.
+ *  In contrast to client2.cpp, the main program flow (in function mainflow()) is run on a separate thread.
+ *  ioContext.run() is run on yet another thread.
  *  Consequently, also the lambda functions (in the print statements called handle_connect,
  *  handle_write, handle_read) are run on the ioContext thread.
  *
- *  The main thread and the ioContext thread synchronize by means of a semaphore:
- *  the main thread acquires the semaphore, the ioContext thread releases it.
+ *  The mainflow thread and the ioContext thread synchronize by means of a semaphore:
+ *  the mainflow thread acquires the semaphore, the ioContext thread releases it.
  *
- *  This allows defining the program flow in the main() function
+ *  This allows defining the program flow in the mainflow() function
  *  instead of "hard-coding" it in the lambda functions as in client1.cpp.
  *
  *  This example does not use coroutines.
@@ -25,6 +23,8 @@
  *
  *  @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
+
+#include <future>
 
 #include <boost/asio.hpp>
 
@@ -310,7 +310,12 @@ void mainflow()
 int main()
 {
     print("start\n");
-    mainflow();
+
+    std::future<void> t1 = std::async(std::launch::async, []() { mainflow(); });
+    std::future<void> t2 = std::async(std::launch::async, []() { mainflow(); });
+    
+    t1.get();
+    t2.get();
+
     print("done\n");
 }
-

@@ -303,9 +303,11 @@ int main()
 
     print("start\n");
 
+    // Using synchronous I/O
     print("getServed_sync(ioContext, 0);\n");
     getServed_sync(ioContext, 0);
 
+    // Using asynchronous I/O
     print("client c(ioContext);\n");
     client c(ioContext);
     print("c.start();\n");

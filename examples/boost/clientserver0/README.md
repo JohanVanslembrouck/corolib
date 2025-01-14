@@ -14,4 +14,4 @@ with the coroutine style used in the directories clientserver1 till clientserver
 After building, launch the applications in the following order:
 
 * 'cs0-server'
-* 'csà-client1' or 'cs0-client2'
+* 'cs0-client1' or 'cs0-client2' or 'cs0-client3'
