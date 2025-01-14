@@ -79,7 +79,7 @@ public:
         remoteObj1.sendc_op1(in1, in2,
             [this, ctxt](int out1, int out2, int ret1)
             {
-                this->function1_cb(ctxt, out1, out2, ret1);
+                this->function1a_cb(ctxt, out1, out2, ret1);
             });
     }
 

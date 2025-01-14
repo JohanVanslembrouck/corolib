@@ -52,20 +52,20 @@ public:
         async_operation<op1_ret_t> op1 = remoteObj1co.start_op1(in1, in2);
         // 1a Do some stuff that doesn't need the result of the RMI
         op1_ret_t res1 = co_await op1;
-        printf("Class01a::coroutine1a: 1: out1 = %d, out2 = %d, ret1 = %d\n", res1.out1, res1.out2, res1.ret);
+        printf("Class01a::coroutine1a: 1b: out1 = %d, out2 = %d, ret1 = %d\n", res1.out1, res1.out2, res1.ret);
         // 1b Do stuff that needs the result of the RMI
         if (res1.ret == testval) {
             async_operation<op2_ret_t> op2 = remoteObj2co.start_op2(in1, in2);
             // 2a Do some stuff that doesn't need the result of the RMI
             op2_ret_t res2 = co_await op2;
-            printf("Class01a::coroutine1a: 2: out3 = %d, ret2 = %d\n", res2.out1, res2.ret);
+            printf("Class01a::coroutine1a: 2b: out3 = %d, ret2 = %d\n", res2.out1, res2.ret);
             // 2b Do stuff that needs the result of the RMI
         }
         else {
             async_operation<op1_ret_t> op3 = remoteObj3co.start_op3(in1);
             // 3a Do some stuff that doesn't need the result of the RMI
             op1_ret_t res3 = co_await op3;
-            printf("Class01a::coroutine1a: 3: out4 = %d, out5 = %d, ret3 = %d\n", res3.out1, res3.out2, res3.ret);
+            printf("Class01a::coroutine1a: 3b: out4 = %d, out5 = %d, ret3 = %d\n", res3.out1, res3.out2, res3.ret);
             // 3b Do stuff that needs the result of the RMI
         }
     }
@@ -99,24 +99,27 @@ struct Class01
         printf("Class01::coroutine1a(in1 = %d, in2 = %d, testval = %d)\n", in1, in2, testval);
         int out1 = -1, out2 = -1;
         async_task<int> op1 = remoteObj1co.op1(in1, in2, out1, out2);
+        printf("Class01::coroutine1a: 1a: out1 = %d, out2 = %d\n", out1, out2);
         // 1a Do some stuff that doesn't need the result of the RMI
         int ret1 = co_await op1;
-        printf("Class01::coroutine1a: 1: out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
+        printf("Class01::coroutine1a: 1b: out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
         // 1b Do stuff that needs the result of the RMI
         if (ret1 == testval) {
             int out3 = -1;
             async_task<int> op2 = remoteObj2co.op2(in1, in2, out3);
+            printf("Class01::coroutine1a: 2a: out3 = %d\n", out3);
             // 2a Do some stuff that doesn't need the result of the RMI
             int ret2 = co_await op2;
-            printf("Class01::coroutine1a: 2: out3 = %d, ret2 = %d\n", out3, ret2);
+            printf("Class01::coroutine1a: 2b: out3 = %d, ret2 = %d\n", out3, ret2);
             // 2b Do stuff that needs the result of the RMI
         }
         else {
             int out4 = -1, out5 = -1;
             async_task<int> op3 = remoteObj3co.op3(in1, out4, out5);
             // 3a Do some stuff that doesn't need the result of the RMI
+            printf("Class01::coroutine1a: 3a: out4 = %d, out5 = %d\n", out4, out5);
             int ret3 = co_await op3;
-            printf("Class01::coroutine1a: 3: out4 = %d, out5 = %d, ret3 = %d\n", out4, out5, ret3);
+            printf("Class01::coroutine1a: 3b: out4 = %d, out5 = %d, ret3 = %d\n", out4, out5, ret3);
             // 3b Do stuff that needs the result of the RMI
         }
     }
@@ -136,7 +139,7 @@ int main()
     t1.wait();
     printf("\n");
 
-    async_task<void> t2 = class01.coroutine1(11, 12, 23);
+    async_task<void> t2 = class01.coroutine1a(11, 12, 23);
     eventQueue.run();
     t2.wait();
     printf("\n");
@@ -146,15 +149,15 @@ int main()
     t3.wait();
     printf("\n");
 
-    async_task<void> t4 = class01a.coroutine1(11, 12, 23);
+    async_task<void> t4 = class01a.coroutine1a(11, 12, 23);
     eventQueue.run();
     t4.wait();
     printf("\n");
 #else
     async_task<void> t1 = class01.coroutine1(11, 12, 10);
-    async_task<void> t2 = class01.coroutine1(11, 12, 23);
+    async_task<void> t2 = class01.coroutine1a(11, 12, 23);
     async_task<void> t3 = class01a.coroutine1(11, 12, 10);
-    async_task<void> t4 = class01a.coroutine1(11, 12, 23);
+    async_task<void> t4 = class01a.coroutine1b(11, 12, 23);
     printf("\n");
 
     eventQueue.run();

@@ -56,6 +56,7 @@ public:
         printf("Class01a::coroutine1(in1 = %d, in2 = %d)\n", in1, in2);
         int out1 = -1, out2 = -1;
         async_task<int> op1 = remoteObj1co.op1(in1, in2, out1, out2);
+        printf("Class01::coroutine1a(): out1 = %d, out2 = %d\n", out1, out2);
         int ret1 = co_await op1;
         printf("Class01::coroutine1a(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
         co_return in1 + in2 + out1 + out2 + ret1;
