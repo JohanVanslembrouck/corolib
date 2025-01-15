@@ -18,6 +18,9 @@ set(LIBCURL_INSTALLED FALSE)
 # If you want to install and use GoogleTest, set the following variable to TRUE:
 set(USE_GOOGLETEST TRUE)
 
+# To build the studies, set the following variable to TRUE:
+set(BUILD_STUDIES FALSE)
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
@@ -35,6 +38,7 @@ add_subdirectory(lib)
 
 if (BOOST_INSTALLED)
     if (WIN32)
+        # Please adapt this to your local Boost installation
         set(BOOST_ROOT C:/local/boost/boost_1_82_0/)
     endif()
     add_subdirectory(examples/boost)
@@ -66,7 +70,9 @@ endif()
 
 add_subdirectory(examples/tutorial)
 
-add_subdirectory(studies)
+if (BUILD_STUDIES)
+    add_subdirectory(studies)
+endif()
 
 if (USE_GOOGLETEST)
     if (NOT googletest)
