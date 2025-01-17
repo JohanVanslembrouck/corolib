@@ -29,7 +29,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     set(CMAKE_CXX_FLAGS "/await:strict /EHsc /D USE_CPP20SEMAPHORE=1 /D USE_IN_MT_APPS=1")
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    set(CMAKE_CXX_FLAGS "-Wall -fPIC -fcoroutines -D USE_CPP20SEMAPHORE=1 -D USE_IN_MT_APPS=1")
+    # -lstdc++ had to be added to build with gcc 13.3.0 on Ubuntu 24.04.
+    # This link option is not necessary to build with gcc 11.4.0 on Ubuntu 22.04.
+    set(CMAKE_CXX_FLAGS "-Wall -fPIC -fcoroutines -D USE_CPP20SEMAPHORE=1 -D USE_IN_MT_APPS=1 -lstdc++")
 else()
     message("Unsupported compiler")
 endif()

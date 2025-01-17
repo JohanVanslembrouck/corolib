@@ -235,21 +235,79 @@ Edit the Environment Variables and add the following directory to the Path varia
 After installing curl, set the CURL_INSTALLED flag to TRUE in the top-level CMakelists.txt file 
 if you want to build the curl examples in examples/curl.
 
-### On Ubuntu 22.04 LTS
+### On Ubuntu 22.04 LTS or Ubuntu 24.04 LTS
 
-I have tested corolib on an Ubuntu MATE 22.04 installation in VirtualBox. 
+I tested corolib originally on an Ubuntu MATE 22.04 installation in VirtualBox. 
 The g++ version was 11.2.0.
 
-Currently I am using Ubuntu 22.04 LTS in WSL on a Windows 11 laptop.
-The g++ version is 11.3.0.
+Currently, I am using Ubuntu 22.04 LTS and Ubuntu 24.04 LTS in WSL (Windows Subsystem for Linux) on a Windows 11 laptop.
+The current g++ version is 11.4.0 on Ubuntu 22.04 LTS and 13.3.0 on Ubuntu 24.04 LTS.
 
 The g++ version should be >= 10 to have coroutine support.
 
+#### Install Ubuntu on WSL on Windows 11
+
+Open a Windows Terminal or PowerShell window. The Terminal opens with a PowerShell tab.
+
+To install Ubuntu 24.04 LTS, enter on the command line:
+
+    wsl --install -d Ubuntu-24.04
+
+See https://documentation.ubuntu.com/wsl/en/latest/guides/install-ubuntu-wsl2/ 
+and https://learn.microsoft.com/en-us/windows/wsl/install for more information.
+
+The installation script asks for a Unix username and a password.
+
+After installation, open a new Terminal window.
+In the drop-down menu, you will find an entry "Ubuntu 24.04.1 LTS" (the minor version may change over time).
+Select this menu item. It will open a tab running Ubuntu.
+
+To verify the installed Ubuntu version, type on the command line:
+
+    lsb_release -a
+    
+The first thing to do, is to update and upgrade the Ubuntu installation:
+
+    sudo apt update
+    sudo apt upgrade
+    
+The first command will ask for the password you entered during the installation.
+
+There are a few things to install to be able to build corolib. These are described next.
+
+#### gcc
+
+gcc is not installed:
+
+prompt$ gcc
+Command 'gcc' not found, but can be installed with:
+sudo apt install gcc
+prompt$
+
+    sudo apt install gcc
+
 #### CMake
 
-Install cmake (if not yet done):
+cmake is not installed:
+
+prompt$ cmake
+Command 'cmake' not found, but can be installed with:
+sudo snap install cmake  # version 3.31.4, or
+sudo apt  install cmake  # version 3.27.8-1build1
+See 'snap info cmake' for additional versions.
+prompt$
+
+    sudo apt install cmake
+
+or, using -y to provide an automatic yes to prompts:
 
 	sudo apt install -y cmake
+
+#### build-essential
+
+Also install build-essential (otherwise you will have to do it later anyway):
+
+    sudo apt-get install build-essential
 
 #### corolib
 
@@ -263,7 +321,20 @@ I propose to build corolib as follows:
 	cmake ../
 	make -j 4
 
-Go to the examples/ subdirectories and start the executables. 
+or
+
+    cd <path>/corolib
+    cd ..
+    mkdir corolib-build
+    cd corolib-build
+    cmake ../corolib
+    make -j 4
+
+This second alternative keeps your build directory completly out of the source code.
+When using Visual Studio to build corolib,
+it occurred that Visual Studio got confused by the content of the build directory.
+
+Go to the examples/tutorial subdirectory and start the executables. 
 (See README.md files in the corresponding source directories.)
 
 #### Boost
