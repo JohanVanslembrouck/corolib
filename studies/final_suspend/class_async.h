@@ -52,6 +52,4 @@ public:
     }
 };
 
-#include <coroutine>
-
 #endif
