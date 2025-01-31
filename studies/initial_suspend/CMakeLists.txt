@@ -79,6 +79,37 @@ foreach(_target
   add_executable(stis-${_target} ${_target}.cpp tracker1.cpp)
 endforeach()
 
+foreach(_target
+    p2010_void-sc
+    p2010e_void-sc
+    p2010l_void-sc
+
+    p2020_void
+    p2020e_void-ma
+    p2020l_void-ma
+
+    p2030_void-thread
+    p2030e_void-ma-thread
+    p2030l_void-ma-thread
+
+    p2040e_void-st1-thread
+    p2040l_void-st1-thread
+    p2045e_void-st1-thread
+    p2045l_void-st1-thread
+
+    p2050e_void-op1e-thread
+    p2050l_void-op1e-thread
+    p2055e_void-op1e-thread
+    p2055l_void-op1e-thread
+
+    p2060e_void-op1l-thread
+    p2060l_void-op1l-thread
+    p2065e_void-op1l-thread
+    p2065l_void-op1l-thread
+ )
+ add_executable(stis-${_target} ${_target}.cpp print.cpp tracker1.cpp)
+endforeach()
+
 include_directories(../../include)
 
 foreach(_target

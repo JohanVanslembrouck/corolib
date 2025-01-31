@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-#include "mini_awaiter.h"
+#include "mini_awaiter0.h"
 #include "taske_void.h"
 
 task foo(mini_awaiter& are) {

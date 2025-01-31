@@ -13,7 +13,7 @@ The main purpose of this study is to compare the advantages and disadvantages of
 lazy start and eager start coroutines for the three variants of await_suspend(),
 and the impact this choice has on the behavior of the application.
 
-## Lazy versus eager start
+## Lazy versus eager start: overview
 
 In a coroutine with return type 'task' and *lazy* start, task::promise_type::initial_suspend() returns std::suspend_always;
 in a coroutine with return type 'task' and *eager* start, task::promise_type::initial_suspend() returns std::suspend_never.
@@ -38,7 +38,7 @@ task_void.h, task_bool.h and task_coroutine_handle.h.
 
     task::promise_type::final_awaiter
         await_ready() returns bool
-	        retur false;
+	        return false;
         await_suspend(std::coroutine_handle<promise_type> h) returns
 	        void                    // see task_void.h and task_bool.h
 	        bool                    // not used
@@ -51,12 +51,6 @@ For all three return types, task::awaiter::await_suspend() has to resume coro_.
 In case of void and bool return types, this is accomplished by the statement coro_.resume();
 in case of a std::coroutine_handle<> return type, await_suspend() has to return coro_.
 The generated C++ code will then call coro_.resume().
-
-All await_ready() implementations return false.
-This function can be considered obsolete in the case of lazy start coroutines:
-the coroutine will always suspend at a co_await statement and so it will have to be resumed,
-often from a co_await statement in another coroutine.
-In case of the initial suspend point, this will usually be the calling coroutine.
 
 Notice that any variant of task::awaiter::await_suspend() can be combined with any variant of
 task::promise_type::final_awaiter::await_suspend(), leading to nine possible combinations.
@@ -94,23 +88,374 @@ In case of a std::coroutine_handle<> return type, await_suspend() has to return 
 Notice again that any variant of task::awaiter::await_suspend() can be combined with any variant of
 task::promise_type::final_awaiter::await_suspend(), leading to nine possible combinations.
 
-## Semantic issues with lazy start
+## Examples
 
-Lazy start coroutines seem to alter the meaning of "co_await coroutine1(...)".
-co_await should suspend a coroutine if the called coroutine (coroutine1 in this case) cannot provide the reply to its caller right away.
+### Example 1: Synchronous completion
+
+Consider the following example 
+(see [p2010e_void-sc.cpp](p2010e_void-sc.cpp) 
+ and [p2010l_void-sc.cpp](p2010l_void-sc.cpp) for the full source code):
+
+```c++
+task foo() {
+    co_return 1;
+}
+
+task bar() {
+    task f = foo();
+    int v = co_await f;
+    co_return v+1;
+}
+
+int main() {
+    task b = bar();
+    b.start();
+    int v = b.get_result();
+    print(PRI1, "main(): v = %d;\n", v);
+    return 0;
+}
+```
+
+The example uses synchronous completion:
+function foo() doesn't contain a co_await statement, only a co_return statement.
+
+After a few transform steps the (simplified) (pseudo-)code may look like:
+
+```c++
+task foo()
+{
+    // create coroutine state with embedded pr (task::promise_type) object
+    // initial suspend point code section
+    // co_await initial_suspend();
+    auto is = pr->initial_suspend();
+    // Lazy start coroutines:  is.await_ready() returns false
+    // Eager start coroutines: is.await_ready() returns true
+    if (!is.await_ready()) {
+        save_resume_point(resume_point_0);
+        is.await_suspend(...);
+        return_to_caller_or_resumer();          // return_point_0
+    }
+resume_point_0:
+    is.await_resume(...);
+        
+    try {
+        // user-authored code section
+        // co_return 1;
+        return_value(1);
+    }
+    catch(...) {
+        report_unhandled_exception();
+    }
+
+    // final suspend point code section
+final_suspend_point:
+    // co_await final_suspend();
+    auto fs = pr->final_suspend();
+    // returns false  (unless final_suspend() returns std::suspend_never)
+    if (!fs.await_ready()) {
+        mark_coroutine_as_done();
+        fs.await_suspend(...);
+        return_to_caller_or_resumer();          // return_point_1
+    }
+    fs.await_resume();                          // This code may never be reached
+    return_to_caller_or_resumer();              // return_point_2
+} // foo
+
+task bar()
+{
+    // create coroutine state with embedded pr (task::promise_type) object
+    // initial suspend point code section
+    // co_await initial_suspend();
+    auto is = pr->initial_suspend();
+    // Lazy start coroutines: is.await_ready() returns false
+    // Eager start coroutines: is.await_ready() returns true
+    if (!is.await_ready()) {
+        save_resume_point(resume_point_0);
+        is.await_suspend(...);
+        return_to_caller_or_resumer();          // return_point_0
+    }
+resume_point_0:
+    is.await_resume(...);
+
+    try {
+        // user-authored code section
+        task f = foo();
+        // int v = co_await f;
+        if (!f.await_ready()) {
+            // coroutine is considered to be suspended at this point
+            save_resume_point(resume_point_1);
+            f.await_suspend(...);
+            return_to_caller_or_resumer();       // return_point_1
+        }
+resume_point_1:
+        // coroutine is considered to be resumed here
+        int v = f.await_resume();
+
+        // co_return v+1;
+        return_value(v+1);
+    }
+    catch(...) {
+        report_unhandled_exception();
+    }
+
+    // final suspend point code section
+final_suspend_point:
+    // co_await final_suspend();
+    auto fs = pr->final_suspend();
+    // returns false (unless final_suspend() returns std::suspend_never)
+    if (!fs.await_ready()) {
+        mark_coroutine_as_done();
+        fs.await_suspend(...);
+        return_to_caller_or_resumer();          // return_point_2
+    }
+    fs.await_resume();                          // This code may never be reached
+    return_to_caller_or_resumer();              // return_point_3
+} // bar
+
+int main() {
+    task b = bar();
+    b.start();
+    return 0;
+}
+```
+
+This code can be useful to follow the explanations below, comparing eager and lazy start.
+
+Note: In the (pseudo-)code above, return_to_caller_or_resumer() can be considered to be a kind of macro, 
+that returns either a task object if the coroutine is called for the first time,
+or a pointer to a coroutine state object if the coroutine is resumed from another coroutine or function.
+A further transformation step will split foo() and bar() into two functions,
+being a ramp function returning a task oobject and a resume function returning a pointer to a coroutine state object.
+"return_to_caller_or_resumer();" can then be replaced with "return task;" or "return p_coroutine_state;" respectively.
+
+#### Eager start
+
+The control flow sequence is as follows:
+
+1. main() calls bar().
+2. bar() enters its initial suspend code section: bar() calls co_await initial_suspend();
+    * pr->initial_suspend() returns std::suspend_never.
+    * bar() evaluates is.await_ready(), which returns true.
+    * bar() calls is.await_resume().
+3. bar() enters its user-authored code.
+4. bar() calls foo().
+5. foo() enters its initial suspend code section: foo() calls co_await initial_suspend();
+    * pr->initial_suspend() returns std::suspend_never.
+    * foo() evaluates is.await_ready(), which returns true.
+    * foo() calls is.await_resume().
+6. foo() enters its user-authored code.
+7. foo() executes co_return.
+8. foo() enters its final suspend code section: foo() calls co_await final_suspend();
+    * pr->final_suspend() returns final_awaiter.
+    * foo() evaluates fs.await_ready(), which returns false.
+    * foo() calls fs.await_suspend(). There is no coroutine to resume, so this function returns immediately.
+9. foo() returns control to bar() at return_point_1.
+10. bar() saves the result value of foo() in task f.
+11. bar() co_awaits task f:
+    * bar() evaluates f.await_ready(), which returns true because foo() ran to completion.
+    * bar() calls f.await_resume().
+12. bar() executes co_return.
+13. bar() enters its final suspend code section: bar() calls co_await final_suspend();
+    * pr->final_suspend() returns final_awaiter.
+    * bar() evaluates fs.await_ready(), which returns false.
+    * bar() calls fs.await_suspend(). There is no coroutine to resume, so this function returns immediately.
+14. bar() returns control to main() at return_point_1.
+15. main() saves the return_value of bar() in b;
+16. main() calls b.start(). This function has an empty implementation in case of an eager task.
+17. main() returns.
+
+Conclusion: The code does not suspend and consequently it does not have to be resumed.
+The control flow is the same as if all coroutines were "ordinary" functions.
+
+#### Lazy start
+
+The control flow sequence is as follows:
+
+1. main() calls bar().
+2. bar() enters its initial suspend code section: bar() calls co_await initial_suspend();
+    * pr->initial_suspend() returns std::suspend_always.
+    * bar() evaluates is.await_ready(), which returns false.
+    * bar() calls is.await_suspend().
+    * bar() returns control to its calling function at return_point_0.
+3. main() saves the return value of bar() in task b.
+4. main() calls b.start().      
+5. start() resumes bar(). This is the first resume.
+6. We re-enter bar() at resume_point_0.
+7. bar() calls is.await_resume().
+8. bar() enters its user-authored code section.
+9. bar() calls foo().
+10. foo() enters its initial suspend code section: foo() calls co_await initial_suspend();
+    * pr->initial_suspend() returns std::suspend_always.
+    * foo() evaluates is.await_ready(), which returns false.
+    * foo() calls is.await_suspend().
+    * foo() returns control to its calling function at return_point_0.
+11. bar() saves the return value of foo() in task f.
+13. bar() calls co_await f.
+    * bar() evaluates f.await_ready(), which returns false.
+    * bar() calls f.await_suspend(). This implementation saves a coroutine_handle to bar() and it resumes foo(). This is the second resume.
+14. We re-enter foo() at resume_point_0.
+15. foo() calls is.await_resume().
+16. foo() enters its user-authored code section.
+17. foo() executes co_return.
+18. foo() enters its final suspend code section: foo() calls co_await final_suspend();
+    * pr->final_suspend() returns final_awaiter.
+    * foo() evaluates fs.await_ready(), which returns false.
+    * foo() calls fs.await_suspend().
+    * The coroutine_handle to bar() is saved. foo() resumes bar(). This is the third resume.
+18. We re-enter bar() at resume_point_1.
+19. bar() calls f.await_resume().
+    * Notice that f.await_resume() is indirectly called from f.await_suspend(), which is indirectly called from b.start().
+20. bar() executes co_return;
+21. bar() enters its final suspend code section: bar() calls co_await final_suspend();
+    * pr->final_suspend() returns final_awaiter.
+    * bar() evaluates fs.await_ready(), which returns false.
+    * bar() calls fs.await_suspend(). There is no coroutine to resume, so this function returns immediately.
+22. bar() returns control to its caller, which is foo().
+23. In foo(), the call to fs.await_suspend() returns.
+24. foo() returns control to its caller, which is the f.await_suspend() call in bar().
+25. In bar(), the call to f.await_suspend() returns.
+26. bar() returns control to its caller, which is b.start().
+27. In main(), the call to b.start() retuns.
+28. main() returns.
+
+Conclusion: The codes suspends and consequently it has to be resumed 3 times.
+This is a very complex control flow for something that is essentially a function call scenario
+(main() calls a function bar() which calls a function foo()).
+
+### Example 2: Asynchronous completion on the same thread
+
+Consider the following example 
+(see [p2020e_void-ma.cpp](p2020e_void-ma.cpp) 
+ and [p2020l_void-ma.cpp](p2020l_void-ma.cpp) for the full source code):
+
+```c++
+mini_awaiter ma;
+
+task foo() {
+    int v = co_await ma;
+    co_return v+1;
+}
+
+task bar() {
+    task f = foo();
+    int v = co_await f;
+    co_return v+1;
+}
+
+int main() {
+    task b = bar();
+    b.start();
+    ma.set_result_and_resume(10);
+    int v = b.get_result();
+    // Use v
+    return 0;
+}
+```
+
+#### Eager start
+
+Scenario: TBC
+
+#### Lazy start
+
+Scenario: TBC
+
+### Example 3: Asynchronous completion on another thread
+
+Consider the following example 
+(see [p2030e_void-ma-thread.cpp](p2020e_void-ma-thread.cpp) 
+ and [p2030l_void-ma-thread.cpp](p2030l_void-ma-thread.cpp) for the full source code):
+
+```c++
+task foo() {
+    int v = co_await ma;
+    co_return v+1;
+}
+
+task bar() {
+    task f = foo();
+    int v = co_await f;
+    co_return v+1;
+}
+
+int main() {
+    task b = bar();
+    b.start();
+
+    std::thread thread1([]() {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        ma.set_result_and_resume(10);
+        });
+    thread1.join();
+
+    int v = b.get_result();
+    // Use v
+    return 0;
+```
+
+#### Eager start
+
+Scenario: TBC
+
+#### Lazy start
+
+Scenario: TBC
+
+## Lazy versus eager start: evaluation
+
+### Lazy start: await_ready() obsolete?
+
+In case of lazy start, all await_ready() implementations 
+(in std::suspend_always, task::awaiter and task::promise_type::final_awaiter) return hard-coded false.
+This means that await_suspend() is called unconditionally.
+
+Therefore, the await_ready() function can be considered to be obsolete:
+the coroutine will always suspend at a co_await statement and so,
+it will have to be resumed to enter the user-authored body,
+often from a co_await statement in another coroutine.
+(In case of the initial suspend point, this will usually be the calling coroutine.)
+
+This could be an indication that it never was the intention to use the co_await implementation for lazy-start coroutines.
+See also the next point.
+
+### Lazy start: semantic issues
+
+Lazy start coroutines seem to alter the intended/original/intuitive meaning of "co_await coroutine1(...)".
+co_await should suspend a coroutine if the called coroutine (coroutine1 in this case)
+cannot provide the reply to its caller right away.
+
 In case of lazy start coroutines, co_await seems to mean "to start the called coroutine" instead,
 thus altering its intuitive meaning (semantics).
+A better name for co_await in this case is co_start. 
+
+When you await the arrival a person, this usually doesn't mean that you have to put that person on the road to you.
+
+Python and C# async/await use the more intuitive eager start variant.
+
+### Lazy start: performance loss
+
+Lazy start introduces suspend-resume operations on the calling path.
 
 When coroutine1 calls coroutine2, which calls coroutine3, which calls coroutine4, etc.,
 then suspend-resume operations will also be used on the calling path,
 and not only on the return path (in case a coroutine cannot provide the reply to its caller).
+
 There will be many more suspend-resume operations than in case of eager start coroutines.
+This leads to performance loss, all for code that is invisible to the application writer.
 
-Python and C# async/await use the more intuitive eager start variant.
+### Lazy start coroutines follow a very complex path in case of synchronous completion
 
-## Lazy start may lead to mutually recursive calls when a coroutine is called in a loop
+This is illustrated by example 1.
 
-The following is the core example of the article:
+Eager start coroutines follow the same control flow
+as normal function calls, because that is what synchronous completion means.
+There are additional steps, but these steps do not change the control flow.
+
+The lazy start coroutines 
+
+### Lazy start may lead to mutually recursive calls when a coroutine is called in a loop
+
+The following is the core example in https://lewissbaker.github.io/2020/05/11/understanding_symmetric_transfer.
 
 ```c++
 task completes_synchronously() {
@@ -140,22 +485,22 @@ as is done in taske_void.h, both coroutines do not call each other recursively a
 Instead, the control flow is the same as that of normal functions: the coroutines do not suspend and resume,
 but just use call and return.
 
-## Eager start coroutines can be started automatically from main()
+The solution to this problem required the introduction of symmetric transfer.
+Symmetric transfer does not eliminate mutual recursive calls, but it avoids that the stack keeps growing
+by relying on the use of tail recursion.
+
+### Eager start coroutines can be started automatically from main()
 
 Eager start coroutines can be called and started from normal functions, in particular main().
 The reason is that you don't have to co_await such a coroutine to resume them beyond the initial suspend point.
 
-The code that comes with the mentioned article introduces an eager start coroutine type, sync_wait_task:
+The code that comes with https://lewissbaker.github.io/2020/05/11/understanding_symmetric_transfer
+introduces an eager start coroutine type, sync_wait_task:
 sync_wait_task::promise_type::initial_suspend() returns std::suspend_never.
 The static sync_wait_task start(task&& t) coroutine co_awaits the task object passed to it.
 
-A coroutine using class async_ltask from corolib (where ltask stands for lazy task) as return type
-can be started from a normal function (in particular main()) using the start() function that is a member of async_ltask:
-
-```c++
-    async_ltask<int> a = obj.coroutine1();
-    a.start();
-```
+To start a lazy start coroutine, it suffices to add a start() function to the task class.
+This function will resume the coroutine via its coroutine_handle.
 
 I have added an implementation of this function to the task classes in task_void.h, task_bool.h and task_coroutine.h:
 
@@ -166,116 +511,131 @@ I have added an implementation of this function to the task classes in task_void
     }
 ```
 
-## Completion on another thread
+In corolib, the start function has been implemented in async_ltask (where ltask stands for lazy task).
+A dummy (empty) implementation has been added in async_task.
 
-Let's use the following example:
+### Completion on another thread
+
+#### Source code
+
+Consider the following code:
 
 ```c++
-task foo()
-{
-    task t = start_operation1();
-    co_await t;
-    co_return;
+task foo() {
+    operation1 op;
+    int v = co_await op;
+    // post co_await code
+    co_return v+1;
+}
+
+task bar() {
+    task f = foo();
+    int v = co_await f;
+    // post co_await code
+    co_return v+1;
+}
+
+int main() {
+    task b = bar();
+    b.start();
+    // waiting point
+    enter_event_loop();
+    // Use v
+    return 0;
 }
 ```
 
-foo() starts an asynchronous operation that may complete immediately (synchronously) or later on another thread (asynchronously).
+The coroutine return type 'task' can use eager or lazy start, and so can 'operation1'.
+Note that operation1 is an awaitable, not a coroutine return type: operation1 does not define a promise_type.
 
-In case of immediate completion, foo() does not suspend at the co_await statement and runs to completion on the same thread;
-otherwise, foo() does suspend at the co_await statement and its completion will run on a different thread 
-because of the implementation of start_operation1().
+Four combinations are possible.
 
-```c++
-task bar()
-{
-   	task t = foo();
-    // Point 1
-    // Pre co_await code
-    co_await t;         
-    // Post co_await code
-    co_return;
-}
-```
+* eager start task + eager start operation1, see [p2050e_void-op1e-thread.cpp](p2050e_void-op1e-thread.cpp) and [p2055e_void-op1e-thread.cpp](p2055e_void-op1e-thread.cpp)
 
-Point 1 is reached when foo() either suspends or has completed synchronously:
+* lazy start task + eager start operation1, see [p2050l_void-op1e-thread.cpp](p2050l_void-op1e-thread.cpp) and [p2055l_void-op1e-thread.cpp](p2055l_void-op1e-thread.cpp)
 
-* Lazy start: the suspend point in foo() is the initial suspend point: foo() has not called start_operation1() yet.
+* eager start task + lazy start operation1, see [p2060e_void-op1l-thread.cpp](p2060e_void-op1l-thread.cpp) and [p2065e_void-op1l-thread.cpp](p2065e_void-op1l-thread.cpp)
 
-* Eager start: the suspend point in foo() is at the co_await statement in the function's body: foo() has called start_operation1().
+* lazy start task + lazy start operation1, see [p2060l_void-op1l-thread.cpp](p2060l_void-op1l-thread.cpp) and [p2065l_void-op1l-thread.cpp](p2065l_void-op1l-thread.cpp)
 
-At the co_await statement:
+#### Evaluation
 
-* Lazy start: foo() will be resumed and enter its body. bar() suspends and returns control to its caller.
+When using a lazy start task, the await_suspend() function starts the coroutine the task refers-to.
+Likewise, when using a lazy start operation, the await_suspend() function starts the real operation
+(which will run to completion on the completion thread).
+To enter await_suspend(), await_ready() function has to return false (hard-coded).
+When the call to await_suspend() returns, the coroutine returns control to its caller (or resumer).
+In short, a lazy start task or operation starts the "real work" just before it returns.
+There should be no need to access any variables after the task or operation has started the work and before it returns.
+If so, there is a possibility that these variables are also accessed from the completion thread.
+This process is repeated for the mentioned caller or resumer, etc.
 
-* Eager start:
+At some point, however, we will reach a point where we cannot "descend" (i.e. suspend) any further,
+otherwise we would "fall off" the original thread; let's call this point the "waiting point."
 
-  * foo() has completed synchronously: bar() will not suspend and run to completion.
- 
-  * foo() completes on another thread: there is a race condition between the original thread checking if foo() has already completed 
-    and the other thread on which the completion of foo() takes place.
+At some time, the operation will complete on another thread.
+This is even possible while the original thread is still descending towards the waiting point.
 
-In case of a lazy start or an eager start with foo() not yet completed,
-bar() suspends and returns control to its caller, that will return control to its caller, etc.
-At some point, however, we will reach a point where we cannot "descend" any further,
-otherwise we would "fall off" the original thread.
-I call this point the "waiting point."
+To make things a bit easier, let's assume that the original thread reaches its waiting point before the operation completes.
 
-At any time, foo() may complete on another thread.
-This is even possible while the original thread is still descending towards its waiting point.
-To make things a bit easier, I will assume that the original thread reaches its waiting point
-before foo() is completed.
+At the waiting point, we have the following options:
+* the application waits until the operation has completed to process the result
+    * and then exit the application or
+    * start waiting for new input.
+* the application can start waiting for new input and start processing this input even if the first operation has not yet completed.
 
-Note that corolib provides a class, ThreadAwaker, that is used to allow the original thread to signal
-to one or more completion threads that they may proceed.
-The original thread will do this just before it reaches the waiting point.
+Alternative 1: the application has to wait for the completion at the waiting point.
+The original thread will have to be informed by the completion thread.
+The "standard" way to do this, is to use a semaphore that is acquired by the original thread and released by the completion thread.
 
-The following description is applicable to both lazy and eager start coroutines.
-
-At the waiting point, the original thread must wait until foo() has completed
-to either exit the application or to start waiting for new imput.
-Alternatively, the application can start waiting for new imput and process this input even if foo() has not yet completed.
-
-In case the application has to wait for the completion of foo() at the waiting point,
-the original thread will have to be informed by the completion thread.
-The "standard" way to do this is to use a semaphore that is acquired by the original thread and released by the completion thread.
-
-What about the case where the application can start processing new input?
-When foo() completes, the completion thread may run concurrently
+Alternative 2: the application can start processing new input.
+This is the most valuable case. If this case was not allowed, then we are in essence writing synchronous applications...
+When the firt operation completes, the completion thread may run concurrently
 with the original thread that is already processing a new event:
-the "Post co_await code" in bar() will run on the thread on which foo() is completed.
+the "post co_await code" in foo() and bar() will run on the completion thread.
 If this code manipulates any data that is also accessed while processing the new event, data has to
 protected against concurrent access.
  
 In other words: although the use of lazy start coroutines 
-avoids the need for thread synchronization
-as early as eager start coroutines does,
-thread synchronization issues cannot be avoided when the completion thread runs concurrently with the original thread.
+avoids the need for thread synchronization in infrastructure classes such as task or operation1,
+thread synchronization issues cannot be avoided when the completion thread runs concurrently
+with the original thread that is processing new input?
 
-The better solution is to have the completion thread run no application code at all,
+#### Solution
+
+The best solution is to have the completion thread run no application code at all,
 but instead create and post an event to an event queue.
 This event will be handled in the event loop as any other new event.
 The event queue has to protected against concurrent access, of course;
 however, all application code will run on the same thread.
+The event queue can be part of the coroutine library or the communnication framework.
 
-For examples, the user is referred to the tutorial, more in particular to the use of UseMode::USE_THREAD_QUEUE
+corolib provides a class, ThreadAwaker, that allows the original thread to signal
+to one or more completion threads that they may proceed.
+The original thread will do this just before it reaches the waiting point.
+This solution should be combined with the one described in the previous paragraph.
+
+For corolib examples, the user is referred to the tutorial, more in particular to the use of UseMode::USE_THREAD_QUEUE
 in the pXXXX-async_operation-thread-queue.cpp examples.
 
-## task object of foo() goes out of scope
+### task object of foo() goes out of scope
 
 ```c++
 task bar()
 {
-    task t = foo();
-    // Point 1
+    task f = foo();
+    // point 1
     // Pre co_await code
-    // co_await t;         
+    // co_await f;         
     // Post co_await code
     co_return;
 }
 ```
 
-The co_await statement has been commented out.
-At the end of bar(), task object t goes out of scope and it will (try to) destroy foo()'s coroutine frame.
+The co_await f; statement has been commented out.
+Likewise, if present it will not be reached, e.g. because it is placed in an if-block whose condition evaluates to false.
+
+At the end of bar(), task object f goes out of scope and it will (try to) destroy foo()'s coroutine frame.
 
 Let's compare lazy and eager start.
 
@@ -299,16 +659,16 @@ The application returns a wrong result and not all coroutine frames and the cont
 
 However, the code is wrong and must be corrected: the co_await statement must be present!
 
-## Exception in Pre co_await code
+### Exception in pre co_await code
 
 ```c++
 task bar()
 {
-    task t = foo();
+    task f = foo();
     // Point 1
-    // Pre co_await code can raise an exception
-    co_await t;         
-    // Post co_await code
+    // pre co_await code can raise an exception
+    co_await f;         
+    // post co_await code
     co_return;
 }
 ```
@@ -346,18 +706,18 @@ that complete either on the same thread or on a dedicated thread (-thread in the
 The p13X2_YYY.cpp and p13X2e_YYY.cpp examples are a variant in which coroutine2 "forgets" to co_await t; 
 where t is the task returned by coroutine3.
 
-The pXXX0_YYY.cpp examples use lazy start, the pXXX0e_YYY.cpp examples use eager start.
+The p1XX0_YYY.cpp examples use lazy start, the p1XX0e_YYY.cpp examples use eager start.
 
-The pXXX0l_YYY.cpp examples use lazy start, but without using manual_executor and sync_wait_task as in the pXXX0_YYY.cpp examples.
-The pXXX0l_YYY.cpp and pXXX0e_YYY.cpp are very close in style.
+The p1XX0l_YYY.cpp examples use lazy start, but without using manual_executor and sync_wait_task as in the p1XX0_YYY.cpp examples.
+The p1XX0l_YYY.cpp and pXXX0e_YYY.cpp are very close in style.
 
-The pXX00_void.cpp, pXX00l_void.cpp and pXX00e_void.cpp examples use await_suspend() that returns void.
+The p1X00_void.cpp, p1X00l_void.cpp and p1X00e_void.cpp examples use await_suspend() that returns void.
 
-The pXX10_bool.cpp, pXX10l_bool.cpp and pXX10e_bool.cpp examples use await_suspend() that returns bool.
+The p1X10_bool.cpp, p1X10l_bool.cpp and p1X10e_bool.cpp examples use await_suspend() that returns bool.
 
-The pXX20_coroutine_handle.cpp, pXX20l_coroutine_handle.cpp and pXX20e_oroutine_handle.cpp examples 
+The p1X20_coroutine_handle.cpp, p1X20l_coroutine_handle.cpp and p1X20e_oroutine_handle.cpp examples 
 use await_suspend() that returns coroutine_handle<>.
 
-The pXX30_corolib.cpp examples use async_ltask from corolib.
+The p13X0_corolib.cpp examples use async_ltask from corolib.
 
-The pXX30e_corolib.cpp examples use async_task from corolib.
+The p130Xe_corolib.cpp examples use async_task from corolib.

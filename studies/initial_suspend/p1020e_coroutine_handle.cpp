@@ -12,7 +12,7 @@
 
 using namespace std;
 
-#include "mini_awaiter.h"
+#include "mini_awaiter0.h"
 #include "taske_coroutine_handle.h"
 
 task foo(mini_awaiter& are) {
