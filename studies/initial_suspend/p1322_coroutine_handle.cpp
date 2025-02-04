@@ -1,24 +1,25 @@
 /**
  * @file p1322_coroutine_handle.cpp
  * @brief
- * 
+ *
  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #include <stdio.h>
 
-#include "taske_coroutine_handle.h"
-#include "mini_awaiter0.h"
+#include "task_coroutine_handle.h"
+#include "sync_wait_task.h"
+#include "manual_executor.h"
 
-mini_awaiter are1;
+manual_executor ex;
 
 class Class
 {
 public:
     task coroutine4()
     {
-        printf("coroutine4(): co_await are1;\n");
-        co_await are1;
+        printf("coroutine4(): co_await ex.schedule();\n");
+        co_await ex.schedule();
         printf("coroutine4(): co_return;\n");
         co_return;
     }
@@ -52,16 +53,10 @@ public:
 int main()
 {
     Class obj;
-    printf("main(): obj.coroutine1();\n");
-    obj.coroutine1();
-	
-    printf("main(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    printf("main(): are1.resume();\n");
-    tracker1_obj.nr_resumptions++;
-    are1.resume();
-	
+    printf("main(): ex.sync_wait(obj.coroutine1());\n");
+    ex.sync_wait(obj.coroutine1());
+
     printf("main(): return 0;\n");
     return 0;
 }

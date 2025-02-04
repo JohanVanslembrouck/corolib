@@ -2,8 +2,7 @@
  * @file task_void_p.h
  * @brief
  * 
- * Contains the task class that is common to p0000_void.cpp and p0110_void.cpp.
- * 
+ * task::promise_type::initial_suspend() returns std::suspend_always.
  * task::promise_type::final_awaiter::await_suspend() returns void.
  * task::awaiter::await_suspend() returns void.
  * 

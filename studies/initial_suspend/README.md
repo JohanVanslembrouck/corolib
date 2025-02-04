@@ -322,7 +322,39 @@ Conclusion: The codes suspends and consequently it has to be resumed 3 times.
 This is a very complex control flow for something that is essentially a function call scenario
 (main() calls a function bar() which calls a function foo()).
 
-### Example 2: Asynchronous completion on the same thread
+### Example 2: Synchronous completion from a loop
+
+The following is the core example in https://lewissbaker.github.io/2020/05/11/understanding_symmetric_transfer.
+
+```c++
+task completes_synchronously() {
+  co_return;
+}
+
+task loop_synchronously(int count) {
+  for (int i = 0; i < count; ++i) {
+    co_await completes_synchronously();
+  }
+}
+```
+
+This code will translate into mutual recursive calls when the await_suspend() functions return void or coroutine_handle<>:
+the coroutines loop_synchronously(int count) and completes_synchronously() call each other recursively.
+
+With the împlementation of the task class in https://godbolt.org/z/-Kw6Nf, 
+which is repeated here in p1000_void.cpp and in task_void.h,
+the application crashes for "large" values of count.
+
+#### Eager start
+
+TBC
+
+#### Lazy start
+
+TBC
+
+
+### Example 3: Asynchronous completion on the same thread
 
 Consider the following example 
 (see [p2020e_void-ma.cpp](p2020e_void-ma.cpp) 
@@ -360,15 +392,17 @@ Scenario: TBC
 
 Scenario: TBC
 
-### Example 3: Asynchronous completion on another thread
 
-Consider the following example 
-(see [p2030e_void-ma-thread.cpp](p2020e_void-ma-thread.cpp) 
- and [p2030l_void-ma-thread.cpp](p2030l_void-ma-thread.cpp) for the full source code):
+
+### Example 4: Asynchronous completion on another thread
+
+Consider the following example code:
 
 ```c++
-task foo() {
-    int v = co_await ma;
+task foo() {                            // task can use eager or lazy start
+    operation1X op;                     // operation1X is either operation1e (eager start) or operation1l (lazy start)
+    // Point 1: do some work here
+    int v = co_await op;
     co_return v+1;
 }
 
@@ -379,31 +413,235 @@ task bar() {
 }
 
 int main() {
+    set_print_level(0x07);
     task b = bar();
     b.start();
-
-    std::thread thread1([]() {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        ma.set_result_and_resume(10);
-        });
-    thread1.join();
-
     int v = b.get_result();
     // Use v
     return 0;
+}
 ```
+
+Apart from the class task (that has an eager start [task](./taske_void_p.h) 
+and a lazy start [task](./task_void_p.h) variant),
+there is a class operation that also has 
+an eager start [operation1e](./operation1e.h) and a lazy start  [operation1l](./operation1l.h) variant.
+
+[operation1e](./operation1e.h) is implemented in terms of [mini_awaiter_ts](./mini_awaiter_ts.h), 
+[operation1l](./operation1l.h) is implemented in terms of [mini_awaiter](./mini_awaiter.h).
+
+Four combinations are possible.
+
+* eager start task + eager start operation1, see [p2050e_void-op1e-thread.cpp](p2050e_void-op1e-thread.cpp) and [p2055e_void-op1e-thread.cpp](p2055e_void-op1e-thread.cpp)
+
+* lazy start task + eager start operation1, see [p2050l_void-op1e-thread.cpp](p2050l_void-op1e-thread.cpp) and [p2055l_void-op1e-thread.cpp](p2055l_void-op1e-thread.cpp)
+
+* eager start task + lazy start operation1, see [p2060e_void-op1l-thread.cpp](p2060e_void-op1l-thread.cpp) and [p2065e_void-op1l-thread.cpp](p2065e_void-op1l-thread.cpp)
+
+* lazy start task + lazy start operation1, see [p2060l_void-op1l-thread.cpp](p2060l_void-op1l-thread.cpp) and [p2065l_void-op1l-thread.cpp](p2065l_void-op1l-thread.cpp)
 
 #### Eager start
 
-Scenario: TBC
+There is a concurrency problem with eager start applications.
+
+```c++
+task foo() {
+    operation1 op;		// calls start_operation1() (in this example in the constructor)
+    // Point 1: do some work here
+    if (!op.await_ready()) {
+        // Point 2
+        op.await_suspend("handle to own coroutine state");
+        return_to_caller_or_resumer();
+    }
+resume_point_1:
+    int v = op.await_resume();
+    co_return v+1;
+}
+```
+
+The variables m_ready, m_awaiting and m_result (data members in [mini_awaiter_ts](./mini_awaiter_ts.h))
+are shared between the thread launching the operation (the launching thread)
+and the thread on which the completion runs and that resumes the coroutine (the completion thread).
+
+| variable   | Launching thread        | Completion thread                |
+| ---------- | ----------------------- | -------------------------------- |
+| m_ready    | await_ready() reads     | set_result_and_resume() writes   |
+| m_awaiting | await_suspend() writes  | set_result_and_resume() reads    |
+| m_result   | await_resume() reads    | set_result_and_resume() writes   |
+
+Because these variables are shared between threads (and possibly cores),
+we have to make sure that a write to a variable on one thread
+is seen "immediately" by the read on the other thread.
+Otherwise, even the simplest scenarios 1 and 2 below may not execute as described.
+
+##### Scenario 1: suspend before resume
+
+The launching thread calls op.await_ready() which reads m_ready.
+This value is still false.
+The launching thread calls op.await_suspend() which will set m_awaiting to refer to foo()'s coroutine state.
+foo() then passes the control back to its caller bar().
+The same reasoning applies to bar().
+
+The completion thread runs. It writes the result to m_result.
+It then sets m_ready to true.
+It notices that m_awaiting has been assigned a value.
+It calls m_awaiting.resume(), which will resume foo() at resume_point_1.
+The completion thread then calls op.await_resume() and initializes
+foo's local variable v.
+
+##### Scenario 2: the operation completes before foo() suspends.
+
+The launching thread is descheduled at point 1.
+
+The completion thread starts running. It writes the result to m_result.
+It then sets m_ready to true.
+m_awaiting has not been assigned a value, so there is no coroutine to resume.
+The completion thread returns.
+
+The launching thread is re-scheduled.
+It calls op.await_ready() which reads m_ready.
+The value of m_ready is true.
+The launching thread skips op.await_suspend() and calls
+op.await_resume(), assigning its return value to m_result.
+
+##### Scenario 3:
+
+The launching thread reads m_ready = false,
+but is descheduled at point 2 in favor of the completion thread .
+
+The completion thread writes m_value and m_ready,
+but there is no coroutine to complete (m_awaiting has not been set).
+The completion thread returns.
+
+The launching thread is rescheduled and calls op.await_suspend().
+It will write m_awaiting, although the completion thread will not read it anymore.
+The launching thread returns to its caller, which is bar().
+bar() will on its turn return to its caller, which is main().
+
+However, the reply of the operation will never be handled and the coroutines bar() and foo()
+do not run to completion.
+
+To solve this problem, it is possible to use the await_suspend() variant that returns bool instead of void.
+In the implementation of await_suspend(), we can read m_ready again to see if it has been set.
+If so, await_suspend() should return false if m_ready is true.
+This will not suspend the coroutine, but instead call op.await_resume().
+
+The generated code may look as follows:
+
+```c++
+task foo() {
+    operation1 op;		// calls start_operation1() (in this example in the constructor)
+    // Point 1: do some work here
+    if (!op.await_ready()) {
+        // Point 2
+        if op.await_suspend("handle to own coroutine state")
+            return_to_caller_or_resumer();
+    }
+resume_point_1:
+    int v = op.await_resume();
+    co_return v+1;
+}
+```
+
+##### Conclusion
+
+With eager start, we can assure correct behavior if we use synchronization
+for the 3 shared variables. Eager start must also use the await_suspend() variant that returns bool.
 
 #### Lazy start
 
-Scenario: TBC
+```c++
+task foo() {
+    operation1 op;
+    // Point 1
+    if (!op.await_ready()) {
+        // Point 2
+        op.await_suspend("handle to own coroutine state");
+        // await_suspend() calls start_operation1() after it has initialized m_awaiting
+        return_to_caller_or_resumer();  // runs on the launching thread
+    }
+resume_point_1:
+    int v = op.await_resume();			// always runs on the completion thread
+    co_return v+1;                      // always runs on the completion thread
+}
+```
+
+Variable m_ready will always be false and becomes redundant.
+await_ready() must always return false, because we must enter await_suspend().
+await_suspend() will first initialize m_awaiting to "point" to the coroutine state of foo().
+Only then will it start the operation.
+Afterwards, foo() will return to its caller (bar()), which will return to its caller, etc.
+
+The coroutines will always be suspended, and m_value will not be shared between the launching thread
+and the completion thread.
+
+When the completion thread then runs, m_awaiting indicates that the coroutine must be resumed.
+
+| variable   | Launching thread        | Completion thread              |
+| ---------- | ----------------------- | ------------------------------ |
+| m_ready    | (not used)              | (not used)                     |
+| m_awaiting | await_suspend() writes  | set_result_and_resume() reads  |
+| m_result   | (not used)              | set_result_and_resume() writes |
+|            |                         | await_resume() reads           |
+
+However, this solution is still no 100% thread-safe.
+There is a possibility that the initialization of m_awaiting in the launching thread
+is not yet seen by the completion thread if we do not synchronize the access to m_awaiting_
+The chance is small, because usually the operation first has to send a request to a remote party
+before it can receive a reply from that party.
+However, the implementation may be such
+that the communication library already knows the answer (e.g. because of caching) and runs the completion thread immediately. 
+
+This means that it is possible that the completion thread runs to an end before start_operation1() has returned.
+See also https://lewissbaker.github.io/2017/11/17/understanding-operator-co-await#synchronisation-free-async-code
+The "handle" is shared between Thread 1 and Thread 2 and therefore it requires synchronization.
+
+In conclusion, the lazy start implementation defers starting the operation to a very late point.
+The launching thread always has to suspend  and the resume flow is always on the completion thread.
+
+#### Improved eager start
+
+The advantage of eager start is that it starts an operation as soon as possible, and only co_awaits its completion
+when the application needs the result.
+Concurrency problems only occur at the co_await point.
+
+The following solutions avoid adding synchronization functionality to classes 'task' and 'operation',
+but instead adds synchronization to the communication libary wrapper.
+This functionality should only be added to libraries that run the completion on a dedicated thread.
+
+In both solutions the launching thread will suspend at all co_await point
+without giving the completion thread the opportunity to "interfere."
+
+##### Placing a completion event in the event queue
+
+In this solution, the completion thread does not run the completion itself, but places an event on the event loop.
+Even if the completion thread runs before the launching thread has reached the first co_await,
+all co_awaits result in a suspend (await_ready() returns false).
+
+The completion will run from the event loop. This assumes that the coroutine code can place an "user" event
+(in this case an event generated from the coroutine library or a wrapper) on the event loop.
+
+See [p2070e_void-op2e-thread.cpp](./p2070e_void-op2e-thread.cpp) 
+and [p2075e_void-op2e-thread.cpp](.p2075e_void-op2e-thread.cpp)
+
+##### Make the completion thread wait
+
+Make the completion thread wait (if necessary) until the launching thread has reached the event loop (or a point just before it).
+At that point, the launching thread will signal the completion thread (or threads in general) that they can proceed.
+
+See [p2080e_void-op3e-thread.cpp](./p2008e_void-op3e-thread.cpp) 
+and [p2085e_void-op3e-thread.cpp](.p2085e_void-op3e-thread.cpp).
+
 
 ## Lazy versus eager start: evaluation
 
-### Lazy start: await_ready() obsolete?
+### Lazy start: change of semantics
+
+Lazy start coroutines seem to alter the intended/original/intuitive meaning of "co_await coroutine1(...)".
+co_await should suspend a coroutine if the called coroutine (coroutine1 in this case)
+cannot provide the reply to its caller right away.
+
+#### await_ready() always returns false
 
 In case of lazy start, all await_ready() implementations 
 (in std::suspend_always, task::awaiter and task::promise_type::final_awaiter) return hard-coded false.
@@ -418,15 +656,27 @@ often from a co_await statement in another coroutine.
 This could be an indication that it never was the intention to use the co_await implementation for lazy-start coroutines.
 See also the next point.
 
-### Lazy start: semantic issues
+#### await_suspend(coroutine_handle<>) does more than its name suggests
 
-Lazy start coroutines seem to alter the intended/original/intuitive meaning of "co_await coroutine1(...)".
-co_await should suspend a coroutine if the called coroutine (coroutine1 in this case)
-cannot provide the reply to its caller right away.
+If await_ready() returns false, await_suspend() is called next.
+This function seems to say to the called coroutine (e.g. foo() is the coroutine called from bar())
+or operation (e.g. operation1 is the operation called from foo()): 
+"OK, you do not have the reply yet. No problem. I will pass you a handle to my coroutine state object
+so that you can resume me ("call me back") when you have the reply.
+Meanwhile, I have already suspended and I will now return control to my caller (or resumer)".
+
+In the case of lazy start, this is obvious, because the task or operation has not been started yet.
+Instead, the task or operation will only be started after the coroutine handle has been passed.
+
+Because an operation is only started from await_suspend(), the consequence is that every operation 
+needs its own implementation of co_await and its 3 functions (await_ready(), await_suspend(), await_resuem()).
+In case of eager start this is not necessary and co_await and its implementation remains generic.
+
+#### Conclusion
 
 In case of lazy start coroutines, co_await seems to mean "to start the called coroutine" instead,
 thus altering its intuitive meaning (semantics).
-A better name for co_await in this case is co_start. 
+A better name for co_await in this case is co_start. An implementation of co_start does not need to implement await_ready.
 
 When you await the arrival a person, this usually doesn't mean that you have to put that person on the road to you.
 
@@ -451,32 +701,11 @@ Eager start coroutines follow the same control flow
 as normal function calls, because that is what synchronous completion means.
 There are additional steps, but these steps do not change the control flow.
 
-The lazy start coroutines 
-
 ### Lazy start may lead to mutually recursive calls when a coroutine is called in a loop
 
-The following is the core example in https://lewissbaker.github.io/2020/05/11/understanding_symmetric_transfer.
+See example 2 above.
 
-```c++
-task completes_synchronously() {
-  co_return;
-}
-
-task loop_synchronously(int count) {
-  for (int i = 0; i < count; ++i) {
-    co_await completes_synchronously();
-  }
-}
-```
-
-This code will translate into mutual recursive calls when the await_suspend() functions return void or coroutine_handle<>:
-the coroutines loop_synchronously(int count) and completes_synchronously() call each other recursively.
-
-With the împlementation of the task class in https://godbolt.org/z/-Kw6Nf, 
-which is repeated here in p1000_void.cpp and in task_void.h,
-the application crashes for "large" values of count.
-
-The reason for this mutual recursion is the use of a lazy start coroutine type and not so much the fact that 
+The reason for this mutual recursion is the use of a lazy start coroutine type and not the fact that 
 task::promise_type::final_awaiter::await_suspend(coroutine_handle<promise_type>) and
 task::awaiter::await_suspend(coroutine_handle<>) return void.
 
@@ -514,109 +743,20 @@ I have added an implementation of this function to the task classes in task_void
 In corolib, the start function has been implemented in async_ltask (where ltask stands for lazy task).
 A dummy (empty) implementation has been added in async_task.
 
-### Completion on another thread
 
-#### Source code
+### Asynchronous completion on another thread
 
-Consider the following code:
+The reader is referred to the code of example 4.
 
-```c++
-task foo() {
-    operation1 op;
-    int v = co_await op;
-    // post co_await code
-    co_return v+1;
-}
+The "naive" use of eager start leads to concurrency problems because of the presence of three shared variables.
+The problems can be solved at the expense of using synchronization constructs, such as atomics or mutexes.
+These constructs unnecessarily degrade performance when the completion runs on the same thread.
+To avoid this, a coroutine library can provide classes that can be used in a single-threaded environment and classes that
+can must be used in a multi-threaded environment.
+Possible a single class can be provided, that can be compiled for single-threaded or multi-threaded use using compiler directives.
 
-task bar() {
-    task f = foo();
-    int v = co_await f;
-    // post co_await code
-    co_return v+1;
-}
-
-int main() {
-    task b = bar();
-    b.start();
-    // waiting point
-    enter_event_loop();
-    // Use v
-    return 0;
-}
-```
-
-The coroutine return type 'task' can use eager or lazy start, and so can 'operation1'.
-Note that operation1 is an awaitable, not a coroutine return type: operation1 does not define a promise_type.
-
-Four combinations are possible.
-
-* eager start task + eager start operation1, see [p2050e_void-op1e-thread.cpp](p2050e_void-op1e-thread.cpp) and [p2055e_void-op1e-thread.cpp](p2055e_void-op1e-thread.cpp)
-
-* lazy start task + eager start operation1, see [p2050l_void-op1e-thread.cpp](p2050l_void-op1e-thread.cpp) and [p2055l_void-op1e-thread.cpp](p2055l_void-op1e-thread.cpp)
-
-* eager start task + lazy start operation1, see [p2060e_void-op1l-thread.cpp](p2060e_void-op1l-thread.cpp) and [p2065e_void-op1l-thread.cpp](p2065e_void-op1l-thread.cpp)
-
-* lazy start task + lazy start operation1, see [p2060l_void-op1l-thread.cpp](p2060l_void-op1l-thread.cpp) and [p2065l_void-op1l-thread.cpp](p2065l_void-op1l-thread.cpp)
-
-#### Evaluation
-
-When using a lazy start task, the await_suspend() function starts the coroutine the task refers-to.
-Likewise, when using a lazy start operation, the await_suspend() function starts the real operation
-(which will run to completion on the completion thread).
-To enter await_suspend(), await_ready() function has to return false (hard-coded).
-When the call to await_suspend() returns, the coroutine returns control to its caller (or resumer).
-In short, a lazy start task or operation starts the "real work" just before it returns.
-There should be no need to access any variables after the task or operation has started the work and before it returns.
-If so, there is a possibility that these variables are also accessed from the completion thread.
-This process is repeated for the mentioned caller or resumer, etc.
-
-At some point, however, we will reach a point where we cannot "descend" (i.e. suspend) any further,
-otherwise we would "fall off" the original thread; let's call this point the "waiting point."
-
-At some time, the operation will complete on another thread.
-This is even possible while the original thread is still descending towards the waiting point.
-
-To make things a bit easier, let's assume that the original thread reaches its waiting point before the operation completes.
-
-At the waiting point, we have the following options:
-* the application waits until the operation has completed to process the result
-    * and then exit the application or
-    * start waiting for new input.
-* the application can start waiting for new input and start processing this input even if the first operation has not yet completed.
-
-Alternative 1: the application has to wait for the completion at the waiting point.
-The original thread will have to be informed by the completion thread.
-The "standard" way to do this, is to use a semaphore that is acquired by the original thread and released by the completion thread.
-
-Alternative 2: the application can start processing new input.
-This is the most valuable case. If this case was not allowed, then we are in essence writing synchronous applications...
-When the firt operation completes, the completion thread may run concurrently
-with the original thread that is already processing a new event:
-the "post co_await code" in foo() and bar() will run on the completion thread.
-If this code manipulates any data that is also accessed while processing the new event, data has to
-protected against concurrent access.
- 
-In other words: although the use of lazy start coroutines 
-avoids the need for thread synchronization in infrastructure classes such as task or operation1,
-thread synchronization issues cannot be avoided when the completion thread runs concurrently
-with the original thread that is processing new input?
-
-#### Solution
-
-The best solution is to have the completion thread run no application code at all,
-but instead create and post an event to an event queue.
-This event will be handled in the event loop as any other new event.
-The event queue has to protected against concurrent access, of course;
-however, all application code will run on the same thread.
-The event queue can be part of the coroutine library or the communnication framework.
-
-corolib provides a class, ThreadAwaker, that allows the original thread to signal
-to one or more completion threads that they may proceed.
-The original thread will do this just before it reaches the waiting point.
-This solution should be combined with the one described in the previous paragraph.
-
-For corolib examples, the user is referred to the tutorial, more in particular to the use of UseMode::USE_THREAD_QUEUE
-in the pXXXX-async_operation-thread-queue.cpp examples.
+The use of lazy start cannot avoid that still one variable (a coroutine__handle) is shared between the launching thread 
+and the completion thread. Therefore lazy start cannot guarantee 100% thread-safeness without the use of synchronization.
 
 ### task object of foo() goes out of scope
 
@@ -634,7 +774,20 @@ task bar()
 
 The co_await f; statement has been commented out.
 Likewise, if present it will not be reached, e.g. because it is placed in an if-block whose condition evaluates to false.
+The following code fragment is a trivial example:
 
+```c++
+task bar()
+{
+    task f = foo();
+    // point 1
+    // Pre co_await code
+    if (false)
+        co_await f;         
+    // Post co_await code
+    co_return;
+}
+```
 At the end of bar(), task object f goes out of scope and it will (try to) destroy foo()'s coroutine frame.
 
 Let's compare lazy and eager start.
@@ -689,13 +842,149 @@ so that the co_await statement will be executed.
 
 ## Overview of the examples
 
-p0000_void.cpp, p0100_void.cpp, p0110_bool.cpp and p0120_coroutine_handle.cpp correpond to 
+The follozing table gives an overview of all examples in this study:
+
+| Source file                        | Start      | Compl. | Uses classes and functions                        |
+| ---------------------------------- | ---------- | ------ | ------------------------------------------------- |
+| p0000_void.cpp                     | lazy       | sync.  | task, sync_wait_task, manual_executor, foo, bar   |
+|                                    |            |        |                                                   |
+| p0100_void.cpp                     | lazy       | sync.  | task, sync_wait_task, manual_executor,            |
+|                                    |            |        | completes_synchronously, loop_synchronously       |
+| p0110_bool.cpp                     | lazy       | sync.  | task, sync_wait_task, manual_executor,            |
+|                                    |            |        | completes_synchronously, loop_synchronously       |
+| p0120_coroutine_handle.cpp         | lazy       | sync.  | task, sync_wait_task, manual_executor,            |
+|                                    |            |        | completes_synchronously, loop_synchronously       |
+|                                    |            |        |                                                   |
+| p1000e_void.cpp                    | eager      | async. | task, mini_awaiter, foo, bar                      |
+| p1000l_void.cpp                    | lazy       | async. | task, mini_awaiter, foo, bar                      |
+| p1000_void.cpp                     | lazy       | async. | task, sync_wait_task, manual_executor, foo, bar   |
+|                                    |            |        |                                                   |
+| p1010e_bool.cpp                    | eager      | async. | task, mini_awaiter, foo, bar                      |
+| p1010l_bool.cpp                    | lazy       | async. | task, mini_awaiter, foo, bar                      |
+| p1010_bool.cpp                     | lazy       | async. | task, sync_wait_task, manual_executor, foo, bar   |
+|                                    |            |        |                                                   |
+| p1020e_coroutine_handle.cpp        | eager      | async. | task, mini_awaiter, foo, bar                      |
+| p1020l_coroutine_handle.cpp        | lazy       | async. | task, mini_awaiter, foo, bar                      |
+| p1020_coroutine_handle.cpp         | lazy       | async. | task, sync_wait_task, manual_executor, foo, bar   |
+|                                    |            |        |                                                   |
+| p1030e_corolib.cpp                 | eager      | async. | async_task, auto_reset_event, foo, bar            |
+| p1030_corolib.cpp                  | lazy       | async. | async_ltask, auto_reset_event, foo, bar           |
+|                                    |            |        |                                                   |
+| p1100e_void.cpp                    | eager      | sync.  | task, completes_synchronously, loop_synchronously |
+| p1100l_void.cpp                    | lazy       | sync.  | task, completes_synchronously, loop_synchronously |
+| p1100_void.cpp                     | lazy       | sync.  | task, sync_wait_task, manual_executor,            |
+|                                    |            |        | completes_synchronously, loop_synchronously       |
+|                                    |            |        |                                                   |
+| p1110e_bool.cpp                    | eager      | sync.  | task, completes_synchronously, loop_synchronously |
+| p1110l_bool.cpp                    | lazy       | sync.  | task, completes_synchronously, loop_synchronously |
+| p1110_bool.cpp                     | lazy       | sync.  | task, sync_wait_task, manual_executor,            |
+|                                    |            |        | completes_synchronously, loop_synchronously       |
+|                                    |            |        |                                                   |
+| p1120e_coroutine_handle.cpp        | eager      | sync.  | task, completes_synchronously, loop_synchronously |
+| p1120l_coroutine_handle.cpp        | lazy       | sync.  | task, completes_synchronously, loop_synchronously |
+| p1120_coroutine_handle.cpp         | lazy       | sync.  | task, sync_wait_task, manual_executor,            |
+|                                    |            |        | completes_synchronously, loop_synchronously       |
+|                                    |            |        |                                                   |
+| p1130e_corolib.cpp                 | eager      | sync.  | async_task,                                       |
+|                                    |            |        | completes_synchronously, loop_synchronously       |
+| p1130_corolib.cpp                  | lazy       | sync.  | async_ltask,                                      |
+|                                    |            |        | completes_synchronously, loop_synchronously       |
+|                                    |            |        |                                                   |
+| p1200e_void.cpp                    | eager      | alt.   | task, completes_synchronously, loop_synchronously |
+| p1200l_void.cpp                    | lazy       | alt.   | task, completes_synchronously, loop_synchronously |
+| p1200_void.cpp                     | lazy       | alt.   | task, sync_wait_task, manual_executor,            |
+|                                    |            |        | completes_synchronously, loop_synchronously       |
+|                                    |            |        |                                                   |
+| p1210e_bool.cpp                    | eager      | alt.   | task, completes_synchronously, loop_synchronously |
+| p1210l_bool.cpp                    | lazy       | alt.   | task, completes_synchronously, loop_synchronously |
+| p1210_bool.cpp                     | lazy       | alt.   | task, sync_wait_task, manual_executor,            |
+|                                    |            |        | completes_synchronously, loop_synchronously       |
+|                                    |            |        |                                                   |
+| p1220e_coroutine_handle.cpp        | eager      | alt.   | task, completes_synchronously, loop_synchronously |
+| p1220l_coroutine_handle.cpp        | lazy       | alt.   | task, completes_synchronously, loop_synchronously |
+| p1220_coroutine_handle.cpp         | lazy       | alt.   | task, sync_wait_task, manual_executor,            |
+|                                    |            |        | completes_synchronously, loop_synchronously       |
+|                                    |            |        |                                                   |
+| p1230e_corolib.cpp                 | eager      | alt.   | async_task, mini_awaiter,                         |
+|                                    |            |        | completes_synchronously, loop_synchronously       |
+| p1230_corolib.cpp                  | lazy       | alt.   | async_task, mini_awaiter,                         |
+|                                    |            |        | completes_synchronously, loop_synchronously       |
+|                                    |            |        |                                                   |
+| p1320e_coroutine_handle-thread.cpp | eager      | async. | task, mini_awaiter, coroutine1 .. coroutine4      |
+| p1320e_coroutine_handle.cpp        | eager      | async. | task, mini_awaiter, coroutine1 .. coroutine4      |
+| p1320l_coroutine_handle-thread.cpp | lazy       | async. | task, mini_awaiter, coroutine1 .. coroutine4      |
+| p1320l_coroutine_handle.cpp        | lazy       | async. | task, mini_awaiter, coroutine1 .. coroutine4      |
+| p1320_coroutine_handle.cpp         | lazy       | async. | task, sync_wait_task, manual_executor,            |
+|                                    |            |        | coroutine1 .. coroutine4                          |
+|                                    |            |        |                                                   |
+| p1322e_coroutine_handle-thread.cpp | eager      | async. | task, mini_awaiter, coroutine1 .. coroutine4      |
+| p1322e_coroutine_handle.cpp        | eager      | async. | task, mini_awaiter, coroutine1 .. coroutine4      |
+| p1322l_coroutine_handle-thread.cpp | lazy       | async. | task, mini_awaiter, coroutine1 .. coroutine4      |
+| p1322l_coroutine_handle.cpp        | lazy       | async. | task, mini_awaiter, coroutine1 .. coroutine4      |
+| p1322_coroutine_handle.cpp         | lazy       | async. | task, sync_wait_task, manual_executor,            |
+|                                    |            |        | coroutine1 .. coroutine4                          |
+|                                    |            |        |                                                   |
+| p1330e_corolib-thread.cpp          | eager      | async. | async_task, mini_awaiter,                         |
+|                                    |            |        | coroutine1 .. coroutine4                          |
+| p1330e_corolib.cpp                 | eager      | async. | async_task, mini_awaiter,                         |
+|                                    |            |        | coroutine1 .. coroutine4                          |
+| p1330_corolib-thread.cpp           | lazy       | async. | async_ltask, mini_awaiter,                        |
+|                                    |            |        | coroutine1 .. coroutine4                          |
+| p1330_corolib.cpp                  | lazy       | async. | async_ltask, mini_awaiter,                        |
+|                                    |            |        | coroutine1 .. coroutine4                          |
+|                                    |            |        |                                                   |
+| p1332e_corolib-thread.cpp          | eager      | async. | async_task, mini_awaiter,                         |
+|                                    |            |        | coroutine1 .. coroutine4                          |
+| p1332e_corolib.cpp                 | eager      | async. | async_task, mini_awaiter,                         |
+|                                    |            |        | coroutine1 .. coroutine4                          |
+| p1332_corolib-thread.cpp           | lazy       | async. | async_ltask, mini_awaiter,                        |
+|                                    |            |        | coroutine1 .. coroutine4                          |
+| p1332_corolib.cpp                  | lazy       | async. | async_ltask, mini_awaiter,                        |
+|                                    |            |        | coroutine1 .. coroutine4                          |
+|                                    |            |        |                                                   |
+| p2010e_void-sc.cpp                 | eager      | sync.  | task, foo, bar                                    |
+| p2010l_void-sc.cpp                 | lazy       | sync.  | task, foo, bar                                    |
+| p2010_void-sc.cpp                  | lazy       | sync.  | task, foo, bar                                    |
+|                                    |            |        |                                                   |
+| p2020e_void-ma-thread.cpp          | eager      | async. | task, mini_awaiter, foo, bar                      |
+| p2020l_void-ma-thread.cpp          | lazy       | async. | task, mini_awaiter, foo, bar                      |
+| p2020_void.cpp                     | lazy       | async. | task, sync_wait_task, manual_executor, foo, bar   |
+|                                    |            |        |                                                   |
+| p2030e_void-ma-thread.cpp          | eager      | async. | task, mini_awaiter, foo, bar                      |
+| p2030l_void-ma-thread.cpp          | lazy       | async. | task, mini_awaiter, foo, bar                      |
+| p2030_void-thread.cpp              | lazy       | async. | task, sync_wait_task, manual_executor, foo, bar   |
+|                                    |            |        |                                                   |
+| p2040e_void-st1-thread.cpp         | eager      | async. | task, mini_awaiter, start_operation1, foo, bar    |
+| p2040l_void-st1-thread.cpp         | lazy       | async. | task, mini_awaiter, start_operation1, foo, bar    |
+| p2045e_void-st1-thread.cpp         | eager      | async. | task, mini_awaiter, start_operation1, foo, bar    |
+| p2045l_void-st1-thread.cpp         | lazy       | async. | task, mini_awaiter, start_operation1, foo, bar    |
+|                                    |            |        |                                                   |
+| p2050e_void-op1e-thread.cpp        | eager      | async. | task, mini_awaiter, operation1e, foo, bar         |
+| p2050l_void-op1e-thread.cpp        | lazy/eager | async. | task, mini_awaiter, operation1e, foo, bar         |
+| p2055e_void-op1e-thread.cpp        | eager      | async. | task, mini_awaiter, operation1e, foo, bar         |
+| p2055l_void-op1e-thread.cpp        | lazy/eager | async. | task, mini_awaiter, operation1e, foo, bar         |
+|                                    |            |        |                                                   |
+| p2060e_void-op1l-thread.cpp        | eager/lazy | async. | task, mini_awaiter, operation1l, foo, bar         |
+| p2060l_void-op1l-thread.cpp        | lazy       | async. | task, mini_awaiter, operation1l, foo, bar         |
+| p2065e_void-op1l-thread.cpp        | eage/lazy  | async. | task, mini_awaiter, operation1l, foo, bar         |
+| p2065l_void-op1l-thread.cpp        | lazy       | async. | task, mini_awaiter, operation1l, foo, bar         |
+|                                    |            |        |                                                   |
+| p2070e_void-op2e-thread.cpp        | eager      | async. | task, mini_awaiter, operation2e, foo, bar         |
+| p2075e_void-op2e-thread.cpp        | eager      | async. | task, mini_awaiter, operation2e, foo, bar         |
+|                                    |            |        |                                                   |
+| p2080e_void-op3e-thread.cpp        | eager      | async. | task, mini_awaiter, operation3e, foo, bar         |
+| p2085e_void-op3e-thread.cpp        | eager      | async. | task, mini_awaiter, operation3e, foo, bar         |
+
+
+p0000_void.cpp, p0100_void.cpp, p0110_bool.cpp and p0120_coroutine_handle.cpp correspond to 
 https://godbolt.org/z/-Kw6Nf, https://godbolt.org/z/gy5Q8q, https://godbolt.org/z/7fm8Za 
 and https://godbolt.org/z/9baieF, respectively.
 
-The p10X0_YYY.cpp and p10X0e_YYY.cpp examples elaborate the p0000.cpp example.
+The p10X0_YYY.cpp and p10X0e_YYY.cpp examples elaborate the p0000.cpp example
+that uses coroutines foo() and bar().
 
-The p11X0_YYY.cpp and p11X0e_YYY.cpp examples elaborate the p010X_YYY.cpp examples.
+The p11X0_YYY.cpp and p11X0e_YYY.cpp examples elaborate the p01X0_YYY.cpp examples
+that use coroutines completes_synchronously() and loop_synchronously().
 
 The p12X0e_YYY.cpp examples are a variant of the p11X0e_YYY.cpp examples,
 with completes_synchronously() alternatively completing synchronously or asynchronously.
@@ -709,15 +998,17 @@ where t is the task returned by coroutine3.
 The p1XX0_YYY.cpp examples use lazy start, the p1XX0e_YYY.cpp examples use eager start.
 
 The p1XX0l_YYY.cpp examples use lazy start, but without using manual_executor and sync_wait_task as in the p1XX0_YYY.cpp examples.
-The p1XX0l_YYY.cpp and pXXX0e_YYY.cpp are very close in style.
+The p1XX0l_YYY.cpp and pXXX0e_YYY.cpp are very close to each other in style; only the behavior of class 'task' differs 
+in terms of using lazy start or eager start.
 
-The p1X00_void.cpp, p1X00l_void.cpp and p1X00e_void.cpp examples use await_suspend() that returns void.
+If pXXXXx_ is followed with 'void', then task::awaiter::await_suspend() returns void.
 
-The p1X10_bool.cpp, p1X10l_bool.cpp and p1X10e_bool.cpp examples use await_suspend() that returns bool.
+If pXXXXx_ is followed with 'bool', then task::awaiter::await_suspend() returns bool.
 
-The p1X20_coroutine_handle.cpp, p1X20l_coroutine_handle.cpp and p1X20e_oroutine_handle.cpp examples 
-use await_suspend() that returns coroutine_handle<>.
+If pXXXXx_ is followed with 'coroutine_handle', then task::awaiter::await_suspend() returns coroutine_handle<>.
 
-The p13X0_corolib.cpp examples use async_ltask from corolib.
+If pXXXXe_ is followed with 'corolib', then the example uses class 'async_task' from corolib.
 
-The p130Xe_corolib.cpp examples use async_task from corolib.
+If pXXXX_ is followed with 'corolib', then the example uses class 'async_ltask' from corolib.
+
+A '-thread' at the end of the file base name indicates that the coroutine is resumed on a dedicated thread.

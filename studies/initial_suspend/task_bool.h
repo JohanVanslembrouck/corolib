@@ -1,9 +1,8 @@
 /**
  * @file task_bool.h
  * @brief
- *
- * Contains the task class that is used in p0110_bool.cpp.
  * 
+ * task::promise_type::initial_suspend() returns std::suspend_always.
  * task::promise_type::final_awaiter::await_suspend() returns void.
  * task::awaiter::await_suspend() returns bool.
  * 

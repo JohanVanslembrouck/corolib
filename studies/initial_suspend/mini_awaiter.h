@@ -32,17 +32,12 @@ public:
         return m_result;
     }
 
-    void set_result_and_resume(int result = 0) {
-        m_result = result;
-        resume();
-    }
-
-protected:
     /**
      * @brief resumes the coroutine referenced by m_awaiting (if initialized)
      *
      */
-    void resume() {
+    void set_result_and_resume(int result = 0) {
+        m_result = result;
         m_ready = true;
         if (m_awaiting) {
             if (!m_awaiting.done()) {

@@ -106,8 +106,18 @@ foreach(_target
     p2060l_void-op1l-thread
     p2065e_void-op1l-thread
     p2065l_void-op1l-thread
+
+    p2080e_void-op3e-thread
+    p2085e_void-op3e-thread
  )
  add_executable(stis-${_target} ${_target}.cpp print.cpp tracker1.cpp)
+endforeach()
+
+foreach(_target
+    p2070e_void-op2e-thread
+    p2075e_void-op2e-thread
+ )
+ add_executable(stis-${_target} ${_target}.cpp print.cpp eventqueuethr.cpp tracker1.cpp)
 endforeach()
 
 include_directories(../../include)

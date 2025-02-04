@@ -1,8 +1,6 @@
 /**
  * @file task_coroutine_handle.h
  * @brief
- *
- * Contains the task class that is used in p0120_coroutine_handle.cpp.
  * 
  * task::promise_type::final_awaiter::await_suspend() returns std::coroutine_handle<>.
  * task::awaiter::await_suspend() returns coroutine_handle<>.

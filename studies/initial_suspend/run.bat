@@ -94,3 +94,9 @@ stis-p2060e_void-op1l-thread
 stis-p2060l_void-op1l-thread
 stis-p2065e_void-op1l-thread
 stis-p2065l_void-op1l-thread
+
+stis-p2070e_void-op2e-thread
+stis-p2075e_void-op2e-thread
+
+stis-p2080e_void-op3e-thread
+stis-p2085e_void-op3e-thread

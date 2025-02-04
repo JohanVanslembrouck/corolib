@@ -2,8 +2,7 @@
  * @file taske_void.h
  * @brief
  * 
- * Uses eager start.
- *
+ * task::promise_type::initial_suspend() returns std::suspend_never.
  * task::promise_type::final_awaiter::await_suspend() returns void.
  * task::awaiter::await_suspend() returns void.
  * 

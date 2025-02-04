@@ -34,19 +34,13 @@ public:
         return m_result;
     }
 
-    // set_result_and_resume() runs on the completion thread
-    void set_result_and_resume(int result = 0) {
-        m_result = result;
-        resume();
-    }
-
-protected:
     /**
      * @brief resumes the coroutine referenced by m_awaiting (if initialized)
      * runs on the completion thread
      *
      */
-    void resume() {
+    void set_result_and_resume(int result = 0) {
+        m_result = result;
         m_mutex.lock();
         m_ready = true;
         if (m_awaiting) {
@@ -61,7 +55,6 @@ protected:
             printf("mini_awaiter::resume() could not resume() because m_awaiting == nullptr\n");
         }
     }
-
 
 private:
     std::coroutine_handle<> m_awaiting = nullptr;

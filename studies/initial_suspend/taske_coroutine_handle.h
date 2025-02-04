@@ -2,8 +2,7 @@
  * @file taske_coroutine_handle.h
  * @brief
  *
- * Uses eager start.
- * 
+ * task::promise_type::initial_suspend() returns std::suspend_never.
  * task::promise_type::final_awaiter::await_suspend() returns std::coroutine_handle<>.
  * task::awaiter::await_suspend() returns coroutine_handle<>.
  * 
