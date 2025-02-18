@@ -5,6 +5,8 @@ apart from some examples in corolab that use Boost ASIO.
 
 * [why-coroutines](./why-coroutines) contains examples that explain the advantages of C++ coroutines for writing (distributed) asynchronous applications.
 
+* [why-coroutines](./why-coroutines) contains examples that explain the advantages of C++ coroutines for writing I/O-based applications.
+
 * [corolab](./corolab) contains examples that do not use corolib, but were the basis from where corolib has been "distilled".
 
 * [corba](./corba) studies the various CORBA invocation variants (synchronous, asynchronous using callback, 

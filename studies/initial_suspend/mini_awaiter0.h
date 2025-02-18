@@ -24,9 +24,11 @@ struct mini_awaiter
 
     void resume()
     {
-        if (!m_awaiting.done()) {
-            tracker1_obj.nr_resumptions++;
-            m_awaiting.resume();
+        if (m_awaiting) {
+            if (!m_awaiting.done()) {
+                tracker1_obj.nr_resumptions++;
+                m_awaiting.resume();
+            }
         }
     }
 
