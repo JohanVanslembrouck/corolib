@@ -62,7 +62,7 @@ thread-safe (i.e., it was not the intention to use it in this multi-threaded way
 After building, launch the applications in the following order:
 
 * 'cs0-server' or (preferably) 'cs0-server1'
-* 'cs0-clientà' or 'cs0-client1' or 'cs0-client2' or 'cs0-client3'
+* 'cs0-client0' or 'cs0-client1' or 'cs0-client2' or 'cs0-client3'
 
 Note that [client3.cpp](./client3.cpp) is not that far away from the use of coroutines,
 see the sibling directories [clientserver1](../clientserver1), [clientserver2](../clientserver2),
@@ -71,5 +71,5 @@ see the sibling directories [clientserver1](../clientserver1), [clientserver2](.
 1. Instead of running mainflow() calls on a different thread, mainflow() will become a coroutine,
    replacing preemptive multi-tasking provided by threads with cooperative multi-tasking provided by coroutines.
 2. Semaphores will be replaced with the suspend/resume mechanism of coroutines:
-   a. semaphore acquire will be replaced with co_await
-   b. semaphore release will be replaced with a resume of the coroutine
+   * semaphore acquire will be replaced with co_await
+   * semaphore release will be replaced with a resume of the coroutine
