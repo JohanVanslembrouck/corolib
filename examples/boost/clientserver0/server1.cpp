@@ -1,11 +1,15 @@
 /** 
- *  @file server.cpp
+ *  @file server1.cpp
  *  @brief
  *  This example is based upon studies/corolab/p0700s.c.
  *  This example uses (where possible) lambdas instead of callback functions as in p0700s.c.
  * 
  *  This echo server is used for clientX.cpp clients.
- *
+ * 
+ *  server1.cpp uses async_wait instead of std::this_thread::sleep_for to introduce a delay
+ *  between reading the message and writing (echoing) the message to the client application.
+ *  Therefore, server1.cpp can handle simultaneous client requests in an interleaved way.
+ * 
  *  This example does not use coroutines.
  *
  *  @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
@@ -79,6 +83,7 @@ public:
             unsigned short service) :
         mIoContext{ioContext},
         mAcceptor{mIoContext, {boost::asio::ip::tcp::v4(), service}},
+        mTimer{ioContext},
         mStop{false}
     {
         print("Server::Server(...)\n");
@@ -149,11 +154,19 @@ public:
             std::copy(client->mReadBuffer.cbegin(), client->mReadBuffer.cbegin() + bytes, client->mSendBuffer.begin());
             print("Server::readHandler(...): received: %s", client->mSendBuffer.c_str());
 
-            print("Server::readHandler(...): sleep 1 second to simulate a long processing time\n");
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-
-            start_write(client);
+            start_timer(client);
         }
+    }
+
+    void start_timer(ClientSession client)
+    {
+        print("Server::start_timer(...): sleep 1 second to simulate a long processing time\n");
+        mTimer.expires_after(boost::asio::chrono::seconds(1));
+        mTimer.async_wait(
+            [this, client](const boost::system::error_code& error)
+            {
+                start_write(client);
+            });
     }
 
     void start_write(ClientSession client)
@@ -188,6 +201,7 @@ public:
 private:
     boost::asio::io_context& mIoContext;
     boost::asio::ip::tcp::acceptor mAcceptor;
+    boost::asio::steady_timer mTimer;
     std::atomic_bool mStop;
 };
 

@@ -12,56 +12,13 @@
  *  @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
-#include <boost/asio.hpp>
-
 #include <thread>
 #include <iostream>
 #include <string>
 
-/// we will connect to the synchronous server of Asio10-EchoServer1
-/// we will make multiple threads that connect and get served
+#include <boost/asio.hpp>
 
 const boost::asio::ip::tcp::endpoint ep{boost::asio::ip::make_address("127.0.0.1"), 8242};
-
-#include "print.h"
-
-//-------------------------------------------------------------
-
-std::size_t completionCondition(
-        std::string& buffer,
-        const boost::system::error_code& /*error*/, /// let's ignore
-        std::size_t bytes_transferred)
-{
-    if(!bytes_transferred)
-    {
-        return 1;
-    }
-    return buffer[bytes_transferred - 1] == '\n' ? 0 : 1;
-}
-
-void getServed_sync(
-        boost::asio::io_context& ioContext,
-        int id)
-{
-    const std::string message = "request from client " + std::to_string(id) + "\n";
-
-    boost::asio::ip::tcp::socket sock{ioContext};
-    sock.connect(ep);
-    print("client %d got connected\n", id);
-    print("sending to server: %s", message.c_str());
-
-    boost::asio::write(sock, boost::asio::buffer(message));
-
-    std::string answer;
-    boost::asio::read(
-            sock,
-            boost::asio::dynamic_buffer(answer),
-            std::bind(completionCondition, std::ref(answer), std::placeholders::_1, std::placeholders::_2));
-
-    print("server replied: %s", answer.c_str());
-    print("client %d got served\n", id);
-    sock.close();
-}
 
 #include <boost/asio/buffer.hpp>
 #include <boost/asio/io_context.hpp>
@@ -77,6 +34,8 @@ using boost::asio::ip::tcp;
 using std::placeholders::_1;
 using std::placeholders::_2;
 
+#include "print.h"
+
 class client
 {
 public:
@@ -90,11 +49,26 @@ public:
 
     // Called by the user of the client class to initiate the connection process.
     // The endpoints will have been obtained using a tcp::resolver.
-    void start()
+    // In this implementation, start() has to pass the message-to-echo to start_connecting()
+    // and start_connecting() had to pass it to start_writing(), which uses it to write to the server.
+    void start(std::string message)
     {
-        print("client::start()\n");
-        start_connect();
+        print("client::start(...)\n");
+        start_connecting(message);
 
+        // Start the deadline actor. You will note that we're not setting any
+        // particular deadline here. Instead, the connect and input actors will
+        // update the deadline prior to each asynchronous operation.
+        deadline_.async_wait(
+            [this](const boost::system::error_code& error)
+            {
+                check_deadline();
+            });
+    }
+
+private:
+    void start_deadline_actor()
+    {
         // Start the deadline actor. You will note that we're not setting any
         // particular deadline here. Instead, the connect and input actors will
         // update the deadline prior to each asynchronous operation.
@@ -118,10 +92,9 @@ public:
         heartbeat_timer_.cancel();
     }
 
-private:
-    void start_connect()
+    void start_connecting(std::string message)
     {
-        print("client::start_connect()\n");
+        print("client::start_connecting(...)\n");
 
         tcp::resolver::results_type::iterator endpoint_iter;
 
@@ -135,7 +108,7 @@ private:
         boost::asio::async_connect(
             socket_,
             eps,
-            [this](const boost::system::error_code& error,
+            [this, message](const boost::system::error_code& error,
                 const tcp::endpoint& result_endpoint)
             {
                 print("client::handle_connect()\n");
@@ -151,7 +124,7 @@ private:
                     print("Connect timed out\n");
 
                     // Try the next available endpoint.
-                    start_connect();
+                    start_connecting(message);
                 }
 
                 // Check if the connect operation failed before the deadline expired.
@@ -164,26 +137,27 @@ private:
                     socket_.close();
 
                     // Try the next available endpoint.
-                    start_connect();
+                    start_connecting(message);
                 }
 
                 // Otherwise we have successfully established a connection.
                 else
                 {
-                    start_write();
+                    start_writing(message);
                 }
             });
     }
 
-    void start_write()
+    void start_writing(std::string message)
     {
-        print("client::start_write()\n");
+        print("client::start_writing(...)\n");
 
         if (stopped_)
             return;
 
-        const char* str = "This is the string to echo\n";
-        print("client::start_write(): writing: %s", str);
+        const char* str = message.c_str();
+
+        print("client::start_writing(): writing: %s", str);
 
         // Start an asynchronous operation to send a heartbeat message.
         boost::asio::async_write(
@@ -199,7 +173,7 @@ private:
 
                 if (!error)
                 {
-                    start_read();
+                    start_reading();
                 }
                 else
                 {
@@ -209,9 +183,9 @@ private:
             });
     }
 
-    void start_read()
+    void start_reading()
     {
-        print("client::start_read()\n");
+        print("client::start_reading()\n");
 
         // Set a deadline for the read operation.
         deadline_.expires_after(std::chrono::seconds(30));
@@ -299,21 +273,26 @@ private:
 
 int main()
 {
+    print("main: begin\n");
     boost::asio::io_context ioContext;
+    
+    print("main: client cl1(ioContext);\n");
+    client cl1(ioContext);
+    print("main: client cl2(ioContext);\n");
+    client cl2(ioContext);
+    print("main: client cl2(ioContext);\n");
+    client cl3(ioContext);
 
-    print("start\n");
+    print("main: cl1.start();\n");
+    cl1.start("This is string 0 to echo\n");
+    print("main: cl2.start();\n");
+    cl2.start("This is string 1 to echo\n");
+    print("main: cl3.start();\n");
+    cl3.start("This is string 2 to echo\n");
 
-    // Using synchronous I/O
-    print("getServed_sync(ioContext, 0);\n");
-    getServed_sync(ioContext, 0);
-
-    // Using asynchronous I/O
-    print("client c(ioContext);\n");
-    client c(ioContext);
-    print("c.start();\n");
-    c.start();
-    print("ioContext.run();\n");
+    print("main: ioContext.run();\n");
     ioContext.run();
 
-    print("done\n");
+    print("main: end\n");
+    return 0;
 }

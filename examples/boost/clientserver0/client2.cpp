@@ -26,23 +26,13 @@
  *  @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
-#include <boost/asio.hpp>
-
 #include <thread>
 #include <iostream>
 #include <string>
 
- /// we will connect to the synchronous server of Asio10-EchoServer1
- /// we will make multiple threads that connect and get served
+#include <boost/asio.hpp>
 
 const boost::asio::ip::tcp::endpoint ep{ boost::asio::ip::make_address("127.0.0.1"), 8242 };
-
-#include "print.h"
-#include "csemaphore.h"
-
-CSemaphore sema;
-
-//-------------------------------------------------------------
 
 #include <boost/asio/buffer.hpp>
 #include <boost/asio/io_context.hpp>
@@ -55,6 +45,9 @@ CSemaphore sema;
 using boost::asio::steady_timer;
 using boost::asio::ip::tcp;
 
+#include "print.h"
+#include "csemaphore.h"
+
 class client
 {
 public:
@@ -66,12 +59,9 @@ public:
         print("client::client()\n");
     }
 
-    // Called by the user of the client class to initiate the connection process.
-    // The endpoints will have been obtained using a tcp::resolver.
-    void start()
+    void start_deadline_actor()
     {
-        print("client::start()\n");
-        start_connect();
+        print("client::start_deadline_actor()\n");
 
         // Start the deadline actor. You will note that we're not setting any
         // particular deadline here. Instead, the connect and input actors will
@@ -94,13 +84,26 @@ public:
         socket_.close(ignored_error);
         deadline_.cancel();
         heartbeat_timer_.cancel();
-        sema.release();
+        set_result_and_release();
     }
 
-public:
-    void start_connect()
+    void get_result()
     {
-        print("client::start_connect()\n");
+        print("client::get_result()\n");
+        m_sema.acquire();
+    }
+
+    void set_result_and_release()
+    {
+        print("client::set_result_and_release()\n");
+        m_sema.release();
+    }
+
+    // Called by the user of the client class to initiate the connection process.
+    // The endpoints will have been obtained using a tcp::resolver.
+    void start_connecting()
+    {
+        print("client::start_connecting()\n");
 
         tcp::resolver::results_type::iterator endpoint_iter;
 
@@ -130,7 +133,7 @@ public:
                     print("Connect timed out\n");
 
                     // Try the next available endpoint.
-                    start_connect();
+                    start_connecting();
                 }
 
                 // Check if the connect operation failed before the deadline expired.
@@ -143,26 +146,26 @@ public:
                     socket_.close();
 
                     // Try the next available endpoint.
-                    start_connect();
+                    start_connecting();
                 }
 
                 // Otherwise we have successfully established a connection.
                 else
                 {
-                    sema.release();
+                    set_result_and_release();
                 }
             });
     }
 
-    void start_write()
+    void start_writing(std::string message)
     {
-        print("client::start_write()\n");
+        print("client::start_writing()\n");
 
         if (stopped_)
             return;
 
-        const char* str = "This is the string to echo\n";
-        print("client::start_write(): writing: %s", str);
+        const char* str = message.c_str();
+        print("client::start_writing(): writing: %s", str);
 
         // Start an asynchronous operation to send a heartbeat message.
         boost::asio::async_write(
@@ -178,7 +181,7 @@ public:
 
                 if (!error)
                 {
-                    sema.release();
+                    set_result_and_release();
                 }
                 else
                 {
@@ -188,9 +191,9 @@ public:
             });
     }
 
-    void start_read()
+    void start_reading()
     {
-        print("client::start_read()\n");
+        print("client::start_reading()\n");
 
         // Set a deadline for the read operation.
         deadline_.expires_after(std::chrono::seconds(30));
@@ -218,7 +221,7 @@ public:
                     {
                         print("client::handle_read(): received: %s\n", line.c_str());
                     }
-                    sema.release();
+                    set_result_and_release();
                     stop();
                 }
                 else
@@ -270,6 +273,7 @@ public:
     }
 
 private:
+    CSemaphore m_sema;
     bool stopped_ = false;
     tcp::socket socket_;
     std::string input_buffer_;
@@ -277,40 +281,55 @@ private:
     steady_timer heartbeat_timer_;
 };
 
-void mainflow()
+void mainflow(int id)
 {
+    print("mainflow: begin\n");
     boost::asio::io_context ioContext;
 
-    print("client c(ioContext);\n");
-    client c(ioContext);
+    print("mainflow: client cl(ioContext);\n");
+    client cl(ioContext);
 
-    print("c.start();\n");
-    c.start();
+    print("mainflow: c.start_deadline_actor();\n");
+    cl.start_deadline_actor();
 
-    print("std::thread([&ioContext] { ioContext.run(); }).detach();\n");
-    std::thread([&ioContext] { ioContext.run(); }).detach();
+    print("mainflow: std::thread thr1([&ioContext] { ioContext.run(); })\n");
+    std::thread thr1([&ioContext] { ioContext.run(); });
 
-    print("sema.acquire();\n");
-    sema.acquire();
+    print("mainflow: c.start_connecting();\n");
+    cl.start_connecting();
+    print("mainflow: cl.get_result();   // 1\n");
+    cl.get_result();    // 1
 
-    print("c.start_write();\n");
-    c.start_write();
-    print("sema.acquire();\n");
-    sema.acquire();
+    print("mainflow: cl.start_writing(...);\n");
+    cl.start_writing("This is the string " + std::to_string(id) + " to echo\n");
+    print("mainflow: cl.get_result();   // 2\n");
+    cl.get_result();    // 2
 
-    print("c.start_read();\n");
-    c.start_read();
-    print("sema.acquire();\n");
-    sema.acquire();
+    print("mainflow: cl.start_reading();\n");
+    cl.start_reading();
+    print("mainflow: cl.get_result();   // 3\n");
+    cl.get_result();    // 3
 
     // Waiting for stop
-    sema.acquire();
+    print("mainflow: cl.get_result();   // 4\n");
+    cl.get_result();    // 4
+
+    print("mainflow: thr1.join();\n");
+    thr1.join();
+    print("mainflow: end\n");
 }
 
 int main()
 {
-    print("start\n");
-    mainflow();
-    print("done\n");
-}
+    print("main: begin\n");
 
+    print("\n"); print("main: mainflow(0);\n");
+    mainflow(0);
+    print("\n"); print("main: mainflow(1);\n");
+    mainflow(1);
+    print("\n"); print("main: mainflow(2);\n");
+    mainflow(2);
+
+    print("main: end\n");
+    return 0;
+}

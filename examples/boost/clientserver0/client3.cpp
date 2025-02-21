@@ -7,10 +7,14 @@
  *  ioContext.run() is run on yet another thread.
  *  Consequently, also the lambda functions (in the print statements called handle_connect,
  *  handle_write, handle_read) are run on the ioContext thread.
- *
- *  The mainflow thread and the ioContext thread synchronize by means of a semaphore:
- *  the mainflow thread acquires the semaphore, the ioContext thread releases it.
- *
+ *  
+ *  This program launches 3 instances of mainflow() on 3 threads.
+ * 
+ *  The mainflow threads and the ioContext thread synchronize by means of a semaphore:
+ *  the mainflow threads acquires the semaphore, the ioContext thread releases it.
+ *  There are 3 semaphores involved, one for every client object.
+ *  Every mainflow() function has its own client object.
+ * 
  *  This allows defining the program flow in the mainflow() function
  *  instead of "hard-coding" it in the lambda functions as in client1.cpp.
  *
@@ -26,23 +30,13 @@
 
 #include <future>
 
-#include <boost/asio.hpp>
-
 #include <thread>
 #include <iostream>
 #include <string>
 
- /// we will connect to the synchronous server of Asio10-EchoServer1
- /// we will make multiple threads that connect and get served
+#include <boost/asio.hpp>
 
 const boost::asio::ip::tcp::endpoint ep{ boost::asio::ip::make_address("127.0.0.1"), 8242 };
-
-#include "print.h"
-#include "csemaphore.h"
-
-CSemaphore sema;
-
-//-------------------------------------------------------------
 
 #include <boost/asio/buffer.hpp>
 #include <boost/asio/io_context.hpp>
@@ -55,6 +49,9 @@ CSemaphore sema;
 using boost::asio::steady_timer;
 using boost::asio::ip::tcp;
 
+#include "print.h"
+#include "csemaphore.h"
+
 class client
 {
 public:
@@ -66,12 +63,9 @@ public:
         print("client::client()\n");
     }
 
-    // Called by the user of the client class to initiate the connection process.
-    // The endpoints will have been obtained using a tcp::resolver.
-    void start()
+    void start_deadline_actor()
     {
-        print("client::start()\n");
-        start_connect();
+        print("client::start_deadline_actor()\n");
 
         // Start the deadline actor. You will note that we're not setting any
         // particular deadline here. Instead, the connect and input actors will
@@ -94,13 +88,26 @@ public:
         socket_.close(ignored_error);
         deadline_.cancel();
         heartbeat_timer_.cancel();
-        sema.release();
+        set_result_and_release();
     }
 
-public:
-    void start_connect()
+    void get_result()
     {
-        print("client::start_connect()\n");
+        print("client::get_result()\n");
+        m_sema.acquire();
+    }
+
+    void set_result_and_release()
+    {
+        print("client::set_result_and_release()\n");
+        m_sema.release();
+    }
+
+    // Called by the user of the client class to initiate the connection process.
+    // The endpoints will have been obtained using a tcp::resolver.
+    void start_connecting()
+    {
+        print("client::start_connecting()\n");
 
         tcp::resolver::results_type::iterator endpoint_iter;
 
@@ -130,7 +137,7 @@ public:
                     print("Connect timed out\n");
 
                     // Try the next available endpoint.
-                    start_connect();
+                    start_connecting();
                 }
 
                 // Check if the connect operation failed before the deadline expired.
@@ -143,26 +150,27 @@ public:
                     socket_.close();
 
                     // Try the next available endpoint.
-                    start_connect();
+                    start_connecting();
                 }
 
                 // Otherwise we have successfully established a connection.
                 else
                 {
-                    sema.release();
+                    set_result_and_release();
                 }
             });
     }
 
-    void start_write()
+    void start_writing(std::string message)
     {
-        print("client::start_write()\n");
+        print("client::start_writing()\n");
 
         if (stopped_)
             return;
 
-        const char* str = "This is the string to echo\n";
-        print("client::start_write(): writing: %s", str);
+        const char* str = message.c_str();
+
+        print("client::start_writing(): writing: %s", str);
 
         // Start an asynchronous operation to send a heartbeat message.
         boost::asio::async_write(
@@ -178,7 +186,7 @@ public:
 
                 if (!error)
                 {
-                    sema.release();
+                    set_result_and_release();
                 }
                 else
                 {
@@ -188,9 +196,9 @@ public:
             });
     }
 
-    void start_read()
+    void start_reading()
     {
-        print("client::start_read()\n");
+        print("client::start_reading()\n");
 
         // Set a deadline for the read operation.
         deadline_.expires_after(std::chrono::seconds(30));
@@ -218,7 +226,7 @@ public:
                     {
                         print("client::handle_read(): received: %s\n", line.c_str());
                     }
-                    sema.release();
+                    set_result_and_release();
                     stop();
                 }
                 else
@@ -270,6 +278,7 @@ public:
     }
 
 private:
+    CSemaphore m_sema;
     bool stopped_ = false;
     tcp::socket socket_;
     std::string input_buffer_;
@@ -277,45 +286,84 @@ private:
     steady_timer heartbeat_timer_;
 };
 
-void mainflow()
+void mainflow(boost::asio::io_context& ioContext, int id,  bool start)
 {
-    boost::asio::io_context ioContext;
+    print("mainflow: begin\n");
 
-    print("client c(ioContext);\n");
-    client c(ioContext);
+    print("mainflow: client cl(ioContext);\n");
+    client cl(ioContext);
 
-    print("c.start();\n");
-    c.start();
+    print("mainflow: cl.start_deadline_actor();\n");
+    cl.start_deadline_actor();
 
-    print("std::thread([&ioContext] { ioContext.run(); }).detach();\n");
-    std::thread([&ioContext] { ioContext.run(); }).detach();
+    if (start)
+    {
+        print("mainflow: std::thread([&ioContext] { ioContext.run(); }).detach();\n");
+        std::thread([&ioContext] { ioContext.run(); }).detach();
+    }
 
-    print("sema.acquire();\n");
-    sema.acquire();
+    print("mainflow: c.start_connecting();\n");
+    cl.start_connecting();
+    print("mainflow: cl.get_result();   // 1\n");
+    cl.get_result();    // 1
 
-    print("c.start_write();\n");
-    c.start_write();
-    print("sema.acquire();\n");
-    sema.acquire();
+    print("mainflow: cl.start_writing(...);\n");
+    cl.start_writing("This is string " + std::to_string(id) + " to echo\n");
+    print("mainflow: cl.get_result();   // 2\n");
+    cl.get_result();    // 2
 
-    print("c.start_read();\n");
-    c.start_read();
-    print("sema.acquire();\n");
-    sema.acquire();
+    print("mainflow: cl.start_reading();\n");
+    cl.start_reading();
+    print("mainflow: cl.get_result();   // 3\n");
+    cl.get_result();    // 3
 
     // Waiting for stop
-    sema.acquire();
+    print("mainflow: cl.get_result();   // 4\n");
+    cl.get_result();    // 4
+
+    print("mainflow: end\n");
 }
 
+#if 1
 int main()
 {
-    print("start\n");
+    print("main: begin\n");
+    boost::asio::io_context ioContext;
 
-    std::future<void> t1 = std::async(std::launch::async, []() { mainflow(); });
-    std::future<void> t2 = std::async(std::launch::async, []() { mainflow(); });
-    
+    std::future<void> t1 = std::async(std::launch::async, [&]() { mainflow(ioContext, 0, true); });
+    // Add a small delay to make sure that t1 has started ioContext.run();
+    // (on a separate thread) before t2 and t3 start running.
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::future<void> t2 = std::async(std::launch::async, [&]() { mainflow(ioContext, 1, false); });
+    std::future<void> t3 = std::async(std::launch::async, [&]() { mainflow(ioContext, 2, false); });
+
+    print("main: t1.get()\n");
     t1.get();
+    print("main: t2.get()\n");
     t2.get();
+    print("main: t3.get()\n");
+    t3.get();
 
-    print("done\n");
+    print("main: end\n");
+    return 0;
 }
+#else
+int main() {
+    print("main: begin\n");
+    boost::asio::io_context ioContext;
+
+    std::thread thr1([&] { mainflow(ioContext, 0, true); });
+    // Add a small delay to make sure that t1 has started ioContext.run();
+    // (on a separate thread) before t2 and t3 start running.
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::thread thr2([&] { mainflow(ioContext, 1, false); });
+    std::thread thr3([&] { mainflow(ioContext, 3, false); });
+
+    thr1.join();
+    thr2.join();
+    thr3.join();
+
+    print("main: end\n");
+    return 0;
+}
+#endif
