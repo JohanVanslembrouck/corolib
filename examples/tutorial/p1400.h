@@ -2,13 +2,11 @@
  * @file p1400.h
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _P1400_H_
 #define _P1400_H_
-
-#include <functional>
 
 #include <corolib/print.h>
 #include <corolib/async_task.h>

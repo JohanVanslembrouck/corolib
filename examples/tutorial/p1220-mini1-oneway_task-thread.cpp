@@ -14,7 +14,7 @@
  * 2) Alternatively, coroutine2 can co_wait an auto_reset_event object that it passes to coroutine3
  * coroutine3 will resume coroutine2 using this auto_reset_event object.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #include <thread>
@@ -36,7 +36,7 @@ async_task<int> coroutine6()
     std::thread thread1([&]() {
         print(PRI1, "thread1: std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        print(); print(PRI1, "thread1: m.set_and_resume(1);\n");
+        print(PRI1); print(PRI1, "thread1: m.set_and_resume(1);\n");
         m.set_and_resume(1);
     });
     thread1.detach();
@@ -78,7 +78,7 @@ async_task<int> coroutine4(bool& cancel)
         v += co_await a5;
     }
 
-    print();
+    print(PRI1);
     print(PRI1, "coroutine4(): co_return v+1 = %d;\n", v+1);
     co_return v+1;
 }
@@ -136,7 +136,7 @@ int main()
         print(PRI1, "main(): ---------- iteration %d ----------\n", i);
         print(PRI1, "main(): async_task<int> a1 = coroutine1();\n");
         async_task<int> a1 = coroutine1();
-        print(); print(PRI1, "main(): int v = a1.get_result();\n");
+        print(PRI1); print(PRI1, "main(): int v = a1.get_result();\n");
         int v = a1.get_result();
         print(PRI1, "main(): v = %d\n", v);
     }

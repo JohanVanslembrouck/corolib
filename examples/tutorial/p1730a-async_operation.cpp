@@ -1,5 +1,5 @@
 /**
- * @file p1730-async_operation.cpp
+ * @file p1730a-async_operation.cpp
  * @brief
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
@@ -10,9 +10,9 @@
 
 using namespace corolib;
 
-#include "p1730.h"
+#include "p1730a.h"
 
-void completionflow(Class1730& obj)
+void completionflow(Class1730a& obj)
 {
     // Begin manual event completion
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
@@ -52,7 +52,7 @@ int main()
 
         Class01 object01;
         Class01 object02;
-        Class1730 obj{ object01, object02 };
+        Class1730a obj{ object01, object02 };
         print(PRI1, "main(): async_ltask<int> a = obj.coroutine1();\n");
         async_ltask<int> a = obj.coroutine1();
         print(PRI1, "main(): a.start();\n");
@@ -62,12 +62,11 @@ int main()
         completionflow(obj);
 
         print(PRI1, "main(): int v = a.get_result();\n");
-        int v = a.get_result(false); // otherwise, hangs on async_task_base::get_result(): m_coro_handle.promise().m_sema.wait()
-                                     // application is single-threaded and result is not known here
+        int v = a.get_result();
         print(PRI1, "main(): v = %d\n", v);
 
-        print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(100));\n");
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(0));
     }
 
     print(PRI1, "main(): return 0;\n");

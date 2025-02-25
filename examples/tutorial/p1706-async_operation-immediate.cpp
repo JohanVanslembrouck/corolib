@@ -1,5 +1,5 @@
 /**
- * @file p1700-async_operation.cpp
+ * @file p1706-async_operation-immediate.cpp
  * @brief
  * Starts an asynchronous operation that will be completed from the main() function.
  *
@@ -17,29 +17,13 @@ extern std::function<void(int)> eventHandler;       // p1700.cpp
 
 void completionflow()
 {
-    // Begin manual event completion
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(0));
-
-    print(PRI1, "completionflow(): before eventHandler(10);\n");
-    eventHandler(10);
-    print(PRI1, "completionflow(): after eventHandler(10);\n");
-
-    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds());\n");
-    std::this_thread::sleep_for(std::chrono::milliseconds(0));
-
-    print(PRI1, "completionflow(): before eventHandler(10);\n");
-    eventHandler(10);
-    print(PRI1, "completionflow(): after eventHandler(10);\n");
-
-    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
-    std::this_thread::sleep_for(std::chrono::milliseconds(0));
-    // End manual event completion
 }
 
 int main()
 {
-    useMode = UseMode::USE_NONE;
+    useMode = UseMode::USE_IMMEDIATE_COMPLETION;
 
     set_priority(0x01);        // Use 0x03 to follow the flow in corolib
 
@@ -60,7 +44,7 @@ int main()
         std::this_thread::sleep_for(std::chrono::milliseconds(0));
     }
     print(PRI1);
-    reinit();
+	reinit();
     {
         print(PRI1, "main(): async_ltask<void> a = coroutine0();\n");
         async_ltask<void> a = coroutine0();

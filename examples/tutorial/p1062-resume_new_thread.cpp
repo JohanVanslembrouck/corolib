@@ -6,7 +6,7 @@
  * coroutine5 co_awaits a resume_new_thread object that reverses the conrol flow.
  * See the description of resume_new_thread for more information.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #include <thread>
@@ -77,7 +77,7 @@ async_task<int> coroutine3()
     print(PRI1, "coroutine3(): int v1 = co_await a1;\n");
     int v1 = co_await a1;
 
-    print();
+    print(PRI1);
     print(PRI1, "coroutine3(): async_task<int> a2 = coroutine4();\n");
     async_task<int> a2 = coroutine4();
     print(PRI1, "coroutine3(): int v2 = co_await a2;\n");

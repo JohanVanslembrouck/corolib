@@ -7,7 +7,7 @@
  * this example resumes at coroutine4 by using the coroutine_handle to this coroutine.
  * This is not the way to do, of course.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #include <corolib/print.h>
@@ -95,13 +95,13 @@ int main()
     tasks[1] = &a1;
     tasks[0] = nullptr;
 
-    print(); 
+    print(PRI1); 
     //print(PRI1, "main(): are.resume();\n");
     //are1.resume();
     print(PRI1, "main(): tasks[4]->start();\n");
     tasks[4]->start();
    
-    print(); print(PRI1, "main(): int v = a1.get_result();\n");
+    print(PRI1); print(PRI1, "main(): int v = a1.get_result();\n");
     int v = a1.get_result();
     print(PRI1, "main(): v = %d\n", v);
     return 0;

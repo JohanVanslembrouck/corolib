@@ -3,7 +3,7 @@
  * @brief
  * See header file.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #include "p1120-auto_reset_event-oneway_task.h"
@@ -24,16 +24,16 @@ int main()
         print(PRI1, "main(): async_task<int> a1 = obj.coroutine1();\n");
         async_task<int> a1 = obj.coroutine1();
 
-        print(); print(PRI1, "main(): m2.resume();\n");
+        print(PRI1); print(PRI1, "main(): m2.resume();\n");
         m2.resume();
-        print(); print(PRI1, "main(): m1.resume();\n");
+        print(PRI1); print(PRI1, "main(): m1.resume();\n");
         m1.resume();
-        print(); print(PRI1, "main(): m1.resume();\n");
+        print(PRI1); print(PRI1, "main(): m1.resume();\n");
         m1.resume();
-        print(); print(PRI1, "main(): m2.resume();\n");
+        print(PRI1); print(PRI1, "main(): m2.resume();\n");
         m2.resume();
 
-        print(); print(PRI1, "main(): int v = a1.get_result();\n");
+        print(PRI1); print(PRI1, "main(): int v = a1.get_result();\n");
         int v = a1.get_result();
         print(PRI1, "main(): v = %d\n", v);
     }

@@ -2,7 +2,7 @@
  * @file p2000.h
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #ifndef _P2000_H_
@@ -14,16 +14,9 @@
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
 
-using namespace corolib;
+#include "use_mode.h"
 
-enum class UseMode
-{
-    USE_NONE,
-    USE_EVENTQUEUE,
-    USE_THREAD,
-    USE_THREAD_QUEUE,
-    USE_IMMEDIATE_COMPLETION
-};
+using namespace corolib;
 
 extern UseMode useMode;
 extern async_operation<std::optional<int>> op1;

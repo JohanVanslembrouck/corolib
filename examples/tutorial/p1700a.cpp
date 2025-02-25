@@ -11,7 +11,7 @@
  * Afterwards, these objects are co_awaited in the coroutines.
  * For new runs (iterations), the async_ltask<int> objects have to be re-initialized.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #include <functional>
@@ -40,14 +40,17 @@ void async_op(std::function<void(int)>&& completionHandler)
     switch (useMode)
     {
     case UseMode::USE_NONE:
+        print(PRI1, "async_op(): UseMode::USE_NONE\n");
         // Nothing to be done here: eventHandler should be called "manually" by the application
         eventHandler = completionHandler;
         break;
     case UseMode::USE_EVENTQUEUE:
+        print(PRI1, "async_op(): UseMode::USE_EVENTQUEUE\n");
         eventQueue.push(std::move(completionHandler));
         break;
     case UseMode::USE_THREAD:
     {
+        print(PRI1, "async_op(): UseMode::USE_THREAD\n");
         std::thread thread1([completionHandler]() {
             print(PRI1, "async_op(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
@@ -61,6 +64,7 @@ void async_op(std::function<void(int)>&& completionHandler)
     }
     case UseMode::USE_THREAD_QUEUE:
     {
+        print(PRI1, "async_op(): UseMode::USE_THREAD_QUEUE\n");
         queueSize++;
 
         std::thread thread1([completionHandler]() {
@@ -76,7 +80,8 @@ void async_op(std::function<void(int)>&& completionHandler)
         break;
     }
     case UseMode::USE_IMMEDIATE_COMPLETION:
-        eventHandler(10);
+        print(PRI1, "async_op(): UseMode::USE_IMMEDIATE_COMPLETION\n");
+        completionHandler(10);
         break;
     }
 }
@@ -142,11 +147,11 @@ async_ltask<int> coroutine3()
     a5 = coroutine5();
     a4 = coroutine4();
 
-    print();
+    print(PRI1);
     print(PRI1, "coroutine3(): int v2 = co_await a4;\n");
     int v2 = co_await a4;
 
-    print();
+    print(PRI1);
     print(PRI1, "coroutine3(): co_return v1+v2+1 = %d;\n", v1 + v2 + 1);
     co_return v1 + v2 + 1;
 }

@@ -1,3 +1,10 @@
+/**
+ * @file use_mode.h
+ * @brief
+ *
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ */
+
 #ifndef USE_MODE_H
 #define USE_MODE_H
 

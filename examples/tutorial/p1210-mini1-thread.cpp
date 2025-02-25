@@ -6,7 +6,7 @@
  * A thread launched by coroutine5 calls set_and_resume() on a mini1 object after a delay of 1 second.
  * This call resumes the coroutine that co_waits the mini1 object, which is coroutine5 itself.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #include <thread>
@@ -26,7 +26,7 @@ async_task<int> coroutine5()
     std::thread thread1([&]() {
         print(PRI1, "thread1: std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        print(); print(PRI1, "thread1: m.set_and_resume(42);\n");
+        print(PRI1); print(PRI1, "thread1: m.set_and_resume(42);\n");
         m.set_and_resume(1);
     });
     thread1.detach();
@@ -54,13 +54,13 @@ async_task<int> coroutine3()
     print(PRI1, "coroutine3(): int v1 = co_await a1;\n");
     int v1 = co_await a1;
 
-    print();
+    print(PRI1);
     print(PRI1, "coroutine3(): async_task<int> a2 = coroutine4();\n");
     async_task<int> a2 = coroutine4();
     print(PRI1, "coroutine3(): int v2 = co_await a2;\n");
     int v2 = co_await a2;
 
-    print();
+    print(PRI1);
     print(PRI1, "coroutine3(): co_return v1+v2+1 = %d;\n", v1+v2+1);
     co_return v1+v2+1;
 }

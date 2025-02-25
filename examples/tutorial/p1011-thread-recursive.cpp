@@ -2,7 +2,7 @@
  * @file p1011-thread-recursive.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #include <thread>
@@ -36,7 +36,7 @@ async_task<int> coroutine5()
         print(PRI1, "thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-        print();
+        print(PRI1);
         print(PRI1, "thread1: p.set_return_value(1);\n");
         p.return_value(1);
         p.final_suspend();

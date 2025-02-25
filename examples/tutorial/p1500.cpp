@@ -10,7 +10,7 @@
  * a coroutine that is resumed from the event queue (coroutine5 in this case)
  * has to complete a coroutine that it has under its control (coroutine11 in this case).
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #include <functional>
@@ -107,13 +107,13 @@ async_task<int> coroutine3()
     print(PRI1, "coroutine3(): int v1 = co_await a1;\n");
     int v1 = co_await a1;
 
-    print();
+    print(PRI1);
     print(PRI1, "coroutine3(): async_task<int> a2 = coroutine4();\n");
     async_task<int> a2 = coroutine4();
     print(PRI1, "coroutine3(): int v2 = co_await a2;\n");
     int v2 = co_await a2;
 
-    print();
+    print(PRI1);
     print(PRI1, "coroutine3(): co_return v1+v2+1 = %d;\n", v1 + v2 + 1);
     co_return v1 + v2 + 1;
 }

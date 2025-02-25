@@ -3,7 +3,7 @@
  * @brief
  * This example has the same structure and result as p1000.cpp but uses pure functions.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #include <corolib/print.h>
@@ -35,7 +35,7 @@ int function3()
     print(PRI1, "function3(): int v1 = a1;\n");
     int v1 = a1;
 
-    print();
+    print(PRI1);
     print(PRI1, "function3(): int a2 = function4();\n");
     int a2 = function4();
     print(PRI1, "function3(): int v2 = a2;\n");

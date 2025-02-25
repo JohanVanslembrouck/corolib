@@ -8,7 +8,7 @@
  *
  * In this example the coroutines are not suspended/resumed, but simply return.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #include <corolib/print.h>
@@ -70,7 +70,7 @@ async_task<int> coroutine3()
     print(PRI1, "coroutine3(): int v = co_await a1;\n");
     int v1 = co_await a1;
 
-    print();
+    print(PRI1);
     print(PRI1, "coroutine3(): async_task<int> a2 = coroutine4();\n");
     async_task<int> a2 = coroutine4();
     print(PRI1, "coroutine3(): int v = co_await a2;\n");

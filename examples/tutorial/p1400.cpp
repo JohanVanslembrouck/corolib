@@ -6,7 +6,7 @@
  * coroutine3 calls coroutine4 twice.
  * coroutine5 starts an asynchronous operation and awaits its completion.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #include <functional>
@@ -41,17 +41,18 @@ void async_op(std::function<void(int)>&& completionHandler)
     switch (useMode)
     {
     case UseMode::USE_NONE:
+        print(PRI1, "async_op(): UseMode::USE_NONE\n");
         // Nothing to be done here: eventHandler should be called "manually" by the application
         eventHandler = completionHandler;
         break;
     case UseMode::USE_EVENTQUEUE:
-    {
+        print(PRI1, "async_op(): UseMode::USE_EVENTQUEUE\n");
         //std::function<void(void)> completionHandler1 = [completionHandler]() { completionHandler(10); };    // Not used yet
         eventQueue.push(std::move(completionHandler));
         break;
-    }
     case UseMode::USE_THREAD:
     {
+        print(PRI1, "async_op(): UseMode::USE_THREAD\n");
         if (awaker)
             awaker->addThread();
 
@@ -79,6 +80,7 @@ void async_op(std::function<void(int)>&& completionHandler)
     }
     case UseMode::USE_THREAD_QUEUE:
     {
+        print(PRI1, "async_op(): UseMode::USE_THREAD_QUEUE\n");
         queueSize++;
 
         std::thread thread1([completionHandler]() {
@@ -95,6 +97,7 @@ void async_op(std::function<void(int)>&& completionHandler)
         break;
     }
     case UseMode::USE_IMMEDIATE_COMPLETION:
+        print(PRI1, "async_op(): UseMode::USE_IMMEDIATE_COMPLETION\n");
         completionHandler(10);
         break;
     }

@@ -5,7 +5,7 @@
  * coroutineI (I = 1..4) co_awaits coroutineI+1.
  * See description of coroutine5 for more information on this leaf coroutine that reverses the control flow.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #include <thread>
@@ -40,7 +40,7 @@ async_task<int> coroutine5()
         print(PRI1, "thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-        print();
+        print(PRI1);
         print(PRI1, "thread1: p.set_return_value(1);\n");
         p.return_value(1);
         p.final_suspend();
@@ -73,7 +73,7 @@ async_task<int> coroutine3()
     print(PRI1, "coroutine3(): int v1 = co_await a1;\n");
     int v1 = co_await a1;
 
-    print();
+    print(PRI1);
     print(PRI1, "coroutine3(): eager<int> a2 = coroutine4();\n");
     async_task<int> a2 = coroutine4();
     print(PRI1, "coroutine3(): int v2 = co_await a2;\n");
