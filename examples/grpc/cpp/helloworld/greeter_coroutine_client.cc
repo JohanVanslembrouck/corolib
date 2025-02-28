@@ -3,7 +3,7 @@
  * @brief Added coroutine implementation.
  * Based on the implementation in greeter_async_client.cc and greeter_async_client2.cc.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 /*
@@ -170,15 +170,7 @@ public:
         rpc->Finish(&reply, &status, (void*)idx64);
 
         grpcEvent_.p = (void*)idx64;
-        grpcEvent_.eventHandler =
-            [this, idx]() {
-            async_operation_base* om_async_operation = get_async_operation(idx);
-            async_operation<void>* om_async_operation_t =
-                static_cast<async_operation<void>*>(om_async_operation);
-            if (om_async_operation_t) {
-                om_async_operation_t->completed();
-            }
-        };
+        grpcEvent_.eventHandler = [this, idx]() { completionHandler_v(idx); };
     }
 
     // Based upon AsyncCompleteRpc in greeter_async_client2.cc.
@@ -226,8 +218,13 @@ int main(int argc, char** argv)  {
   // (use of InsecureChannelCredentials()).
   GreeterClient greeter(grpc::CreateChannel(
                                 "localhost:50051", grpc::InsecureChannelCredentials()));
-  std::string user("coroutine world");
-  greeter.SayHelloCo(user);
-  greeter.AsyncCompleteRpc();
+
+  for (int i = 0; i < 10; ++i) {
+      std::string user("coroutine world ");
+      user += std::to_string(i);
+      async_task<void> t = greeter.SayHelloCo(user);
+      greeter.AsyncCompleteRpc();
+      t.wait();
+  }
   return 0;
 }

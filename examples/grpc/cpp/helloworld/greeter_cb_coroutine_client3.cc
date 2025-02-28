@@ -1,10 +1,15 @@
 /**
- * @file greeter_cb_coroutine_client2.cc
+ * @file greeter_cb_coroutine_client3.cc
  * @brief Added coroutine implementation.
  * Based on the implementation in greeter_callback_client.cc and greeter_cb_coroutine_client.cc.
  * 
  * In this variant start_SayHello returns async_operation<Status> instead of async_operation<void>.
  * Consequently, there is no need to pass Status as reference argument to start_SayHello.
+ * 
+ * In contrast to greeter_cb_coroutine_client2.cc, this implementation uses an event queue.
+ * The callback function (that runs on a dedicated thread) pushes completionHandler onto the event queue.
+ * It will be popped from the event queue by the main thread.
+ * This minimizes the (application) code that runs on the completion thread.
  * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
@@ -45,6 +50,10 @@
 #else
 #include "helloworld.grpc.pb.h"
 #endif
+
+#include "eventqueuethr.h"
+
+EventQueueThrFunctionVoidVoid eventQueueThr;
 
 using grpc::Channel;
 using grpc::ClientContext;
@@ -169,7 +178,11 @@ class GreeterClient : public CommService {
           [index, this](Status s) {
               print(PRI1, "start_SayHello: handler\n");
               Status status = std::move(s);
-              completionHandler<Status>(index, status);
+              // Difference with reeter_cb_coroutine_client3.cc
+              eventQueueThr.push(
+                  [this, index, status]() {
+                      this->completionHandler<Status>(index, status);
+                  });
           });
       return ret;
   }
@@ -207,6 +220,7 @@ async_task<void> runSayHelloAsync2(GreeterClient& greeter) {
         std::string user("coroutine world: eager - get_result() ");
         user += std::to_string(i);
         async_task<std::string> t = greeter.SayHelloAsync(user);
+        runEventQueue(eventQueueThr, 1);
         print(PRI1, "runSayHelloAsync2: t.get_result();\n");
         std::string reply = t.get_result();
         print(PRI1, "runSayHelloAsync2: Greeter received: %s\n", reply.c_str());
@@ -234,6 +248,7 @@ async_ltask<void> runSayHelloAsyncL2(GreeterClient& greeter) {
         user += std::to_string(i);
         async_ltask<std::string> t = greeter.SayHelloAsyncL(user);
         t.start();
+        runEventQueue(eventQueueThr, 1);
         print(PRI1, "runSayHelloAsyncL: t.get_result();\n");
         std::string reply = t.get_result();
         print(PRI1, "runSayHelloAsyncL: Greeter received: %s\n", reply.c_str());
@@ -279,6 +294,8 @@ int main(int argc, char** argv) {
 
   print(PRI1); print(PRI1, "main: async_task<void> t1 = runSayHelloAsync(greeter);\n");
   async_task<void> t1 = runSayHelloAsync(greeter);
+  print(PRI1, "main: runEventQueue(eventQueueThr, NR_INTERACTIONS);\n");
+  runEventQueue(eventQueueThr, NR_INTERACTIONS);
   print(PRI1, "main: t1.wait();\n");
   t1.wait();
 
@@ -291,6 +308,8 @@ int main(int argc, char** argv) {
   async_ltask<void> t3 = runSayHelloAsyncL(greeter);
   print(PRI1, "main: t3.start();\n");
   t3.start();
+  print(PRI1, "main: runEventQueue(eventQueueThr, NR_INTERACTIONS);\n");
+  runEventQueue(eventQueueThr, NR_INTERACTIONS);
   print(PRI1, "main: t3.wait();\n");
   t3.wait();
 

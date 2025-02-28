@@ -3,7 +3,7 @@
  * @brief Added coroutine implementation.
  * Based on the implementation in greeter_async_client.cc and greeter_async_client2.cc.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 /*
@@ -128,6 +128,7 @@ public:
             co_await t;
             std::cout << "Greeter received: " << t.get_result() << std::endl;
         }
+        done_ = true;
         co_return;
     }
 
@@ -173,15 +174,7 @@ public:
         rpc->Finish(&reply, &status, (void*)idx64);
 
         grpcEvent_.p = (void*)idx64;
-        grpcEvent_.eventHandler =
-            [this, idx]() {
-            async_operation_base* om_async_operation = get_async_operation(idx);
-            async_operation<void>* om_async_operation_t =
-                static_cast<async_operation<void>*>(om_async_operation);
-            if (om_async_operation_t) {
-                om_async_operation_t->completed();
-            }
-        };
+        grpcEvent_.eventHandler = [this, idx]() { completionHandler_v(idx); };
     }
 
     // Based upon AsyncCompleteRpc in greeter_async_client2.cc.
@@ -192,7 +185,7 @@ public:
         // Block until the next result is available in the completion queue "cq".
         // The return value of Next should always be checked. This return value
         // tells us whether there is any kind of event or the cq_ is shutting down.
-        while (cq_.Next(&got_tag, &ok)) {
+        while (!done_ && cq_.Next(&got_tag, &ok)) {
             // Verify that the result from "cq" corresponds, by its tag, our previous
             // request and that the request was completed successfully. Note that "ok"
             // corresponds solely to the request for updates introduced by Finish().
@@ -220,6 +213,8 @@ private:
     };
 
     GRPCEvent grpcEvent_;
+
+    bool done_ = false;
     // Added for the use of corolib - end
 };
 
@@ -231,8 +226,8 @@ int main(int argc, char** argv) {
   GreeterClient greeter(grpc::CreateChannel(
                                 "localhost:50051", grpc::InsecureChannelCredentials()));
 
-  print(PRI1, "Press control - c to quit\n");
-  greeter.SayHelloCo();
+  async_task<void> t = greeter.SayHelloCo();
   greeter.AsyncCompleteRpc();
+  t.wait();
   return 0;
 }
