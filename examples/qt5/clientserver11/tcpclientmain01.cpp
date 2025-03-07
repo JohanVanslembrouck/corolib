@@ -53,5 +53,6 @@ int main(int argc, char *argv[])
     async_task<int> t = tcpClient01.mainTask();
 
     int res = app.exec();
+    (void)res;
     return t.get_result();
 }
