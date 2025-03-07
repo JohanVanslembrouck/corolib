@@ -168,7 +168,7 @@ async_task<int> mainflowWA1(std::initializer_list<CommClient*> client_il)
     {
         print(PRI1, "mainflowWA1: %d ------------------------------------------------------------------\n", i);
 
-        print();
+        print(PRI1);
         print(PRI1, "mainflowWA1: connecting...\n");
 
         // Connecting
@@ -183,7 +183,7 @@ async_task<int> mainflowWA1(std::initializer_list<CommClient*> client_il)
         print(PRI1, "mainflowWA1: co_await wac;\n");
         co_await wac;
 
-        print();
+        print(PRI1);
         print(PRI1, "mainflowWA1: writing...\n");
 
         // Writing
@@ -476,7 +476,7 @@ async_task<int> mainflowWA5(std::initializer_list<CommClient*> client_il)
     {
         print(PRI1, "mainflowWA5: %d ------------------------------------------------------------------\n", i);
 
-        print();
+        print(PRI1);
         print(PRI1, "mainflowWA5: connecting...\n");
 
         // Connecting
@@ -491,7 +491,7 @@ async_task<int> mainflowWA5(std::initializer_list<CommClient*> client_il)
         print(PRI1, "mainflowWA5: co_await wac;\n");
         co_await wac;
 
-        print();
+        print(PRI1);
         print(PRI1, "mainflowWA5: writing...\n");
 
         // Writing

@@ -257,7 +257,7 @@ public:
         while (1)
         {
             // Reading
-            print();
+            print(PRI1);
             print(PRI1, "read_client_request: async_operation<std::string> sr = commClient->start_reading();\n");
             async_operation<std::string> sr = commClient->start_reading();
             print(PRI1, "read_client_request: std::string str = co_await sr;\n");
