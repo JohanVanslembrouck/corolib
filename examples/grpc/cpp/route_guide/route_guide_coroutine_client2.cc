@@ -10,7 +10,7 @@
  * In contrast to the version in route_guide_coroutine_client.cc, ListFeaturesCo now contains a loop that prints
  * the received features inside this loop instead of in the callback function ReaderCo::OnReadDone.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 /*
@@ -69,7 +69,13 @@ using routeguide::RouteGuide;
 using routeguide::RouteNote;
 using routeguide::RouteSummary;
 
+#include "eventqueuethr.h"
+
+EventQueueThrFunctionVoidVoid eventQueueThr;
+
 using namespace corolib;
+
+const int NR_INTERACTIONS = 5;
 
 Point MakePoint(long latitude, long longitude) {
   Point p;
@@ -150,51 +156,46 @@ class ReaderCo : public grpc::ClientReadReactor<Feature> {
 public:
     ReaderCo(RouteGuide::Stub* stub, float coord_factor,
         const routeguide::Rectangle& rect)
-        : stub_(stub)
-        , rect_(rect)
-        , coord_factor_(coord_factor) {
-    }
-    void start() {
-        stub_->async()->ListFeatures(&context_, &rect_, this);
+        : coord_factor_(coord_factor) {
+        stub->async()->ListFeatures(&context_, &rect, this);
         StartRead(&feature_);
         StartCall();
     }
     void OnReadDone(bool ok) override {
         if (ok) {
+            print(PRI5, "OnReadDone\n");
             ReaderResult result;
             result.state = ReaderState::Value;
             result.feature = feature_;
-            eventHandler(result);
+            eventQueueThr.push(
+                [this, result]() {
+                    this->completionHandler_(result);
+                });
             StartRead(&feature_);
         }
     }
     void OnDone(const Status& s) override {
+        print(PRI1, "OnDone\n");
         status_ = s;
-        done_ = true;
         ReaderResult result;
         result.state = ReaderState::Done;
         result.status = status_;
-        eventHandler(result);
-        std::unique_lock<std::mutex> l(mu_);
-        cv_.notify_one();
+        eventQueueThr.pushFinal(
+            [this, result]() {
+                this->completionHandler_(result);
+            });
     }
-    void Await() {
-        std::unique_lock<std::mutex> l(mu_);
-        cv_.wait(l, [this] { return done_; });
+
+    void setCompletionHandler(std::function<void(ReaderResult)>&& completionHandler) {
+        completionHandler_ = std::move(completionHandler);
     }
 
 private:
-    RouteGuide::Stub* stub_;
-    routeguide::Rectangle rect_;
     ClientContext context_;
     float coord_factor_;
     Feature feature_;
     Status status_;
-    std::mutex mu_;
-    std::condition_variable cv_;
-    bool done_ = false;
-public:
-    std::function<void(ReaderResult)> eventHandler;
+    std::function<void(ReaderResult)> completionHandler_;
 };
 
 class Recorder : public grpc::ClientWriteReactor<Point> {
@@ -388,7 +389,9 @@ class RouteGuideClient : public CommService {
       op.auto_reset(true);
       bool done = false;
       do {
+          print(PRI5, "ListFeaturesCo: before co_await\n");
           ReaderResult result = co_await op;
+          print(PRI5, "ListFeaturesCo: after co_await\n");
           if (result.state == ReaderState::Value) {
               std::cout << "Found feature called " << result.feature.name() << " at "
                   << result.feature.location().latitude() / kCoordFactor_ << ", "
@@ -410,34 +413,17 @@ class RouteGuideClient : public CommService {
       co_return;
   }
 
-  void startReader() {
-      if (pReaderCo_) {
-          pReaderCo_->start();
-          pReaderCo_->Await();
-      }
-  }
+  int count = 0;
 
   async_operation<ReaderResult> start_ListFeatures(ReaderCo* pReaderCo) {
       int index = get_free_index();
       async_operation<ReaderResult> ret{ this, index };
-      start_ListFeatures_impl(index, pReaderCo);
+      pReaderCo->setCompletionHandler(
+          [this, index](ReaderResult result) {
+                print(PRI5, "completionHandler called\n");
+                this->completionHandler<ReaderResult>(index, result);
+          });
       return ret;
-  }
-
-  void start_ListFeatures_impl(int idx, ReaderCo* pReaderCo) {
-      pReaderCo_ = pReaderCo;
-
-      pReaderCo_->eventHandler =
-          [this, idx](ReaderResult result)
-      {
-          async_operation_base* om_async_operation = get_async_operation(idx);
-          async_operation<ReaderResult>* om_async_operation_t =
-              static_cast<async_operation<ReaderResult>*>(om_async_operation);
-          if (om_async_operation_t)
-          {
-              om_async_operation_t->set_result_and_complete(result);
-          }
-      };
   }
 
   // RecordRoute
@@ -512,33 +498,70 @@ class RouteGuideClient : public CommService {
   const float kCoordFactor_ = 10000000.0;
   std::unique_ptr<RouteGuide::Stub> stub_;
   std::vector<Feature> feature_list_;
-  ReaderCo* pReaderCo_ = nullptr;
 };
 
+async_task<void> runListFeaturesCo(RouteGuideClient& guide)
+{
+    print(PRI1, "runListFeaturesCo\n");
+    for (int i = 0; i < NR_INTERACTIONS; ++i) {
+        std::cout << "-------------- ListFeatures using coroutines (1) (" << i << ") --------------" << std::endl;
+        async_task<void> tlf = guide.ListFeaturesCo();
+        co_await tlf;
+    }
+    co_return;
+}
+
+async_task<void> runListFeaturesCo2(RouteGuideClient& guide)
+{
+    print(PRI1, "runListFeaturesCo2\n");
+    for (int i = 0; i < NR_INTERACTIONS; ++i) {
+        std::cout << "-------------- ListFeatures using coroutines (2) (" << i << ") --------------" << std::endl;
+        async_task<void> tlf = guide.ListFeaturesCo();
+        eventQueueThr.reset();
+        runEventQueue(eventQueueThr);
+        //tlf.wait();
+    }
+    co_return;
+}
+
 int main(int argc, char** argv) {
+  set_print_level(0x01);
+
+  print(PRI1, "Entered main\n");
+
   // Expect only arg: --db_path=path/to/route_guide_db.json.
   std::string db = routeguide::GetDbFileContent(argc, argv);
   RouteGuideClient guide(
       grpc::CreateChannel("localhost:50051",
                           grpc::InsecureChannelCredentials()),
       db);
-
+  
   std::cout << "-------------- GetFeature --------------" << std::endl;
   guide.GetFeature();
-  std::cout << "-------------- ListFeatures --------------" << std::endl;
-  guide.ListFeatures();
+
+  for (int i = 0; i < NR_INTERACTIONS; ++i) {
+      std::cout << "-------------- ListFeatures (" << i << ") --------------" << std::endl;
+      guide.ListFeatures();
+  }
   std::cout << "-------------- RecordRoute --------------" << std::endl;
   guide.RecordRoute();
   std::cout << "-------------- RouteChat --------------" << std::endl;
   guide.RouteChat();
 
-  std::cout << "-------------- ListFeatures using coroutines (1) --------------" << std::endl;
-  guide.ListFeaturesCo();
-  guide.startReader();
-  std::cout << "-------------- ListFeatures using coroutines (2) --------------" << std::endl;
-  guide.ListFeaturesCo();
-  guide.startReader();
+  print(PRI1, "main: async_task<void> tlf1 = runListFeaturesCo(guide);\n");
+  async_task<void> tlf1 = runListFeaturesCo(guide);
+  for (int i = 0; i < NR_INTERACTIONS; ++i) {
+      eventQueueThr.reset();
+      runEventQueue(eventQueueThr);
+  }
+  print(PRI1, "main: tlf1.wait();\n");
+  //tlf1.wait();
 
+  print(PRI1, "main: async_task<void> tlf2 = runListFeaturesCo(guide);\n");
+  async_task<void> tlf2 = runListFeaturesCo2(guide);
+  print(PRI1, "main: tlf2.wait();\n");
+  tlf2.wait();
+#
   print(PRI1, "Leaving main\n");
   return 0;
 }

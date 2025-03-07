@@ -53,6 +53,8 @@ using helloworld::HelloRequest;
 
 using namespace corolib;
 
+const int NR_ITERATIONS = 100;
+
 class GreeterClient : public CommService
 {
 public:
@@ -122,7 +124,7 @@ public:
 
     // Top level coroutine. Added because main() cannot be a coroutine.
     async_task<void> SayHelloCo() {
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < NR_ITERATIONS; i++) {
             std::string user("coroutine world " + std::to_string(i));
             async_task<std::string> t = SayHelloAsync(user);
             co_await t;

@@ -59,6 +59,8 @@ using grpc::Status;
 
 using namespace corolib;
 
+const int NR_ITERATIONS = 100;
+
 class GreeterClient : public CommService
 {
 public:
@@ -88,11 +90,9 @@ public:
         std::stringstream strstr;
         // Act upon the status of the actual RPC.
         if (hello_status.ok()) {
-            //std::cout << "Greeter received: " << hello_response.message() << std::endl;
             strstr << "Greeter received: " << hello_response.message() << std::endl;
         }
         else {
-            //std::cerr << "Greeter failed: " << hello_status.error_message() << std::endl;
             strstr << "Greeter failed: " << hello_status.error_message() << std::endl;
         }
         co_return strstr.str();
@@ -101,24 +101,13 @@ public:
     async_operation<Status> start_SayHello(ClientContext* pcontext, helloworld::HelloRequest& request, helloworld::HelloReply& reply) {
         int index = get_free_index();
         async_operation<Status> ret{ this, index };
-        start_SayHello_impl(index, pcontext, request, reply);
-        return ret;
-    }
-
-    void start_SayHello_impl(int idx, ClientContext* pcontext, helloworld::HelloRequest& request, helloworld::HelloReply& reply) {
         helloworld::Greeter::NewStub(channel_)->async()->SayHello(pcontext, &request, &reply,
-            [idx, this](Status s) {
+            [index, this](Status s) {
+                print(PRI5, "start_SayHello - completion handler\n");
                 Status status = std::move(s);
-
-                async_operation_base* om_async_operation = get_async_operation(idx);
-                async_operation<Status>* om_async_operation_t =
-                    static_cast<async_operation<Status>*>(om_async_operation);
-                if (om_async_operation_t) {
-                    om_async_operation_t->set_result(status);
-                    om_async_operation_t->completed();
-                }
-
+                completionHandler<Status>(index, status);
             });
+        return ret;
     }
 
     async_task<std::string> GetFeatureAsync() {
@@ -133,11 +122,9 @@ public:
 
         std::stringstream strstr;
         if (feature_status.ok()) {
-            //std::cout << "Found feature: " << feature_response.name() << std::endl;
             strstr << "Found feature: " << feature_response.name() << std::endl;
         }
         else {
-            //std::cerr << "Getting feature failed: " << feature_status.error_message() << std::endl;
             strstr << "Getting feature failed: " << feature_status.error_message() << std::endl;
         }
         co_return strstr.str();
@@ -146,24 +133,13 @@ public:
     async_operation<Status> start_GetFeature(ClientContext* pcontext, routeguide::Point& request, routeguide::Feature& reply) {
         int index = get_free_index();
         async_operation<Status> ret{ this, index };
-        start_GetFeature_impl(index, pcontext, request, reply);
-        return ret;
-    }
-
-    void start_GetFeature_impl(int idx, ClientContext* pcontext, routeguide::Point& request, routeguide::Feature& reply) {
         routeguide::RouteGuide::NewStub(channel_)->async()->GetFeature(pcontext, &request, &reply,
-            [idx, this](Status s) {
+            [index, this](Status s) {
+                print(PRI5, "start_GetFeature - completion handler\n");
                 Status status = std::move(s);
-
-                async_operation_base* om_async_operation = get_async_operation(idx);
-                async_operation<Status>* om_async_operation_t =
-                    static_cast<async_operation<Status>*>(om_async_operation);
-                if (om_async_operation_t) {
-                    om_async_operation_t->set_result(status);
-                    om_async_operation_t->completed();
-                }
-
+                completionHandler<Status>(index, status);
             });
+        return ret;
     }
 
 private:
@@ -182,7 +158,8 @@ int main(int argc, char** argv) {
   GreeterClient greeter(
       grpc::CreateChannel(target_str, grpc::InsecureChannelCredentials()));
 
-  for (int i = 0; i < 100; ++i) {
+  print(PRI1, "Using coroutines\n");
+  for (int i = 0; i < NR_ITERATIONS; ++i) {
       async_task<void> t = greeter.SayHello_GetFeatureCo();
       print(PRI2, "Before wait\n");
       t.wait();

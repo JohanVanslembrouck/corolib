@@ -53,6 +53,8 @@ using helloworld::HelloRequest;
 
 using namespace corolib;
 
+const int NR_ITERATIONS = 100;
+
 class GreeterClient : public CommService
 {
 public:
@@ -219,7 +221,7 @@ int main(int argc, char** argv)  {
   GreeterClient greeter(grpc::CreateChannel(
                                 "localhost:50051", grpc::InsecureChannelCredentials()));
 
-  for (int i = 0; i < 10; ++i) {
+  for (int i = 0; i < NR_ITERATIONS; ++i) {
       std::string user("coroutine world ");
       user += std::to_string(i);
       async_task<void> t = greeter.SayHelloCo(user);

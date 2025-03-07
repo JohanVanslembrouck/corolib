@@ -64,7 +64,7 @@ using helloworld::HelloRequest;
 
 using namespace corolib;
 
-const int NR_INTERACTIONS = 10;
+const int NR_ITERATIONS = 10;
 
 class GreeterClient : public CommService {
  public:
@@ -193,7 +193,7 @@ class GreeterClient : public CommService {
 
 void runSayHello(GreeterClient& greeter) {
     print(PRI1, "runSayHello\n");
-    for (int i = 0; i < NR_INTERACTIONS; ++i) {
+    for (int i = 0; i < NR_ITERATIONS; ++i) {
         std::string user("world ");
         user += std::to_string(i);
         std::string reply = greeter.SayHello(user);
@@ -203,7 +203,7 @@ void runSayHello(GreeterClient& greeter) {
 
 async_task<void> runSayHelloAsync(GreeterClient& greeter) {
     print(PRI1, "runSayHelloAsync\n");
-    for (int i = 0; i < NR_INTERACTIONS; ++i) {
+    for (int i = 0; i < NR_ITERATIONS; ++i) {
         std::string user("coroutine world: eager - co_await ");
         user += std::to_string(i);
         async_task<std::string> t = greeter.SayHelloAsync(user);
@@ -216,7 +216,7 @@ async_task<void> runSayHelloAsync(GreeterClient& greeter) {
 
 async_task<void> runSayHelloAsync2(GreeterClient& greeter) {
     print(PRI1, "runSayHelloAsync2\n");
-    for (int i = 0; i < NR_INTERACTIONS; ++i) {
+    for (int i = 0; i < NR_ITERATIONS; ++i) {
         std::string user("coroutine world: eager - get_result() ");
         user += std::to_string(i);
         async_task<std::string> t = greeter.SayHelloAsync(user);
@@ -230,7 +230,7 @@ async_task<void> runSayHelloAsync2(GreeterClient& greeter) {
 
 async_ltask<void> runSayHelloAsyncL(GreeterClient& greeter) {
     print(PRI1, "runSayHelloAsyncL\n");
-    for (int i = 0; i < NR_INTERACTIONS; ++i) {
+    for (int i = 0; i < NR_ITERATIONS; ++i) {
         std::string user("coroutine world: lazy - co_await ");
         user += std::to_string(i);
         async_ltask<std::string> t = greeter.SayHelloAsyncL(user);
@@ -243,7 +243,7 @@ async_ltask<void> runSayHelloAsyncL(GreeterClient& greeter) {
 
 async_ltask<void> runSayHelloAsyncL2(GreeterClient& greeter) {
     print(PRI1, "runSayHelloAsyncL2\n");
-    for (int i = 0; i < NR_INTERACTIONS; ++i) {
+    for (int i = 0; i < NR_ITERATIONS; ++i) {
         std::string user("coroutine world: lazy - get_result() ");
         user += std::to_string(i);
         async_ltask<std::string> t = greeter.SayHelloAsyncL(user);
@@ -295,7 +295,7 @@ int main(int argc, char** argv) {
   print(PRI1); print(PRI1, "main: async_task<void> t1 = runSayHelloAsync(greeter);\n");
   async_task<void> t1 = runSayHelloAsync(greeter);
   print(PRI1, "main: runEventQueue(eventQueueThr, NR_INTERACTIONS);\n");
-  runEventQueue(eventQueueThr, NR_INTERACTIONS);
+  runEventQueue(eventQueueThr, NR_ITERATIONS);
   print(PRI1, "main: t1.wait();\n");
   t1.wait();
 
@@ -309,7 +309,7 @@ int main(int argc, char** argv) {
   print(PRI1, "main: t3.start();\n");
   t3.start();
   print(PRI1, "main: runEventQueue(eventQueueThr, NR_INTERACTIONS);\n");
-  runEventQueue(eventQueueThr, NR_INTERACTIONS);
+  runEventQueue(eventQueueThr, NR_ITERATIONS);
   print(PRI1, "main: t3.wait();\n");
   t3.wait();
 

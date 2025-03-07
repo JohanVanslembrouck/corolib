@@ -3,7 +3,7 @@
   * @brief Added coroutine implementation. Based on the implementation in multigreeter_client.cc.
   * Original source: https://groups.google.com/g/grpc-io/c/2wyoDZT5eao
   * 
-  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
   */
 
 #include <iostream>
@@ -37,7 +37,7 @@ using hellostreamingworld::MultiGreeter;
 using hellostreamingworld::HelloReply;
 using hellostreamingworld::HelloRequest;
 
-#define USE_ORIGINAL 0
+#define USE_COROUTINES 1
 
 // Added for using corolib
 using namespace corolib;
@@ -47,7 +47,6 @@ public:
     explicit GreeterClient(std::shared_ptr<Channel> channel)
         : stub_(MultiGreeter::NewStub(channel)) {}
 
-#if USE_ORIGINAL
     // Assembles the client's payload and sends it to the server.
     void SayHello(const std::string& user) {
         HelloRequest request;
@@ -55,17 +54,18 @@ public:
         request.set_name(user);
 
         // Call object to store rpc data
-        AsyncClientCall* call = new AsyncClientCall;
+        AsyncClientCall* call = new AsyncClientCall(this);      // JVS: allow terminating the program automatically
 
         // stub_->AsyncSayHello() performs the RPC call, returning an instance to
         // store in "call". Because we are using the asynchronous API, we need to
         // hold on to the "call" instance in order to get updates on the ongoing RPC.
         call->response_reader = stub_->AsyncsayHello(&call->context, request, &cq_, (void*)call);
     }
-#else
+
     // Top level coroutine. Added because main() cannot be a coroutine.
     async_task<void> SayHelloCo(const std::string& user) {
         co_await SayHelloAsync(user);
+        done_ = true;           // JVS: allow terminating the program automatically
         co_return;
     }
 
@@ -90,24 +90,21 @@ public:
 
     void start_SayHello_impl(int idx, HelloRequest& request) {
         // Call object to store rpc data
-        AsyncClientCall* call = new AsyncClientCall;
+        AsyncClientCall* call = new AsyncClientCall(this);
 
         // stub_->AsyncSayHello() performs the RPC call, returning an instance to
         // store in "call". Because we are using the asynchronous API, we need to
         // hold on to the "call" instance in order to get updates on the ongoing RPC.
         call->response_reader = stub_->AsyncsayHello(&call->context, request, &cq_, (void*)call);
 
-        call->eventHandler =
+#if USE_COROUTINES
+        call->completionHandler =
             [this, idx](Status) {
-                async_operation_base* om_async_operation = get_async_operation(idx);
-                async_operation<void>* om_async_operation_t =
-                    static_cast<async_operation<void>*>(om_async_operation);
-                if (om_async_operation_t) {
-                    om_async_operation_t->completed();
-                }
+                print(PRI1, "completionHandler\n");
+                this->completionHandler_v(idx);
             };
-    }
 #endif
+    }
 
     // Used from main
     // Loop while listening for completed responses.
@@ -117,7 +114,7 @@ public:
         bool ok = false;
 
         // Block until the next result is available in the completion queue "cq".
-        while (cq_.Next(&got_tag, &ok)) {
+        while (!done_ && cq_.Next(&got_tag, &ok)) {         // JVS: allow terminating the program automatically
             // The tag in this example is the memory location of the call object
             ResponseHandler* responseHandler = static_cast<ResponseHandler*>(got_tag);
             std::cout << "Tag received: " << responseHandler << std::endl;
@@ -128,6 +125,8 @@ public:
             responseHandler->HandleResponse(ok);
         }
     }
+
+    bool done_ = false;     // JVS: allow terminating the program automatically
 
 private:
 
@@ -142,7 +141,7 @@ private:
         CallStatus callStatus_;
     public:
 
-        AsyncClientCall(): callStatus_(CREATE) {}
+        AsyncClientCall(GreeterClient* gc) : callStatus_(CREATE), gc_(gc) {}    // JVS: allow terminating the program automatically
 
         virtual ~AsyncClientCall() {}   // JVS: to avoid g++ complaining about the absence of a virtual destructor
 
@@ -152,10 +151,12 @@ private:
         // the server and/or tweak certain RPC behaviors.
         ClientContext context;
 
+        GreeterClient* gc_;     // JVS: allow terminating the program automatically
+
         // Storage for the status of the RPC upon completion.
         Status status;
-#if !USE_ORIGINAL
-        std::function<void(Status)> eventHandler;       // Added for the use of coroutines
+#if USE_COROUTINES
+        std::function<void(Status)> completionHandler;
 #endif
         std::unique_ptr<ClientAsyncReaderInterface<HelloReply>> response_reader;
 
@@ -186,8 +187,10 @@ private:
                 else {
                     std::cout << "RPC failed" << std::endl;
                 }
-#if !USE_ORIGINAL
-                eventHandler(status);       // Added for the use of coroutines
+#if USE_COROUTINES
+                completionHandler(status);
+#else
+                gc_->done_ = true;      // JVS: allow terminating the program automatically
 #endif
                 delete this;
                 break;
@@ -218,15 +221,17 @@ int main(int argc, char** argv) {
 
     // Spawn reader thread that loops indefinitely
     std::thread thread_ = std::thread(&GreeterClient::AsyncCompleteRpc, &greeter);
-#if USE_ORIGINAL
+#if !USE_COROUTINES
     std::string user("world");
     greeter.SayHello(user);  // The actual RPC call!
 #else
     std::string user("coroutine world");
-    greeter.SayHelloCo(user);
+    async_task<void> t = greeter.SayHelloCo(user);
+    t.wait();
 #endif
-    std::cout << "Press control-c to quit" << std::endl << std::endl;
-    thread_.join();  //blocks forever
+
+    //std::cout << "Press control-c to quit" << std::endl << std::endl;
+    thread_.join();
 
     return 0;
 }

@@ -54,9 +54,9 @@ using grpc::Channel;
 using grpc::ClientContext;
 using grpc::Status;
 
-#define USE_ORIGINAL 0
-
 using namespace corolib;
+
+const int NR_ITERATIONS = 100;
 
 class GreeterClient : public CommService
 {
@@ -65,7 +65,6 @@ public:
         : channel_(channel)
     {}
 
-#if USE_ORIGINAL
     // Assembles the client's payload, sends it and presents the response back
     // from the server.
     void SayHello_GetFeature() {
@@ -89,7 +88,8 @@ public:
         // Request to a Greeter service
         hello_request.set_name("user");
         helloworld::Greeter::NewStub(channel_)->async()->SayHello(
-            &hello_context, &hello_request, &hello_response, [&](Status status) {
+            &hello_context, &hello_request, &hello_response,
+            [&](Status status) {
                 std::lock_guard<std::mutex> lock(mu);
                 done_count++;
                 hello_status = std::move(status);
@@ -124,7 +124,7 @@ public:
                 << std::endl;
         }
     }
-#else
+
     async_task<void> SayHello_GetFeatureCo() {
         async_task<std::string> t1 = SayHelloAsync();
         async_task<std::string> t2 = GetFeatureAsync();
@@ -148,11 +148,9 @@ public:
         std::stringstream strstr;
         // Act upon the status of the actual RPC.
         if (hello_status.ok()) {
-            //std::cout << "Greeter received: " << hello_response.message() << std::endl;
             strstr << "Greeter received: " << hello_response.message() << std::endl;
         }
         else {
-            //std::cerr << "Greeter failed: " << hello_status.error_message() << std::endl;
             strstr << "Greeter failed: " << hello_status.error_message() << std::endl;
         }
         co_return strstr.str();
@@ -161,22 +159,13 @@ public:
     async_operation<void> start_SayHello(ClientContext* pcontext, helloworld::HelloRequest& request, helloworld::HelloReply& reply, Status& status) {
         int index = get_free_index();
         async_operation<void> ret{ this, index };
-        start_SayHello_impl(index, pcontext, request, reply, status);
-        return ret;
-    }
-
-    void start_SayHello_impl(int idx, ClientContext* pcontext, helloworld::HelloRequest& request, helloworld::HelloReply& reply, Status& status) {
         helloworld::Greeter::NewStub(channel_)->async()->SayHello(pcontext, &request, &reply,
-            [&status, idx, this](Status s) {
+            [&status, index, this](Status s) {
+                print(PRI5, "start_SayHello - completion handler\n");
                 status = std::move(s);
-
-                async_operation_base* om_async_operation = get_async_operation(idx);
-                async_operation<void>* om_async_operation_t =
-                    static_cast<async_operation<void>*>(om_async_operation);
-                if (om_async_operation_t) {
-                    om_async_operation_t->completed();
-                }
+                completionHandler_v(index);
             });
+        return ret;
     }
 
     async_task<std::string> GetFeatureAsync() {
@@ -192,11 +181,9 @@ public:
 
         std::stringstream strstr;
         if (feature_status.ok()) {
-            //std::cout << "Found feature: " << feature_response.name() << std::endl;
             strstr << "Found feature: " << feature_response.name() << std::endl;
         }
         else {
-            //std::cerr << "Getting feature failed: " << feature_status.error_message() << std::endl;
             strstr << "Getting feature failed: " << feature_status.error_message() << std::endl;
         }
         co_return strstr.str();
@@ -205,31 +192,22 @@ public:
     async_operation<void> start_GetFeature(ClientContext* pcontext, routeguide::Point& request, routeguide::Feature& reply, Status& status) {
         int index = get_free_index();
         async_operation<void> ret{ this, index };
-        start_GetFeature_impl(index, pcontext, request, reply, status);
+        routeguide::RouteGuide::NewStub(channel_)->async()->GetFeature(pcontext, &request, &reply,
+            [&status, index, this](Status s) {
+                print(PRI5, "start_GetFeature - completion handler\n");
+                status = std::move(s);
+                completionHandler_v(index);
+            });
         return ret;
     }
-
-    void start_GetFeature_impl(int idx, ClientContext* pcontext, routeguide::Point& request, routeguide::Feature& reply, Status& status) {
-        routeguide::RouteGuide::NewStub(channel_)->async()->GetFeature(pcontext, &request, &reply,
-            [&status, idx, this](Status s) {
-                status = std::move(s);
-
-                async_operation_base* om_async_operation = get_async_operation(idx);
-                async_operation<void>* om_async_operation_t =
-                    static_cast<async_operation<void>*>(om_async_operation);
-                if (om_async_operation_t) {
-                    om_async_operation_t->completed();
-                }
-
-            });
-    }
-#endif
 
 private:
     std::shared_ptr<Channel> channel_;
 };
 
 int main(int argc, char** argv) {
+  set_print_level(0x01);
+
   absl::ParseCommandLine(argc, argv);
   // Instantiate the client. It requires a channel, out of which the actual RPCs
   // are created. This channel models a connection to an endpoint specified by
@@ -241,10 +219,13 @@ int main(int argc, char** argv) {
   GreeterClient greeter(
       grpc::CreateChannel(target_str, grpc::InsecureChannelCredentials()));
 
-#if USE_ORIGINAL
-  greeter.SayHello_GetFeature();
-#else
-  for (int i = 0; i < 100; ++i) {
+  print(PRI1, "Not using coroutines\n");
+  for (int i = 0; i < NR_ITERATIONS; ++i) {
+      greeter.SayHello_GetFeature();
+  }
+
+  print(PRI1, "Using coroutines\n");
+  for (int i = 0; i < NR_ITERATIONS; ++i) {
       async_task<void> t = greeter.SayHello_GetFeatureCo();
       print(PRI2, "Before wait\n");
       t.wait();
@@ -253,7 +234,6 @@ int main(int argc, char** argv) {
       print(PRI2, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
-#endif
- 
+
   return 0;
 }

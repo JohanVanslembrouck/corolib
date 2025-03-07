@@ -41,7 +41,7 @@ public:
         request.set_name(user);
 
         // Call object to store rpc data
-        AsyncClientCall* call = new AsyncClientCall;
+        AsyncClientCall* call = new AsyncClientCall(this);      // JVS: allow terminating the program automatically
 
         // stub_->AsyncSayHello() performs the RPC call, returning an instance to
         // store in "call". Because we are using the asynchronous API, we need to
@@ -56,7 +56,7 @@ public:
         bool ok = false;
 
         // Block until the next result is available in the completion queue "cq".
-        while (cq_.Next(&got_tag, &ok)) {
+        while (!done_ && cq_.Next(&got_tag, &ok)) {         // JVS: allow terminating the program automatically
             // The tag in this example is the memory location of the call object
             ResponseHandler* responseHandler = static_cast<ResponseHandler*>(got_tag);
             std::cout << "Tag received: " << responseHandler << std::endl;
@@ -67,6 +67,8 @@ public:
             responseHandler->HandleResponse(ok);
         }
     }
+
+    bool done_ = false;     // JVS: allow terminating the program automatically
 
 private:
 
@@ -81,7 +83,7 @@ private:
         CallStatus callStatus_;
     public:
 
-        AsyncClientCall(): callStatus_(CREATE) {}
+        AsyncClientCall(GreeterClient* gc) : callStatus_(CREATE), gc_(gc) {}    // JVS: allow terminating the program automatically
 
         virtual ~AsyncClientCall() {}   // JVS: to avoid g++ complaining about the absence of a virtual destructor
 
@@ -90,6 +92,8 @@ private:
         // Context for the client. It could be used to convey extra information to
         // the server and/or tweak certain RPC behaviors.
         ClientContext context;
+
+        GreeterClient* gc_;     // JVS: allow terminating the program automatically
 
         // Storage for the status of the RPC upon completion.
         Status status;
@@ -120,6 +124,7 @@ private:
                 if (status.ok()) {
 
                     std::cout << "Server Response Completed: " << this << " CallData: " << this << std::endl;
+                    gc_->done_ = true;      // JVS: allow terminating the program automatically
                 }
                 else {
                     std::cout << "RPC failed" << std::endl;
@@ -156,8 +161,8 @@ int main(int argc, char** argv) {
     std::string user("world");
     greeter.SayHello(user);  // The actual RPC call!
 
-    std::cout << "Press control-c to quit" << std::endl << std::endl;
-    thread_.join();  //blocks forever
+    //std::cout << "Press control-c to quit" << std::endl << std::endl;
+    thread_.join();
 
     return 0;
 }

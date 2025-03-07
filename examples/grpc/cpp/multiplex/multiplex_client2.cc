@@ -4,7 +4,7 @@
  * Based on multiplex_client.cc, but with the implementation moved from main() to class GreeterClient.
  * This will make the implementation of coroutines easier, because main() cannot contain co_await and co_return.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 /*
@@ -79,7 +79,8 @@ public:
         // Request to a Greeter service
         hello_request.set_name("user");
         helloworld::Greeter::NewStub(channel_)->async()->SayHello(
-            &hello_context, &hello_request, &hello_response, [&](Status status) {
+            &hello_context, &hello_request, &hello_response,
+            [&](Status status) {
                 std::lock_guard<std::mutex> lock(mu);
                 done_count++;
                 hello_status = std::move(status);
@@ -127,7 +128,10 @@ int main(int argc, char** argv) {
 
   GreeterClient greeter(
       grpc::CreateChannel(target_str, grpc::InsecureChannelCredentials()));
-  greeter.SayHello_GetFeature();
+
+  for (int i = 0; i < 100; ++i) {
+      greeter.SayHello_GetFeature();
+  }
 
   return 0;
 }

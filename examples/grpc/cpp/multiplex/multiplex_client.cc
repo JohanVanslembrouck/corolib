@@ -71,7 +71,8 @@ int main(int argc, char** argv) {
   // Request to a Greeter service
   hello_request.set_name("user");
   helloworld::Greeter::NewStub(channel)->async()->SayHello(
-      &hello_context, &hello_request, &hello_response, [&](Status status) {
+      &hello_context, &hello_request, &hello_response,
+      [&](Status status) {
         std::lock_guard<std::mutex> lock(mu);
         done_count++;
         hello_status = std::move(status);
