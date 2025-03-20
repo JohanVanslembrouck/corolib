@@ -69,8 +69,14 @@ public:
             // Writing
             print(PRI1, "mainflow: async_operation<void> sw = start_writing(...);\n");
             async_operation<void> sw = start_writing(str1.c_str(), str1.length() + 1);
-            print(PRI1, "mainflow: co_await sw;\n");
-            co_await sw;
+
+            // Experiment: do not co_await sw every 10th iteration
+            if ((i % 10) != 0) {
+                print(PRI1, "mainflow: co_await sw;\n");
+                co_await sw;
+            }
+            else
+                print(PRI1, "mainflow: does not co_await sw; !!!!!!\n");
 
             // Reading
             print(PRI1, "mainflow: async_operation<std::string> sr = start_reading();\n");

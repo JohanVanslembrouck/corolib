@@ -57,6 +57,8 @@
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
 
+#define USE_START_FROM_GRPC_OBJECT 1
+
 using grpc::Channel;
 using grpc::ClientContext;
 using grpc::Status;
@@ -167,6 +169,19 @@ public:
     void setCompletionHandler(std::function<void(Status)>&& completionHandler) {
         completionHandler_ = std::move(completionHandler);
     }
+
+#if USE_START_FROM_GRPC_OBJECT
+    async_operation<Status> start(CommService* commService) {
+        int index = commService->get_free_index();
+        async_operation<Status> ret{ commService, index };
+        setCompletionHandler(
+            [this, commService, index](Status status) {
+                print(PRI1, "completionHandler called\n");
+                commService->completionHandler<Status>(index, status);
+            });
+        return ret;
+    }
+#endif
 
 private:
     ClientContext context_;
@@ -363,7 +378,11 @@ class RouteGuideClient : public CommService {
           << std::endl;
 
       ReaderCo reader(stub_.get(), kCoordFactor_, rect);
+#if !USE_START_FROM_GRPC_OBJECT
       async_operation<Status> op = start_ListFeatures(&reader);
+#else
+      async_operation<Status> op = reader.start(this);
+#endif
       print(PRI1, "ListFeaturesCo: before co_await\n");
       Status status = co_await op;
       print(PRI1, "ListFeaturesCo: after co_await\n");
@@ -377,7 +396,8 @@ class RouteGuideClient : public CommService {
       co_return;
   }
 
-  async_operation<Status> start_ListFeatures(ReaderCo* pReaderCo) {
+  #if !USE_START_FROM_GRPC_OBJECT
+    async_operation<Status> start_ListFeatures(ReaderCo* pReaderCo) {
       int index = get_free_index();
       async_operation<Status> ret{ this, index };
       pReaderCo->setCompletionHandler(
@@ -386,7 +406,8 @@ class RouteGuideClient : public CommService {
             this->completionHandler<Status>(index, status);
           });
       return ret;
-  }
+   }
+#endif
 
   // RecordRoute
   // -----------

@@ -1271,7 +1271,7 @@ namespace corolib
          * @brief wait is the counterpart of get_result for an asynchronous task
          * that returns void instead of any other type.
          * See get_result for more information on its use.
-         * @brief waitIfNotReady instructs get_result to wait by default
+         * @brief waitIfNotReady instructs wait to wait by default
          * if the promise is not ready.
          */
         void wait(bool waitIfNotReady = true)
@@ -1279,14 +1279,14 @@ namespace corolib
             print(PRI2, "%p: async_task_void::wait(%d)\n", this, waitIfNotReady);
             if (waitIfNotReady) {
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
-                print(PRI2, "%p: async_task_base::get_result(): m_coro_handle.promise().m_result.wait_for_result()\n", this);
+                print(PRI2, "%p: async_task_base::wait(): m_coro_handle.promise().m_result.wait_for_result()\n", this);
                 if (m_coro_handle.promise().m_result.wait_for_result())
 #else
-                print(PRI2, "%p: async_task_base::get_result(): m_result.wait_for_result()\n", this);
+                print(PRI2, "%p: async_task_base::wait(): m_result.wait_for_result()\n", this);
                 if (m_result.wait_for_result())
 #endif
                 {
-                    print(PRI2, "%p: async_task_base::get_result(): m_coro_handle.promise().m_sema.wait()\n", this);
+                    print(PRI2, "%p: async_task_base::wait(): m_coro_handle.promise().m_sema.wait()\n", this);
                     m_coro_handle.promise().m_sema.wait();
                 }
             }

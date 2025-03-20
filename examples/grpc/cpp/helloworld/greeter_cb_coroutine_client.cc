@@ -104,7 +104,7 @@ class GreeterClient : public CommService {
     }
   }
 
-  async_task<std::string> SayHelloAsync(const std::string& user) {
+  async_task<std::string> SayHelloCo(const std::string& user) {
       // Data we are sending to the server.
       HelloRequest request;
       request.set_name(user);
@@ -119,9 +119,9 @@ class GreeterClient : public CommService {
       // Storage for the status of the RPC upon completion.
       Status status;
 
-      print(PRI1, "SayHelloAsync: pre\n");
+      print(PRI1, "SayHelloCo: pre\n");
       co_await start_SayHello(&context, request, reply, status);
-      print(PRI1, "SayHelloAsync: post\n");
+      print(PRI1, "SayHelloCo: post\n");
 
       // Act upon the status of the actual RPC.
       if (status.ok()) {
@@ -132,7 +132,7 @@ class GreeterClient : public CommService {
       }
   }
 
-  async_ltask<std::string> SayHelloAsyncL(const std::string& user) {
+  async_ltask<std::string> SayHelloCoL(const std::string& user) {
       // Data we are sending to the server.
       HelloRequest request;
       request.set_name(user);
@@ -147,9 +147,9 @@ class GreeterClient : public CommService {
       // Storage for the status of the RPC upon completion.
       Status status;
 
-      print(PRI1, "SayHelloAsyncL: pre\n");
+      print(PRI1, "SayHelloCoL: pre\n");
       co_await start_SayHello(&context, request, reply, status);
-      print(PRI1, "SayHelloAsyncL: post\n");
+      print(PRI1, "SayHelloCoL: post\n");
 
       // Act upon the status of the actual RPC.
       if (status.ok()) {
@@ -186,55 +186,55 @@ void runSayHello(GreeterClient& greeter) {
     }
 }
 
-async_task<void> runSayHelloAsync(GreeterClient& greeter) {
-    print(PRI1, "runSayHelloAsync\n");
+async_task<void> runSayHelloCo(GreeterClient& greeter) {
+    print(PRI1, "runSayHelloCo\n");
     for (int i = 0; i < NR_ITERATIONS; ++i) {
         std::string user("coroutine world: eager - co_await ");
         user += std::to_string(i);
-        async_task<std::string> t = greeter.SayHelloAsync(user);
-        print(PRI1, "runSayHelloAsync: co_await t;\n");
+        async_task<std::string> t = greeter.SayHelloCo(user);
+        print(PRI1, "runSayHelloCo: co_await t;\n");
         std::string reply = co_await t;
-        print(PRI1, "runSayHelloAsync: Greeter received: %s\n", reply.c_str());
+        print(PRI1, "runSayHelloCo: Greeter received: %s\n", reply.c_str());
     }
     co_return;
 }
 
-async_task<void> runSayHelloAsync2(GreeterClient& greeter) {
-    print(PRI1, "runSayHelloAsync2\n");
+async_task<void> runSayHelloCo2(GreeterClient& greeter) {
+    print(PRI1, "runSayHelloCo2\n");
     for (int i = 0; i < NR_ITERATIONS; ++i) {
         std::string user("coroutine world: eager - get_result() ");
         user += std::to_string(i);
-        async_task<std::string> t = greeter.SayHelloAsync(user);
-        print(PRI1, "runSayHelloAsync2: t.get_result();\n");
+        async_task<std::string> t = greeter.SayHelloCo(user);
+        print(PRI1, "runSayHelloCo2: t.get_result();\n");
         std::string reply = t.get_result();
-        print(PRI1, "runSayHelloAsync2: Greeter received: %s\n", reply.c_str());
+        print(PRI1, "runSayHelloCo2: Greeter received: %s\n", reply.c_str());
     }
     co_return;
 }
 
-async_ltask<void> runSayHelloAsyncL(GreeterClient& greeter) {
-    print(PRI1, "runSayHelloAsyncL\n");
+async_ltask<void> runSayHelloCoL(GreeterClient& greeter) {
+    print(PRI1, "runSayHelloCoL\n");
     for (int i = 0; i < NR_ITERATIONS; ++i) {
         std::string user("coroutine world: lazy - co_await ");
         user += std::to_string(i);
-        async_ltask<std::string> t = greeter.SayHelloAsyncL(user);
-        print(PRI1, "runSayHelloAsyncL: co_await t;\n");
+        async_ltask<std::string> t = greeter.SayHelloCoL(user);
+        print(PRI1, "runSayHelloCoL: co_await t;\n");
         std::string reply = co_await t;
-        print(PRI1, "runSayHelloAsyncL: Greeter received: %s\n", reply.c_str());
+        print(PRI1, "runSayHelloCoL: Greeter received: %s\n", reply.c_str());
     }
     co_return;
 }
 
-async_ltask<void> runSayHelloAsyncL2(GreeterClient& greeter) {
-    print(PRI1, "runSayHelloAsyncL2\n");
+async_ltask<void> runSayHelloCoL2(GreeterClient& greeter) {
+    print(PRI1, "runSayHelloCoL2\n");
     for (int i = 0; i < NR_ITERATIONS; ++i) {
         std::string user("coroutine world: lazy - get_result ");
         user += std::to_string(i);
-        async_ltask<std::string> t = greeter.SayHelloAsyncL(user);
+        async_ltask<std::string> t = greeter.SayHelloCoL(user);
         t.start();
-        print(PRI1, "runSayHelloAsyncL: t.get_result();\n");
+        print(PRI1, "runSayHelloCoL: t.get_result();\n");
         std::string reply = t.get_result();
-        print(PRI1, "runSayHelloAsyncL: Greeter received: %s\n", reply.c_str());
+        print(PRI1, "runSayHelloCoL: Greeter received: %s\n", reply.c_str());
     }
     co_return;
 }
@@ -275,25 +275,25 @@ int main(int argc, char** argv) {
   print(PRI1); print(PRI1, "main: runSayHello(greeter);\n");
   runSayHello(greeter);
 
-  print(PRI1); print(PRI1, "main: async_task<void> t1 = runSayHelloAsync(greeter);\n");
-  async_task<void> t1 = runSayHelloAsync(greeter);
+  print(PRI1); print(PRI1, "main: async_task<void> t1 = runSayHelloCo(greeter);\n");
+  async_task<void> t1 = runSayHelloCo(greeter);
   print(PRI1, "main: t1.wait();\n");
   t1.wait();
 
-  print(PRI1); print(PRI1, "main: async_task<void> t2 = runSayHelloAsync2(greeter);\n");
-  async_task<void> t2 = runSayHelloAsync2(greeter);
+  print(PRI1); print(PRI1, "main: async_task<void> t2 = runSayHelloCo2(greeter);\n");
+  async_task<void> t2 = runSayHelloCo2(greeter);
   print(PRI1, "main: t2.wait();\n");
   t2.wait();
 
-  print(PRI1); print(PRI1, "main: async_ltask<void> t3 = runSayHelloAsyncL(greeter);\n");
-  async_ltask<void> t3 = runSayHelloAsyncL(greeter);
+  print(PRI1); print(PRI1, "main: async_ltask<void> t3 = runSayHelloCoL(greeter);\n");
+  async_ltask<void> t3 = runSayHelloCoL(greeter);
   print(PRI1, "main: t3.start();\n");
   t3.start();
   print(PRI1, "main: t3.wait();\n");
   t3.wait();
 
-  print(PRI1); print(PRI1, "main: async_ltask<void> t4 = runSayHelloAsyncL2(greeter);\n");
-  async_ltask<void> t4 = runSayHelloAsyncL2(greeter);
+  print(PRI1); print(PRI1, "main: async_ltask<void> t4 = runSayHelloCoL2(greeter);\n");
+  async_ltask<void> t4 = runSayHelloCoL2(greeter);
   print(PRI1, "main: t4.start();\n");
   t4.start();
   print(PRI1, "main: t4.wait();\n");

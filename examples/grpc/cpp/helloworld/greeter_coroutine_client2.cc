@@ -66,7 +66,7 @@ public:
     // Assembles the client's payload, sends it and presents the response back
     // from the server.
     std::string SayHello(const std::string& user) {
-        // >>> To be placed in SayHelloAsync - begin
+        // >>> To be placed in SayHelloCo - begin
         // Data we are sending to the server.
         HelloRequest request;
         request.set_name(user);
@@ -80,7 +80,7 @@ public:
 
         // Storage for the status of the RPC upon completion.
         Status status;
-        // >>> To be placed in SayHelloAsync - end
+        // >>> To be placed in SayHelloCo - end
         
         // >>> To be used as data member
         // The producer-consumer queue we use to communicate asynchronously with the
@@ -111,7 +111,7 @@ public:
         // corresponds solely to the request for updates introduced by Finish().
         GPR_ASSERT(ok);
 
-        // >>> To be placed in SayHelloAsync - begin
+        // >>> To be placed in SayHelloCo - begin
         // Act upon the status of the actual RPC.
         if (status.ok()) {
             return reply.message();
@@ -119,22 +119,10 @@ public:
         else {
             return "RPC failed";
         }
-        // >>> To be placed in SayHelloAsync - end
+        // >>> To be placed in SayHelloCo - end
     }
 
-    // Top level coroutine. Added because main() cannot be a coroutine.
-    async_task<void> SayHelloCo() {
-        for (int i = 0; i < NR_ITERATIONS; i++) {
-            std::string user("coroutine world " + std::to_string(i));
-            async_task<std::string> t = SayHelloAsync(user);
-            co_await t;
-            std::cout << "Greeter received: " << t.get_result() << std::endl;
-        }
-        done_ = true;
-        co_return;
-    }
-
-    async_task<std::string> SayHelloAsync(const std::string& user) {
+    async_task<std::string> SayHelloCo(const std::string& user) {
         // Data we are sending to the server.
         HelloRequest request;
         request.set_name(user);
@@ -198,6 +186,10 @@ public:
         }
     }
 
+    void setDone() {
+        done_ = true;
+    }
+
 private:
 
     // Out of the passed in Channel comes the stub, stored here, our view of the
@@ -220,6 +212,17 @@ private:
     // Added for the use of corolib - end
 };
 
+async_task<void> runSayHelloCo(GreeterClient& greeter) {
+    for (int i = 0; i < NR_ITERATIONS; i++) {
+        std::string user("coroutine world " + std::to_string(i));
+        async_task<std::string> t = greeter.SayHelloCo(user);
+        co_await t;
+        std::cout << "Greeter received: " << t.get_result() << std::endl;
+    }
+    greeter.setDone();
+    co_return;
+}
+
 int main(int argc, char** argv) {
   // Instantiate the client. It requires a channel, out of which the actual RPCs
   // are created. This channel models a connection to an endpoint (in this case,
@@ -228,8 +231,12 @@ int main(int argc, char** argv) {
   GreeterClient greeter(grpc::CreateChannel(
                                 "localhost:50051", grpc::InsecureChannelCredentials()));
 
-  async_task<void> t = greeter.SayHelloCo();
+  print(PRI1, "main: async_task<void> t = runSayHelloCo(greeter);\n");
+  async_task<void> t = runSayHelloCo(greeter);
+  print(PRI1, "main: greeter.AsyncCompleteRpc();\n");
   greeter.AsyncCompleteRpc();
+  print(PRI1, "main: t.wait();\n");
   t.wait();
+
   return 0;
 }

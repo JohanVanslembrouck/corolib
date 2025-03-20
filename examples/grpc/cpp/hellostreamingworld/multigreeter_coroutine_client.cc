@@ -63,21 +63,21 @@ public:
     }
 
     // Top level coroutine. Added because main() cannot be a coroutine.
-    async_task<void> SayHelloCo(const std::string& user) {
-        co_await SayHelloAsync(user);
+    async_task<void> runSayHelloCo(const std::string& user) {
+        co_await SayHelloCo(user);
         done_ = true;           // JVS: allow terminating the program automatically
         co_return;
     }
 
     // Coroutine version of SayHello
-    async_task<void> SayHelloAsync(const std::string& user) {
-        print(PRI1, "SayHelloAsync: begin\n");
+    async_task<void> SayHelloCo(const std::string& user) {
+        print(PRI1, "SayHelloCo: begin\n");
         HelloRequest request;
         // Data we are sending to the server.
         request.set_name(user);
 
         co_await start_SayHello(request);
-        print(PRI1, "SayHelloAsync: end\n");
+        print(PRI1, "SayHelloCo: end\n");
         co_return;
     }
 
@@ -126,9 +126,13 @@ public:
         }
     }
 
-    bool done_ = false;     // JVS: allow terminating the program automatically
+    void setDone() {
+        done_ = true;
+    }
 
 private:
+
+    bool done_ = false;     // JVS: allow terminating the program automatically
 
     class ResponseHandler {
     public:
@@ -226,7 +230,7 @@ int main(int argc, char** argv) {
     greeter.SayHello(user);  // The actual RPC call!
 #else
     std::string user("coroutine world");
-    async_task<void> t = greeter.SayHelloCo(user);
+    async_task<void> t = greeter.runSayHelloCo(user);
     t.wait();
 #endif
 

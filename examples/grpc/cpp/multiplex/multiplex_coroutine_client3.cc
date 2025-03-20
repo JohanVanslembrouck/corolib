@@ -68,8 +68,8 @@ public:
     {}
 
     async_task<void> SayHello_GetFeatureCo() {
-        async_task<std::string> t1 = SayHelloAsync();
-        async_task<std::string> t2 = GetFeatureAsync();
+        async_task<std::string> t1 = SayHelloCo();
+        async_task<std::string> t2 = GetFeatureCo();
         std::string helloReply = co_await t1;
         std::string featureReply = co_await t2;
         std::cout << helloReply;
@@ -77,7 +77,7 @@ public:
         co_return;
     }
 
-    async_task <std::string> SayHelloAsync() {
+    async_task <std::string> SayHelloCo() {
         ClientContext hello_context;
         helloworld::HelloRequest hello_request;
         helloworld::HelloReply hello_response;
@@ -109,7 +109,7 @@ public:
         return ret;
     }
 
-    async_task<std::string> GetFeatureAsync() {
+    async_task<std::string> GetFeatureCo() {
         ClientContext feature_context;
         routeguide::Point feature_request;
         routeguide::Feature feature_response;
