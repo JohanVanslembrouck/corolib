@@ -2,6 +2,7 @@ p1000-sync-1rmi.exe
 p1002-sync+thread-1rmi.exe
 p1004-sync+thread-1rmi.exe
 p1010-async-1rmi.exe
+p1015-async+thread-1rmi.exe
 p1020-coroutines-1rmi.exe
 
 p1050-sync-1rmi.exe
@@ -11,6 +12,7 @@ p1070-coroutines-1rmi.exe
 p1100-sync-callstack-1rmi.exe
 p1110-async-callstack-1rmi.exe
 p1112-async-callstack-1rmi-cs.exe
+p1115-async-callstack+thread-1rmi.exe
 p1120-coroutines-callstack-1rmi.exe
 p1122-coroutines-callstack-1rmi.exe
 p1124-coroutines-callstack-1rmi.exe
@@ -44,3 +46,15 @@ p1370-coroutines-nested-loop.exe
 p1400-sync-segmentation.exe
 p1410-async-segmentation.exe
 p1420-coroutines-segmentation.exe
+
+p2000-sync-3rmis.exe
+p2010-async-3rmis.exe
+p2011-async-3rmis.exe
+p2012-async-3rmis.exe
+p2013-async-3rmis.exe
+p2015-async+thread-3rmis.exe
+p2016-async+thread-3rmis.exe
+p2020-coroutines-3rmis.exe
+p2021-coroutines-3rmis.exe
+p2022-coroutines-3rmis.exe
+p2023-coroutines-3rmis.exe

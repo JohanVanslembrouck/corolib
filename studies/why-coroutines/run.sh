@@ -6,6 +6,7 @@ set -x
 ./p1002-sync+thread-1rmi
 ./p1004-sync+thread-1rmi
 ./p1010-async-1rmi
+./p1015-async+thread-1rmi
 ./p1020-coroutines-1rmi
 
 ./p1050-sync-1rmi
@@ -15,6 +16,7 @@ set -x
 ./p1100-sync-callstack-1rmi
 ./p1110-async-callstack-1rmi
 ./p1112-async-callstack-1rmi-cs
+./p1115-async-callstack+thread-1rmi
 ./p1120-coroutines-callstack-1rmi
 ./p1122-coroutines-callstack-1rmi
 ./p1124-coroutines-callstack-1rmi
@@ -48,3 +50,15 @@ set -x
 ./p1400-sync-segmentation
 ./p1410-async-segmentation
 ./p1420-coroutines-segmentation
+
+./p2000-sync-3rmis
+./p2010-async-3rmis
+./p2011-async-3rmis
+./p2012-async-3rmis
+./p2013-async-3rmis
+./p2015-async+thread-3rmis
+./p2016-async+thread-3rmis
+./p2020-coroutines-3rmis
+./p2021-coroutines-3rmis
+./p2022-coroutines-3rmis
+./p2023-coroutines-3rmis

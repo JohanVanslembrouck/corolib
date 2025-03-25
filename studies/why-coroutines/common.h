@@ -93,4 +93,14 @@ inline void registerCB(lambda_vp_3int_t lambda, void* context, int in1, int in2)
     eventQueue.push([lambda, context, in1, in2]() { lambda(context, 1, 2, in1 + in2); });
 }
 
+inline void startThread(lambda_3int_t lambda, int in1, int in2)
+{
+    std::thread thread1([lambda, in1, in2]() {
+        //printf("startThread: std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", 100);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        lambda(1, 2, in1 + in2);
+        });
+    thread1.detach();
+}
+
 #endif
