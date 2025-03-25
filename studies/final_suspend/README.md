@@ -17,7 +17,7 @@ The following gives an overview of the study applications:
 
 | source file                 | #include X               | #include Y           |
 | --------------------------- | ------------------------ | -------------------- |
-| p1000e_sa.cpp               | taske_sa.h               | class_sync.h         |
+| p1000e_sa.cpp               | taske_sa.h               | class_sync.h         | 
 | p1000_sa.cpp                | task_sa.h                | class_sync.h         |
 | p1010e_sa.cpp               | taske_sa.h               | class_async.h        |
 | p1010_sa.cpp                | task_sa.h                | class_async.h        |
@@ -71,14 +71,14 @@ See [initial_suspend](../initial_suspend/README.md) for a study of eager and laz
 
 The following table gives an overview of the major differences between the task(e)_xyz.h header files used in this study.
 
-| file                       | final_suspend() returns | await_suspend() return type | resume() call in | return_value() saves to |
+| file                       | final_suspend() returns | await_suspend() return type | resume() call in | return_value() saved to |
 | -------------------------- | ----------------------- | --------------------------- | ---------------- | ----------------------- |
 | task(e)_sa.h               | std::suspend_always     | void                        | return_value()   | promise_type            |
 | task(e)_sn.h               | std::suspend_never      | void                        | return_value()   | promise_type            |
 | task(e)_sn2.h              | std::suspend_never      | void                        | return_value()   | task                    |
 | task(e)_void.h             | final_awaiter           | void                        | await_suspend()  | promise_type            |
 | task(e)_bool.h             | final_awaiter           | bool                        | await_suspend()  | promise_type            |
-| task(e)_coroutine_handle.h | final_awaiter           | std::coroutine_handle<>     | infrastructure code | promise_type          |
+| task(e)_coroutine_handle.h | final_awaiter           | std::coroutine_handle<>     | infrastructure code | promise_type         |
 
 Files class_sync.h, class_async.h and class_async-thread.h contain a small coroutine application class 
 with 4 coroutine member functions.
@@ -94,6 +94,38 @@ and so on). This is called "asynchronous completion."
 
 * The implementation of coroutine4 in class_async-thread.h is similar to the one in class_async.h,
 except that coroutine4 now resumes coroutine3 on a separate thread.
+
+* From one p1XXX_xyz.cpp source code file, two eexecutables will be produced, stfs-p1XXX_xyz and stfs2-p1XXX_xyz,
+where stfs stands for "study final_suspend". If the compiler directive USE_CORO_DONE_TEST=1, stfs-p1XXX_xyz is produced,
+if USE_CORO_DONE_TEST=0, stfs2-p1XXX_xyz will be produced:
+
+```c++
+#if USE_CORO_DONE_TEST
+   ~task() {
+        print(PRI2, "%p: task::~task(): test on coro_.done()\n", this);
+        if (coro_)
+            if (coro_.done()) {
+                coro_.destroy();
+                coro_ = {};
+            }
+            else {
+                print(PRI2, "%p: task::~task(): !coro.done()\n", this);
+            }
+        else
+            print(PRI2, "%p: task::~task(): coro_ == nullptr\n", this);
+    
+#else
+     ~task() {
+        print(PRI2, "%p: task::~task(): no test on coro_.done()\n", this);
+        if (coro_) {
+            coro_.destroy();
+            coro_ = {};
+        }
+        else
+            print(PRI2, "%p: task::~task(): coro_ == nullptr\n", this);
+    }
+#endif
+```
 
 ## final_suspend() returns a standard awaiter type
 
@@ -143,14 +175,24 @@ There are two types of objects: 'cor' or coroutine objects (class "task" in this
 
 The following table gives an overview of all related applications and their results:
 
-| program             | get_result()  | memory leaks? |
-| ------------------- | ------------- | ------------- |
-| ./stfs-p1000e_sa    | correct       | no            |
-| ./stfs-p1000_sa     | correct       | yes           |
-| ./stfs-p1010e_sa    | correct       | yes           |
-| ./stfs-p1010_sa     | correct       | yes           |
-| ./stfs-p1020e_sa    | correct       | yes           |
-| ./stfs-p1020_sa     | correct       | yes           |
+| program             | get_result()  | memory leaks? | cor | pro |
+| ------------------- | ------------- | ------------- | --- | --- |
+| ./stfs-p1000e_sa    | correct       | no            | 4/4 | 4/4 |
+| ./stfs-p1000_sa     | correct       | yes           | 4/4 | 4/1 |
+| ./stfs-p1010e_sa    | correct       | yes           | 4/4 | 4/1 |
+| ./stfs-p1010_sa     | correct       | yes           | 4/4 | 4/1 |
+| ./stfs-p1020e_sa    | correct       | yes           | 4/4 | 4/1 |
+| ./stfs-p1020_sa     | correct       | yes           | 4/4 | 4/1 |
+
+| program             | get_result()  | memory leaks? | cor | pro | error |
+| ------------------- | ------------- | ------------- | --- | --- | ----- |
+| ./stfs2-p1000e_sa   | correct       | no            | 4/4 | 4/4 |       |
+| ./stfs2-p1000_sa    | correct       | no            | 4/6 | 4/4 |       |
+| ./stfs2-p1010e_sa   | correct       | no            | 4/6 | 4/4 |       |
+| ./stfs2-p1010_sa    | correct       | no            | 4/6 | 4/4 |       |
+| ./stfs2-p1020e_sa   | incorrect     | no            | 4/6 | 4/4 | tcache_thread_shutdown(): unaligned tcache chunk detected |
+| ./stfs2-p1020_sa    | ibcorrect     | no            | 4/4 | 4/1 | tcache_thread_shutdown(): unaligned tcache chunk detected |
+
 
 To obtain the corresponding source file name, omit the prefix stfs- (short for study-final_suspend)
 and add .cpp as file name extension.
@@ -191,14 +233,24 @@ but this application suffers from memory leaks.
 
 The following table gives an overview of all related applications and their results:
 
-| program             | get_result()  | memory leaks? |
-| ------------------- | ------------- | ------------- |
-| ./stfs-p1100e_sn    | correct       | yes           |
-| ./stfs-p1100_sn     | incorrect     | no            |
-| ./stfs-p1110e_sn    | incorrect     | no            |
-| ./stfs-p1110_sn     | incorrect     | no            |
-| ./stfs-p1120e_sn    | incorrect     | no            |
-| ./stfs-p1120_sn     | incoorect     | no            |
+| program             | get_result()  | memory leaks? | cor | pro |
+| ------------------- | ------------- | ------------- | --- | --- |
+| ./stfs-p1100e_sn    | correct       | yes           | 4/1 | 4/1 |
+| ./stfs-p1100_sn     | incorrect     | no            | 4/4 | 4/4 |
+| ./stfs-p1110e_sn    | incorrect     | no            | 4/4 | 4/4 |
+| ./stfs-p1110_sn     | incorrect     | no            | 4/4 | 4/4 |
+| ./stfs-p1120e_sn    | incorrect     | no            | 4/4 | 4/4 |
+| ./stfs-p1120_sn     | incoorect     | no            | 4/4 | 4/4 |
+
+| program             | get_result()  | memory leaks? | cor | pro | error |
+| ------------------- | ------------- | ------------- | --- | --- | ----- |
+| ./stfs2-p1100e_sn   | incorrect     | yes           | ?   | ?   | Segmentation fault (core dumped) |
+| ./stfs2-p1100_sn    | incorrect     | yes           | ?   | ?   | free(): double free detected in tcache 2 |
+| ./stfs2-p1110e_sn   | incorrect     | yes           | ?   | ?   | free(): double free detected in tcache 2 |
+| ./stfs2-p1110_sn    | incorrect     | yes           | ?   | ?   | free(): double free detected in tcache 2 |
+| ./stfs2-p1120e_sn   | incorrect     | no            | ?   | ?   | free(): double free detected in tcache 2 |
+| ./stfs2-p1120_sn    | incoorect     | no            | ?   | ?   | free(): double free detected in tcache 2 |
+
 
 The reason is that we read the results from a promise_type object in a coroutine frame that has already been deallocated.
 The Windows operating system has filled the memory with 0xdddddddd.
@@ -215,14 +267,14 @@ Unfortunately, there is again one exception:
 
 The following table gives an overview of all related applications and their results:
 
-| program             | get_result()  | memory leaks? |
-| ------------------- | ------------- | ------------- |
-| ./stfs-p1150e_sn2   | incorrect     | yes           |
-| ./stfs-p1150_sn2    | correct       | no            |
-| ./stfs-p1160e_sn2   | correct       | no            |
-| ./stfs-p1160_sn2    | correct       | no            |
-| ./stfs-p1170e_sn2   | correct       | no            |
-| ./stfs-p1170_sn2    | correct       | no            |
+| program             | get_result()  | memory leaks? | cor | pro |
+| ------------------- | ------------- | ------------- | --- | --- |
+| ./stfs-p1150e_sn2   | incorrect     | yes           | 4/1 | 4/1 |
+| ./stfs-p1150_sn2    | correct       | no            | 4/4 | 4/4 |
+| ./stfs-p1160e_sn2   | correct       | no            | 4/4 | 4/4 |
+| ./stfs-p1160_sn2    | correct       | no            | 4/4 | 4/4 |
+| ./stfs-p1170e_sn2   | correct       | no            | 4/4 | 4/4 |
+| ./stfs-p1170_sn2    | correct       | no            | 4/4 | 4/4 |
 
 stfs-p1150e_sn2 produces the following result:
 
@@ -246,6 +298,16 @@ The conclusion is that it is not possible to always have
 correct results and an absence of memory leaks
 using only suspend_always or suspend_never as return value of final_suspend().
 
+| program             | get_result()  | memory leaks? | cor | pro | error |
+| ------------------- | ------------- | ------------- | --- | --- | ----- |
+| ./stfs2-p1150e_sn2  | incorrect     | yes           | ?   | ?   | Segmentation fault (core dumped) |
+| ./stfs2-p1150_sn2   | incorrect     | yes           | ?   | ?   | free(): double free detected in tcache 2 |
+| ./stfs2-p1160e_sn2  | incorrect     | yes           | ?   | ?   | free(): double free detected in tcache 2 |
+| ./stfs2-p1160_sn2   | incorrect     | yes           | ?   | ?   | free(): double free detected in tcache 2 |
+| ./stfs2-p1170e_sn2  | incorrect     | yes           | ?   | ?   | free(): double free detected in tcache 2 |
+| ./stfs2-p1170_sn2   | incorrect     | yes           | ?   | ?   | free(): double free detected in tcache 2 |
+
+
 ## final_suspend() returns a custom final_awaiter type
 
 The following sections explore the behavior of custom final_awaiter types 
@@ -262,14 +324,25 @@ that all promise_type objects are released.
 
 The following table gives an overview of all related applications and their results:
 
-| program             | get_result()  | memory leaks? |
-| ------------------- | ------------- | ------------- |
-| ./stfs-p1200e_void  | correct       | no            |
-| ./stfs-p1200_void   | correct       | no            |
-| ./stfs-p1210e_void  | correct       | no            |
-| ./stfs-p1210_void   | correct       | no            |
-| ./stfs-p1220e_void  | correct       | no            |
-| ./stfs-p1220_void   | correct       | no            |
+| program             | get_result()  | memory leaks? | cor | pro |
+| ------------------- | ------------- | ------------- | --- | --- |
+| ./stfs-p1200e_void  | correct       | no            | 4/4 | 4/4 |
+| ./stfs-p1200_void   | correct       | no            | 4/4 | 4/4 |
+| ./stfs-p1210e_void  | correct       | no            | 4/4 | 4/4 |
+| ./stfs-p1210_void   | correct       | no            | 4/4 | 4/4 |
+| ./stfs-p1220e_void  | correct       | no            | 4/4 | 4/4 |
+| ./stfs-p1220_void   | correct       | no            | 4/4 | 4/4 |
+
+
+| program             | get_result()  | memory leaks? | cor | pro |
+| ------------------- | ------------- | ------------- | --- | --- |
+| ./stfs2-p1200e_void | correct       | no            | 4/4 | 4/4 |
+| ./stfs2-p1200_void  | correct       | no            | 4/4 | 4/4 |
+| ./stfs2-p1210e_void | correct       | no            | 4/4 | 4/4 |
+| ./stfs2-p1210_void  | correct       | no            | 4/4 | 4/4 |
+| ./stfs2-p1220e_void | correct       | no            | 4/4 | 4/4 |
+| ./stfs2-p1220_void  | correct       | no            | 4/4 | 4/4 |
+
 
 ### await_suspend() returns bool
 
@@ -280,14 +353,24 @@ that all promise_type objects are released.
 
 The following table gives an overview of all related applications and their results:
 
-| program             | get_result()  | memory leaks? |
-| ------------------- | ------------- | ------------- |
-| ./stfs-p1300e_bool  | correct       | no            |
-| ./stfs-p1300_bool   | correct       | no            |
-| ./stfs-p1310e_bool  | correct       | no            |
-| ./stfs-p1310_bool   | correct       | no            |
-| ./stfs-p1320e_bool  | correct       | no            |
-| ./stfs-p1320_bool   | correct       | no            |
+| program             | get_result()  | memory leaks? | cor | pro |
+| ------------------- | ------------- | ------------- | --- | --- |
+| ./stfs-p1300e_bool  | correct       | no            | 4/4 | 4/4 |
+| ./stfs-p1300_bool   | correct       | no            | 4/4 | 4/4 |
+| ./stfs-p1310e_bool  | correct       | no            | 4/4 | 4/4 |
+| ./stfs-p1310_bool   | correct       | no            | 4/4 | 4/4 |
+| ./stfs-p1320e_bool  | correct       | no            | 4/4 | 4/4 |
+| ./stfs-p1320_bool   | correct       | no            | 4/4 | 4/4 |
+
+
+| program             | get_result()  | memory leaks? | cor | pro |
+| ------------------- | ------------- | ------------- | --- | --- |
+| ./stfs2-p1300e_bool | correct       | no            | 4/4 | 4/4 |
+| ./stfs2-p1300_bool  | correct       | no            | 4/4 | 4/4 |
+| ./stfs2-p1310e_bool | correct       | no            | 4/4 | 4/4 |
+| ./stfs2-p1310_bool  | correct       | no            | 4/4 | 4/4 |
+| ./stfs2-p1320e_bool | correct       | no            | 4/4 | 4/4 |
+| ./stfs2-p1320_bool  | correct       | no            | 4/4 | 4/4 |
 
 ### await_suspend() returns std::coroutine_handle<>
 
@@ -298,14 +381,23 @@ that all promise_type objects are released.
 
 The following table gives an overview of all related applications and their results:
 
-| program                        | get_result()  | memory leaks? |
-| ------------------------------ | ------------- | ------------- |
-| ./stfs-p1400e_coroutine_handle | correct       | no            |
-| ./stfs-p1400_coroutine_handle  | correct       | no            |
-| ./stfs-p1410e_coroutine_handle | correct       | no            |
-| ./stfs-p1410_coroutine_handle  | correct       | no            |
-| ./stfs-p1420e_coroutine_handle | correct       | no            |
-| ./stfs-p1420_coroutine_handle  | correct       | no            |
+| program                        | get_result()  | memory leaks? | cor | pro |
+| ------------------------------ | ------------- | ------------- | --- | --- |
+| ./stfs-p1400e_coroutine_handle | correct       | no            | 4/4 | 4/4 |
+| ./stfs-p1400_coroutine_handle  | correct       | no            | 4/4 | 4/4 |
+| ./stfs-p1410e_coroutine_handle | correct       | no            | 4/4 | 4/4 |
+| ./stfs-p1410_coroutine_handle  | correct       | no            | 4/4 | 4/4 |
+| ./stfs-p1420e_coroutine_handle | correct       | no            | 4/4 | 4/4 |
+| ./stfs-p1420_coroutine_handle  | correct       | no            | 4/4 | 4/4 |
+
+| program                         | get_result()  | memory leaks? | cor | pro |
+| ------------------------------- | ------------- | ------------- | --- | --- |
+| ./stfs2-p1400e_coroutine_handle | correct       | no            | 4/4 | 4/4 |
+| ./stfs2-p1400_coroutine_handle  | correct       | no            | 4/4 | 4/4 |
+| ./stfs2-p1410e_coroutine_handle | correct       | no            | 4/4 | 4/4 |
+| ./stfs2-p1410_coroutine_handle  | correct       | no            | 4/4 | 4/4 |
+| ./stfs2-p1420e_coroutine_handle | correct       | no            | 4/4 | 4/4 |
+| ./stfs2-p1420_coroutine_handle  | correct       | no            | 4/4 | 4/4 |
 
 
 ## Using corolib async_task and async_ltask
@@ -315,14 +407,14 @@ show that the results are correct and that all promise_type objects are released
 
 The following table gives an overview of all related applications and their results:
 
-| program                | get_result()  | memory leaks? |
-| ---------------------- | ------------- | ------------- |
-| ./stfs-p1500e_corolib  | correct       | no            |
-| ./stfs-p1500_corolib   | correct       | no            |
-| ./stfs-p1510e_corolib  | correct       | no            |
-| ./stfs-p1510_corolib   | correct       | no            |
-| ./stfs-p1520e_corolib  | correct       | no            |
-| ./stfs-p1520_corolib   | correct       | no            |
+| program                | get_result()  | memory leaks? | cor | pro | fin |
+| ---------------------- | ------------- | ------------- | --- | --- | --- |
+| ./stfs-p1500e_corolib  | correct       | no            | 4/4 | 4/4 | 4/4 |
+| ./stfs-p1500_corolib   | correct       | no            | 4/4 | 4/4 | 4/4 |
+| ./stfs-p1510e_corolib  | correct       | no            | 4/4 | 4/4 | 4/4 |
+| ./stfs-p1510_corolib   | correct       | no            | 4/4 | 4/4 | 4/4 |
+| ./stfs-p1520e_corolib  | correct       | no            | 4/4 | 4/4 | 4/4 |
+| ./stfs-p1520_corolib   | correct       | no            | 4/4 | 4/4 | 4/4 |
 
 ## Conclusion
 

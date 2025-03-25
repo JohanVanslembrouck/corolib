@@ -29,6 +29,13 @@ set -x
 ./stfs-p1220e_void
 ./stfs-p1220_void
 
+./stfs2-p1200e_void
+./stfs2-p1200_void
+./stfs2-p1210e_void
+./stfs2-p1210_void
+./stfs2-p1220e_void
+./stfs2-p1220_void
+
 ./stfs-p1300e_bool
 ./stfs-p1300_bool
 ./stfs-p1310e_bool
@@ -36,12 +43,26 @@ set -x
 ./stfs-p1320e_bool
 ./stfs-p1320_bool
 
+./stfs2-p1300e_bool
+./stfs2-p1300_bool
+./stfs2-p1310e_bool
+./stfs2-p1310_bool
+./stfs2-p1320e_bool
+./stfs2-p1320_bool
+
 ./stfs-p1400e_coroutine_handle
 ./stfs-p1400_coroutine_handle
 ./stfs-p1410e_coroutine_handle
 ./stfs-p1410_coroutine_handle
 ./stfs-p1420e_coroutine_handle
 ./stfs-p1420_coroutine_handle
+
+./stfs2-p1400e_coroutine_handle
+./stfs2-p1400_coroutine_handle
+./stfs2-p1410e_coroutine_handle
+./stfs2-p1410_coroutine_handle
+./stfs2-p1420e_coroutine_handle
+./stfs2-p1420_coroutine_handle
 
 ./stfs-p1500e_corolib
 ./stfs-p1500_corolib

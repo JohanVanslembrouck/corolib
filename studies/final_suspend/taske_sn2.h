@@ -69,12 +69,13 @@ public:
         : coro_(std::exchange(t.coro_, {}))
     {}
 #endif
+#if USE_CORO_DONE_TEST
     ~task() {
-        print(PRI2, "%p: task::~task()\n", this);
+        print(PRI2, "%p: task::~task(): test on coro_.done()\n", this);
         if (coro_)
             if (coro_.done()) {
                 coro_.destroy();
-                coro_ = nullptr;
+                coro_ = {};
             }
             else {
                 print(PRI2, "%p: task::~task(): !coro.done()\n", this);
@@ -82,6 +83,17 @@ public:
         else
             print(PRI2, "%p: task::~task(): coro_ == nullptr\n", this);
     }
+#else
+    ~task() {
+        print(PRI2, "%p: task::~task(): no test on coro_.done()\n", this);
+        if (coro_) {
+            coro_.destroy();
+            coro_ = {};
+        }
+        else
+            print(PRI2, "%p: task::~task(): coro_ == nullptr\n", this);
+    }
+#endif
 
     int get_result() {
         return value;

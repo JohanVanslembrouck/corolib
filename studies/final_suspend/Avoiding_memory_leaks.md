@@ -258,7 +258,7 @@ For example, in the transform of coroutine2(), we find the following code:
             // Original code
             int v = co_await coroutine3(); 	// Intermediate task object will go out of scope
             co_return v + 1;               	// coroutine2 will resume coroutine1,
-										    // but was itself resumed from the co_return statement in coroutine3.
+                                            // but was itself resumed from the co_return statement in coroutine3.
                                             // coroutine2 will then return to coroutine3.
         }
         catch (...) {
@@ -336,7 +336,7 @@ The constructor (cons column) of the cor (coroutine return type = task object) a
 is called 4 times. The destructor (dest column) is called 4 times for the task object, but only once
 for the promise_type object.
 This means that 3 coroutine states with their "embedded" promise_type objects are leaked.
-These 3 leaks correpond to the 3 lines containing "task::~task(): !coro.done()."
+These 3 leaks correspond to the 3 lines containing "task::~task(): !coro.done()."
 Finally, there are maximum (max column) 4 task objects and promise_type objects alive at the same time.
 
 What if we rewrote the task destructor as follows?
@@ -682,13 +682,13 @@ The reader is also referred to the p13X0_bool.cpp and p13X0e_bool.cpp examples.
 #### Multi-threaded applications
 
 The approach described in the previous two sections avoided the memory leaks from the original implementation.
-However, applications where the resumption took place from a separate thread are now unstable.
+However, applications where the resumption takes place from a separate thread are now unstable.
 Making them behave correctly would require the use of std::atomic (and possibly also mutexes)
 for all data members that can be accessed from multiple threads.
 
 This approach has not been implemented yet.
 One reason is that the preferred implementation should avoid the overhead
-of std::atomic and mutexes in single-thread applications.
+of std::atomic and mutexes in single-threaded applications.
 
 ### Using symmetric transfer: await_suspend() returns std::coroutine_handle<>
 
@@ -759,7 +759,7 @@ and USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_HANDLE to 1 in [async_task.h](../../
 
 The reader is also referred to the p14X0_coroutine_handle.cpp and p14X0e_coroutine_handle.cpp examples.
 
-Notice tha the implementation of await_suspend() in struct final_awaiter2
+Notice that the implementation of await_suspend() in struct final_awaiter2
 is very close to the await_suspend() implementation in final_awaiter0.
 
 ## Pushing the result from the promise_type object to the async_task object
@@ -788,7 +788,7 @@ to the coroutine return object it creates when calling get_return_object().
 To enable this additional linking, set USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN to 1 
 in [async_task.h](../include/corolib/async_task.h).
 USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN can also be used for other purposes
-than for placing the result in the coroutjine return object. More in particular,
+than for placing the result in the coroutine return object. More in particular,
 it is used for tracking which object (coroutine return object or promise_type object)
 goes out of scope first.
 
