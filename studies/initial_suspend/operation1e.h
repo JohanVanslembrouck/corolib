@@ -26,7 +26,7 @@ public:
     operation1e(bool delayafterstart = false) :
         m_delayafterstart(delayafterstart)
     {
-        start_operation1();
+        start_operation1();     // called from constructor
     }
 
     bool await_ready() {

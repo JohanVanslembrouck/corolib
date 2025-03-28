@@ -32,7 +32,7 @@ public:
     void await_suspend(std::coroutine_handle<> awaiting) {
         print(PRI1, "operation1l::await_suspend()\n");
         ma.await_suspend(awaiting);
-        start_operation1();
+        start_operation1();         // called from await_suspend
     }
 
     int await_resume() {

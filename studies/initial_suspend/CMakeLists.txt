@@ -21,7 +21,6 @@ set (MY_CXX_FLAGS
     )
 endif()
 
-
 foreach(_target
     p0000_void
 
@@ -116,6 +115,9 @@ endforeach()
 foreach(_target
     p2070e_void-op2e-thread
     p2075e_void-op2e-thread
+    
+    p3000l_void-opere
+    p3000l_void-operl
  )
  add_executable(stis-${_target} ${_target}.cpp print.cpp eventqueuethr.cpp tracker1.cpp)
 endforeach()

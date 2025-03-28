@@ -340,6 +340,10 @@ This is a very complex control flow for something that is essentially a function
 
 The following is the core example in https://lewissbaker.github.io/2020/05/11/understanding_symmetric_transfer.
 
+(See [p1100e_void.cpp](./p1100e_void.cpp) 
+ and [p1100l_void.cpp](./p1100l_void.cpp) for the full source code):
+
+
 ```c++
 task completes_synchronously() {
     co_return;
