@@ -36,8 +36,8 @@ public:
         printf("coroutine4(): co_await are;\n");
         co_await are;
 
-        printf("coroutine4(): co_return;\n");
-        co_return;
+        printf("coroutine4(): co_return 0;\n");
+        co_return 0;
     }
 
     task coroutine3()
@@ -45,7 +45,7 @@ public:
         printf("coroutine3(): co_await coroutine4();\n");
         co_await coroutine4();
         printf("coroutine3(): co_return;\n");
-        co_return;
+        co_return 0;
     }
 
     task coroutine2()
@@ -53,16 +53,16 @@ public:
         printf("coroutine2():  task t = coroutine3();\n");
         task t = coroutine3();
         //int v = co_await coroutine3();
-        printf("coroutine2(): co_return;\n");
-        co_return;
+        printf("coroutine2(): co_return 0;\n");
+        co_return 0;
     }
 
     task coroutine1()
     {
         printf("coroutine1(): co_await coroutine2();\n");
         co_await coroutine2();
-        printf("coroutine1(): co_return;\n");
-        co_return;
+        printf("coroutine1(): co_return 0;\n");
+        co_return 0;
     }
 
 private:

@@ -15,7 +15,7 @@ task completes_synchronously(mini_awaiter& are) {
     if (cntr++ % 2 == 0)
         co_await are;
     else
-        co_return;
+        co_return 0;
 }
 
 task loop_synchronously(mini_awaiter& are, int count) {
@@ -24,6 +24,7 @@ task loop_synchronously(mini_awaiter& are, int count) {
         co_await completes_synchronously(are);
     }
     std::cout << "loop_synchronously(" << count << ") returning" << std::endl;
+    co_return 0;
 }
 
 int main() {

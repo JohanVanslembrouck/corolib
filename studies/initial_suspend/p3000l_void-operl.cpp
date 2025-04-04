@@ -16,8 +16,8 @@ task coroutine1()
     print(PRI1, "coroutine1: int res = co_await op;\n");
     int res = co_await op;
     print(PRI1, "coroutine1: res = %d;\n", res);
-    print(PRI1, "coroutine1: co_return;\n");
-    co_return;
+    print(PRI1, "coroutine1: co_return 0;\n");
+    co_return 0;
 }
 
 // is translated into...
@@ -33,7 +33,7 @@ task coroutine1_tr()
     int res = op.await_resume();        // and may be finished when we come here
     (void)res;
     // ...
-    co_return;
+    co_return 0;
 }
 
 task coroutine2()
@@ -76,8 +76,8 @@ task coroutine2()
     res = co_await op6;
     print(PRI1, "coroutine2: res = %d;\n", res);
 
-    print(PRI1, "coroutine2: co_return;\n");
-    co_return;
+    print(PRI1, "coroutine2: co_return 0;\n");
+    co_return 0;
 }
 
 EventQueueThrFunctionVoidVoid evqueuethr;

@@ -33,7 +33,10 @@ public:
             return {};
         }
 
-        void return_void() noexcept { ready = true;  }
+        void return_value(int v) noexcept {
+            value = v;
+            ready = true;
+        }
 
         void unhandled_exception() noexcept {
             std::terminate();
@@ -61,6 +64,7 @@ public:
 
         coroutine_handle<> continuation = nullptr;
         std::atomic<bool> ready = false;
+        int value{ 0 };
     };
 
     task(task&& t) noexcept
@@ -100,7 +104,9 @@ public:
             return !promise.ready.exchange(true, std::memory_order_acq_rel);
         }
 
-        void await_resume() noexcept {}
+        int await_resume() noexcept {
+            return coro_.promise().value;
+        }
     private:
         friend task;
         explicit awaiter(coroutine_handle<promise_type> h) noexcept

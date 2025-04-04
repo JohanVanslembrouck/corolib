@@ -32,7 +32,9 @@ public:
             return {};
         }
 
-        void return_void() noexcept {}
+        void return_value(int v) noexcept {
+            value = v;
+        }
 
         void unhandled_exception() noexcept {
             std::terminate();
@@ -58,6 +60,7 @@ public:
         }
 
         coroutine_handle<> continuation;
+        int value{ 0 };
     };
 
     task(task&& t) noexcept
@@ -102,7 +105,9 @@ public:
             return coro_;
         }
 
-        void await_resume() noexcept {}
+        int await_resume() noexcept {
+            return coro_.promise().value;
+        }
     private:
         friend task;
         explicit awaiter(coroutine_handle<promise_type> h) noexcept

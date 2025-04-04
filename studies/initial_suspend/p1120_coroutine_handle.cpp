@@ -17,7 +17,7 @@ using namespace std;
 #include "manual_executor.h"
 
 task completes_synchronously() {
-    co_return;
+    co_return 0;
 }
 
 task loop_synchronously(int count) {
@@ -26,6 +26,7 @@ task loop_synchronously(int count) {
         co_await completes_synchronously();
     }
     std::cout << "loop_synchronously(" << count << ") returning" << std::endl;
+    co_return 0;
 }
 
 int main() {
