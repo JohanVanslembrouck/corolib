@@ -99,6 +99,10 @@ public:
         return awaiter{ coro_ };
     }
 
+    void start() {
+
+    }
+
 private:
     explicit task(coroutine_handle<promise_type> h) noexcept
         : coro_(h)
