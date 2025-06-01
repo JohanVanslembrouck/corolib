@@ -16,6 +16,7 @@
 #include <coroutine>
 
 #include "tracker.h"
+#include "suspend.h"
 #include "print.h"
 
 using namespace std;
@@ -33,24 +34,33 @@ public:
         }
 
         task get_return_object() noexcept {
+            print(PRI3, "%p: promise_type::get_return_object() -> task\n", this);
             return task{ coroutine_handle<promise_type>::from_promise(*this) };
         }
 
-        suspend_never initial_suspend() noexcept {
+        suspend_never_p initial_suspend() noexcept {
+            print(PRI3, "%p: promise_type::initial_suspend() -> suspend_never_p\n", this);
             return {};
         }
 
         void return_value(int v) noexcept {
+            print(PRI3, "%p: promise_type::return_value(%d) -> void: enter\n", this, v);
             value = v;
-            if (continuation)
+            if (continuation) {
+                print(PRI3, "%p: promise_type::return_value(%d) -> void: before continuation.resume();\n", this, v);
                 continuation.resume();
+                print(PRI3, "%p: promise_type::return_value(%d) -> void: after continuation.resume();\n", this, v);
+            }
+            print(PRI3, "%p: promise_type::return_value(%d) -> void: leave\n", this, v);
         }
 
         void unhandled_exception() noexcept {
+            print(PRI3, "%p: promise_type::return_value() -> void\n", this);
             std::terminate();
         }
 
-        std::suspend_never final_suspend() noexcept {
+        suspend_never_p final_suspend() noexcept {
+            print(PRI3, "%p: promise_type::final_suspend() -> suspend_never_p\n", this);
             return {};
         }
 
@@ -67,6 +77,7 @@ public:
         print(PRI2, "%p: task::~task(): test on coro_.done()\n", this);
         if (coro_)
             if (coro_.done()) {
+                print(PRI2, "%p: task::~task(): coro_.destroy();\n", this);
                 coro_.destroy();
                 coro_ = {};
             }
@@ -80,6 +91,7 @@ public:
     ~task() {
         print(PRI2, "%p: task::~task(): no test on coro_.done()\n", this);
         if (coro_) {
+            print(PRI2, "%p: task::~task(): coro_.destroy();\n", this);
             coro_.destroy();
             coro_ = {};
         }
@@ -89,41 +101,58 @@ public:
 #endif
 
     int get_result() {
-        if (coro_)
-            return coro_.promise().value;
-        else
+        if (coro_) {
+            int value = coro_.promise().value;
+            print(PRI3, "%p: task::get_result() -> int: return %d;\n", this, value);
+            return value;
+        }
+        else {
+            print(PRI3, "%p: task::get_result() -> int: return -1;\n", this);
             return -1;
+        }
     }
 
     class awaiter {
     public:
         bool await_ready() noexcept {
-            return coro_.done();
+            bool done = coro_.done();
+            print(PRI3, "%p: task::awaiter::await_ready() -> bool: return %d;\n", this, done);
+            return done;
         }
 
         void await_suspend(coroutine_handle<> continuation) noexcept {
+            print(PRI3, "%p: task::awaiter::await_suspend() -> void: enter\n", this);
             // Store the continuation in the task's promise so that the final_suspend()
             // knows to resume this coroutine when the task completes.
             coro_.promise().continuation = continuation;
+            print(PRI3, "%p: task::awaiter::await_suspend() -> void: leave\n", this);
         }
 
         int await_resume() noexcept {
-            if (coro_)
-                return coro_.promise().value;
-            else
+            if (coro_) {
+                int value = coro_.promise().value;
+                print(PRI3, "%p: task::awaiter::await_resume() -> int: return %d;\n", this, value);
+                return value;
+            }
+            else {
+                print(PRI3, "%p: task::awaiter::await_resume() -> int: return -1;\n", this);
                 return -1;
+            }
         }
 
     private:
         friend task;
         explicit awaiter(coroutine_handle<promise_type> h) noexcept
             : coro_(h)
-        {}
+        {
+            print(PRI3, "%p: task::awaiter::awaiter(...)\n", this);
+        }
 
         coroutine_handle<promise_type> coro_;
     };
 
     awaiter operator co_await() && noexcept {
+        print(PRI3, "%p: task::operation co_await() -> awaiter\n", this);
         return awaiter{ coro_ };
     }
 
@@ -131,7 +160,7 @@ private:
     explicit task(coroutine_handle<promise_type> h) noexcept
         : coro_(h)
     {
-        print(PRI2, "task::task(...)\n");
+        print(PRI2, "%p: task::task(...)\n", this);
     }
 
     coroutine_handle<promise_type> coro_{ nullptr };

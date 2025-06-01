@@ -11,6 +11,7 @@
 #ifndef _MINI_AWAITER_TS_H_
 #define _MINI_AWAITER_TS_H_
 
+#include <stdio.h>
 #include <atomic>
 #include <mutex>
 #include <coroutine>

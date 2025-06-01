@@ -14,7 +14,7 @@
 
 int main()
 {
-    set_print_level(0x03);        // Use 0x03 to follow the flow in corolib
+    set_print_level(0x07);
 
     Class obj;
     print(PRI1, "main(): task a = obj.coroutine1();\n");

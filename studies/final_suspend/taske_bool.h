@@ -17,6 +17,7 @@
 #include <atomic>
 
 #include "tracker.h"
+#include "suspend.h"
 #include "print.h"
 
 using namespace std;
@@ -34,40 +35,53 @@ public:
         }
 
         task get_return_object() noexcept {
+            print(PRI3, "%p: promise_type::get_return_object() -> task\n", this);
             return task{ coroutine_handle<promise_type>::from_promise(*this) };
         }
 
-        suspend_never initial_suspend() noexcept {
+        suspend_never_p initial_suspend() noexcept {
+            print(PRI3, "%p: promise_type::initial_suspend() -> suspend_never_p\n", this);
             return {};
         }
 
         void return_value(int v) noexcept {
+            print(PRI3, "%p: promise_type::return_value(%d) -> void\n", this, v);
             value = v;
         }
 
         void unhandled_exception() noexcept {
+            print(PRI3, "%p: promise_type::unhandled_exception() -> void\n", this);
             std::terminate();
         }
 
-        struct final_awaiter {
+        struct final_awaiter : public final_awaiter_tracker {
             bool await_ready() noexcept {
+                print(PRI3, "%p: promise_type::final_awaiter::await_ready() -> bool: return false;\n", this);
                 return false;
             }
             bool await_suspend(coroutine_handle<promise_type> h) noexcept {
+                print(PRI3, "%p: promise_type::final_awaiter::await_suspend() -> bool: enter\n", this);
                 auto& promise = h.promise();
                 if (promise.ready.exchange(true, std::memory_order_acq_rel)) {
-                    if (h.promise().continuation)
+                    if (h.promise().continuation) {
+                        print(PRI3, "%p: promise_type::final_awaiter::await_suspend() -> bool: before h.promise().continuation.resume();\n", this);
                         h.promise().continuation.resume();
+                        print(PRI3, "%p: promise_type::final_awaiter::await_suspend() -> bool: after h.promise().continuation.resume();\n", this);
+                    }
                 }
                 // This function must return true.
                 // Otherwise the coroutine will run to an end and the coroutine frame will be deleted.
                 // The call of get_result() will retrieve the result from released memory.
+                print(PRI3, "%p: promise_type::final_awaiter::await_suspend() -> bool: leave: return true;\n", this);
                 return true;
             }
-            void await_resume() noexcept {}
+            void await_resume() noexcept {
+                print(PRI3, "%p: promise_type::final_awaiter::await_resume() -> void()\n", this);
+            }
         };
 
         final_awaiter final_suspend() noexcept {
+            print(PRI3, "%p: promise_type::final_suspend() -> final_awaiter()\n", this);
             return {};
         }
         
@@ -85,6 +99,7 @@ public:
         print(PRI2, "%p: task::~task(): test on coro_.done()\n", this);
         if (coro_)
             if (coro_.done()) {
+                print(PRI2, "%p: task::~task(): coro_.destroy();\n", this);
                 coro_.destroy();
                 coro_ = {};
             }
@@ -98,6 +113,7 @@ public:
     ~task() {
         print(PRI2, "%p: task::~task(): no test on coro_.done()\n", this);
         if (coro_) {
+            print(PRI2, "%p: task::~task(): coro_.destroy();\n", this);
             coro_.destroy();
             coro_ = {};
         }
@@ -107,19 +123,27 @@ public:
 #endif
 
     int get_result() {
-        if (coro_)
-            return coro_.promise().value;
-        else
+        if (coro_) {
+            int value = coro_.promise().value;
+            print(PRI3, "%p: task::get_result() -> int: return %d;\n", this, value);
+            return value;
+        }
+        else {
+            print(PRI3, "%p: task::get_result() -> int: return -1;\n", this);
             return -1;
+        }
     }
 
     class awaiter {
     public:
         bool await_ready() noexcept {
-            return coro_.done();
+            int done = coro_.done();
+            print(PRI3, "%p: task::awaiter::await_ready() -> bool: return %d;\n", this, done);
+            return done;
         }
 
         bool await_suspend(coroutine_handle<> continuation) noexcept {
+            print(PRI3, "%p: promise_type::final_awaiter::await_suspend() -> bool: enter\n", this);
             auto& promise = coro_.promise();
 
             // Store the continuation in the task's promise so that the final_suspend()
@@ -130,26 +154,37 @@ public:
             // flag to 'true' before we return here then we want to return
             // 'false' from await_supsend() to indicate that the coroutine
             // should be immediately resumed.
-            return !promise.ready.exchange(true, std::memory_order_acq_rel);
+            bool ret = !promise.ready.exchange(true, std::memory_order_acq_rel);
+            print(PRI3, "%p: promise_type::final_awaiter::await_suspend() -> bool: leave: return %d;\n", this, ret);
+            return ret;
         }
 
         int await_resume() noexcept {
-            if (coro_)
-                return coro_.promise().value;
-            else
+            print(PRI3, "%p: task::awaiter::await_resume() -> int\n", this);
+            if (coro_) {
+                int value = coro_.promise().value;
+                print(PRI3, "%p: task::awaiter::await_resume() -> int: return %d;\n", this, value);
+                return value;
+            }
+            else {
+                print(PRI3, "%p: task::awaiter::await_resume() -> int: return -1;\n", this);
                 return -1;
+            }
         }
 
     private:
         friend task;
         explicit awaiter(coroutine_handle<promise_type> h) noexcept
             : coro_(h)
-        {}
+        {
+            print(PRI3, "%p: task::awaiter::awaiter(...)\n", this);
+        }
 
         coroutine_handle<promise_type> coro_;
     };
 
     awaiter operator co_await() && noexcept {
+        print(PRI3, "%p: task::operation co_await() -> awaiter\n", this);
         return awaiter{ coro_ };
     }
 

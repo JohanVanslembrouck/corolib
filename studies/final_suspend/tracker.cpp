@@ -35,6 +35,13 @@ tracker::~tracker()
         nr_max_simultaneously_present_promise_types,
         nr_dying_promises_detecting_live_coroutine,
         nr_dying_promises_detecting_dead_coroutine);
+    print("fin\t%d\t%d\t%d\t%d\t%d\t%d\n",
+        nr_final_awaiters_constructed,
+        nr_final_awaiters_destructed,
+        nr_final_awaiters_constructed - nr_final_awaiters_destructed,
+        nr_max_simultaneously_present_final_awaiters,
+        nr_final_awaiters_await_suspend_returning_true,
+        nr_final_awaiters_await_suspend_returning_false);
 #else
     print("\tcons\tdest\tdiff\tmax\n");
     print("cor\t%d\t%d\t%d\t%d\n",
@@ -48,6 +55,11 @@ tracker::~tracker()
         nr_promise_types_destructed,
         nr_promise_types_constructed - nr_promise_types_destructed,
         nr_max_simultaneously_present_promise_types);
+    print("fin\t%d\t%d\t%d\t%d\n",
+        nr_final_awaiters_constructed,
+        nr_final_awaiters_destructed,
+        nr_final_awaiters_constructed - nr_final_awaiters_destructed,
+        nr_max_simultaneously_present_final_awaiters);
 #endif
     print("--------------------------------------------------------\n");
     print(PRI1, "Waiting 1000 milliseconds before exiting\n");
@@ -84,5 +96,20 @@ coroutine_tracker::~coroutine_tracker()
 {
     ++tracker_obj.nr_coroutines_destructed;
     --tracker_obj.nr_currently_present_coroutines;
+}
+
+
+final_awaiter_tracker::final_awaiter_tracker()
+{
+    ++tracker_obj.nr_final_awaiters_constructed;
+    ++tracker_obj.nr_currently_present_final_awaiters;
+    if (tracker_obj.nr_currently_present_final_awaiters > tracker_obj.nr_max_simultaneously_present_final_awaiters)
+        tracker_obj.nr_max_simultaneously_present_final_awaiters++;
+}
+
+final_awaiter_tracker::~final_awaiter_tracker()
+{
+    ++tracker_obj.nr_final_awaiters_destructed;
+    --tracker_obj.nr_currently_present_final_awaiters;
 }
 

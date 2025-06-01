@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-#include "mini_awaiter.h"
+#include "mini_awaiter_p.h"
 #include "task_void_p.h"
 #include "print.h"
 

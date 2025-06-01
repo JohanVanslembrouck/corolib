@@ -191,7 +191,7 @@ The following table gives an overview of all related applications and their resu
 | ./stfs2-p1010e_sa   | correct       | no            | 4/6 | 4/4 |       |
 | ./stfs2-p1010_sa    | correct       | no            | 4/6 | 4/4 |       |
 | ./stfs2-p1020e_sa   | incorrect     | no            | 4/6 | 4/4 | tcache_thread_shutdown(): unaligned tcache chunk detected |
-| ./stfs2-p1020_sa    | ibcorrect     | no            | 4/4 | 4/1 | tcache_thread_shutdown(): unaligned tcache chunk detected |
+| ./stfs2-p1020_sa    | incorrect     | no            | 4/4 | 4/1 | tcache_thread_shutdown(): unaligned tcache chunk detected |
 
 
 To obtain the corresponding source file name, omit the prefix stfs- (short for study-final_suspend)
@@ -249,7 +249,7 @@ The following table gives an overview of all related applications and their resu
 | ./stfs2-p1110e_sn   | incorrect     | yes           | ?   | ?   | free(): double free detected in tcache 2 |
 | ./stfs2-p1110_sn    | incorrect     | yes           | ?   | ?   | free(): double free detected in tcache 2 |
 | ./stfs2-p1120e_sn   | incorrect     | no            | ?   | ?   | free(): double free detected in tcache 2 |
-| ./stfs2-p1120_sn    | incoorect     | no            | ?   | ?   | free(): double free detected in tcache 2 |
+| ./stfs2-p1120_sn    | incorrect     | no            | ?   | ?   | free(): double free detected in tcache 2 |
 
 
 The reason is that we read the results from a promise_type object in a coroutine frame that has already been deallocated.

@@ -16,14 +16,14 @@
 #include "print.h"
 
 task foo() {
-    print(PRI1, "foo(): co_return;\n");
+    print(PRI1, "foo(): co_return 1;\n");
     co_return 1;
 }
 
 task bar() {
-    print(PRI1, "bar(): co_await foo();\n");
+    print(PRI1, "bar(): int v = co_await foo();\n");
     int v = co_await foo();
-    print(PRI1, "bar(): co_return;\n");
+    print(PRI1, "bar(): co_return %d;\n", v+1);
     co_return v+1;
 }
 

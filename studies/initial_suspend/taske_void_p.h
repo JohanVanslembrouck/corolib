@@ -17,24 +17,10 @@
 #include <utility>
 
 #include "print.h"
+#include "suspend.h"
 #include "tracker1.h"
 
 using namespace std;
-
-struct suspend_never_p {
-    bool await_ready() const noexcept {
-        print(PRI3, "%p: suspend_never::await_ready()\n", this);
-        return true;
-    }
-
-    void await_suspend(coroutine_handle<>) const noexcept {
-        print(PRI3, "%p: suspend_never::await_suspend(...)\n", this);
-    }
-
-    void await_resume() const noexcept {
-        print(PRI3, "%p: suspend_never::await_resume()\n", this);
-    }
-};
 
 class task {
 public:
@@ -49,22 +35,22 @@ public:
         }
 
         task get_return_object() noexcept {
-            print(PRI3, "%p: promise_type::get_return_object()\n", this);
+            print(PRI3, "%p: promise_type::get_return_object() -> task\n", this);
             return task{ coroutine_handle<promise_type>::from_promise(*this) };
         }
 
         suspend_never_p initial_suspend() noexcept {
-            print(PRI3, "%p: promise_type::initial_suspend()\n", this);
+            print(PRI3, "%p: promise_type::initial_suspend() -> suspend_never_p\n", this);
             return {};
         }
 
         void return_value(int v) noexcept {
-            print(PRI3, "%p: promise_type::return_value(%d)\n", this, v);
+            print(PRI3, "%p: promise_type::return_value(%d) -> void\n", this, v);
             value = v;
         }
 
         void unhandled_exception() noexcept {
-            print(PRI3, "%p: promise_type::unhandled_exception()\n", this);
+            print(PRI3, "%p: promise_type::unhandled_exception() -> void\n", this);
             std::terminate();
         }
 
@@ -78,28 +64,28 @@ public:
             }
 
             bool await_ready() noexcept {
-                print(PRI3, "%p: promise_type::final_awaiter::await_ready()\n", this);
+                print(PRI3, "%p: promise_type::final_awaiter::await_ready() -> bool: return false\n", this);
                 return false;
             }
 
             void await_suspend(coroutine_handle<promise_type> h) noexcept {
-                print(PRI3, "%p: promise_type::final_awaiter::await_suspend(): enter\n", this);
+                print(PRI3, "%p: promise_type::final_awaiter::await_suspend() -> void: enter\n", this);
                 if (h.promise().continuation) {
                     tracker1_obj.nr_resumptions++;
-                    print(PRI3, "%p: promise_type::final_awaiter::await_suspend(): before h.promise().continuation.resume();\n", this);
+                    print(PRI3, "%p: promise_type::final_awaiter::await_suspend() -> void: before h.promise().continuation.resume();\n", this);
                     h.promise().continuation.resume();
-                    print(PRI3, "%p: promise_type::final_awaiter::await_suspend(): after  h.promise().continuation.resume();\n", this);
+                    print(PRI3, "%p: promise_type::final_awaiter::await_suspend() -> void: after h.promise().continuation.resume();\n", this);
                 }
-                print(PRI3, "%p: promise_type::final_awaiter::await_suspend(): leave\n", this);
+                print(PRI3, "%p: promise_type::final_awaiter::await_suspend() -> void: leave\n", this);
             }
 
             void await_resume() noexcept {
-                print(PRI3, "%p: promise_type::final_awaiter::await_resume()\n", this);
+                print(PRI3, "%p: promise_type::final_awaiter::await_resume() -> void\n", this);
             }
         };
 
         final_awaiter final_suspend() noexcept {
-            print(PRI3, "%p: promise_type::final_suspend()\n", this);
+            print(PRI3, "%p: promise_type::final_suspend() -> final_awaiter\n", this);
             return {};
         }
 
@@ -129,34 +115,41 @@ public:
     }
 
     void start() {
-        print(PRI2, "%p: task::start()\n", this);
+        print(PRI2, "%p: task::start() -> void\n", this);
     }
 
     int get_result() {
-        if (coro_)
-            return coro_.promise().value;
-        else
+        if (coro_) {
+            int value = coro_.promise().value;
+            print(PRI3, "%p: task::get_result() -> int; return %d\n", this, value);
+            return value;
+        }
+        else {
+            print(PRI3, "%p: task::get_result() -> int: return -1\n", this);
             return -1;
+        }
     }
 
     class awaiter {
     public:
         bool await_ready() noexcept {
-            print(PRI3, "%p: task::awaiter::await_ready()\n", this);
-            return coro_.done();
+            bool done = coro_.done();
+            print(PRI3, "%p: task::awaiter::await_ready() -> bool: return %d\n", this, done);
+            return done;
         }
 
         void await_suspend(coroutine_handle<> continuation) noexcept {
-            print(PRI3, "%p: task::awaiter::await_suspend(): enter\n", this);
+            print(PRI3, "%p: task::awaiter::await_suspend() -> void: enter\n", this);
             // Store the continuation in the task's promise so that the final_suspend()
             // knows to resume this coroutine when the task completes.
             coro_.promise().continuation = continuation;
-            print(PRI3, "%p: task::awaiter::await_suspend(): leave\n", this);
+            print(PRI3, "%p: task::awaiter::await_suspend() -> void: leave\n", this);
         }
 
         int await_resume() noexcept {
-            print(PRI3, "%p: task::awaiter::await_resume()\n", this);
-            return coro_.promise().value;
+            int value = coro_.promise().value;
+            print(PRI3, "%p: task::awaiter::await_resume() -> int: return %d\n", this, value);
+            return value;
         }
 
         ~awaiter() {
@@ -185,7 +178,7 @@ public:
      *    co_await f;
      */
     awaiter operator co_await() noexcept {
-        print(PRI3, "%p: task::operation co_await()\n", this);
+        print(PRI3, "%p: task::operation co_await() -> awaiter\n", this);
         return awaiter{ coro_ };
     }
 
