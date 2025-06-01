@@ -138,7 +138,7 @@ struct syncr : private coroutine_tracker {
             //std::exit(1);
         }
 
-        void return_value(T v) {
+        void return_value(T /*v*/) {
             print("%p: void syncr::promise_type::return_value(T V): psema = %p, psema->signal()\n", this, this->psema);
             psema->signal();
             set = true;

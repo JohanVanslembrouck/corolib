@@ -3,7 +3,7 @@
  * @brief
  * This example is an evolution of p2011-async-3rmis.cpp.
  * It uses lambdas to avoid a hard-coded coupling between a start_operationX function and 
- * a operationX_result function.
+ * an operationX_result function.
  * The operationX_result functions also take a void* as parameter instead of
  * a operationContext* because the latter is an application-dependent type.
  * 

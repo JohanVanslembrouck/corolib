@@ -2,8 +2,8 @@
  * @file p2021-coroutines-3rmis.cpp
  * @brief
  * This example uses coroutines.
- * This variant of p2020-coroutines-3rmis.cpp does not use
- * reference (out) variables as coroutine parameters.
+ * This example uses synchronoous completion.
+ * This variant of p2020-coroutines-3rmis.cpp does not use reference (out) variables as coroutine parameters.
  * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */

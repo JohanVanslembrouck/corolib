@@ -4,7 +4,7 @@
  * This example simulates 3 asynchronous remote method invocations (RMIs). 
  * The operationX_result completion handlers are directly called from the start_operationX functions.
  * The difference with p2010-async-3rmis.cpp is that the start_operationX and operationX_result
- * functions take operationContext* as sole parameter. The have the same signature.
+ * functions take operationContext* as sole parameter. They have the same signature.
  * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */

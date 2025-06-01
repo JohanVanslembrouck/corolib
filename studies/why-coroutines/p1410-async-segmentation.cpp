@@ -45,7 +45,7 @@ public:
     }
 
 protected:
-    void function1a(function1_ctxt_t* ctxt, Msg msgout)
+    void function1a(function1_ctxt_t* ctxt, Msg /*msgout*/)
     {
         // Do something with msgout
         printf("Class01::function1a(Msg): counter = %d\n", ctxt->counter);

@@ -2,7 +2,8 @@
  * @file p2020-coroutines-3rmis.cpp
  * @brief
  * This example uses coroutines.
- * The operationX coroutines use synchronous return.
+ * This example uses synchronoous completion.
+ * The operationX coroutines use in and reference (out) variables as coroutine parameters.
  * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */

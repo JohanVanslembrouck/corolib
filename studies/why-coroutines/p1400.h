@@ -24,7 +24,7 @@ public:
      * @param offset: the current offset in the buffer
      * @param bytestowrite: the number of bytes to write
      */
-    void write_segment(char* p, int offset, int bytestowrite)
+    void write_segment(char*, int offset, int bytestowrite)
     {
         printf("RemoteObjectImpl::write_segment(p, offset = %d, bytestowrite = %d)\n", offset, bytestowrite);
         assert(bytestowrite <= SEGMENT_LENGTH);
@@ -38,7 +38,7 @@ public:
      * @param offset: the current offset in the buffer
      * @param bytestoread: the number of bytes to write
      */
-    bool read_segment(char* p, int offset, int bytestoread)
+    bool read_segment(char*, int offset, int bytestoread)
     {
         printf("RemoteObjectImpl::read_segment(p, offset = %d, bytestoread = %d)\n", offset, bytestoread);
         assert(bytestoread == SEGMENT_LENGTH);
@@ -56,7 +56,7 @@ public:
      * @param bytestowrite: the number of bytes to write
      * @param lambda: the lambda to call when the operation has completed
      */
-    void sendc_write_segment(char* p, int offset, int bytestowrite, lambda_void_t lambda)
+    void sendc_write_segment(char*, int offset, int bytestowrite, lambda_void_t lambda)
     {
         printf("RemoteObjectImpl::sendc_write_segment(p, offset = %d, bytestowrite = %d)\n", offset, bytestowrite);
         assert(bytestowrite <= SEGMENT_LENGTH);
@@ -70,7 +70,7 @@ public:
      * @param bytestoread: the number of bytes to write
      * @param lambda: the lambda to call when the operation has completed
      */
-    void sendc_read_segment(char* p, int offset, int bytestoread, lambda_bool_t lambda)
+    void sendc_read_segment(char*, int offset, int bytestoread, lambda_bool_t lambda)
     {
         printf("RemoteObjectImpl::sendc_read_segment(p, offset = %d, bytestoread = %d)\n", offset, bytestoread);
         assert(bytestoread == SEGMENT_LENGTH);
@@ -91,7 +91,7 @@ public:
     {
     }
 
-    Msg op1(Msg msg)
+    Msg op1(Msg /*msg*/)
     {
         // Write part
         Buffer writebuffer;
@@ -135,7 +135,7 @@ private:
     };
 
 public:
-    void sendc_op1(Msg msg, lambda_msg_t op1_cb)
+    void sendc_op1(Msg /*msg*/, lambda_msg_t op1_cb)
     {
         printf("RemoteObject1::sendc_op1(): calling write_segment\n");
 

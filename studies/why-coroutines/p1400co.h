@@ -56,7 +56,7 @@ public:
     {
     }
 
-    async_task<Msg> op1(Msg msg)
+    async_task<Msg> op1(Msg /*msg*/)
     {
         // Write part
         Buffer writebuffer;

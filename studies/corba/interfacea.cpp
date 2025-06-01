@@ -41,7 +41,7 @@ namespace moduleA
         return eventqueue.registerCB(handler);
     }
 
-    CORBA::Boolean interfaceA::operation1Poller(PollerID pollerId, CORBA::Boolean blocking,
+    CORBA::Boolean interfaceA::operation1Poller(PollerID pollerId, CORBA::Boolean /*blocking*/,
                     CORBA::Short& ret_val, CORBA::Double& inout_val, CORBA::Short& out_val)
     {
         //printf("interfaceA::operation1Poller(pollerId = %d, blocking = %d)\n", pollerId, blocking);

@@ -15,13 +15,13 @@ class RemoteObjectImpl
 {
 public:
     // Synchronouus functions
-    void write(char* p, int bytestowrite)
+    void write(char*, int bytestowrite)
     {
         printf("RemoteObjectImpl::write(p, bytestowrite = %d)\n", bytestowrite);
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
-    bool read(char* p, int bytestoread)
+    bool read(char*, int bytestoread)
     {
         printf("RemoteObjectImpl::read(p, bytestoread = %d)\n", bytestoread);
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -29,13 +29,13 @@ public:
     }
 
     // Asynchronouus functions
-    void sendc_write(char* p, int bytestowrite, lambda_void_t lambda)
+    void sendc_write(char*, int bytestowrite, lambda_void_t lambda)
     {
         printf("RemoteObjectImpl::sendc_write(p, bytestowrite = %d)\n", bytestowrite);
         registerCB(lambda);
     }
 
-    void sendc_read(char* p, int bytestoread, lambda_void_t lambda)
+    void sendc_read(char*, int bytestoread, lambda_void_t lambda)
     {
         printf("RemoteObjectImpl::sendc_read(p, bytestoread = %d)\n", bytestoread);
         registerCB(lambda);

@@ -49,7 +49,7 @@ void async_op(std::function<void(int)>&& completionHandler)
  * @param eventHandler is a reference to a std::function<void(int)> object.
  * @param op is a pointer to an async_operation<int> object.
  */
-void start_operation_impl(std::function<void(int)>& eventHandler, async_operation<int>& op)
+void start_operation_impl(std::function<void(int)>& /*eventHandler*/, async_operation<int>& op)
 {
     print(PRI1, "start_operation_impl()\n");
 

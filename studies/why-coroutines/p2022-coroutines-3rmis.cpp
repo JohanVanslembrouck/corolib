@@ -2,8 +2,8 @@
  * @file p2022-coroutines-3rmis.cpp
  * @brief
  * This example uses coroutines.
- * It uses asynchronous API sendc_operationX functions that
- * place a completion handler in the event queue.
+ * The operationX coroutines use in and reference (out) variables as coroutine parameters.
+ * This example uses asynchronous API sendc_operationX functions that place a completion handler in the event queue.
  * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */

@@ -2,8 +2,8 @@
  * @file p2023-coroutines-3rmis.cpp
  * @brief
  * This example uses coroutines.
- * This variant of p2022-coroutines-3rmis.cpp does not use
- * reference (out) variables as coroutine parameters.
+ * This example uses asynchronous API sendc_operationX functions that place a completion handler in the event queue.
+ * This variant of p2022-coroutines-3rmis.cpp does not use reference (out) variables as coroutine parameters.
  * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */

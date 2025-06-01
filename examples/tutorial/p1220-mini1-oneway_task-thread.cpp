@@ -83,7 +83,7 @@ async_task<int> coroutine4(bool& cancel)
     co_return v+1;
 }
 
-oneway_task coroutine3(const char* name, auto_reset_event& ma, bool &cancel)
+oneway_task coroutine3(const char* /*name*/, auto_reset_event& ma, bool& cancel)
 {
     print(PRI1, "coroutine3(): async_task<int> a4 = coroutine4();\n");
     async_task<int> a4 = coroutine4(cancel);

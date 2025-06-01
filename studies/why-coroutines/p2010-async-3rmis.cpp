@@ -3,11 +3,12 @@
  * @brief
  * This example simulates 3 asynchronous remote method invocations (RMIs). 
  * The operationX_result completion handlers are directly called from the start_operationX functions.
- * The signature of the functions stay as close as possible to the synchronous case,
+ * The signature of the functions stays as close as possible to the synchronous case,
  * with the start_operationX functions passing the in parameters and the  
- * the operationX_result functions passing  the out parameters and the return value.
+ * the operationX_result functions passing the out parameters and the return value.
  * However, because all parameters and return values are stored in an operationContext object,
- * these parameters are not used and 
+ * these parameters are not used and will be removed in the next example (p2011-async-3rmis.cpp).
+ * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
