@@ -135,11 +135,7 @@ namespace corolib
         }
 
         when_any(const when_any& s) = delete;
-
-        when_any(when_any&& s) noexcept
-        {
-            print(PRI2, "%p: when_any::when_any(when_any&& s)\n", this);
-        }
+        when_any(when_any&& s) noexcept = delete;
 
         ~when_any()
         {
@@ -273,7 +269,7 @@ namespace corolib
         };
 
         //template<>      // g++:  error: explicit specialization in non-namespace scope ‘class corolib::when_any’
-        void make_when_any(int i) {
+        void make_when_any(int) {
         };
 
     private:

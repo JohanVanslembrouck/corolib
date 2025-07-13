@@ -37,10 +37,11 @@ CommCore::CommCore(boost::asio::io_context& io_context)
  * It may be called by the user of the CommCore class, or by the class itself in
  * response to graceful termination or an unrecoverable error.
  */
-void CommCore::stop()
+void CommCore::stop(bool stop)
 {
     print(PRI2, "%p: CommCore::stop()\n", this);
-    m_stopped = true;
+    if (stop)
+        m_stopped = true;
     boost::system::error_code ignored_error;
     m_socket.close(ignored_error);
     m_deadline.cancel();

@@ -34,7 +34,7 @@ namespace corolib
         // This function terminates all the actors to shut down the connection. It
         // may be called by the user of the CommCore class, or by the class itself in
         // response to graceful termination or an unrecoverable error.
-        void stop();
+        void stop(bool stop = true);
 
         async_operation<void> start_writing(const char* str, int size);
         async_operation<std::string> start_reading(const char ch = '\n');

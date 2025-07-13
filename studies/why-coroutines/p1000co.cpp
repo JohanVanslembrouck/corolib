@@ -21,7 +21,10 @@ void RemoteObject1Co::start_op1_impl(const int idx, int in1, int in2)
         [this, idx](int out1, int out2, int ret1) 
         {
             print(PRI2, "%p: RemoteObject1Co::start_op1_impl(%d) - handler\n", this, idx);
-
+#if 1
+            op1_ret_t op1_ret = { out1, out2, ret1 };
+            this->completionHandler<op1_ret_t>(idx, op1_ret);
+#else
             async_operation_base* om_async_operation = get_async_operation(idx);
             async_operation<op1_ret_t>* om_async_operation_t =
                 static_cast<async_operation<op1_ret_t>*>(om_async_operation);
@@ -38,5 +41,6 @@ void RemoteObject1Co::start_op1_impl(const int idx, int in1, int in2)
                 // This can occur when the async_operation_base has gone out of scope.
                 print(PRI1, "%p: RemoteObject1Co::start_op1_impl(%d) - handler: Warning: om_async_operation_t == nullptr\n", this, idx);
             }
+#endif
         });
 }
