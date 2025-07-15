@@ -70,7 +70,7 @@ public:
      * @return async_task<int> with return value 0
      */
     async_task<int> one_client_write_reply(std::string strIn, spCommCore commClient, 
-        async_operation_base& cancelAction, async_operation_base& completeAction)
+        async_operation<void>& cancelAction, async_operation<void>& completeAction)
     {
         // Start a timer to introduce a delay (to simulate a long asynchronous calculation)
         // before writing the reply to the client.
@@ -155,8 +155,8 @@ public:
         {
             print(PRI1, "one_client: %d ------------------------------------------------------------------\n", counter++);
 
-            async_operation_base cancelAction;
-            async_operation_base completeAction;
+            async_operation<void> cancelAction;
+            async_operation<void> completeAction;
 
             // Reading
             print(PRI1, "one_client: async_operation<std::string> sr1 = commClient->start_reading();\n");

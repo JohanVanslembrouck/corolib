@@ -35,6 +35,7 @@ public:
 
     async_operation<int> start_operation1();
     async_operation<int> start_operation2(int bias = 0);
+    async_operation_rmc<int> start_operation2_rmc(int bias = 0);
     
     void runEventHandler(int i, int val);
 
@@ -46,6 +47,7 @@ protected:
 
     void async_op2(const int idx, int bias, std::function<void(int)>&& completionHandler);
     void start_operation2_impl(const int idx, int bias);
+    void start_operation2_rmc_impl(const int idx, int bias);
     
 private:
     std::function<void(int)> m_eventHandler[NROPERATIONS];

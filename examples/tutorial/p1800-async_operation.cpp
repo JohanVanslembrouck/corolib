@@ -43,7 +43,6 @@ int main()
     useMode = UseMode::USE_NONE;
 
     set_priority(0x01);                     // Use 0x03 to follow the flow in corolib
-    resume_multiple_coroutines(true);       // Needed for the executable produced from p1810.cpp
 
     for (int i = 0; i < 1; ++i)
     {

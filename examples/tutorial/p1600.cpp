@@ -16,7 +16,6 @@
  * 
  * Because async_operation<int> op is co_await-ed by two coroutines,
  * both coroutines have to be resumed when op is completed.
- * To accomplish this, call resume_multiple_coroutines(true); in the maun() function.
  * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
@@ -31,7 +30,8 @@
 using namespace corolib;
 
 std::function<void(int)> eventHandler;
-static async_operation<int> op;
+////static async_operation<int> op;
+static async_operation_rmc<int> op;
 
 /**
  * @brief async_op
@@ -61,12 +61,25 @@ void start_operation_impl(std::function<void(int)>& /*eventHandler*/, async_oper
         });
 }
 
+void start_operation_impl(std::function<void(int)>& /*eventHandler*/, async_operation_rmc<int>& op)
+{
+    print(PRI1, "start_operation_impl()\n");
+
+    async_op([&op](int i)
+        {
+            print(PRI1, "completionHandler(): op->set_result(%d)\n", i);
+            op.set_result(i);
+            op.completed();
+        });
+}
+
 async_task<int> coroutine15()
 {
     print(PRI1, "coroutine15(): start_operation_impl(eventHandler, op);\n");
     start_operation_impl(eventHandler, op);
 
     print(PRI1, "coroutine15(): int v1 = co_await op;\n");
+    print(PRI1, "sizeof(op) = %zd\n", sizeof(op));
     int v = co_await op;
 
     print(PRI1, "coroutine15(): co_return v+1 = %d;\n", v + 1);

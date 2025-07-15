@@ -5,9 +5,6 @@
  * if the operation is already ongoing or has completed (and its result is available).
  * In case the operation is ongoing, it suffices to co_await its completion.
  * Several co_await statements thus await the completion of a single operation.
- * This requires calling
- * resume_multiple_coroutines(true);
- * in the main function.
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
@@ -35,7 +32,7 @@ async_task<int> Class1490::coroutine1(int i)
     {
         print(PRI1, "coroutine1(): op2_state == OperationState::not_started\n", m_v2);
         op2_state = OperationState::running;
-        m_op2 = m_object.start_operation2(5);
+        m_op2 = m_object.start_operation2_rmc(5);
         print(PRI1, "coroutine1(): m_v2 = co_await op2;\n");
         m_v2 = co_await m_op2;
         print(PRI1, "coroutine1(): m_v2 = %d\n", m_v2);

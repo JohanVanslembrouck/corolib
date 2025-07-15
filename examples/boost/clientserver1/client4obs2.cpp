@@ -41,7 +41,7 @@ public:
      * @param op_read
      * @return always 1
      */
-    async_task<int> observer1(async_operation<std::string>& op_read)
+    async_task<int> observer1(async_operation_rmc<std::string>& op_read)
     {
         print(PRI1, "--- observer1: std::string strout = co_await op_read\n");
         std::string strout = co_await op_read;
@@ -54,7 +54,7 @@ public:
      * @param op_read
      * @return always 1
      */
-    async_task<int> observer2(async_operation<std::string>& op_read)
+    async_task<int> observer2(async_operation_rmc<std::string>& op_read)
     {
         print(PRI1, "--- observer2: std::string strout = co_await op_read\n");
         std::string strout = co_await op_read;
@@ -67,7 +67,7 @@ public:
      * @param op_read
      * @return always 1
      */
-    async_task<int> observer3(async_operation<std::string>& op_read)
+    async_task<int> observer3(async_operation_rmc<std::string>& op_read)
     {
         print(PRI1, "--- observer3: std::string strout = co_await op_read\n");
         std::string strout = co_await op_read;
@@ -80,7 +80,7 @@ public:
      * @param op_read
      * @return always 1
      */
-    async_task<int> observer4(async_operation<std::string>& op_read)
+    async_task<int> observer4(async_operation_rmc<std::string>& op_read)
     {
         print(PRI1, "--- observer4: std::string strout = co_await op_read\n");
         std::string strout = co_await op_read;
@@ -133,7 +133,7 @@ public:
             print(PRI1, "mainflow: int index = get_free_index_ts();\n");
             int index = get_free_index_ts();
             print(PRI1, "mainflow: async_operation<std::string> sr{ this, index = %d, true };\n", index);
-            async_operation<std::string> sr{ this, index, true };
+            async_operation_rmc<std::string> sr{ this, index, true };
             
             // Start the observer coroutines
             print(PRI1, "mainflow: async_task<int> sr1 = observer1(sr);\n");
@@ -146,8 +146,8 @@ public:
             async_task<int> sr4 = observer4(sr);
             
             // Start reading
-            print(PRI1, "mainflow: start_reading_impl(index = %d);\n", index);
-            start_reading_impl(index);
+            print(PRI1, "mainflow: start_reading_impl_rmc(index = %d);\n", index);
+            start_reading_impl_rmc(index);
             print(PRI1, "mainflow: std::string strout =  co_await sr;\n");
             std::string strout = co_await sr;
             print(PRI1, "mainflow: strout = %s", strout.c_str());
@@ -177,7 +177,6 @@ protected:
 int main()
 {
     set_priority(0x01);
-    resume_multiple_coroutines(true);
 
     boost::asio::io_context ioContext;
 

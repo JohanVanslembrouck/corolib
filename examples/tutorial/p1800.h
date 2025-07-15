@@ -17,8 +17,8 @@
 using namespace corolib;
 
 extern UseMode useMode;
-extern async_operation<int> op;
-void start_operation_impl(async_operation<int>& op);
+extern async_operation_rmc<int> op;
+void start_operation_impl(async_operation_rmc<int>& op);
 async_task<int> coroutine1();
 
 #endif

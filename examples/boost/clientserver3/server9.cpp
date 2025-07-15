@@ -8,8 +8,6 @@
  * In contrast to cs3-server8.cpp, cs3-server9.cpp uses a coroutine "chain" from read_client_request to serverRequest.operationX,
  * i.e. all functions in between (in server8.cpp) have been turned into coroutines.
  * 
- * Prerequisite: call resume_multiple_coroutines(true); in main().
- * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
  
@@ -131,8 +129,8 @@ public:
 
         async_operation_base* om_async_operation = get_async_operation(idx);
 
-        async_operation<std::string>* om_async_operation_t =
-            static_cast<async_operation<std::string>*>(om_async_operation);
+        async_operation_rmc<std::string>* om_async_operation_t =
+            static_cast<async_operation_rmc<std::string>*>(om_async_operation);
 
         if (om_async_operation_t)
         {
@@ -159,7 +157,7 @@ public:
         static int counter = 0;
 
         int index = get_free_index();
-        async_operation<std::string> op_str{ this, index };
+        async_operation_rmc<std::string> op_str{ this, index };
         op_str.auto_reset(true);
         dispatcher.registerAsyncOperation("Req1", index);
         
@@ -187,7 +185,7 @@ public:
         static int counter = 0;
 
         int index = get_free_index();
-        async_operation<std::string> op_str{ this, index };
+        async_operation_rmc<std::string> op_str{ this, index };
         op_str.auto_reset(true);
         dispatcher.registerAsyncOperation("Req2", index);
         
@@ -215,7 +213,7 @@ public:
         static int counter = 0;
 
         int index = get_free_index();
-        async_operation<std::string> op_str{ this, index };
+        async_operation_rmc<std::string> op_str{ this, index };
         op_str.auto_reset(true);
         dispatcher.registerAsyncOperation("Req3", index);
         
@@ -243,7 +241,7 @@ public:
         static int counter = 0;
 
         int index = get_free_index();
-        async_operation<std::string> op_str{ this, index };
+        async_operation_rmc<std::string> op_str{ this, index };
         op_str.auto_reset(true);
         dispatcher.registerAsyncOperation("Req4", index);
         
@@ -283,7 +281,7 @@ public:
         {
             // Reading
             print(PRI1);
-            print(PRI1, "read_client_request: async_operation<std::string> sr = commClient->start_reading();\n");
+            print(PRI1, "read_client_request: async_operation<std::string> sr = commClient->start_reading_rmc();\n");
             async_operation<std::string> sr = commClient->start_reading();
             print(PRI1, "read_client_request: std::string str = co_await sr;\n");
             std::string str = co_await sr;
@@ -421,7 +419,6 @@ void asyncSignal(boost::asio::io_context& ioContext)
 int main()
 {
     set_priority(0x01);
-    resume_multiple_coroutines(true);
 
     boost::asio::io_context ioContextSignal;
     boost::asio::io_context ioContextServer;

@@ -4,7 +4,6 @@
  * 
  * Because async_operation<int> op is co_awaited by two coroutines,
  * both coroutines have to be resumed when op is completed.
- * To accomplish this, call resume_multiple_coroutines(true); in the maun() function.
  * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
@@ -76,7 +75,7 @@ void async_op(std::function<void(int)>&& completionHandler)
  * 
  * @param op is a reference to an async_operation<int> object.
  */
-void start_operation_impl(async_operation<int>& op)
+void start_operation_impl(async_operation_rmc<int>& op)
 {
     print(PRI1, "start_operation_impl()\n");
     async_op(
@@ -87,7 +86,7 @@ void start_operation_impl(async_operation<int>& op)
         });
 }
 
-async_operation<int> op;
+async_operation_rmc<int> op;
    
 async_task<int> coroutine1a()
 {

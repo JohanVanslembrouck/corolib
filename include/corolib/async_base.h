@@ -5,7 +5,7 @@
  * of this class, instead of having to define them as class templates taking
  * an async_operation or async_task as template arguments.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 #ifndef _ASYNC_BASE_H_
 #define _ASYNC_BASE_H_

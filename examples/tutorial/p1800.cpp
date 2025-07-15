@@ -68,7 +68,7 @@ void async_op(std::function<void(int)>&& completionHandler)
  * 
  * @param op is a reference to an async_operation<int> object.
  */
-void start_operation_impl(async_operation<int>& op)
+void start_operation_impl(async_operation_rmc<int>& op)
 {
     print(PRI1, "start_operation_impl()\n");
     async_op(
@@ -79,11 +79,12 @@ void start_operation_impl(async_operation<int>& op)
         });
 }
 
-async_operation<int> op;
+//async_operation<int> op;
+async_operation_rmc<int> op;
    
 async_task<int> coroutine1()
 {
-    print(PRI1, "coroutine1(): async_operation<int> op;\n");
+    print(PRI1, "coroutine1();\n");
     op.auto_reset(true);
     int v1 = 0;
     int v = 0;

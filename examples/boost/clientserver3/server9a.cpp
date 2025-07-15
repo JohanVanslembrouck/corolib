@@ -10,8 +10,6 @@
  * This variant is less efficient than the original implementation because the decision is taken deeper in the call tree.
  * The main objective is to illustrate the use of the chain of responsibility design pattern.
  * 
- * Prerequisite: call resume_multiple_coroutines(true); in main().
- * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
  */
  
@@ -108,8 +106,8 @@ public:
 
         async_operation_base* om_async_operation = get_async_operation(idx);
 
-        async_operation<std::string>* om_async_operation_t =
-            static_cast<async_operation<std::string>*>(om_async_operation);
+        async_operation_rmc<std::string>* om_async_operation_t =
+            static_cast<async_operation_rmc<std::string>*>(om_async_operation);
 
         if (om_async_operation_t)
         {
@@ -149,7 +147,7 @@ public:
         static int counter = 0;
 
         int index = get_free_index();
-        async_operation<std::string> op_str{ this, index };
+        async_operation_rmc<std::string> op_str{ this, index };
         op_str.auto_reset(true);
         dispatcher.registerAsyncOperation(index);
         
@@ -182,7 +180,7 @@ public:
         static int counter = 0;
 
         int index = get_free_index();
-        async_operation<std::string> op_str{ this, index };
+        async_operation_rmc<std::string> op_str{ this, index };
         op_str.auto_reset(true);
         dispatcher.registerAsyncOperation(index);
         
@@ -215,7 +213,7 @@ public:
         static int counter = 0;
 
         int index = get_free_index();
-        async_operation<std::string> op_str{ this, index };
+        async_operation_rmc<std::string> op_str{ this, index };
         op_str.auto_reset(true);
         dispatcher.registerAsyncOperation(index);
         
@@ -248,7 +246,7 @@ public:
         static int counter = 0;
 
         int index = get_free_index();
-        async_operation<std::string> op_str{ this, index };
+        async_operation_rmc<std::string> op_str{ this, index };
         op_str.auto_reset(true);
         dispatcher.registerAsyncOperation(index);
         
@@ -431,7 +429,6 @@ void asyncSignal(boost::asio::io_context& ioContext)
 int main()
 {
     set_priority(0x01);
-    resume_multiple_coroutines(true);
 
     boost::asio::io_context ioContextSignal;
     boost::asio::io_context ioContextServer;

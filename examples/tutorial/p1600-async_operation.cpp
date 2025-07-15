@@ -45,7 +45,6 @@ void completionflow()
 int main()
 {
     set_priority(0x01);                     // Use 0x03 to follow the flow in corolib
-    resume_multiple_coroutines(true);       // See header of p1600.cpp for explanation.
 
     for (int i = 0; i < 10; ++i)
     {

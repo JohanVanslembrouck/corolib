@@ -158,6 +158,15 @@ async_operation<int> Class02::start_operation2(int bias)
     return ret;
 }
 
+async_operation_rmc<int> Class02::start_operation2_rmc(int bias)
+{
+    int index = get_free_index();
+    print(PRI1, "%p: Class02::start_operation2_rmc(): index = %d\n", this, index);
+    async_operation_rmc<int> ret{ this, index };
+    start_operation2_rmc_impl(index, bias);
+    return ret;
+}
+
 /**
  * @brief Class02::async_op2
  * See explanation in use_mode.h.
@@ -243,6 +252,42 @@ void Class02::start_operation2_impl(const int idx, int bias)
             async_operation_base* om_async_operation = get_async_operation(idx);
             async_operation<int>* om_async_operation_t =
                 static_cast<async_operation<int>*>(om_async_operation);
+
+            if (om_async_operation_t)
+            {
+                if (i >= 0)
+                {
+                    print(PRI1, "Class02::eventHandler[%p, %d](%d): om_async_operation_t->set_result(%d);\n", this, idx, i, bias + i);
+                    om_async_operation_t->set_result(bias + i);
+                }
+                else
+                {
+                    print(PRI1, "Class02::eventHandler[%p, %d](%d): om_async_operation_t->set_error(%d);\n", this, idx, i, i);
+                    om_async_operation_t->set_error(i);
+                }
+                om_async_operation_t->completed();
+            }
+            else
+            {
+                // This can occur when the async_operation_base has gone out of scope.
+                print(PRI1, "Class02::eventHandler[%p, %d, %d](%d): Warning: om_async_operation_t == nullptr\n", this, idx, bias, i);
+            }
+        });
+}
+
+
+void Class02::start_operation2_rmc_impl(const int idx, int bias)
+{
+    print(PRI1, "%p: Class02::start_operation2_rmc_impl(%d, %d)\n", this, idx, bias);
+
+    async_op2(idx, bias,
+        [this, idx, bias](int i)
+        {
+            print(PRI1, "Class02::eventHandler[%p, %d, %d](%d)\n", this, idx, bias, i);
+
+            async_operation_base* om_async_operation = get_async_operation(idx);
+            async_operation_rmc<int>* om_async_operation_t =
+                static_cast<async_operation_rmc<int>*>(om_async_operation);
 
             if (om_async_operation_t)
             {

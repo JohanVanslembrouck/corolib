@@ -5,9 +5,6 @@
  *
  * Coroutines timerTask01a, timerTask01b and timerTask01c are identical (apart from the print lines).
  * In a more elaborate example, these coroutines could perform different actions when they are resumed.
- *
- * This requires RESUME_MULTIPLE_COROUTINES = 1 in async_operation.h.
- * Otherwise, only the last coroutine that co_await the object will be resumed.
  * 
  * timer04.cpp is a variant of timer03.cpp that only uses a single timer.
  *
@@ -51,7 +48,7 @@ void Timer04::start_timer(async_operation_base& async_op, steady_timer& tmr, int
             
             if (!error)
             {
-                completionHandler_v(p_async_op);
+                completionHandler_v_rmc(p_async_op);
             }
             else
             {
@@ -66,7 +63,7 @@ void Timer04::start_timer(async_operation_base& async_op, steady_timer& tmr, int
  * @param op_tmr
  * @return
  */
-async_task<int> Timer04::timerTask01a(async_operation<void>& op_tmr)
+async_task<int> Timer04::timerTask01a(async_operation_rmc<void>& op_tmr)
 {
     print(PRI1, "--- timerTask01a: begin\n");
     while (m_running)
@@ -84,7 +81,7 @@ async_task<int> Timer04::timerTask01a(async_operation<void>& op_tmr)
  * @param op_tmr
  * @return
  */
-async_task<int> Timer04::timerTask01b(async_operation<void>& op_tmr)
+async_task<int> Timer04::timerTask01b(async_operation_rmc<void>& op_tmr)
 {
     print(PRI1, "--- timerTask01b: begin\n");
     while (m_running)
@@ -102,7 +99,7 @@ async_task<int> Timer04::timerTask01b(async_operation<void>& op_tmr)
  * @param op_tmr
  * @return
  */
-async_task<int> Timer04::timerTask01c(async_operation<void>& op_tmr)
+async_task<int> Timer04::timerTask01c(async_operation_rmc<void>& op_tmr)
 {
     print(PRI1, "--- timerTask01c: begin\n");
     while (m_running)
@@ -130,7 +127,7 @@ async_task<int> Timer04::mainTask()
     steady_timer timer2(m_ioContext);
 
     print(PRI1, "%p: Timer04::mainTask\n", this);
-    async_operation<void> op_timer1{ this };
+    async_operation_rmc<void> op_timer1{ this };
     op_timer1.auto_reset(true);
 
     async_task<int> t1a = timerTask01a(op_timer1);

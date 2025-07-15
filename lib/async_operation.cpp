@@ -2,7 +2,7 @@
  * @file async_operation.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
 
 #include <stdio.h>
@@ -14,8 +14,6 @@
 #include "corolib/print.h"
 #include "corolib/commservice.h"
 
-#define REPORT_OUT_OF_SCOPE 0
-
 namespace corolib
 {
     /**
@@ -25,8 +23,6 @@ namespace corolib
      */
     async_operation_base::async_operation_base(CommService* s, int index, bool timestamp)
         : m_service(s)
-        , m_awaitings{}                 // RESUME_MULTIPLE_COROUTINES
-        , m_awaiting(nullptr)           // !RESUME_MULTIPLE_COROUTINES
         , m_ctr(nullptr)
         , m_waitany(nullptr)
         , m_index(index)
@@ -56,8 +52,6 @@ namespace corolib
         }
         m_index = 0xdeadbeef;
 
-        // m_awaitings          // RESUME_MULTIPLE_COROUTINES
-        m_awaiting = nullptr;   // !RESUME_MULTIPLE_COROUTINES
         m_ctr = nullptr;
         m_waitany = nullptr;
         m_service = nullptr;
@@ -72,8 +66,6 @@ namespace corolib
      */
     async_operation_base::async_operation_base(async_operation_base&& other) noexcept
         : m_service(other.m_service)
-        , m_awaitings(std::move(other.m_awaitings))         // RESUME_MULTIPLE_COROUTINES
-        , m_awaiting(other.m_awaiting)                      // !RESUME_MULTIPLE_COROUTINES
         , m_ctr(other.m_ctr)
         , m_waitany(other.m_waitany)
         , m_index(other.m_index)
@@ -122,9 +114,7 @@ namespace corolib
         }
 
         m_service = other.m_service;
-        m_awaitings = std::move(other.m_awaitings);     // RESUME_MULTIPLE_COROUTINES
-        m_awaiting = other.m_awaiting;                  // !RESUME_MULTIPLE_COROUTINES
- 
+
         // The following 2 tests allow an async_operation that takes part in
         // a when_all or when_any to be re-assigned.
         // This avoids disposing the original when_all or when_any
@@ -161,9 +151,9 @@ namespace corolib
     */
     void async_operation_base::cleanup()
     {
+        print(PRI2, "%p: async_operation_base::cleanup()\n");
+
         m_service = nullptr;
-        m_awaitings.clear();            // RESUME_MULTIPLE_COROUTINES
-        m_awaiting = nullptr;           // !RESUME_MULTIPLE_COROUTINES
         m_ctr = nullptr;
         m_waitany = nullptr;
         m_index = -1;        // indicates move
@@ -183,6 +173,7 @@ namespace corolib
      */
     void async_operation_base::inform_interested_parties()
     {
+        print(PRI2, "%p: async_operation_base::inform_interested_parties()\n");
         if (m_ctr)
         {
             print(PRI2, "%p: async_operation_base::completed(): m_index = %d, before m_ctr->completed();\n", this, m_index);
@@ -204,83 +195,4 @@ namespace corolib
             m_ready = true;     // Set to completed.
         }
     }
-
-    /**
-     * @brief async_operation_base::completed
-     */
-    void async_operation_base::completed()
-    {
-        print(PRI2, "%p: async_operation_base::completed(): m_index = %d = 0x%x\n", this, m_index, m_index);
-
-        bool hasCompleted = false;
-        if (corolib::_resume_multiple_coroutines)
-        {
-            if (m_awaitings.size())
-            {
-                std::vector<std::coroutine_handle<>> tmp;
-
-                print(PRI2, "%p: async_operation_base::completed(): m_index = %d, m_awaitings.size() = %d\n", this, m_index, m_awaitings.size());
-
-                for (std::size_t i = 0; i < m_awaitings.size(); i++)
-                {
-                    tmp.push_back(m_awaitings[i]);
-                }
-
-                m_awaitings.clear();
-
-                print(PRI2, "%p: async_operation_base::completed(): m_index = %d, tmp.size() = %d\n", this, m_index, tmp.size());
-
-                for (std::size_t i = 0; i < tmp.size(); i++)
-                {
-                    print(PRI2, "%p: async_operation_base::completed(): before tmp[%d].resume();\n", this, i);
-                    tmp[i].resume();
-#if REPORT_OUT_OF_SCOPE
-                    // See explanation below
-                    if (m_index == std::make_signed_t<int>(0xdeadbeef) || m_index == std::make_signed_t<int>(0xdddddddd))
-                        print(PRI1, "%p: async_operation_base::completed(): after tmp[%d].resume(); ACCESSING OUT-OF-SCOPE MEMORY!!!\n", this);
-                    else
-                        print(PRI2, "%p: async_operation_base::completed(): m_index = %d, after tmp[%d].resume();\n", this, m_index, i);
-#endif
-                }
-                m_ready = true;
-
-                hasCompleted = true;
-            }
-        }
-        else
-        {
-            if (m_awaiting)
-            {
-                print(PRI2, "%p: async_operation_base::completed(): m_index = %d, before m_awaiting.resume();\n", this, m_index);
-                m_awaiting.resume();
-#if REPORT_OUT_OF_SCOPE
-                // async_operations are usually (always) created as local variables in a coroutine,
-                // i.e. these objects are placed on the stack.
-                // When an async_operation completes, the coroutine to which it belongs may also be destroyed.
-                // The coroutine's stack frame will be released, including the space for the asyn_operation object.
-                // The async_operation's destructor writes 0xdeadbeef to m_index.
-                // On Windows, the OS will fill the content of the released stack frame with 0xdddddddd (for 4 bytes).
-                // The following print statements can be used to identify those places where this occurs.
-                // There should be no reason to access async_operation data members after the resume() call.
-                if (m_index == std::make_signed_t<int>(0xdeadbeef) || m_index == std::make_signed_t<int>(0xdddddddd))
-                    print(PRI1, "%p: async_operation_base::completed(): after m_awaiting.resume(); ACCESSING OUT-OF-SCOPE MEMORY!!!\n", this);
-                else
-                    print(PRI2, "%p: async_operation_base::completed(): m_index = %d, after m_awaiting.resume();\n", this, m_index);
-#endif
-                hasCompleted = true;
-            }
-        }
-        
-        if (!hasCompleted)
-        {
-            inform_interested_parties();
-        }
-    }
-   
-    void resume_multiple_coroutines(bool allow)
-    {
-        _resume_multiple_coroutines = allow;
-    }
-    
-    bool _resume_multiple_coroutines = false;
 }

@@ -32,7 +32,8 @@ public:
 
 private:
     OperationState op2_state = OperationState::not_started;
-    async_operation<int> m_op2;
+    //async_operation<int> m_op2;
+    async_operation_rmc<int> m_op2;
     int m_v2 = 0;
 };
 

@@ -51,7 +51,6 @@ void completionflow(Class1490& obj)
 int main()
 {
     set_print_level(0x01);        // Use 0x03 to follow the flow in corolib
-    resume_multiple_coroutines(true);
 
     for (int i = 0; i < 10; ++i)
     {
