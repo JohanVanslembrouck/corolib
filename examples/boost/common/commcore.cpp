@@ -69,6 +69,16 @@ async_operation<std::string> CommCore::start_reading(const char ch)
     return ret;
 }
 
+async_operation_rmc<std::string> CommCore::start_reading_rmc(const char ch)
+{
+    print(PRI2, "%p: CommCore::start_reading_rmc()\n", this);
+    int index = get_free_index_ts();
+    print(PRI2, "%p: CommCore::start_reading_rmc(): index = %d\n", this, index);
+    async_operation_rmc<std::string> ret{ this, index, true };
+    start_reading_impl_rmc(index, ch);
+    return ret;
+}
+
 async_operation<void> CommCore::start_timer(steady_timer& timer, int ms)
 {
     print(PRI2, "%p: CommCore::start_timer(timer, %d)\n", this, ms);
@@ -177,6 +187,51 @@ void CommCore::start_reading_impl(const int idx, const char ch)
                 m_read_buffer = "EOF";
             }
             completionHandler_ts<std::string>(idx, now, m_read_buffer);
+            print(PRI2, "%p: CommCore::handle_read(): idx = %d, exit\n\n", this, idx);
+        });
+}
+
+void CommCore::start_reading_impl_rmc(const int idx, const char ch)
+{
+    print(PRI2, "%p: CommCore::start_reading_impl_rmc()\n", this);
+    m_input_buffer = "";
+    //m_read_buffer = "";
+    m_bytes = 0;
+
+    // Set a deadline for the read operation.
+    m_deadline.expires_after(std::chrono::seconds(10));
+
+    std::chrono::high_resolution_clock::time_point now = get_async_operation_info(idx)->start;
+
+    boost::asio::async_read_until(
+        m_socket,
+        boost::asio::dynamic_buffer(m_input_buffer), ch,
+        [this, idx, now](const boost::system::error_code& error,
+            std::size_t bytes)
+        {
+            print(PRI2, "%p: CommCore::handle_read(): idx = %d, entry\n", this, idx);
+
+            if (m_stopped)
+            {
+                print(PRI2, "%p: CommCore::handle_read(): idx = %d, stopped\n", this, idx);
+                return;
+            }
+
+            if (!error)
+            {
+                print(PRI3, "%p: CommCore::handle_read(): idx = %d, bytes = %d, m_input_buffer = %s\n", this, idx, bytes, m_input_buffer.c_str());
+                m_bytes = bytes;
+
+                // Copy from m_input_buffer to m_read_buffer is not absolutely necessary.
+                m_read_buffer = m_input_buffer;
+
+                print(PRI3, "%p: CommCore::handle_read(): idx = %d, m_bytes = %d, m_read_buffer = %s\n", this, idx, m_bytes, m_read_buffer.c_str());
+            }
+            else
+            {
+                m_read_buffer = "EOF";
+            }
+            completionHandler_ts_rmc<std::string>(idx, now, m_read_buffer);
             print(PRI2, "%p: CommCore::handle_read(): idx = %d, exit\n\n", this, idx);
         });
 }

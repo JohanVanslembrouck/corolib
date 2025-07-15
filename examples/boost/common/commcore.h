@@ -38,6 +38,7 @@ namespace corolib
 
         async_operation<void> start_writing(const char* str, int size);
         async_operation<std::string> start_reading(const char ch = '\n');
+        async_operation_rmc<std::string> start_reading_rmc(const char ch = '\n');
         async_operation<void> start_timer(steady_timer& timer, int ms);
         async_operation<void> start_dummy();
 
@@ -46,6 +47,7 @@ namespace corolib
     protected:
         void start_writing_impl(const int idx, const char* str, int size);
         void start_reading_impl(const int idx, const char ch = '\n');
+        void start_reading_impl_rmc(const int idx, const char ch = '\n');
         void start_timer_impl(const int idx, steady_timer& tmr, int ms);
         std::string get_result() override;
         void check_deadline();
