@@ -1,5 +1,5 @@
 /**
- * @file route_guide_coroutine_client3.cc
+ * @file route_guide_coroutine_client.cc
  * @brief Added coroutine implementation.
  *
  * The code is this file is based upon the implementation in route_guide_callback_client.cc.

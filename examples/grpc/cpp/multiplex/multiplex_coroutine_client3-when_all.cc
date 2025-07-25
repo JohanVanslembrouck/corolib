@@ -2,6 +2,7 @@
  * @file multiplex_coroutine_client3-when_all.cc
  * @brief Added coroutine implementation.
  * Based on the implementation in multiplex_coroutine_client2.cc.
+ * 
  * In this variant start_SayHello and start_GetFeature return async_operation<Status> instead of async_operation<void>.
  * Consequently, there is no need to pass Status as reference argument to start_SayHello and start_GetFeature.
  *
@@ -68,13 +69,17 @@ public:
         : channel_(channel)
     {}
 
-    async_task<void> SayHello_GetFeatureCo() {
+    async_task<void> SayHello_GetFeatureCo_when_all() {
+        print(PRI5, "SayHello_GetFeatureCo_when_all - begin\n");        // runs on the original thread 0
         async_task<std::string> t1 = SayHelloCo();
         async_task<std::string> t2 = GetFeatureCo();
         when_all wa(t1, t2);
+        print(PRI5, "SayHello_GetFeatureCo_when_all - before co_await wa\n");   // runs on the original thread 0
         co_await wa;
+        print(PRI5, "SayHello_GetFeatureCo_when_all - after co_await wa\n");    // runs on another thread 1
         std::cout << t1.get_result();
         std::cout << t2.get_result();
+        print(PRI5, "SayHello_GetFeatureCo_when_all - end\n");          // runs on thread 1
         co_return;
     }
 
@@ -154,13 +159,14 @@ int main(int argc, char** argv) {
   std::string target_str = absl::GetFlag(FLAGS_target);
 
   set_print_level(0x01);        // Use 0x03 to follow the flow in corolib
+                                // Use 0x11 to follow the flow in GreeterClient
 
   GreeterClient greeter(
       grpc::CreateChannel(target_str, grpc::InsecureChannelCredentials()));
 
-  print(PRI1, "Using coroutines\n");
+  print(PRI1); print(PRI1, "Using SayHello_GetFeatureCo_when_all\n");
   for (int i = 0; i < NR_ITERATIONS; ++i) {
-      async_task<void> t = greeter.SayHello_GetFeatureCo();
+      async_task<void> t = greeter.SayHello_GetFeatureCo_when_all();
       print(PRI2, "Before wait\n");
       t.wait();
       print(PRI2, "After wait\n");

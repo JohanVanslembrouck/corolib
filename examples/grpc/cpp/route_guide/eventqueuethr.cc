@@ -13,7 +13,7 @@ using namespace corolib;
 
 void runEventQueue(EventQueueThrFunctionVoidVoid& queue, int size)
 {
-    print(PRI1, "runEventQueue: begin\n");
+    print(PRI5, "runEventQueue: begin\n");
     for (int i = 0; i < size; i++)
     {
         print(PRI5, "runEventQueue(): std::function<void(void)> fun = queue.pop();\n");
@@ -24,5 +24,5 @@ void runEventQueue(EventQueueThrFunctionVoidVoid& queue, int size)
         if (queue.stopped())
             break;
     }
-    print(PRI1, "runEventQueue: end\n");
+    print(PRI5, "runEventQueue: end\n");
 }

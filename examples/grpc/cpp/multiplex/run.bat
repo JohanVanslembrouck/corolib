@@ -1,0 +1,15 @@
+REM Assumption: multiplex_server.exe is already running
+
+multiplex_client.exe
+multiplex_client2.exe
+
+multiplex_coroutine_client2.exe
+
+multiplex_coroutine_client3.exe
+multiplex_coroutine_client3-when_all.exe
+multiplex_coroutine_client3-when_any.exe
+multiplex_coroutine_client3-all.exe
+
+multiplex_coroutine_client4.exe
+
+multiplex_coroutine_client5.exe

@@ -126,12 +126,16 @@ public:
     }
 
     async_task<void> SayHello_GetFeatureCo() {
+        print(PRI5, "SayHello_GetFeatureCo - begin\n");    // runs on the original thread
         async_task<std::string> t1 = SayHelloCo();
         async_task<std::string> t2 = GetFeatureCo();
         std::string helloReply = co_await t1;
+        print(PRI5, "SayHello_GetFeatureCo - before co_await t2\n");   // runs on another thread 1
         std::string featureReply = co_await t2;
+        print(PRI5, "SayHello_GetFeatureCo - after co_await t2\n");    // runs on yet another thread 2
         std::cout << helloReply;
         std::cout << featureReply;
+        print(PRI5, "SayHello_GetFeatureCo - end\n");      // runs on thread 2
         co_return;
     }
 
@@ -206,8 +210,6 @@ private:
 };
 
 int main(int argc, char** argv) {
-  set_print_level(0x01);
-
   absl::ParseCommandLine(argc, argv);
   // Instantiate the client. It requires a channel, out of which the actual RPCs
   // are created. This channel models a connection to an endpoint specified by
@@ -215,6 +217,7 @@ int main(int argc, char** argv) {
   std::string target_str = absl::GetFlag(FLAGS_target);
 
   set_print_level(0x01);        // Use 0x03 to follow the flow in corolib
+                                // Use 0x11 to follow the flow in GreeterClient
 
   GreeterClient greeter(
       grpc::CreateChannel(target_str, grpc::InsecureChannelCredentials()));
@@ -224,7 +227,7 @@ int main(int argc, char** argv) {
       greeter.SayHello_GetFeature();
   }
 
-  print(PRI1, "Using coroutines\n");
+  print(PRI1, "\nUsing SayHello_GetFeatureCo\n");
   for (int i = 0; i < NR_ITERATIONS; ++i) {
       async_task<void> t = greeter.SayHello_GetFeatureCo();
       print(PRI2, "Before wait\n");

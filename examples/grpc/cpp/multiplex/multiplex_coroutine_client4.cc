@@ -1,16 +1,13 @@
 /**
- * @file multiplex_coroutine_client3-when_any.cc
+ * @file multiplex_coroutine_client4.cc
  * @brief Added coroutine implementation.
- * Based on the implementation in multiplex_coroutine_client2.cc.
+ * Based on the implementation in multiplex_coroutine_client3.cc.
  * 
- * In this variant start_SayHello and start_GetFeature return async_operation<Status> instead of async_operation<void>.
- * Consequently, there is no need to pass Status as reference argument to start_SayHello and start_GetFeature.
- * 
- * Notice that start_SayHello and start_GetFeature have a more complicated implementation
- * than their counterparts in multiplex_coroutine_client3.cc and multiplex_coroutine_client3-when_all.cc
- * to deal with concurrency issues unique to when_any.
- * To see the effects of the original implementation, run multiplex_coroutine_client3-all,
- * or compile-in the last part of main() by changing '#if 0' into '#if 1'
+ * In this variant, completionHandler is not called from within the the lambda passed
+ * to SayHello and GetFeature.
+ * Rather, both lambdas just push status information onto a queue.
+ * The completionHandler runs on the original thread, and is applied
+ * on the status information that is popped from the queue.
  * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
  */
@@ -56,6 +53,7 @@
 #include <corolib/commservice.h>
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
+#include <corolib/when_all.h>
 #include <corolib/when_any.h>
 
 ABSL_FLAG(std::string, target, "localhost:50051", "Server address");
@@ -68,6 +66,16 @@ using namespace corolib;
 
 const int NR_ITERATIONS = 100;
 
+#include "../route_guide/eventqueuethr.h"
+
+struct StatusCo
+{
+    int index;
+    Status status;
+};
+
+using EventQueueThrStatusCo = QueueThr<StatusCo, ARRAYSIZE>;
+
 class GreeterClient : public CommService
 {
 public:
@@ -75,22 +83,50 @@ public:
         : channel_(channel)
     {}
 
+    async_task<void> SayHello_GetFeatureCo() {
+        print(PRI5, "SayHello_GetFeatureCo - begin\n");    // runs on the original thread
+        async_task<std::string> t1 = SayHelloCo();
+        async_task<std::string> t2 = GetFeatureCo();
+        std::string helloReply = co_await t1;
+        print(PRI5, "SayHello_GetFeatureCo - after co_await t1\n");    // runs on the original thread
+        std::string featureReply = co_await t2;
+        print(PRI5, "SayHello_GetFeatureCo - after co_await t2\n");    // runs on the original thread
+        std::cout << helloReply;
+        std::cout << featureReply;
+        print(PRI5, "SayHello_GetFeatureCo - end\n");    // runs on the original thread
+        co_return;
+    }
+
+    async_task<void> SayHello_GetFeatureCo_when_all() {
+        print(PRI5, "SayHello_GetFeatureCo - begin\n");    // runs on the original thread 0
+        async_task<std::string> t1 = SayHelloCo();
+        async_task<std::string> t2 = GetFeatureCo();
+        when_all wa(t1, t2);
+        print(PRI5, "SayHello_GetFeatureCo - before co_await wa\n");   // runs on the original thread
+        co_await wa;
+        print(PRI5, "SayHello_GetFeatureCo - after co_await wa\n");    // runs on the original thread
+        std::cout << t1.get_result();
+        std::cout << t2.get_result();
+        print(PRI5, "SayHello_GetFeatureCo - end\n");    // runs on the original thread 0
+        co_return;
+    }
+
     async_task<void> SayHello_GetFeatureCo_when_any() {
-        print(PRI5, "SayHello_GetFeatureCo_when_any - begin\n");    // runs on the original thread 0
+        print(PRI5, "SayHello_GetFeatureCo - begin\n");    // runs on the original thread
         async_task<std::string> t1 = SayHelloCo();
         async_task<std::string> t2 = GetFeatureCo();
         when_any wa(t1, t2);
-        print(PRI5, "SayHello_GetFeatureCo_when_any - before loop\n");    // runs on the original thread 0
+        print(PRI5, "SayHello_GetFeatureCo - before loop\n");    // runs on the original thread
         for (int i = 0; i < 2; ++i) {
             int s = co_await wa;
-            print(PRI5, "SayHello_GetFeatureCo_when_any - after co_await wa\n");    // runs on another thread i, one thread per iteration
+            print(PRI5, "SayHello_GetFeatureCo - after co_await wa\n");    // runs on the original thread
             switch (s) {
-                case 0: std::cout << t1.get_result(); break;
-                case 1: std::cout << t2.get_result(); break;
-                default: std::cout << "SayHello_GetFeatureCo_when_any: Unexpected reply " << s << std::endl;
+            case 0: std::cout << t1.get_result(); break;
+            case 1: std::cout << t2.get_result(); break;
+            default: std::cout << "SayHello_GetFeatureCo: Unexpected reply " << s << std::endl;
             }
         }
-        print(PRI5, "SayHello_GetFeatureCo_when_any - end\n");      // runs on thread i
+        print(PRI5, "SayHello_GetFeatureCo - end\n");    // runs on the original thread
         co_return;
     }
 
@@ -101,7 +137,9 @@ public:
 
         hello_request.set_name("coroutine user");
 
+        print(PRI5, "SayHelloCo - before co_await\n");      // runs on original thread
         Status hello_status = co_await start_SayHello(&hello_context, hello_request, hello_response);
+        print(PRI5, "SayHelloCo - after co_await\n");       // runs on original thread
 
         std::stringstream strstr;
         // Act upon the status of the actual RPC.
@@ -120,19 +158,8 @@ public:
         helloworld::Greeter::NewStub(channel_)->async()->SayHello(pcontext, &request, &reply,
             [index, this](Status s) {
                 print(PRI5, "start_SayHello - completion handler\n");
-                Status status = std::move(s);
-                async_operation_base* om_async_operation = get_async_operation(index);
-                async_operation<Status>* om_async_operation_t =
-                    static_cast<async_operation<Status>*>(om_async_operation);
-                if (om_async_operation_t) {
-                    om_async_operation_t->set_result(status);
-                    if (m_use_mutex) {
-                        std::lock_guard<std::mutex> guard(m_mutex);
-                        om_async_operation_t->completed();
-                    }
-                    else
-                        om_async_operation_t->completed();
-                }
+                StatusCo statusCo{ index, std::move(s) };
+                m_eventQueueThrStatusCo.push(statusCo);
             });
         return ret;
     }
@@ -145,7 +172,9 @@ public:
         feature_request.set_latitude(50);
         feature_request.set_longitude(100);
 
+        print(PRI5, "GetFeatureCo - before co_await\n");    // runs on original thread
         Status feature_status = co_await start_GetFeature(&feature_context, feature_request, feature_response);
+        print(PRI5, "GetFeatureCo - after co_await\n");     // runs on original thread
 
         std::stringstream strstr;
         if (feature_status.ok()) {
@@ -163,31 +192,27 @@ public:
         routeguide::RouteGuide::NewStub(channel_)->async()->GetFeature(pcontext, &request, &reply,
             [index, this](Status s) {
                 print(PRI5, "start_GetFeature - completion handler\n");
-                Status status = std::move(s);
-                async_operation_base* om_async_operation = get_async_operation(index);
-                async_operation<Status>* om_async_operation_t =
-                    static_cast<async_operation<Status>*>(om_async_operation);
-                if (om_async_operation_t) {
-                    om_async_operation_t->set_result(status);
-                    if (m_use_mutex) {
-                        std::lock_guard<std::mutex> guard(m_mutex);
-                        om_async_operation_t->completed();
-                    }
-                    else
-                        om_async_operation_t->completed();
-                }
+                StatusCo statusCo{ index, std::move(s) };
+                m_eventQueueThrStatusCo.push(statusCo);
             });
         return ret;
     }
 
-    void set_use_mutex(bool use_mutex) {
-        m_use_mutex = use_mutex;
+    void runEventQueue(int size)
+    {
+        for (int i = 0; i < size; i++)
+        {
+            print(PRI5, "runEventQueue(): StatusCo statusCo = m_eventQueueThrStatusCo.pop();\n");
+            StatusCo statusCo = m_eventQueueThrStatusCo.pop();
+
+            print(PRI5, "runEventQueue(): completionHandler<Status>(statusCo.index, statusCo.status);;\n");
+            completionHandler<Status>(statusCo.index, statusCo.status);
+        }
     }
 
 private:
     std::shared_ptr<Channel> channel_;
-    bool m_use_mutex = true;
-    std::mutex m_mutex;
+    EventQueueThrStatusCo m_eventQueueThrStatusCo;
 };
 
 int main(int argc, char** argv) {
@@ -203,29 +228,41 @@ int main(int argc, char** argv) {
   GreeterClient greeter(
       grpc::CreateChannel(target_str, grpc::InsecureChannelCredentials()));
 
+  print(PRI1); print(PRI1, "Using SayHello_GetFeatureCo\n");
+  for (int i = 0; i < NR_ITERATIONS; ++i) {
+      async_task<void> t = greeter.SayHello_GetFeatureCo();
+      greeter.runEventQueue(2);     // Started 2 operations
+      print(PRI2, "Before wait\n");
+      t.wait();
+      print(PRI2, "After wait\n");
+
+      print(PRI2, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+
+  print(PRI1); print(PRI1, "Using SayHello_GetFeatureCo_when_all\n");
+  for (int i = 0; i < NR_ITERATIONS; ++i) {
+      async_task<void> t = greeter.SayHello_GetFeatureCo_when_all();
+      greeter.runEventQueue(2);     // Started 2 operations
+      print(PRI2, "Before wait\n");
+      t.wait();
+      print(PRI2, "After wait\n");
+
+      print(PRI2, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+
   print(PRI1); print(PRI1, "Using SayHello_GetFeatureCo_when_any\n");
   for (int i = 0; i < NR_ITERATIONS; ++i) {
       async_task<void> t = greeter.SayHello_GetFeatureCo_when_any();
-      print(PRI2, "Before wait: i = %d\n", i);
+      greeter.runEventQueue(2);     // Started 2 operations
+      print(PRI2, "Before wait\n");
       t.wait();
-      print(PRI2, "After wait: i = %d\n", i);
+      print(PRI2, "After wait\n");
 
       print(PRI2, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
-#if 0
-  greeter.set_use_mutex(false);
 
-  print(PRI1, "Using SayHello_GetFeatureCo_when_any\n");
-  for (int i = 0; i < NR_ITERATIONS; ++i) {
-      async_task<void> t = greeter.SayHello_GetFeatureCo_when_any();
-      print(PRI2, "Before wait: i = %d\n", i);
-      t.wait();
-      print(PRI2, "After wait: i = %d\n", i);
-
-      print(PRI2, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
-  }
-#endif
   return 0;
 }
