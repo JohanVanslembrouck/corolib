@@ -4,7 +4,7 @@
 * Based upon TEST_CASE_FIXTURE(temp_dir_with_io_service_fixture, "read write file")
 * in https://github.com/lewissbaker/cppcoro/blob/master/test/file_tests.cpp
 * 
-* @author Johan Vanslembrouck(johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+* @author Johan Vanslembrouck
 */
 
 #include <cppcoro/io_service.hpp>

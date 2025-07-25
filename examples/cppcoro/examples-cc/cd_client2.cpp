@@ -7,7 +7,7 @@
 * cd stands for connect-disconnect.
 * Lambdas have been replaced by normal functions.
 * 
-* @author Johan Vanslembrouck(johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+* @author Johan Vanslembrouck
 */
 
 #include <cppcoro/io_service.hpp>

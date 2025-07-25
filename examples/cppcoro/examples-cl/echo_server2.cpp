@@ -3,7 +3,7 @@
 * @brief
 * Based upon ../examples-cc/echo_server2.cpp
 * 
-* @author Johan Vanslembrouck(johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+* @author Johan Vanslembrouck
 */
 
 #include <cppcoro/io_service.hpp>
@@ -23,16 +23,17 @@ using namespace cppcoro::net;
 
 using namespace corolib;
 
-cppcoro_wrapper cc_wrapper;
-
 async_task<int> echoServer(io_service& ioSvc, socket& listeningSocket)
 {
-    std::cout << "echoServer: entering\n";
+    print(PRI5, "echoServer - entering\n");
     auto acceptingSocket = socket::create_tcpv4(ioSvc);
+
+    socket_wrapper sw(acceptingSocket);
 
     // Original statement:
     // co_await listeningSocket.accept(acceptingSocket);
-    co_await cc_wrapper.accept(listeningSocket, acceptingSocket);
+    co_await sw.accept(listeningSocket);
+    print(PRI5, "echoServer - after co_await cc_wrapper.accept\n");
 
     std::uint8_t buffer[64];
     std::size_t bytesReceived;
@@ -42,8 +43,9 @@ async_task<int> echoServer(io_service& ioSvc, socket& listeningSocket)
     {
         // Original statement:
         // bytesReceived = co_await acceptingSocket.recv(buffer, sizeof(buffer));
-        bytesReceived = co_await cc_wrapper.recv(acceptingSocket, buffer, sizeof(buffer));
-        std::cout << "echoServer: bytesReceived = " << bytesReceived << "\n";
+        bytesReceived = co_await sw.recv(buffer, sizeof(buffer));
+        print(PRI5, "echoServer - after co_await sw.recv\n");
+        print(PRI1, "echoServer - bytesReceived = %d\n", bytesReceived);
         totalBytesReceived += bytesReceived;
         if (bytesReceived > 0)
         {
@@ -55,28 +57,31 @@ async_task<int> echoServer(io_service& ioSvc, socket& listeningSocket)
                 // bytesSent +=
                 //    co_await acceptingSocket.send(buffer + bytesSent, bytesReceived - bytesSent);
                 bytesSent +=
-                    co_await cc_wrapper.send(acceptingSocket, buffer + bytesSent, bytesReceived - bytesSent);
+                    co_await sw.send(buffer + bytesSent, bytesReceived - bytesSent);
                 totalBytesSent += bytesSent;
-                std::cout << "echoServer: bytesSent = " << bytesSent << "\n";
+                print(PRI5, "echoServer - after co_await sw.send\n");
+                print(PRI1, "echoServer - bytesSent = %d\n", bytesSent);
             } while (bytesSent < bytesReceived);
         }
     } while (bytesReceived > 0);
 
-    std::cout << "echoServer: totalBytesReceived = " << totalBytesReceived << ", totalBytesSent = " << totalBytesSent << "\n";
+    print(PRI1, "echoServer: totalBytesReceived = %d, totalBytesSent = %d\n", totalBytesReceived, totalBytesSent);
 
     // The presence of the following statement gives problems: server keeps hanging on this statement. FFS
     //acceptingSocket.close_send();
 
     // Original statement:
     // co_await acceptingSocket.disconnect();
-    co_await cc_wrapper.disconnect(acceptingSocket);
+    co_await sw.disconnect();
+    print(PRI5, "echoServer - after co_await sz.disconnect\n");
 
-    std::cout << "echoServer: leaving\n";
+    print(PRI5, "echoServer - leaving\n");
     co_return 0;
 }
 
 async_task<int> mainflow(io_service& ioSvc)
 {
+    print(PRI1, "mainflow - entering\n");
     socket listeningSocket = socket::create_tcpv4(ioSvc);
 
     listeningSocket.bind(ipv4_endpoint{ ipv4_address::loopback(), 0});
@@ -86,18 +91,22 @@ async_task<int> mainflow(io_service& ioSvc)
     saveServerAddress(serverAddress);
 
     co_await echoServer(ioSvc, listeningSocket);
+    print(PRI1, "mainflow - after co_await echoServer\n");
 
     ioSvc.stop();
+    print(PRI1, "mainflow - entering\n");
     co_return 0;
 }
 
 int main()
 {
-    std::cout << "main: entering\n";
+    set_print_level(0x11);      // Use 0x03 to follow the flow in corolib
+                                // Use 0x11 to follow the flow in GreeterClient
+    print(PRI1, "main - entering\n");
     io_service ioSvc;
     async_task<int> t = mainflow(ioSvc);
     ioSvc.process_events();
     int v = t.get_result();
-    std::cout << "main: leaving\n";
+    print(PRI1, "main - leaving\n");
     return 0;
 }

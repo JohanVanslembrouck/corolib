@@ -2,7 +2,7 @@
 * @file addressfile.hpp
 * @brief
 *
-* @author Johan Vanslembrouck(johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+* @author Johan Vanslembrouck
 */
 
 #ifndef CPPCORO_ADDRESSFILE_HPP_INCLUDED

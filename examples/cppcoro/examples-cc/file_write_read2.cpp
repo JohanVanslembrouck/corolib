@@ -5,7 +5,7 @@
 * in https://github.com/lewissbaker/cppcoro/blob/master/test/file_tests.cpp
 * Lambdas have been replaced by normal functions.
 * 
-* @author Johan Vanslembrouck(johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+* @author Johan Vanslembrouck
 */
 
 #include <cppcoro/io_service.hpp>

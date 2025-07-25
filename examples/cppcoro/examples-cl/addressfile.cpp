@@ -2,21 +2,25 @@
 * @file addressfile.cpp
 * @brief
 *
-* @author Johan Vanslembrouck(johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+* @author Johan Vanslembrouck
 */
 
 #include <iostream>
 #include <fstream>
+
+#include <corolib/print.h>
 
 #include "addressfile.hpp"
 
 using namespace cppcoro;
 using namespace cppcoro::net;
 
+using namespace corolib;
+
 void saveServerAddress(ip_endpoint serverAddress)
 {
     std::string str = serverAddress.to_string();
-    std::cout << "serverAddress = " << str << std::endl;
+    print(PRI1, "serverAddress = %s\n", str.c_str());
 
     if (std::ofstream output{ "serverAddress.txt", std::ios::out })
     {
@@ -24,7 +28,7 @@ void saveServerAddress(ip_endpoint serverAddress)
     }
     else
     {
-        std::cerr << "File serverAddress.txt could not be opened\n";
+        print(PRI1, "File serverAddress.txt could not be opened\n");
         std::exit(EXIT_FAILURE);
     }
 }
@@ -37,12 +41,12 @@ std::string readServerAddress()
     {
         while (input >> serverAddressStr)
         {
-            std::cout << serverAddressStr << std::endl;
+            print(PRI1, "serverAddress = %s\n", serverAddressStr.c_str());
         }
     }
     else
     {
-        std::cerr << "File serverAddress.txt could not be opened\n";
+        print(PRI1, "File serverAddress.txt could not be opened\n");
         std::exit(EXIT_FAILURE);
     }
 
