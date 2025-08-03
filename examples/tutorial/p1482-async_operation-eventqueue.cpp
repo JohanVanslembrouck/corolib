@@ -29,7 +29,7 @@ int main()
     print(PRI1, "main(): starting sortCoroutine\n");
     async_task<void> result = sortCoroutine(sorter, values);
 
-    print(PRI1, "main(): running event queue\n");
+    print(PRI1, "main(): runEventQueue(eventQueue)\n");
     runEventQueue(eventQueue);
 
     print(PRI1, "main(): resumed. Waiting for sortCoroutine to complete\n");

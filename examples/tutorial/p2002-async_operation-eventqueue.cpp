@@ -25,8 +25,8 @@ void completionflow()
         start_operation_impl(op1);
     }
 
-    print(PRI1, "completionflow(): runEventQueue(eventQueue);\n");
-    runEventQueue(eventQueue);
+    print(PRI1, "completionflow(): runEventQueue(eventQueue, %d);\n", defaultCompletionValue);
+    runEventQueue(eventQueue, defaultCompletionValue);
 
     // Begin manual event completion to make coroutine1 co_return
     print(PRI1, "completionflow(): before op.set_result_and_complete(std::nullopt);\n");

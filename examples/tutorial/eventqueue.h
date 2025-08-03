@@ -19,8 +19,10 @@
  * event queue by the application calling the push() member function.
  * The event loop (member function run()) runs over all elements in the event queue
  * and calls the functor using the call operator.
+ * 
+ * This version should be used in single-threaded applications only.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _EVENTQUEUE_H_
@@ -42,7 +44,7 @@ public:
         return q.empty();
     }
 
-    TYPE pull()
+    TYPE pop()
     {
         TYPE op = q.front();
         q.pop();
@@ -58,7 +60,7 @@ protected:
 using EventQueueFunctionVoidInt = Queue<std::function<void(int)>>;
 using EventQueueFunctionVoidVoid = Queue<std::function<void(void)>>;
 
-void runEventQueue(EventQueueFunctionVoidInt& queue);
+void runEventQueue(EventQueueFunctionVoidInt& queue, int val);
 void runEventQueue(EventQueueFunctionVoidVoid& queue);
 
 #endif

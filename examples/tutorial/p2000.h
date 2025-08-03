@@ -2,7 +2,7 @@
  * @file p2000.h
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _P2000_H_

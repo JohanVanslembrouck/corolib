@@ -89,12 +89,12 @@ void Class01::async_op(std::function<void(int)>&& completionHandler)
 
             if (m_mutex) {
                 std::lock_guard<std::mutex> guard(*m_mutex);
-                print(PRI1, "Class01::async_op(): thread1: completionHandler(10);\n");
-                completionHandler(10);
+                print(PRI1, "Class01::async_op(): thread1: completionHandler(%d);\n", defaultCompletionValue);
+                completionHandler(defaultCompletionValue);
             }
             else {
-                print(PRI1, "Class01::async_op(): thread1: completionHandler(10);\n");
-                completionHandler(10);
+                print(PRI1, "Class01::async_op(): thread1: completionHandler(%d);\n", defaultCompletionValue);
+                completionHandler(defaultCompletionValue);
             }
 
             print(PRI1, "Class01::async_op(): thread1: return;\n");
@@ -119,7 +119,7 @@ void Class01::async_op(std::function<void(int)>&& completionHandler)
         break;
     }
     case UseMode::USE_IMMEDIATE_COMPLETION:
-        completionHandler(10);
+        completionHandler(defaultCompletionValue);
         break;
     }
 }

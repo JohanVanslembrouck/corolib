@@ -33,4 +33,6 @@ enum class UseMode
     USE_IMMEDIATE_COMPLETION
 };
 
+const int defaultCompletionValue = 10;
+
 #endif

@@ -3,7 +3,7 @@
  * @brief
  * Starts an asynchronous operation that will be completed after one second from a thread.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include "p1400.h"
@@ -18,7 +18,8 @@ void completionflow()
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(0));
 
-    runEventQueue(eventQueueThr, 2);
+    print(PRI1, "completionflow(): runEventQueue(eventQueueThr, 2, %d)\n", defaultCompletionValue);
+    runEventQueue(eventQueueThr, 2, defaultCompletionValue);
 }
 
 int main()

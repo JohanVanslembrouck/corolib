@@ -2,7 +2,7 @@
  * @file p1428-async_operation-evtq-imm.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <corolib/print.h>
@@ -16,8 +16,8 @@ EventQueueFunctionVoidInt eventQueue;
 
 void completionflow()
 {
-    print(PRI1, "completionflow(): runEventQueue(eventQueue);\n");
-    runEventQueue(eventQueue);
+    print(PRI1, "completionflow(): runEventQueue(eventQueue, %d);\n", defaultCompletionValue);
+    runEventQueue(eventQueue, defaultCompletionValue);
 }
 
 int main()

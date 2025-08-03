@@ -29,8 +29,8 @@ async_task<void> completionflow(async_task<int>& a1, async_task<int>& a2, async_
         start_operation_impl(op1);
     }
 
-    print(PRI1, "completionflow(): runEventQueue(eventQueueThr, 4);\n");
-    runEventQueue(eventQueueThr, 4);
+    print(PRI1, "completionflow(): runEventQueue(eventQueueThr, 4, %d);\n", defaultCompletionValue);
+    runEventQueue(eventQueueThr, 4, defaultCompletionValue);
 
     // Begin manual event completion to make coroutine1 co_return
     print(PRI1, "completionflow(): before op.set_result_and_complete(std::nullopt);\n");

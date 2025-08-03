@@ -2,7 +2,7 @@
  * @file p1820.h
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _P1820_H_

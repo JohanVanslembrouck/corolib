@@ -3,7 +3,7 @@
  * @brief
  * Defines a class with (the simulation of) two asynchronous operations.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
  
 #ifndef _CLASS02_H_

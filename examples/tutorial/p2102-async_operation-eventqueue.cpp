@@ -2,7 +2,7 @@
  * @file p2102-async_operation-eventqueue.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <functional>
@@ -17,8 +17,8 @@ using namespace corolib;
 
 void completionflow()
 {
-    print(PRI1, "completionflow(): runEventQueue(*thr_object01.getEventQueue());\n");
-    runEventQueue(*thr_object01.getEventQueue());
+    print(PRI1, "completionflow(): runEventQueue(*thr_object01.getEventQueue(), %d);\n", defaultCompletionValue);
+    runEventQueue(*thr_object01.getEventQueue(), defaultCompletionValue);
 }
 
 EventQueueFunctionVoidInt eventQueue1;

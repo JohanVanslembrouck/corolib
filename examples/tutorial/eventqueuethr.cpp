@@ -2,7 +2,7 @@
  * @file eventqueuethr.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
  
  #include "eventqueuethr.h"
@@ -11,14 +11,14 @@
 
 using namespace corolib;
 
-void runEventQueue(EventQueueThrFunctionVoidInt& queue, int size)
+void runEventQueue(EventQueueThrFunctionVoidInt& queue, int size, int val)
 {
     for (int i = 0; i < size; i++)
     {
         print(PRI1, "runEventQueue(): std::function<void(int)> fun = queue.pop();\n");
         std::function<void(int)> op = queue.pop();
-        print(PRI1, "runEventQueue(): op(10);\n");
-        op(10);
+        print(PRI1, "runEventQueue(): op(%d);\n", val);
+        op(val);
     }
 }
 

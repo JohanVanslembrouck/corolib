@@ -6,7 +6,7 @@
  * coroutine3 calls coroutine4 twice.
  * coroutine5 starts an asynchronous operation and awaits its completion.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <functional>
@@ -47,7 +47,7 @@ void async_op(std::function<void(int)>&& completionHandler)
         break;
     case UseMode::USE_EVENTQUEUE:
         print(PRI1, "async_op(): UseMode::USE_EVENTQUEUE\n");
-        //std::function<void(void)> completionHandler1 = [completionHandler]() { completionHandler(10); };    // Not used yet
+        // Not used yet
         eventQueue.push(std::move(completionHandler));
         break;
     case UseMode::USE_THREAD:
@@ -63,8 +63,8 @@ void async_op(std::function<void(int)>&& completionHandler)
             if (awaker)
                 awaker->awaitRelease();
 
-            print(PRI1, "async_op(): thread1: completionHandler(10);\n");
-            completionHandler(10);
+            print(PRI1, "async_op(): thread1: completionHandler(%d);\n", defaultCompletionValue);
+            completionHandler(defaultCompletionValue);
             print(PRI1, "async_op(): thread1: return;\n");
             });
         thread1.detach();
@@ -87,7 +87,6 @@ void async_op(std::function<void(int)>&& completionHandler)
             print(PRI1, "async_op(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", delay);
             std::this_thread::sleep_for(std::chrono::milliseconds(delay));
 
-            //std::function<void(void)> completionHandler2 = [completionHandler]() { completionHandler(10); };    // Not used yet
             std::function<void(int)> completionHandler1 = completionHandler;
             print(PRI1, "async_op(): thread1: eventQueueThr.push(std::move(completionHandler1));\n");
             eventQueueThr.push(std::move(completionHandler1));
@@ -98,7 +97,7 @@ void async_op(std::function<void(int)>&& completionHandler)
     }
     case UseMode::USE_IMMEDIATE_COMPLETION:
         print(PRI1, "async_op(): UseMode::USE_IMMEDIATE_COMPLETION\n");
-        completionHandler(10);
+        completionHandler(defaultCompletionValue);
         break;
     }
 }

@@ -1,8 +1,24 @@
 /**
  * @file eventqueuethr.h
  * @brief
- *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * QueueThr is a thread-safe variant of Queue in eventqueue.h.
+ * 
+ * It will be used in tutorial applications where completion takes place on a dedicated thread.
+ * This dedicated completion thread places a functor onto the event queue.
+ * The original launching thread pops the functors from the queue 
+ * and calls the functors to resume the coroutines on the thread on which they were started.
+ * 
+ * The implementation of QueueThr is based upon class CircularBuffer (Fig. 17.9) from the book
+ * C++20 for Programmers - An Objects-Natural Approach
+ * Paul Deitel and Harvey Deitel
+ * Copyright (C) Pearson Education, Inc.
+ * 
+ * Notice that QueueThr uses a std::array to store its elements,
+ * while Queue in eventqueue.h uses a std:queue.
+ * 
+ * For use in applications, please use QueueThreadSafe from include/corolib/eventqueue.h
+ * 
+ * @author Johan Vanslembrouck
  */
  
 #ifndef _EVENTQUEUETHR_H_
@@ -67,7 +83,7 @@ constexpr int ARRAYSIZE = 16;   // Use 2^N
 using EventQueueThrFunctionVoidInt = QueueThr<std::function<void(int)>, ARRAYSIZE>;
 using EventQueueThrFunctionVoidVoid = QueueThr<std::function<void(void)>, ARRAYSIZE>;
 
-void runEventQueue(EventQueueThrFunctionVoidInt& queue, int size);
+void runEventQueue(EventQueueThrFunctionVoidInt& queue, int size, int val = 10);
 void runEventQueue(EventQueueThrFunctionVoidVoid& queue, int size);
 
 #endif

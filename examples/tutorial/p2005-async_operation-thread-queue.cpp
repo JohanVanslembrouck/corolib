@@ -2,7 +2,7 @@
  * @file p2005-async_operation-thread-queue.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <functional>
@@ -34,8 +34,8 @@ void completionflow()
     print(PRI1, "completionflow(): std::jthread task1thr{ task0 };\n");
     std::jthread task1thr{ task0 };
 
-    print(PRI1, "completionflow(): runEventQueue(eventQueueThr, 4);\n");
-    runEventQueue(eventQueueThr, 4);
+    print(PRI1, "completionflow(): runEventQueue(eventQueueThr, 4, %d);\n", defaultCompletionValue);
+    runEventQueue(eventQueueThr, 4, defaultCompletionValue);
 
     // Begin manual event completion to make coroutine1 co_return
     print(PRI1, "completionflow(): before op.set_result_and_complete(std::nullopt);\n");

@@ -17,8 +17,8 @@ EventQueueFunctionVoidInt eventQueue;
 
 void completionflow()
 {
-    print(PRI1, "completionflow():  eventQueue.run();\n");
-    runEventQueue(eventQueue);
+    print(PRI1, "completionflow():  runEventQueue(eventQueue, %d);\n", defaultCompletionValue);
+    runEventQueue(eventQueue, defaultCompletionValue);
 }
 
 int main()

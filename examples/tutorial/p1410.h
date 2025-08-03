@@ -6,7 +6,7 @@
  * coroutine3 calls coroutine4 twice.
  * coroutine5 starts an asynchronous operation on object01 and awaits its completion.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _P1410_H_

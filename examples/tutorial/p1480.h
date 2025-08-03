@@ -18,19 +18,12 @@
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
 
+#include "use_mode.h"
+
 #include "eventqueue.h"
 #include "eventqueuethr.h"
 
 using namespace corolib;
-
-enum class UseMode
-{
-    USE_NONE,
-    USE_EVENTQUEUE,
-    USE_THREAD,
-    USE_THREAD_QUEUE,
-    USE_IMMEDIATE_COMPLETION
-};
 
 class Sorter : public CommService
 {

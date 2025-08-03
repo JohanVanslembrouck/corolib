@@ -3,7 +3,7 @@
  * @brief
  *
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <corolib/print.h>
@@ -20,7 +20,8 @@ void completionflow()
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(0));
 
-    runEventQueue(eventQueueThr, 24);
+    print(PRI1, "completionflow(): runEventQueue(eventQueueThr, 24, %d)\n", defaultCompletionValue);
+    runEventQueue(eventQueueThr, 24, defaultCompletionValue);
 }
 
 int main()

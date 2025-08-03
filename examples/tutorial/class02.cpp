@@ -74,12 +74,12 @@ void Class02::async_op1(const int idx, std::function<void(int)>&& completionHand
 
             if (m_mutex) {
                 std::lock_guard<std::mutex> guard(*m_mutex);
-                print(PRI1, "Class02::async_op1(): thread1: completionHandler(10);\n", idx);
-                completionHandler(10);
+                print(PRI1, "Class02::async_op1(): thread1: completionHandler(%d);\n", idx, defaultCompletionValue);
+                completionHandler(defaultCompletionValue);
             }
             else {
-                print(PRI1, "Class02::async_op1(): thread1: completionHandler(10);\n", idx);
-                completionHandler(10);
+                print(PRI1, "Class02::async_op1(): thread1: completionHandler(%d);\n", idx, defaultCompletionValue);
+                completionHandler(defaultCompletionValue);
             }
 
             print(PRI1, "Class02::async_op1(): thread1: return;\n");
@@ -104,7 +104,7 @@ void Class02::async_op1(const int idx, std::function<void(int)>&& completionHand
         break;
     }
     case UseMode::USE_IMMEDIATE_COMPLETION:
-        completionHandler(10);
+        completionHandler(defaultCompletionValue);
         break;
     }
 }
@@ -199,12 +199,12 @@ void Class02::async_op2(int idx, int bias, std::function<void(int)>&& completion
 
             if (m_mutex) {
                 std::lock_guard<std::mutex> guard(*m_mutex);
-                print(PRI1, "Class02::async_op2(): thread1: completionHandler(10);\n", idx);
-                completionHandler(10);
+                print(PRI1, "Class02::async_op2(): thread1: completionHandler(%d);\n", idx, defaultCompletionValue);
+                completionHandler(defaultCompletionValue);
             }
             else {
-                print(PRI1, "Class02::async_op2(): thread1: completionHandler(10);\n", idx);
-                completionHandler(10);
+                print(PRI1, "Class02::async_op2(): thread1: completionHandler(%d);\n", idx, defaultCompletionValue);
+                completionHandler(defaultCompletionValue);
             }
 
             print(PRI1, "Class02::async_op2(): thread1: return;\n");
@@ -229,7 +229,7 @@ void Class02::async_op2(int idx, int bias, std::function<void(int)>&& completion
         break;
     }
     case UseMode::USE_IMMEDIATE_COMPLETION:
-        completionHandler(10);
+        completionHandler(defaultCompletionValue);
         break;
     }
 }

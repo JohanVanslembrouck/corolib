@@ -2,7 +2,7 @@
  * @file p1485-async_operation-thread-queue.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <ranges>
@@ -29,7 +29,7 @@ int main()
     print(PRI1, "main(): starting sortCoroutine\n");
     async_task<void> result = sortCoroutine(sorter, values);
 
-    print(PRI1, "main(): running event queue\n");
+    print(PRI1, "main(): runEventQueue(eventQueueThr, 2)\n");
     runEventQueue(eventQueueThr, 2);
 
     print(PRI1, "main(): resumed. Waiting for sortCoroutine to complete\n");
