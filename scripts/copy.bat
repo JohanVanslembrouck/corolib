@@ -1,7 +1,15 @@
 
+@echo off
+
 copy ..\examples\tutorial\run.bat ..\out\build\x64-Debug\examples\tutorial\.
 
-copy ..\examples\boost\various\run.bat ..\out\build\x64-Debug\examples\boost\various\.
+if exist ..\out\build\x64-Debug\examples\boost\various\ (
+  echo "copy ..\examples\boost\various\run.bat ..\out\build\x64-Debug\examples\boost\various\."
+  copy ..\examples\boost\various\run.bat ..\out\build\x64-Debug\examples\boost\various\.
+) else (
+  echo "..\out\build\x64-Debug\examples\boost\various\ does not exist"
+  echo "set(BOOST_INSTALLED TRUE) in CMakeList.txt"
+)
 
 copy ..\examples\cppcoro\examples-cc\run.bat ..\out\build\x64-Debug\examples\cppcoro\examples-cc\.
 copy ..\examples\cppcoro\examples-cl\run.bat ..\out\build\x64-Debug\examples\cppcoro\examples-cl\.
@@ -16,9 +24,15 @@ copy ..\examples\grpc\cpp\multiplex\run.bat ..\out\build\x64-Debug\examples\grpc
 copy ..\examples\grpc\cpp\route_guide\route_guide_db.json ..\out\build\x64-Debug\examples\grpc\cpp\route_guide\.
 copy ..\examples\grpc\cpp\route_guide\run.bat ..\out\build\x64-Debug\examples\grpc\cpp\route_guide\.
 
-copy ..\studies\corolab\run.bat ..\out\build\x64-Debug\studies\corolab\.
-copy ..\studies\final_suspend\run.bat ..\out\build\x64-Debug\studies\final_suspend\.
-copy ..\studies\initial_suspend\run.bat ..\out\build\x64-Debug\studies\initial_suspend\.
-copy ..\studies\transform\run.bat ..\out\build\x64-Debug\studies\transform\.
-copy ..\studies\why-coroutines\run.bat ..\out\build\x64-Debug\studies\why-coroutines\.
-copy ..\studies\why-coroutines2\run.bat ..\out\build\x64-Debug\studies\why-coroutines2\.
+if exist ..\out\build\x64-Debug\studies\corolab\ (
+  copy ..\studies\corolab\run.bat ..\out\build\x64-Debug\studies\corolab\.
+  copy ..\studies\final_suspend\run.bat ..\out\build\x64-Debug\studies\final_suspend\.
+  copy ..\studies\initial_suspend\run.bat ..\out\build\x64-Debug\studies\initial_suspend\.
+  copy ..\studies\transform\run.bat ..\out\build\x64-Debug\studies\transform\.
+  copy ..\studies\why-coroutines\run.bat ..\out\build\x64-Debug\studies\why-coroutines\.
+  copy ..\studies\why-coroutines2\run.bat ..\out\build\x64-Debug\studies\why-coroutines2\.
+) else (
+  echo "...\out\build\x64-Debug\studies\corolab\  does not exist"
+  echo "set(BUILD_STUDIES TRUE) in CMakeList.txt"
+)
+
