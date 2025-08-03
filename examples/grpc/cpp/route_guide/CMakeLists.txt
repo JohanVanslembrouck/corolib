@@ -71,22 +71,14 @@ target_link_libraries(route_guide_helper
 
 # Targets route_guide_(client|server)
 foreach(_target
-  route_guide_client route_guide_server
-  route_guide_callback_client route_guide_callback_server)
+  route_guide_client
+  route_guide_server
+  route_guide_callback_client
+  route_guide_coroutine_client
+  route_guide_coroutine_client2
+  route_guide_callback_server)
   add_executable(${_target}
     "${_target}.cc")
-  target_link_libraries(${_target}
-    rg_grpc_proto
-    route_guide_helper
-    ${_REFLECTION}
-    ${_GRPC_GRPCPP}
-    ${_PROTOBUF_LIBPROTOBUF})
-endforeach()
-
-foreach(_target
-  route_guide_coroutine_client route_guide_coroutine_client2)
-  add_executable(${_target}
-    "${_target}.cc" eventqueuethr.cc)
   target_link_libraries(${_target}
     rg_grpc_proto
     route_guide_helper

@@ -24,4 +24,7 @@ list(TRANSFORM target_sources PREPEND "../examples/tutorial/")
 add_executable(p140X_tests p140X_tests.cpp ${target_sources})
 target_link_libraries(p140X_tests corolib gtest_main)
 
+add_executable(p22XX_tests p22XX_tests.cpp ${target_sources})
+target_link_libraries(p22XX_tests corolib gtest_main)
+
 add_test(NAME tutorialtests COMMAND ${PROJECT_NAME})

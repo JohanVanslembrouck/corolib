@@ -64,6 +64,7 @@ foreach(_target
   multigreeter_client
   multigreeter_coroutine_client
   multigreeter_coroutine_client2
+  multigreeter_coroutine_client3
   multigreeter_server)
   add_executable(${_target} "${_target}.cc")
   target_link_libraries(${_target}

@@ -55,6 +55,7 @@
 #include <corolib/async_operation.h>
 #include <corolib/when_all.h>
 #include <corolib/when_any.h>
+#include <corolib/eventqueue.h>
 
 ABSL_FLAG(std::string, target, "localhost:50051", "Server address");
 
@@ -66,17 +67,13 @@ using namespace corolib;
 
 const int NR_ITERATIONS = 100;
 
-#include "../route_guide/eventqueuethr.h"
-
 struct StatusCo
 {
     int index;
     Status status;
 };
 
-using EventQueueThrStatusCo = QueueThr<StatusCo, ARRAYSIZE>;
-
-EventQueueThrFunctionVoidVoid eventQueue;
+EventQueueFunctionVoidVoid eventQueue;
 
 class GreeterClient : public CommService
 {
@@ -225,9 +222,7 @@ int main(int argc, char** argv) {
   for (int i = 0; i < NR_ITERATIONS; ++i) {
       async_task<void> t = greeter.SayHello_GetFeatureCo();
       runEventQueue(eventQueue, 2);     // Started 2 operations
-      print(PRI2, "Before wait\n");
-      t.wait();
-      print(PRI2, "After wait\n");
+      //t.wait();                       // No need to call t.wait()
 
       print(PRI2, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -237,9 +232,7 @@ int main(int argc, char** argv) {
   for (int i = 0; i < NR_ITERATIONS; ++i) {
       async_task<void> t = greeter.SayHello_GetFeatureCo_when_all();
       runEventQueue(eventQueue, 2);     // Started 2 operations
-      print(PRI2, "Before wait\n");
-      t.wait();
-      print(PRI2, "After wait\n");
+      //t.wait();                       // No need to call t.wait()
 
       print(PRI2, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -249,9 +242,7 @@ int main(int argc, char** argv) {
   for (int i = 0; i < NR_ITERATIONS; ++i) {
       async_task<void> t = greeter.SayHello_GetFeatureCo_when_any();
       runEventQueue(eventQueue, 2);     // Started 2 operations
-      print(PRI2, "Before wait\n");
-      t.wait();
-      print(PRI2, "After wait\n");
+      //t.wait();                       // No need to call t.wait()
 
       print(PRI2, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
       std::this_thread::sleep_for(std::chrono::milliseconds(10));

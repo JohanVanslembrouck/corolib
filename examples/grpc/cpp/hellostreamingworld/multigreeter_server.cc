@@ -1,5 +1,5 @@
 /**
- * @file multigreeter_server.cpp
+ * @file multigreeter_server.cc
  * @brief
  * Original source: https://groups.google.com/g/grpc-io/c/2wyoDZT5eao
  * @author: Kuldeep Melligeri

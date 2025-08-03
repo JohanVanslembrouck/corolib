@@ -2,7 +2,7 @@ project(corolibrary)
 
 include_directories(../include ${Boost_INCLUDE_DIR})
 
-add_library(corolib print.cpp async_operation.cpp commservice.cpp tracker.cpp)
+add_library(corolib print.cpp async_operation.cpp commservice.cpp eventqueue.cpp tracker.cpp)
 
 target_link_libraries(corolib)
 

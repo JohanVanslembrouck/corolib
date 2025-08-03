@@ -1,5 +1,5 @@
  /**
-  * @file multigreeter_coroutine_client.cpp
+  * @file multigreeter_coroutine_client.cc
   * @brief Added coroutine implementation. Based on the implementation in multigreeter_client.cc.
   * Original source: https://groups.google.com/g/grpc-io/c/2wyoDZT5eao
   * 
@@ -98,9 +98,10 @@ public:
         call->response_reader = stub_->AsyncsayHello(&call->context, request, &cq_, (void*)call);
 
 #if USE_COROUTINES
-        call->completionHandler =
+        call->completionHandler_ =
             [this, idx](Status) {
                 print(PRI1, "completionHandler\n");
+                // completionHandler_v is defined in commservice.h
                 this->completionHandler_v(idx);
             };
 #endif
@@ -117,17 +118,13 @@ public:
         while (!done_ && cq_.Next(&got_tag, &ok)) {         // JVS: allow terminating the program automatically
             // The tag in this example is the memory location of the call object
             ResponseHandler* responseHandler = static_cast<ResponseHandler*>(got_tag);
-            std::cout << "Tag received: " << responseHandler << std::endl;
+            print(PRI1, "Tag received: %p\n", responseHandler);
 
             // Verify that the request was completed successfully. Note that "ok"
             // corresponds solely to the request for updates introduced by Finish().
-            std::cout << "Next returned: " << ok << std::endl;
+            print(PRI1, "Next returned: %d\n", ok);
             responseHandler->HandleResponse(ok);
         }
-    }
-
-    void setDone() {
-        done_ = true;
     }
 
 private:
@@ -160,7 +157,7 @@ private:
         // Storage for the status of the RPC upon completion.
         Status status;
 #if USE_COROUTINES
-        std::function<void(Status)> completionHandler;
+        std::function<void(Status)> completionHandler_;
 #endif
         std::unique_ptr<ClientAsyncReaderInterface<HelloReply>> response_reader;
 
@@ -177,7 +174,7 @@ private:
                 break;
             case PROCESS:
                 if (responseStatus) {
-                    std::cout << "Greeter received: " << this << " : " << reply.message() << std::endl;
+                    print(PRI1, "Greeter received: %p : %s\n", this, reply.message().c_str());
                     response_reader->Read(&reply, (void*)this);
                 } else {
                     response_reader->Finish(&status, (void*)this);
@@ -186,13 +183,13 @@ private:
                 break;
             case FINISH:
                 if (status.ok()) {
-                    std::cout << "Server Response Completed: " << this << " CallData: " << this << std::endl;
+                    print(PRI1, "Server Response Completed: %p CallData: %p\n", this, this);
                 }
                 else {
-                    std::cout << "RPC failed" << std::endl;
+                    print(PRI1, "RPC failed\n");
                 }
 #if USE_COROUTINES
-                completionHandler(status);
+                completionHandler_(status);
 #else
                 gc_->done_ = true;      // JVS: allow terminating the program automatically
 #endif

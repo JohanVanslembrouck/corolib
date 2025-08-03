@@ -1,12 +1,14 @@
  /**
-  * @file multigreeter_coroutine_client2.cc
+  * @file multigreeter_coroutine_client3.cc
   * @brief Added coroutine implementation. Based on the implementation in multigreeter_client.cc.
   * Original source https://groups.google.com/g/grpc-io/c/2wyoDZT5eao
   * 
-  * multigreeter_coroutine_client2.cc is a variant of multigreeter_coroutine_client.cc.
-  * Instead of printing the result in AsyncClientCall::HandleResponse(),
-  * multigreeter_coroutine_client2.cc saves the result into a string,
-  * which is printed in the coroutine SayHelloCo.
+  * multigreeter_coroutine_client3.cc is a variant of multigreeter_coroutine_client3.cc.
+  * Install of calling the completionHandler from AsyncClientCall::HandleResponse(),
+  * multigreeter_coroutine_client3.cc uses an eventqueue to push a lambda capture
+  * of the completion handler.
+  * The advantage of this approach is that all code of coroutine SayHelloCo
+  * runs on the same thread.
   * 
   * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
   */
@@ -23,6 +25,7 @@
 #include <corolib/commservice.h>
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
+#include <corolib/eventqueue.h>
 // added for using corolib - end
 
 #ifdef BAZEL_BUILD
@@ -46,6 +49,8 @@ using hellostreamingworld::HelloRequest;
 
 // Added for using corolib
 using namespace corolib;
+
+EventQueueFunctionVoidVoid eventQueueThr;
 
 class GreeterClient : public CommService {      // Added CommService as base class
 public:
@@ -245,7 +250,16 @@ private:
             }
             ReaderResult res{ callStatus_, str };
 #if USE_COROUTINES
-            completionHandler_(res);
+            if (callStatus_ == FINISH)
+                eventQueueThr.pushFinal(
+                    [this, res]() {
+                        this->completionHandler_(res);
+                    });
+            else
+                eventQueueThr.push(
+                    [this, res]() {
+                        this->completionHandler_(res);
+                    });
 #endif
             return true;    // JVS
         }
@@ -271,13 +285,15 @@ int main(int argc, char** argv) {
 
     // Spawn reader thread that loops indefinitely
     std::thread thread_ = std::thread(&GreeterClient::AsyncCompleteRpc, &greeter);
+
 #if !USE_COROUTINES
     std::string user("world");
     greeter.SayHello(user);  // The actual RPC call!
 #else
     std::string user("coroutine world");
     async_task<void> t = greeter.runSayHelloCo(user);
-    t.wait();
+    runEventQueue(eventQueueThr);
+    //t.wait();     // No need to call t.wait()
 #endif
 
     //std::cout << "Press control-c to quit" << std::endl << std::endl;

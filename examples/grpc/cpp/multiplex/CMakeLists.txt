@@ -82,19 +82,9 @@ foreach(_target multiplex_client
                 multiplex_coroutine_client3-when_any
                 multiplex_coroutine_client3-all
                 multiplex_coroutine_client4
+                multiplex_coroutine_client5
                 multiplex_server)
   add_executable(${_target} "${_target}.cc")
-  target_link_libraries(${_target}
-    example_grpc_proto
-    absl::flags
-    absl::flags_parse
-    ${_REFLECTION}
-    ${_GRPC_GRPCPP}
-    ${_PROTOBUF_LIBPROTOBUF})
-endforeach()
-
-foreach(_target multiplex_coroutine_client5)
-  add_executable(${_target} "${_target}.cc" ../route_guide/eventqueuethr.cc)
   target_link_libraries(${_target}
     example_grpc_proto
     absl::flags

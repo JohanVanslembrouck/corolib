@@ -6,11 +6,25 @@
  * The helper classes (Reader, Recorder; Chatter) that were orginally defined inside the functions that use them,
  * are now defined at the global level. This makes the functions shorter.
  *
- * A coroutine version has been added for ListFeatures; it is called ListFeaturesCo.
+ * A coroutine version has been added for several classes and function.
+ * The following table gives an overview.
+ * 
+ *  Original class      Coroutine version
+ *  -------------------------------------
+ *  Reader              ReaderCo
+ *  Chatter             ChatterCo
+ * 
+ *  Original function   Coroutine version
+ *  -------------------------------------
+ *  ListFeatures        ListFeaturesCo
+ *  RouteChat           RouteChatCo
+ * 
  * In contrast to the version in route_guide_coroutine_client.cc, ListFeaturesCo now contains a loop that prints
  * the received features inside this loop instead of in the callback function ReaderCo::OnReadDone.
- *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * In contrast to the version in route_guide_coroutine_client.cc, RouteChatCo now contains a loop that prints
+ * the received server notes inside this loop instead of in the callback function RouteChatCo::OnReadDone.
+ * 
+ * @author Johan Vanslembrouck
  */
 
 /*
@@ -58,6 +72,7 @@
 #include <corolib/commservice.h>
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
+#include <corolib/eventqueue.h>
 
 using grpc::Channel;
 using grpc::ClientContext;
@@ -69,13 +84,14 @@ using routeguide::RouteGuide;
 using routeguide::RouteNote;
 using routeguide::RouteSummary;
 
-#include "eventqueuethr.h"
-
-EventQueueThrFunctionVoidVoid eventQueueThr;
-
 using namespace corolib;
 
+EventQueueFunctionVoidVoid eventQueueThr;
+
 const int NR_INTERACTIONS = 5;
+
+// SHOW_CODE_FROM_1ST_IMPL refers to the implementation in route_guide_coroutine_client.cc
+#define SHOW_CODE_FROM_1ST_IMPL 0
 
 Point MakePoint(long latitude, long longitude) {
   Point p;
@@ -98,6 +114,8 @@ RouteNote MakeRouteNote(const std::string& message, long latitude,
   n.mutable_location()->CopyFrom(MakePoint(latitude, longitude));
   return n;
 }
+
+// ---------------------------------------------------------------------
 
 class Reader : public grpc::ClientReadReactor<Feature> {
 public:
@@ -139,6 +157,9 @@ private:
     bool done_ = false;
 };
 
+// ---------------------------------------------
+
+#if !SHOW_CODE_FROM_1ST_IMPL
 enum class ReaderState
 {
     Value,
@@ -151,6 +172,7 @@ struct ReaderResult
     Feature feature;
     Status status;
 };
+#endif
 
 class ReaderCo : public grpc::ClientReadReactor<Feature> {
 public:
@@ -164,6 +186,12 @@ public:
     void OnReadDone(bool ok) override {
         if (ok) {
             print(PRI5, "OnReadDone\n");
+#if SHOW_CODE_FROM_1ST_IMPL
+            std::cout << "Found feature called " << feature_.name() << " at "
+                << feature_.location().latitude() / coord_factor_ << ", "
+                << feature_.location().longitude() / coord_factor_
+                << std::endl;
+#else
             ReaderResult result;
             result.state = ReaderState::Value;
             result.feature = feature_;
@@ -171,12 +199,19 @@ public:
                 [this, result]() {
                     this->completionHandler_(result);
                 });
+#endif
             StartRead(&feature_);
         }
     }
     void OnDone(const Status& s) override {
         print(PRI1, "OnDone\n");
         status_ = s;
+#if SHOW_CODE_FROM_1ST_IMPL
+        eventQueueThr.push(
+            [this]() {
+                this->completionHandler_(status_);
+            });
+#else
         ReaderResult result;
         result.state = ReaderState::Done;
         result.status = status_;
@@ -184,19 +219,32 @@ public:
             [this, result]() {
                 this->completionHandler_(result);
             });
+#endif
     }
 
+#if SHOW_CODE_FROM_1ST_IMPL
+    void setCompletionHandler(std::function<void(Status)>&& completionHandler) {
+        completionHandler_ = std::move(completionHandler);
+    }
+#else
     void setCompletionHandler(std::function<void(ReaderResult)>&& completionHandler) {
         completionHandler_ = std::move(completionHandler);
     }
+#endif
 
 private:
     ClientContext context_;
     float coord_factor_;
     Feature feature_;
     Status status_;
+#if SHOW_CODE_FROM_1ST_IMPL
+    std::function<void(Status)> completionHandler_;
+#else
     std::function<void(ReaderResult)> completionHandler_;
+#endif
 };
+
+// ---------------------------------------------------------------------
 
 class Recorder : public grpc::ClientWriteReactor<Point> {
 public:
@@ -268,6 +316,8 @@ private:
     bool done_ = false;
 };
 
+// ---------------------------------------------------------------------
+
 class Chatter : public grpc::ClientBidiReactor<RouteNote, RouteNote> {
 public:
     explicit Chatter(RouteGuide::Stub* stub)
@@ -326,6 +376,111 @@ private:
     bool done_ = false;
 };
 
+// ---------------------------------------------
+
+#if !SHOW_CODE_FROM_1ST_IMPL
+enum class ChatterState
+{
+    Value,
+    Done
+};
+
+struct ChatterResult
+{
+    ChatterState state;
+    RouteNote server_note ;
+    Status status;
+};
+#endif
+
+class ChatterCo : public grpc::ClientBidiReactor<RouteNote, RouteNote> {
+public:
+    explicit ChatterCo(RouteGuide::Stub* stub)
+        : notes_{ MakeRouteNote("First message", 0, 0),
+                 MakeRouteNote("Second message", 0, 1),
+                 MakeRouteNote("Third message", 1, 0),
+                 MakeRouteNote("Fourth message", 0, 0) },
+        notes_iterator_(notes_.begin()) {
+        stub->async()->RouteChat(&context_, this);
+        NextWrite();
+        StartRead(&server_note_);
+        StartCall();
+    }
+    void OnWriteDone(bool /*ok*/) override { NextWrite(); }
+    void OnReadDone(bool ok) override {
+        if (ok) {
+#if SHOW_CODE_FROM_1ST_IMPL
+            std::cout << "Got message " << server_note_.message() << " at "
+                << server_note_.location().latitude() << ", "
+                << server_note_.location().longitude() << std::endl;
+#else
+            ChatterResult result;
+            result.state = ChatterState::Value;
+            result.server_note = server_note_;
+            eventQueueThr.push(
+                [this, result]() {
+                    this->completionHandler_(result);
+                });
+#endif
+            StartRead(&server_note_);
+        }
+    }
+    void OnDone(const Status& s) override {
+        status_ = s;
+#if SHOW_CODE_FROM_1ST_IMPL
+        eventQueueThr.push(
+            [this]() {
+                this->completionHandler_(status_);
+            });
+#else
+        ChatterResult result;
+        result.state = ChatterState::Done;
+        result.server_note = server_note_;
+        eventQueueThr.pushFinal(
+            [this, result]() {
+                this->completionHandler_(result);
+            });
+#endif
+    }
+
+#if SHOW_CODE_FROM_1ST_IMPL
+    void setCompletionHandler(std::function<void(Status)>&& completionHandler) {
+        completionHandler_ = std::move(completionHandler);
+    }
+#else
+    void setCompletionHandler(std::function<void(ChatterResult)>&& completionHandler) {
+        completionHandler_ = std::move(completionHandler);
+    }
+#endif
+
+private:
+    void NextWrite() {
+        if (notes_iterator_ != notes_.end()) {
+            const auto& note = *notes_iterator_;
+            std::cout << "Sending message " << note.message() << " at "
+                << note.location().latitude() << ", "
+                << note.location().longitude() << std::endl;
+            StartWrite(&note);
+            notes_iterator_++;
+        }
+        else {
+            StartWritesDone();
+        }
+    }
+    ClientContext context_;
+    const std::vector<RouteNote> notes_;
+    std::vector<RouteNote>::const_iterator notes_iterator_;
+    RouteNote server_note_;
+    Status status_;
+#if SHOW_CODE_FROM_1ST_IMPL
+    std::function<void(Status)> completionHandler_;
+#else
+    std::function<void(ChatterResult)> completionHandler_;
+#endif
+};
+
+// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------
 
 class RouteGuideClient : public CommService {
  public:
@@ -398,7 +553,7 @@ class RouteGuideClient : public CommService {
                   << result.feature.location().longitude() / kCoordFactor_
                   << std::endl;
           }
-          if (result.state == ReaderState::Done) {
+          else if (result.state == ReaderState::Done) {
               done = true;
               if (result.status.ok()) {
                   std::cout << "ListFeatures rpc succeeded." << std::endl;
@@ -413,8 +568,6 @@ class RouteGuideClient : public CommService {
       co_return;
   }
 
-  int count = 0;
-
   async_operation<ReaderResult> start_ListFeatures(ReaderCo* pReaderCo) {
       int index = get_free_index();
       async_operation<ReaderResult> ret{ this, index };
@@ -428,6 +581,7 @@ class RouteGuideClient : public CommService {
 
   // RecordRoute
   // -----------
+  // original version
 
   void RecordRoute() {
     Recorder recorder(stub_.get(), kCoordFactor_, &feature_list_);
@@ -444,8 +598,12 @@ class RouteGuideClient : public CommService {
     }
   }
 
+  // coroutine version
+  // not present
+
   // RouteChat
   // ---------
+  // original version
 
   void RouteChat() {
     Chatter chatter(stub_.get());
@@ -453,6 +611,49 @@ class RouteGuideClient : public CommService {
     if (!status.ok()) {
       std::cout << "RouteChat rpc failed." << std::endl;
     }
+  }
+
+  // coroutine version
+
+  async_task<void> RouteChatCo() {
+      print(PRI1, "RouteChatCo - begin\n");
+      ChatterCo chatter(stub_.get());
+      async_operation<ChatterResult> op = start_Chatter(&chatter);
+      op.auto_reset(true);
+      bool done = false;
+      do {
+          print(PRI5, "RouteChatCo: before co_await\n");
+          ChatterResult result = co_await op;
+          print(PRI5, "RouteChatCo: after co_await\n");
+          if (result.state == ChatterState::Value) {
+              std::cout << "Got message " << result.server_note.message() << " at "
+                  << result.server_note.location().latitude() << ", "
+                  << result.server_note.location().longitude() << std::endl;
+          }
+          else if (result.state == ChatterState::Done) {
+              done = true;
+              if (result.status.ok()) {
+                  std::cout << "RouteChat rpc succeeded." << std::endl;
+              }
+              else {
+                  std::cout << "RouteChat rpc failed." << std::endl;
+              }
+          }
+      } while (!done);
+
+      print(PRI1, "RouteChatCo - end\n");
+      co_return;
+  }
+
+  async_operation<ChatterResult> start_Chatter(ChatterCo* pChatterCo) {
+      int index = get_free_index();
+      async_operation<ChatterResult> ret{ this, index };
+      pChatterCo->setCompletionHandler(
+          [this, index](ChatterResult result) {
+              print(PRI1, "completionHandler called\n");
+              this->completionHandler<ChatterResult>(index, result);
+          });
+      return ret;
   }
 
  private:
@@ -500,11 +701,21 @@ class RouteGuideClient : public CommService {
   std::vector<Feature> feature_list_;
 };
 
+// ---------------------------------------------------------------------
+
+void runListFeatures(RouteGuideClient& guide)
+{
+    for (int i = 0; i < NR_INTERACTIONS; ++i) {
+        std::cout << "-------------- ListFeatures (" << i << ") --------------" << std::endl;
+        guide.ListFeatures();
+    }
+}
+
 async_task<void> runListFeaturesCo(RouteGuideClient& guide)
 {
     print(PRI1, "runListFeaturesCo\n");
     for (int i = 0; i < NR_INTERACTIONS; ++i) {
-        std::cout << "-------------- ListFeatures using coroutines (1) (" << i << ") --------------" << std::endl;
+        std::cout << "-------------- ListFeaturesCo (1) (" << i << ") --------------" << std::endl;
         async_task<void> tlf = guide.ListFeaturesCo();
         co_await tlf;
     }
@@ -515,14 +726,42 @@ async_task<void> runListFeaturesCo2(RouteGuideClient& guide)
 {
     print(PRI1, "runListFeaturesCo2\n");
     for (int i = 0; i < NR_INTERACTIONS; ++i) {
-        std::cout << "-------------- ListFeatures using coroutines (2) (" << i << ") --------------" << std::endl;
+        std::cout << "-------------- ListFeaturesCo (2) (" << i << ") --------------" << std::endl;
         async_task<void> tlf = guide.ListFeaturesCo();
         eventQueueThr.reset();
         runEventQueue(eventQueueThr);
-        //tlf.wait();
     }
     co_return;
 }
+
+// ---------------------------------------------
+
+// ---------------------------------------------
+
+async_task<void> runRouteChatCo(RouteGuideClient& guide)
+{
+    print(PRI1, "runRouteChatCo\n");
+    for (int i = 0; i < NR_INTERACTIONS; ++i) {
+        std::cout << "-------------- RouteChatCo (1) (" << i << ") --------------" << std::endl;
+        async_task<void> tlf = guide.RouteChatCo();
+        co_await tlf;
+    }
+    co_return;
+}
+
+async_task<void> runRouteChatCo2(RouteGuideClient& guide)
+{
+    print(PRI1, "runRouteChatCo\n");
+    for (int i = 0; i < NR_INTERACTIONS; ++i) {
+        std::cout << "-------------- RouteChatCo (2) (" << i << ") --------------" << std::endl;
+        async_task<void> tlf = guide.RouteChatCo();
+        eventQueueThr.reset();
+        runEventQueue(eventQueueThr);
+    }
+    co_return;
+}
+
+// ---------------------------------------------------------------------
 
 int main(int argc, char** argv) {
   set_print_level(0x01);
@@ -539,14 +778,8 @@ int main(int argc, char** argv) {
   std::cout << "-------------- GetFeature --------------" << std::endl;
   guide.GetFeature();
 
-  for (int i = 0; i < NR_INTERACTIONS; ++i) {
-      std::cout << "-------------- ListFeatures (" << i << ") --------------" << std::endl;
-      guide.ListFeatures();
-  }
-  std::cout << "-------------- RecordRoute --------------" << std::endl;
-  guide.RecordRoute();
-  std::cout << "-------------- RouteChat --------------" << std::endl;
-  guide.RouteChat();
+  std::cout << "-------------- ListFeatures --------------" << std::endl;
+  runListFeatures(guide);
 
   print(PRI1, "main: async_task<void> tlf1 = runListFeaturesCo(guide);\n");
   async_task<void> tlf1 = runListFeaturesCo(guide);
@@ -554,14 +787,30 @@ int main(int argc, char** argv) {
       eventQueueThr.reset();
       runEventQueue(eventQueueThr);
   }
-  print(PRI1, "main: tlf1.wait();\n");
-  //tlf1.wait();
 
-  print(PRI1, "main: async_task<void> tlf2 = runListFeaturesCo(guide);\n");
+  print(PRI1, "main: async_task<void> tlf2 = runListFeaturesCo2(guide);\n");
   async_task<void> tlf2 = runListFeaturesCo2(guide);
   print(PRI1, "main: tlf2.wait();\n");
   tlf2.wait();
-#
+
+  std::cout << "-------------- RecordRoute --------------" << std::endl;
+  guide.RecordRoute();
+
+  std::cout << "-------------- RouteChat --------------" << std::endl;
+  guide.RouteChat();
+
+  print(PRI1, "main: async_task<void> tlf5 = runRouteChatCo(guide);\n");
+  async_task<void> tlf5 = runRouteChatCo(guide);
+  for (int i = 0; i < NR_INTERACTIONS; ++i) {
+      eventQueueThr.reset();
+      runEventQueue(eventQueueThr);
+  }
+
+  print(PRI1, "main: async_task<void> tlf6 = runRouteChatCo2(guide);\n");
+  async_task<void> tlf6 = runRouteChatCo2(guide);
+  print(PRI1, "main: tlf6.wait();\n");
+  tlf6.wait();
+
   print(PRI1, "Leaving main\n");
   return 0;
 }

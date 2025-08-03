@@ -207,7 +207,7 @@ namespace corolib
                 // The following print statements can be used to identify those places where this occurs.
                 // There should be no reason to access async_operation data members after the resume() call.
                 if (m_index == std::make_signed_t<int>(0xdeadbeef) || m_index == std::make_signed_t<int>(0xdddddddd))
-                    print(PRI1, "%p: async_operation<TYPE>::completed(): after m_awaiting.resume();\n\tWarning: object has gone out-of-scope!!!\n", this);
+                    print(PRI2, "%p: async_operation<TYPE>::completed(): after m_awaiting.resume();\n\tWarning: object has gone out-of-scope!!!\n", this);
                 else
                     print(PRI2, "%p: async_operation<TYPE>::completed(): m_index = %d, after m_awaiting.resume();\n", this, m_index);
 #endif
@@ -385,7 +385,7 @@ namespace corolib
                 // The following print statements can be used to identify those places where this occurs.
                 // There should be no reason to access async_operation data members after the resume() call.
                 if (m_index == std::make_signed_t<int>(0xdeadbeef) || m_index == std::make_signed_t<int>(0xdddddddd))
-                    print(PRI1, "%p: async_operation<void>::completed(): after m_awaiting.resume();\n\tWarning: object has gone out-of-scope!!!\n", this);
+                    print(PRI2, "%p: async_operation<void>::completed(): after m_awaiting.resume();\n\tWarning: object has gone out-of-scope!!!\n", this);
                 else
                     print(PRI2, "%p: async_operation<void>::completed(): m_index = %d, after m_awaiting.resume();\n", this, m_index);
 #endif
@@ -525,7 +525,7 @@ namespace corolib
 #if REPORT_OUT_OF_SCOPE
                     // See explanation below
                     if (m_index == std::make_signed_t<int>(0xdeadbeef) || m_index == std::make_signed_t<int>(0xdddddddd))
-                        print(PRI1, "%p: async_operation_rmc<TYPE>::completed(): after tmp[%d].resume();\n\tWarning: object has gone out-of-scope!!!\n\n", this);
+                        print(PRI2, "%p: async_operation_rmc<TYPE>::completed(): after tmp[%d].resume();\n\tWarning: object has gone out-of-scope!!!\n\n", this);
                     else
                         print(PRI2, "%p: async_operation_rmc<TYPE>::completed(): m_index = %d, after tmp[%d].resume();\n", this, m_index, i);
 #endif
@@ -688,7 +688,7 @@ namespace corolib
 #if REPORT_OUT_OF_SCOPE
                     // See explanation below
                     if (m_index == std::make_signed_t<int>(0xdeadbeef) || m_index == std::make_signed_t<int>(0xdddddddd))
-                        print(PRI1, "%p: async_operation_rmc<void>::completed(): after tmp[%d].resume();\n\tWarning: object has gone out-of-scope!!!\n\n", this);
+                        print(PRI2, "%p: async_operation_rmc<void>::completed(): after tmp[%d].resume();\n\tWarning: object has gone out-of-scope!!!\n\n", this);
                     else
                         print(PRI2, "%p: async_operation_rmc<void>::completed(): m_index = %d, after tmp[%d].resume();\n", this, m_index, i);
 #endif

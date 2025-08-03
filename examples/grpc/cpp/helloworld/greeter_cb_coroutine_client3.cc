@@ -44,16 +44,13 @@
 #include <corolib/commservice.h>
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
+#include <corolib/eventqueue.h>
 
 #ifdef BAZEL_BUILD
 #include "examples/protos/helloworld.grpc.pb.h"
 #else
 #include "helloworld.grpc.pb.h"
 #endif
-
-#include "eventqueuethr.h"
-
-EventQueueThrFunctionVoidVoid eventQueueThr;
 
 using grpc::Channel;
 using grpc::ClientContext;
@@ -63,6 +60,8 @@ using helloworld::HelloReply;
 using helloworld::HelloRequest;
 
 using namespace corolib;
+
+EventQueueFunctionVoidVoid eventQueueThr;
 
 const int NR_ITERATIONS = 10;
 
@@ -296,8 +295,8 @@ int main(int argc, char** argv) {
   async_task<void> t1 = runSayHelloCo(greeter);
   print(PRI1, "main: runEventQueue(eventQueueThr, NR_INTERACTIONS);\n");
   runEventQueue(eventQueueThr, NR_ITERATIONS);
-  print(PRI1, "main: t1.wait();\n");
-  t1.wait();
+  //print(PRI1, "main: t1.wait();\n");
+  //t1.wait();              // No need to call t.wait()
 
   print(PRI1); print(PRI1, "main: async_task<void> t2 = runSayHelloCo2(greeter);\n");
   async_task<void> t2 = runSayHelloCo2(greeter);
@@ -310,8 +309,8 @@ int main(int argc, char** argv) {
   t3.start();
   print(PRI1, "main: runEventQueue(eventQueueThr, NR_INTERACTIONS);\n");
   runEventQueue(eventQueueThr, NR_ITERATIONS);
-  print(PRI1, "main: t3.wait();\n");
-  t3.wait();
+  //print(PRI1, "main: t3.wait();\n");
+  //t3.wait();              // No need to call t.wait()
 
   print(PRI1); print(PRI1, "main: async_ltask<void> t4 = runSayHelloCoL2(greeter);\n");
   async_ltask<void> t4 = runSayHelloCoL2(greeter);
