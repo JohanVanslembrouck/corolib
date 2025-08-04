@@ -3,23 +3,28 @@ cmake_minimum_required(VERSION 3.14)
 project (corolib)
 
 # If you have installed Boost and you want to use it, set the following variable to TRUE:
-set(BOOST_INSTALLED FALSE)
+set(BOOST_INSTALLED TRUE)
+# If you have installed Qt5 and you want to use it, set the following variable to TRUE:
+set(QT5_INSTALLED TRUE)
 # If you have installed gRPC and you want to use it, set the following variable to TRUE:
-set(GRPC_INSTALLED FALSE)
+set(GRPC_INSTALLED TRUE)
+
+# If you want to use cppcoro (Windows only), set the following variable to TRUE:
+set(CPPCORO_INSTALLED FALSE)
+
 # If you have installed TAO and you want to use it, set the following variable to TRUE:
 set(TAO_INSTALLED FALSE)
-# If you have installed Qt5 and you want to use it, set the following variable to TRUE:
-set(QT5_INSTALLED FALSE)
 # If you have installed libevent and you want to use it, set the following variable to TRUE:
 set(LIBEVENT_INSTALLED FALSE)
 # If you have installed curl and you want to use it, set the following variable to TRUE:
 set(LIBCURL_INSTALLED FALSE)
 
+# To build the studies, set the following variable to TRUE:
+set(BUILD_STUDIES TRUE)
+
 # If you want to install and use GoogleTest, set the following variable to TRUE:
 set(USE_GOOGLETEST TRUE)
 
-# To build the studies, set the following variable to TRUE:
-set(BUILD_STUDIES FALSE)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -38,6 +43,8 @@ endif()
 
 add_subdirectory(lib)
 
+add_subdirectory(examples/tutorial)
+
 if (BOOST_INSTALLED)
     if (WIN32)
         # Please adapt this to your local Boost installation
@@ -46,16 +53,22 @@ if (BOOST_INSTALLED)
     add_subdirectory(examples/boost)
 endif()
 
+if (QT5_INSTALLED)
+    add_subdirectory(examples/qt5)
+endif()
+
 if (GRPC_INSTALLED)
     add_subdirectory(examples/grpc)
 endif()
 
-if (TAO_INSTALLED)
-    add_subdirectory(examples/tao/Buffered_AMI)
+if (CPPCORO_INSTALLED)
+    if (WIN32)
+        add_subdirectory(examples/cppcoro)
+    endif()
 endif()
 
-if (QT5_INSTALLED)
-    add_subdirectory(examples/qt5)
+if (TAO_INSTALLED)
+    add_subdirectory(examples/tao/Buffered_AMI)
 endif()
 
 if (LIBEVENT_INSTALLED)
@@ -65,12 +78,6 @@ endif()
 if (LIBCURL_INSTALLED)
     add_subdirectory(examples/curl)
 endif()
-
-if (WIN32)
-    add_subdirectory(examples/cppcoro)
-endif()
-
-add_subdirectory(examples/tutorial)
 
 if (BUILD_STUDIES)
     add_subdirectory(studies)

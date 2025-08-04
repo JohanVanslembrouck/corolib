@@ -71,8 +71,6 @@
 #include <corolib/async_operation.h>
 #include <corolib/eventqueue.h>
 
-#define USE_START_FROM_GRPC_OBJECT 0
-
 using grpc::Channel;
 using grpc::ClientContext;
 using grpc::Status;

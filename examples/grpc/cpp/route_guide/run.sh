@@ -6,4 +6,5 @@ set -x
 ./route_guide_client
 ./route_guide_callback_client
 ./route_guide_coroutine_client
+./route_guide_coroutine_client_a
 ./route_guide_coroutine_client2

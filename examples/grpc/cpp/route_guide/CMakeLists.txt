@@ -74,12 +74,37 @@ foreach(_target
   route_guide_client
   route_guide_server
   route_guide_callback_client
-  route_guide_coroutine_client
   route_guide_coroutine_client2
   route_guide_callback_server)
   add_executable(${_target}
     "${_target}.cc")
   target_link_libraries(${_target}
+    rg_grpc_proto
+    route_guide_helper
+    ${_REFLECTION}
+    ${_GRPC_GRPCPP}
+    ${_PROTOBUF_LIBPROTOBUF})
+endforeach()
+
+foreach(_target
+  route_guide_coroutine_client)
+  add_executable(${_target}
+    "${_target}.cc")
+  target_compile_definitions(${_target} PRIVATE USE_START_FROM_GRPC_OBJECT=0)
+  target_link_libraries(${_target}
+    rg_grpc_proto
+    route_guide_helper
+    ${_REFLECTION}
+    ${_GRPC_GRPCPP}
+    ${_PROTOBUF_LIBPROTOBUF})
+endforeach()
+
+foreach(_target
+  route_guide_coroutine_client)
+  add_executable(${_target}_a
+    "${_target}.cc")
+  target_compile_definitions(${_target}_a PRIVATE USE_START_FROM_GRPC_OBJECT=1)
+  target_link_libraries(${_target}_a
     rg_grpc_proto
     route_guide_helper
     ${_REFLECTION}
