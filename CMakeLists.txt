@@ -3,11 +3,11 @@ cmake_minimum_required(VERSION 3.14)
 project (corolib)
 
 # If you have installed Boost and you want to use it, set the following variable to TRUE:
-set(BOOST_INSTALLED TRUE)
+set(BOOST_INSTALLED FALSE)
 # If you have installed Qt5 and you want to use it, set the following variable to TRUE:
-set(QT5_INSTALLED TRUE)
+set(QT5_INSTALLED FALSE)
 # If you have installed gRPC and you want to use it, set the following variable to TRUE:
-set(GRPC_INSTALLED TRUE)
+set(GRPC_INSTALLED FALSE)
 
 # If you want to use cppcoro (Windows only), set the following variable to TRUE:
 set(CPPCORO_INSTALLED FALSE)
@@ -20,7 +20,7 @@ set(LIBEVENT_INSTALLED FALSE)
 set(LIBCURL_INSTALLED FALSE)
 
 # To build the studies, set the following variable to TRUE:
-set(BUILD_STUDIES TRUE)
+set(BUILD_STUDIES FALSE)
 
 # If you want to install and use GoogleTest, set the following variable to TRUE:
 set(USE_GOOGLETEST TRUE)
