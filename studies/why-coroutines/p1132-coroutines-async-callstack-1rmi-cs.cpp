@@ -113,8 +113,6 @@ public:
     }
 };
 
-RemoteObject1 remoteObj1;
-
 /**
  * @brief Layer01 is the lowest level in the application stack
  * Lower layer: RemoteObject1
@@ -161,9 +159,10 @@ protected:
         delete ctxt;
         delete se;
     }
-};
 
-Layer01 layer01;
+private:
+    RemoteObject1 remoteObj1;
+};
 
 /**
  * @brief Layer02 is the middle layer in the application stack
@@ -212,9 +211,10 @@ protected:
         delete ctxt;
         delete se;
     }
-};
 
-Layer02 layer02;
+private:
+    Layer01 layer01;
+};
 
 /**
  * @brief Layer03 is the upper layer in the application stack
@@ -323,7 +323,11 @@ public:
 
         layer02.function1(callstack, in1);
     }
+
+private:
+    Layer02 layer02;
 };
+
 
 Layer03 layer03;
 

@@ -14,9 +14,6 @@
 
 #include "p1350.h"                              // difference with p1310-async-nested-loop.cpp
 
-RemoteObjectImpl remoteObjImpl;                 // difference with p1310-async-nested-loop.cpp
-RemoteObject1 remoteObj1{ remoteObjImpl };      // difference with p1310-async-nested-loop.cpp
-
 class Class01
 {
 public:
@@ -78,15 +75,18 @@ public:
             }
         }
     }
-};
 
-Class01 class01;
+private:
+    RemoteObjectImpl remoteObjImpl;                 // difference with p1310-async-nested-loop.cpp
+    RemoteObject1 remoteObj1{ remoteObjImpl };      // difference with p1310-async-nested-loop.cpp
+};
 
 EventQueue eventQueue;
 
 int main()
 {
     printf("main();\n");
+    Class01 class01;
     class01.function1();
     class01.function1();
     eventQueue.run();

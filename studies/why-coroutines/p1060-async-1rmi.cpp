@@ -12,10 +12,6 @@
 #include "eventqueue.h"
 #include "p1050.h"                              // difference with p1010-async-1rmi.cpp
 
-RemoteObjectImpl remoteObjImpl;                 // difference with p1010-async-1rmi.cpp
-RemoteObject1 remoteObj1{ remoteObjImpl };      // difference with p1010-async-1rmi.cpp
-
-
 /**
  * @brief Asynchronous version of Class01 in p1000-sync-1rmi.cpp
  *
@@ -153,15 +149,19 @@ public:
                 *ctxt->ret = ctxt->in1 + ctxt->in2 + out1 + out2 + ret1;
             });
     }
-};
 
-Class01 class01;
+private:
+    RemoteObjectImpl remoteObjImpl;                 // difference with p1010-async-1rmi.cpp
+    RemoteObject1 remoteObj1{ remoteObjImpl };      // difference with p1010-async-1rmi.cpp
+};
 
 EventQueue eventQueue;
 
 int main()
 {
     printf("main();\n");
+    Class01 class01;
+
 #if 0
     int ret1 = -1;
     class01.function1(11, 12, ret1);
@@ -201,8 +201,8 @@ int main()
     class01.function1alt3(11, 12, ret5);
 
     eventQueue.run();
-    printf("\n");
 
+    printf("\n");
     printf("main(): ret1 = %d\n", ret1);
     printf("main(): ret2 = %d\n", ret2);
     printf("main(): ret3 = %d\n", ret3);

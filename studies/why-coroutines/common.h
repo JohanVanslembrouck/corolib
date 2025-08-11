@@ -13,6 +13,9 @@
 
 #include "eventqueue.h"
 
+// Lambda definitions
+// ------------------
+
 using lambda_3int_t = typename std::function<void(int, int, int)>;
 using lambda_2int_t = typename std::function<void(int, int)>;
 using lambda_1int_t = typename std::function<void(int)>;
@@ -50,6 +53,9 @@ using lambda_vp_op2_ret_t = typename std::function<void(void*, op2_ret_t)>;
 // when an I/O event arrives. Therefore we do it ourselves.
 
 extern EventQueue eventQueue;
+
+// registerCB functions
+// --------------------
 
 inline void registerCB(lambda_3int_t lambda, int in1, int in2)
 {
@@ -93,12 +99,47 @@ inline void registerCB(lambda_vp_3int_t lambda, void* context, int in1, int in2)
     eventQueue.push([lambda, context, in1, in2]() { lambda(context, 1, 2, in1 + in2); });
 }
 
+// startThread functions
+// ---------------------
+
 inline void startThread(lambda_3int_t lambda, int in1, int in2)
 {
     std::thread thread1([lambda, in1, in2]() {
         //printf("startThread: std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", 100);
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         lambda(1, 2, in1 + in2);
+        });
+    thread1.detach();
+}
+
+inline void startThread(lambda_2int_t lambda, int in1, int in2)
+{
+    std::thread thread1([lambda, in1, in2]() {
+        //printf("startThread: std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", 100);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        lambda(1, in1 + in2);
+        });
+    thread1.detach();
+}
+
+inline void startThread(lambda_3int_t lambda, int in1)
+{
+    std::thread thread1([lambda, in1]() {
+        //printf("startThread: std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", 100);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        lambda(1, 2, in1);
+        });
+    thread1.detach();
+}
+
+#include "buf+msg.h"
+
+inline void startThread(lambda_void_t lambda)
+{
+    std::thread thread1([lambda]() {
+        //printf("startThread: std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", 100);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        lambda();
         });
     thread1.detach();
 }

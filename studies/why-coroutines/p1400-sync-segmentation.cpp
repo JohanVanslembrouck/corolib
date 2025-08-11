@@ -14,9 +14,6 @@
 
 #include "p1400.h"
 
-RemoteObjectImpl remoteObjImpl;
-RemoteObject1 remoteObj1{remoteObjImpl};
-
 class Class01
 {
 public:
@@ -41,13 +38,16 @@ public:
         double time_taken = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
         printf("Class01::function1a(): time_taken = %f s\n", time_taken / 1000000000.0);
     }
-};
 
-Class01 class01a;
-Class01 class01b;
+private:
+    RemoteObjectImpl remoteObjImpl;
+    RemoteObject1 remoteObj1{ remoteObjImpl };
+};
 
 int main() {
     printf("main();\n");
+    Class01 class01a;
+    Class01 class01b;
     class01a.function1();
     class01b.function1();
     return 0;

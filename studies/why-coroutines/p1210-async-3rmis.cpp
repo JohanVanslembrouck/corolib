@@ -11,10 +11,6 @@
 #include "eventqueue.h"
 #include "p1200.h"
 
-RemoteObject1 remoteObj1;
-RemoteObject1 remoteObj2;
-RemoteObject1 remoteObj3;
-
 class Class01
 {
 private:
@@ -108,15 +104,19 @@ public:
             });
         // 1a Do stuff that doesn't need the result of the RMI
     }
-};
 
-Class01 class01;
+private:
+    RemoteObject1 remoteObj1;
+    RemoteObject1 remoteObj2;
+    RemoteObject1 remoteObj3;
+};
 
 EventQueue eventQueue;
 
 int main()
 {
     printf("main();\n");
+    Class01 class01;
 #if 0
     class01.function1(11, 12, 10);
     eventQueue.run();

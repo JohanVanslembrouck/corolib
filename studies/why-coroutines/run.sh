@@ -32,15 +32,18 @@ set -x
 ./p1202-sync+thread-3rmis
 ./p1210-async-3rmis
 ./p1212-async-3rmis-local-event-loop
+./p1215-async+thread-3rmis
 ./p1220-coroutines-3rmis
 ./p1222-coroutines-3rmis-generichandler
 
 ./p1500-sync-3-parallel-rmis
 ./p1510-async-3-parallel-rmis
+./p1515-async+thread-3-parallel-rmis
 ./p1520-coroutines-3-parallel-rmis
 
 ./p1300-sync-nested-loop
 ./p1310-async-nested-loop
+./p1315-async+thread-nested-loop
 ./p1320-coroutines-nested-loop
 
 ./p1350-sync-nested-loop

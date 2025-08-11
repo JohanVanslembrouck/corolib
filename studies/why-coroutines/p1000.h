@@ -61,9 +61,6 @@ public:
         // Write the buffer to the remote object.
         // (write code is not present.)
         
-        // Start reading the response.
-        // (read code not present.)
-        
         // Register the lambda with the "communication framework".
         // The framework will call the lambda when it has received the response.
         registerCB(lambda, in1, in2);
@@ -85,9 +82,6 @@ public:
         // Write the buffer to the remote object.
         // (write code is not present.)
 
-        // Start reading the response.
-        // (read code not present.)
-
         // Register the lambda with the "communication framework".
         // The framework will call the lambda when it has received the response.
         registerCB(lambda, context, in1, in2);
@@ -105,9 +99,6 @@ public:
         // Marshal in1 and in2 into a buffer to write to the remote object.
         // Write the buffer to the remote object.
         // (write code is not present.)
-
-        // Start reading the response.
-        // (read code not present.)
 
         // Register the lambda with the "communication framework".
         // The framework will call the lambda when it has received the response.

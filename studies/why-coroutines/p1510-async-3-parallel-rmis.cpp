@@ -11,10 +11,6 @@
 #include "eventqueue.h"
 #include "p1200.h"
 
-RemoteObject1 remoteObj1;
-RemoteObject1 remoteObj2;
-RemoteObject1 remoteObj3;
-
 class Class01
 {
 private:
@@ -49,15 +45,19 @@ protected:
         if (ctxt->callfinished[0] && ctxt->callfinished[1] && ctxt->callfinished[2])
             printf("Class01::function1a: result = %d\n", ctxt->result[0] + ctxt->result[1] + ctxt->result[2]);
     }
-};
 
-Class01 class01;
+private:
+    RemoteObject1 remoteObj1;
+    RemoteObject1 remoteObj2;
+    RemoteObject1 remoteObj3;
+};
 
 EventQueue eventQueue;
 
 int main()
 {
     printf("main();\n");
+    Class01 class01;
     class01.function1(11, 12);
     class01.function1(21, 22);
     class01.function1(31, 32);

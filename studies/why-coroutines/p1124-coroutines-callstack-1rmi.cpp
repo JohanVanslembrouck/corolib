@@ -24,7 +24,6 @@ using namespace corolib;
  *
  */
 
-
 /**
  * @brief Layer01 is the lowest level in the application stack.
  * Lower layer: RemoteObject1Co

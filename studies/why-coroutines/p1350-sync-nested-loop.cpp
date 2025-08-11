@@ -14,9 +14,6 @@
 
 #include "p1350.h"                              // difference with p1300-sync-nested-loop.cpp
 
-RemoteObjectImpl remoteObjImpl;                 // difference with p1300-sync-nested-loop.cpp
-RemoteObject1 remoteObj1{ remoteObjImpl };      // difference with p1300-sync-nested-loop.cpp
-
 class Class01
 {
 public:
@@ -40,13 +37,16 @@ public:
         double time_taken = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
         printf("Class01::function1a(): time_taken = %f s\n", time_taken / 1000000000.0);
     }
-};
 
-Class01 class01;
+private:
+    RemoteObjectImpl remoteObjImpl;                 // difference with p1300-sync-nested-loop.cpp
+    RemoteObject1 remoteObj1{ remoteObjImpl };      // difference with p1300-sync-nested-loop.cpp
+};
 
 int main()
 {
     printf("main();\n");
+    Class01 class01;
     class01.function1();
     class01.function1();
     return 0;

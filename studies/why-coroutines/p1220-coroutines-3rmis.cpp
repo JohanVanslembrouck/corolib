@@ -17,18 +17,10 @@
 
 using namespace corolib;
 
-RemoteObject1 remoteObj1;
-RemoteObject1 remoteObj2;
-RemoteObject1 remoteObj3;
-
-RemoteObject1Co remoteObj1co{remoteObj1};
-RemoteObject1Co remoteObj2co{remoteObj2};
-RemoteObject1Co remoteObj3co{remoteObj3};
-
 class Class01a
 {
 public:
-    async_task<void> coroutine1(int in1, int in2, int testval)
+    async_task<int> coroutine1(int in1, int in2, int testval)
     {
         printf("Class01a::coroutine1(in1 = %d, in2 = %d, testval = %d)\n", in1, in2, testval);
         op1_ret_t res1 = co_await remoteObj1co.start_op1(in1, in2);
@@ -38,15 +30,17 @@ public:
             op2_ret_t res2 = co_await remoteObj2co.start_op2(in1, in2);
             printf("Class01a::coroutine1: 2: out3 = %d, ret2 = %d\n", res2.out1, res2.ret);
             // 2 Do stuff
+            co_return res2.ret;
         }
         else {
             op1_ret_t res3 = co_await remoteObj3co.start_op3(in1);
             printf("Class01a::coroutine1: 3: out4 = %d, out5 = %d, ret3 = %d\n", res3.out1, res3.out2, res3.ret);
             // 3 Do stuff
+            co_return res3.ret;
         }
     }
     
-    async_task<void> coroutine1a(int in1, int in2, int testval)
+    async_task<int> coroutine1a(int in1, int in2, int testval)
     {
         printf("Class01a::coroutine1a(in1 = %d, in2 = %d, testval = %d)\n", in1, in2, testval);
         async_operation<op1_ret_t> op1 = remoteObj1co.start_op1(in1, in2);
@@ -60,6 +54,7 @@ public:
             op2_ret_t res2 = co_await op2;
             printf("Class01a::coroutine1a: 2b: out3 = %d, ret2 = %d\n", res2.out1, res2.ret);
             // 2b Do stuff that needs the result of the RMI
+            co_return res2.ret;
         }
         else {
             async_operation<op1_ret_t> op3 = remoteObj3co.start_op3(in1);
@@ -67,13 +62,23 @@ public:
             op1_ret_t res3 = co_await op3;
             printf("Class01a::coroutine1a: 3b: out4 = %d, out5 = %d, ret3 = %d\n", res3.out1, res3.out2, res3.ret);
             // 3b Do stuff that needs the result of the RMI
+            co_return res3.ret;
         }
     }
+
+private:
+    RemoteObject1 remoteObj1;
+    RemoteObject1 remoteObj2;
+    RemoteObject1 remoteObj3;
+
+    RemoteObject1Co remoteObj1co{ remoteObj1 };
+    RemoteObject1Co remoteObj2co{ remoteObj2 };
+    RemoteObject1Co remoteObj3co{ remoteObj3 };
 };
 
 struct Class01
 {
-    async_task<void> coroutine1(int in1, int in2, int testval)
+    async_task<int> coroutine1(int in1, int in2, int testval)
     {
         printf("Class01::coroutine1(in1 = %d, in2 = %d, testval = %d)\n", in1, in2, testval);
         int out1 = -1, out2 = -1;
@@ -85,16 +90,18 @@ struct Class01
             int ret2 = co_await remoteObj2co.op2(in1, in2, out3);
             printf("Class01::coroutine1: 2: out3 = %d, ret2 = %d\n", out3, ret2);
             // 2 Do stuff
+            co_return ret2;
         }
         else {
             int out4 = -1, out5 = -1;
             int ret3 = co_await remoteObj3co.op3(in1, out4, out5);
             printf("Class01::coroutine1: 3: out4 = %d, out5 = %d, ret3 = %d\n", out4, out5, ret3);
             // 3 Do stuff
+            co_return ret3;
         }
     }
     
-    async_task<void> coroutine1a(int in1, int in2, int testval)
+    async_task<int> coroutine1a(int in1, int in2, int testval)
     {
         printf("Class01::coroutine1a(in1 = %d, in2 = %d, testval = %d)\n", in1, in2, testval);
         int out1 = -1, out2 = -1;
@@ -112,6 +119,7 @@ struct Class01
             int ret2 = co_await op2;
             printf("Class01::coroutine1a: 2b: out3 = %d, ret2 = %d\n", out3, ret2);
             // 2b Do stuff that needs the result of the RMI
+            co_return ret2;
         }
         else {
             int out4 = -1, out5 = -1;
@@ -121,50 +129,64 @@ struct Class01
             int ret3 = co_await op3;
             printf("Class01::coroutine1a: 3b: out4 = %d, out5 = %d, ret3 = %d\n", out4, out5, ret3);
             // 3b Do stuff that needs the result of the RMI
+            co_return ret3;
         }
     }
-};
 
-Class01 class01;
-Class01a class01a;
+private:
+    RemoteObject1 remoteObj1;
+    RemoteObject1 remoteObj2;
+    RemoteObject1 remoteObj3;
+
+    RemoteObject1Co remoteObj1co{ remoteObj1 };
+    RemoteObject1Co remoteObj2co{ remoteObj2 };
+    RemoteObject1Co remoteObj3co{ remoteObj3 };
+};
 
 EventQueue eventQueue;
 
 int main()
 {
     printf("main();\n");
+    Class01 class01;
+    Class01a class01a;
 #if 1
-    async_task<void> t1 = class01.coroutine1(11, 12, 10);
+    async_task<int> t1 = class01.coroutine1(11, 12, 10);
     eventQueue.run();
-    t1.wait();
+    int ret1 = t1.get_result();
     printf("\n");
 
-    async_task<void> t2 = class01.coroutine1a(11, 12, 23);
+    async_task<int> t2 = class01.coroutine1a(11, 12, 23);
     eventQueue.run();
-    t2.wait();
+    int ret2 = t2.get_result();
     printf("\n");
 
-    async_task<void> t3 = class01a.coroutine1(11, 12, 10);
+    async_task<int> t3 = class01a.coroutine1(11, 12, 10);
     eventQueue.run();
-    t3.wait();
+    int ret3 = t3.get_result();
     printf("\n");
 
-    async_task<void> t4 = class01a.coroutine1a(11, 12, 23);
+    async_task<int> t4 = class01a.coroutine1a(11, 12, 23);
     eventQueue.run();
-    t4.wait();
+    int ret4 = t4.get_result();
     printf("\n");
 #else
-    async_task<void> t1 = class01.coroutine1(11, 12, 10);
-    async_task<void> t2 = class01.coroutine1a(11, 12, 23);
-    async_task<void> t3 = class01a.coroutine1(11, 12, 10);
-    async_task<void> t4 = class01a.coroutine1b(11, 12, 23);
+    async_task<int> t1 = class01.coroutine1(11, 12, 10);
+    async_task<int> t2 = class01.coroutine1a(11, 12, 23);
+    async_task<int> t3 = class01a.coroutine1(11, 12, 10);
+    async_task<int> t4 = class01a.coroutine1a(11, 12, 23);
     printf("\n");
 
     eventQueue.run();
-    t1.wait();
-    t2.wait();
-    t3.wait();
-    t4.wait();
+    int ret1 = t1.get_result();
+    int ret2 = t2.get_result();
+    int ret3 = t3.get_result();
+    int ret4 = t4.get_result();
 #endif
+    printf("\n");
+    printf("main(): ret1 = %d\n", ret1);
+    printf("main(): ret2 = %d\n", ret2);
+    printf("main(): ret3 = %d\n", ret3);
+    printf("main(): ret4 = %d\n", ret4);
     return 0;
 }

@@ -10,8 +10,6 @@
 #include "common.h"
 #include "p1000.h"
 
-RemoteObject1 remoteObj1;
-
 class Class01
 {
 public:
@@ -23,13 +21,15 @@ public:
         printf("Class01::function1(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
         return in1 + in2 + out1 + out2 + ret1;
     }
-};
 
-Class01 class01;
+private:
+    RemoteObject1 remoteObj1;
+};
 
 int main()
 {
     printf("main();\n");
+    Class01 class01;
     int ret1 = class01.function1(11, 12);
     int ret2 = class01.function1(21, 22);
     int ret3 = class01.function1(31, 32);

@@ -1,5 +1,5 @@
 /**
- * @file p1500-sync-3-parallel-rmis.cpp
+ * @file p1515-async+thread-3-parallel-rmis.cpp
  * @brief
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
@@ -8,7 +8,7 @@
 #include <stdio.h>
 
 #include "common.h"
-#include "p1200.h"
+#include "p1200thr.h"
 
 class Class01
 {
@@ -19,10 +19,19 @@ public:
         int out11 = -1, out12 = -1;
         int out21 = -1, out22 = -1;
         int out31 = -1, out32 = -1;
-  
-        int ret1 = remoteObj1.op1(in1, in2, out11, out12);
-        int ret2 = remoteObj2.op1(in1, in2, out21, out22);
-        int ret3 = remoteObj3.op1(in1, in2, out31, out32);
+        int ret1 = -1;
+        int ret2 = -1;
+        int ret3 = -1;
+
+        countingSemaphore cs;
+        std::unique_lock<std::mutex> lock(cs.mu);
+
+        remoteObj1thr.op1(in1, in2, out11, out12, ret1, cs);
+        remoteObj1thr.op1(in1, in2, out21, out22, ret2, cs);
+        remoteObj1thr.op1(in1, in2, out31, out32, ret3, cs);
+
+        cs.cv.wait(lock, [&]() { return cs.done_count == 3; });
+
         int result = ret1 + ret2 + ret3;
         printf("Class01::function1(): result = %d\n", result);
         return result;
@@ -32,6 +41,10 @@ private:
     RemoteObject1 remoteObj1;
     RemoteObject1 remoteObj2;
     RemoteObject1 remoteObj3;
+
+    RemoteObject1Thr remoteObj1thr{ remoteObj1 };
+    RemoteObject1Thr remoteObj2thr{ remoteObj2 };
+    RemoteObject1Thr remoteObj3thr{ remoteObj2 };
 };
 
 int main()

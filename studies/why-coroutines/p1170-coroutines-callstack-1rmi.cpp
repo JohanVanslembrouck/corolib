@@ -16,10 +16,6 @@ using namespace corolib;
 #include "common.h"
 #include "p1050co.h"                                        // difference with p1120-coroutines-callstack-1rmi.cpp
 
-RemoteObjectImpl remoteObjImpl;                             // difference with p1120-coroutines-callstack-1rmi.cpp
-RemoteObjectImplCo remoteObjImplco{ remoteObjImpl };        // difference with p1120-coroutines-callstack-1rmi.cpp
-RemoteObject1Co remoteObj1co{ remoteObjImplco };            // difference with p1120-coroutines-callstack-1rmi.cpp
-
 /**
  * @brief Layer01 is the lowest level in the application stack
  * Lower layer: RemoteObject1Co
@@ -38,9 +34,12 @@ public:
         printf("Layer01::coroutine1(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
         co_return in1 + ret1;
     }
-};
 
-Layer01 layer01;
+private:
+    RemoteObjectImpl remoteObjImpl;                             // difference with p1120-coroutines-callstack-1rmi.cpp
+    RemoteObjectImplCo remoteObjImplco{ remoteObjImpl };        // difference with p1120-coroutines-callstack-1rmi.cpp
+    RemoteObject1Co remoteObj1co{ remoteObjImplco };            // difference with p1120-coroutines-callstack-1rmi.cpp
+};
 
 /**
  * @brief Layer02 is the middle layer in the application stack
@@ -61,9 +60,10 @@ public:
         printf("Layer02::coroutine1(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
         co_return in1 + out2 + ret1;
     }
-};
 
-Layer02 layer02;
+private:
+    Layer01 layer01;
+};
 
 /**
  * @brief Layer03 is the upper layer in the application stack
@@ -91,15 +91,17 @@ public:
         printf("Layer03::coroutine2(): out1 = %d, ret1 = %d\n", out1, ret1);
         co_return in1 + out1 + ret1;
     }
-};
 
-Layer03 layer03;
+private:
+    Layer02 layer02;
+};
 
 EventQueue eventQueue;
 
 int main()
 {
     printf("main();\n");
+    Layer03 layer03;
     async_task<int> t1 = layer03.coroutine1(2);
     async_task<int> t2 = layer03.coroutine2(3);
     eventQueue.run();

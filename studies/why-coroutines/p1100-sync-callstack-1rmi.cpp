@@ -13,8 +13,6 @@
 #include "eventqueue.h"
 #include "p1000.h"
 
-RemoteObject1 remoteObj1;
-
 /**
  * @brief Layer01 is the lowest level in the application stack
  * Lower layer: RemoteObject1
@@ -31,9 +29,10 @@ public:
         printf("Layer01::function1(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
         return in1 + ret1;
     }
-};
 
-Layer01 layer01;
+private:
+    RemoteObject1 remoteObj1;
+};
 
 /**
  * @brief Layer02 is the middle layer in the application stack
@@ -52,9 +51,10 @@ public:
         printf("Layer02::function1(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
         return in1 + out2 + ret1;
     }
-};
 
-Layer02 layer02;
+private:
+    Layer01 layer01;
+};
 
 /**
  * @brief Layer03 is the upper layer in the application stack
@@ -73,12 +73,14 @@ public:
         printf("Layer03::function1(): out1 = %d, ret1 = %d\n", out1, ret1);
         return in1 + out1 + ret1;
     }
-};
 
-Layer03 layer03;
+private:
+    Layer02 layer02;
+};
 
 int main() {
     printf("main();\n");
+    Layer03 layer03;
     int ret1 = layer03.function1(2);
     int ret2 = layer03.function1(3);
 

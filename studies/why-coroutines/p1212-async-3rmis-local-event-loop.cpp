@@ -11,10 +11,6 @@
 #include "eventqueue.h"
 #include "p1200.h"
 
-RemoteObject1 remoteObj1;
-RemoteObject1 remoteObj2;
-RemoteObject1 remoteObj3;
-
 class Class01
 {
 public:
@@ -65,14 +61,18 @@ protected:
     void callback3(int out4, int out5, int ret3) {
         printf("Class01::callback3(out4 = %d, out5 = %d, ret3 = %d)\n", out4, out5, ret3);
     }
-};
 
-Class01 class01;
+private:
+    RemoteObject1 remoteObj1;
+    RemoteObject1 remoteObj2;
+    RemoteObject1 remoteObj3;
+};
 
 EventQueue eventQueue;
 
 int main() {
     printf("main2();\n");
+    Class01 class01;
     class01.function1(11, 12, 10);
     printf("\n");
     class01.function1(11, 12, 23);

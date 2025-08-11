@@ -9,7 +9,6 @@
 #define _P1300_H_
 
 #include "common.h"
-#include "buf+msg.h"
 
 class RemoteObject1
 {
@@ -25,6 +24,12 @@ public:
     {
         printf("RemoteObject1::sendc_op1(msg, lambda): msg.m_length = %d\n", msg.m_length);
 		registerCB(lambda);
+    }
+
+    void startthr_op1(Msg& msg, lambda_void_t lambda)
+    {
+        printf("RemoteObject1::startthr_op1(msg, lambda)\n");
+        startThread(lambda);
     }
 };
 

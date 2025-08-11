@@ -28,15 +28,18 @@ p1200-sync-3rmis.exe
 p1202-sync+thread-3rmis.exe
 p1210-async-3rmis.exe
 p1212-async-3rmis-local-event-loop.exe
+p1215-async+thread-3rmis.exe
 p1220-coroutines-3rmis.exe
 p1222-coroutines-3rmis-generichandler.exe
 
 p1500-sync-3-parallel-rmis.exe
 p1510-async-3-parallel-rmis.exe
+p1515-async+thread-3-parallel-rmis.exe
 p1520-coroutines-3-parallel-rmis.exe
 
 p1300-sync-nested-loop.exe
 p1310-async-nested-loop.exe
+p1315-async+thread-nested-loop.exe
 p1320-coroutines-nested-loop.exe
 
 p1350-sync-nested-loop.exe

@@ -14,9 +14,6 @@
 
 #include "p1400.h"
 
-RemoteObjectImpl remoteObjImpl;
-RemoteObject1 remoteObj1{remoteObjImpl};
-
 class Class01
 {
 private:
@@ -82,15 +79,18 @@ protected:
             }
         }
     }
-};
 
-Class01 class01;
+private:
+    RemoteObjectImpl remoteObjImpl;
+    RemoteObject1 remoteObj1{ remoteObjImpl };
+};
 
 EventQueue eventQueue;
 
 int main()
 {
     printf("main();\n");
+    Class01 class01;
     class01.function1();
     class01.function1();
     eventQueue.run();

@@ -20,10 +20,6 @@ using namespace corolib;
 
 #include "p1400co.h"
 
-RemoteObjectImpl remoteObjImpl;
-RemoteObjectImplCo remoteObjImplco{ remoteObjImpl };
-RemoteObject1Co remoteObj1co{ remoteObjImplco };
-
 class Class01
 {
 public:
@@ -49,16 +45,20 @@ public:
         double time_taken = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
         printf("Class01::function1a(): time_taken = %f s\n", time_taken / 1000000000.0);
     }
-};
 
-Class01 class01a;
-Class01 class01b;
+private:
+    RemoteObjectImpl remoteObjImpl;
+    RemoteObjectImplCo remoteObjImplco{ remoteObjImpl };
+    RemoteObject1Co remoteObj1co{ remoteObjImplco };
+};
 
 EventQueue eventQueue;
 
 int main()
 {
     printf("main();\n");
+    Class01 class01a;
+    Class01 class01b;
     async_task<void> t1 = class01a.coroutine1();
     async_task<void> t2 = class01b.coroutine1();
     eventQueue.run();

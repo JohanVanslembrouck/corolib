@@ -14,9 +14,6 @@ using namespace corolib;
 #include "common.h"
 #include "p1000co.h"
 
-RemoteObject1 remoteObj1;
-RemoteObject1Co remoteObj1co{remoteObj1};
-
 class Class01a
 {
 public:
@@ -36,6 +33,10 @@ public:
         printf("Class01a::coroutine1a(): ret.out1 = %d, ret.out2 = %d, ret.ret = %d\n", ret.out1, ret.out2, ret.ret);
         co_return in1 + in2 + ret.out1 + ret.out2 + ret.ret;
     }
+
+private:
+    RemoteObject1 remoteObj1;
+    RemoteObject1Co remoteObj1co{ remoteObj1 };
 };
 
 class Class01
@@ -60,16 +61,19 @@ public:
         printf("Class01::coroutine1a(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
         co_return in1 + in2 + out1 + out2 + ret1;
     }
-};
 
-Class01a class01a;
-Class01 class01;
+private:
+    RemoteObject1 remoteObj1;
+    RemoteObject1Co remoteObj1co{ remoteObj1 };
+};
 
 EventQueue eventQueue;
 
 int main()
 {
     printf("main();\n");
+    Class01a class01a;
+    Class01 class01;
     async_task<int> t1 = class01a.coroutine1(11, 12);
     async_task<int> t2 = class01a.coroutine1a(21, 22);
     async_task<int> t3 = class01.coroutine1(31, 32);

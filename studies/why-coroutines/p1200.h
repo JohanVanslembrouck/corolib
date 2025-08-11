@@ -42,8 +42,8 @@ public:
         return in1;
     }
     
-    // Asynchronous functions
-    // ----------------------
+    // Asynchronous functions (1)
+    // --------------------------
     
     void sendc_op1(int in1, int in2, lambda_3int_t lambda)
     {
@@ -63,6 +63,8 @@ public:
         registerCB(lambda, in1, 0);
     }
 
+    // Asynchronous functions (2)
+    // --------------------------
 
     void sendc_op1(int in1, int in2, lambda_op1_ret_t lambda)
     {
@@ -80,6 +82,27 @@ public:
     {
         printf("RemoteObject1::sendc_op3(%d, lambda)\n", in1);
         registerCB(lambda, in1, 0);
+    }
+
+    // Asynchronous functions with completion on thread
+    // ------------------------------------------------
+
+    void startthr_op1(int in1, int in2, lambda_3int_t lambda)
+    {
+        printf("RemoteObject1::startthr_op1(in1 = %d, in2 = %d, lambda_3int_t)\n", in1, in2);
+        startThread(lambda, in1, in2);
+    }
+
+    void startthr_op2(int in1, int in2, lambda_2int_t lambda)
+    {
+        printf("RemoteObject1::startthr_op2(in1 = %d, in2 = %d, lambda_3int_t)\n", in1, in2);
+        startThread(lambda, in1, in2);
+    }
+
+    void startthr_op3(int in1, lambda_3int_t lambda)
+    {
+        printf("RemoteObject1::startthr_op1(in1 = %d, lambda_3int_t)\n", in1);
+        startThread(lambda, in1);
     }
 };
 

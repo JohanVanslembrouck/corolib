@@ -14,10 +14,6 @@ using namespace corolib;
 #include "common.h"
 #include "p1050co.h"                                        // difference with p1020-coroutine-1rmi.cpp
 
-RemoteObjectImpl remoteObjImpl;                             // difference with p1020-coroutine-1rmi.cpp
-RemoteObjectImplCo remoteObjImplco{ remoteObjImpl };        // difference with p1020-coroutine-1rmi.cpp
-RemoteObject1Co remoteObj1co{ remoteObjImplco };            // difference with p1020-coroutine-1rmi.cpp
-
 class Class01a
 {
 public:
@@ -37,6 +33,11 @@ public:
         printf("Class01a::coroutine1a(): ret.out1 = %d, ret.out2 = %d, ret.ret = %d\n", ret.out1, ret.out2, ret.ret);
         co_return in1 + in2 + ret.out1 + ret.out2 + ret.ret;
     }
+
+private:
+    RemoteObjectImpl remoteObjImpl;                             // difference with p1020-coroutine-1rmi.cpp
+    RemoteObjectImplCo remoteObjImplco{ remoteObjImpl };        // difference with p1020-coroutine-1rmi.cpp
+    RemoteObject1Co remoteObj1co{ remoteObjImplco };            // difference with p1020-coroutine-1rmi.cpp
 };
 
 class Class01
@@ -61,16 +62,20 @@ public:
         printf("Class01::coroutine1a(): out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
         co_return in1 + in2 + out1 + out2 + ret1;
     }
-};
 
-Class01a class01a;
-Class01 class01;
+private:
+    RemoteObjectImpl remoteObjImpl;                             // difference with p1020-coroutine-1rmi.cpp
+    RemoteObjectImplCo remoteObjImplco{ remoteObjImpl };        // difference with p1020-coroutine-1rmi.cpp
+    RemoteObject1Co remoteObj1co{ remoteObjImplco };            // difference with p1020-coroutine-1rmi.cpp
+};
 
 EventQueue eventQueue;
 
 int main()
 {
     printf("main();\n");
+    Class01a class01a;
+    Class01 class01;
     async_task<int> t1 = class01a.coroutine1(11, 12);
     async_task<int> t2 = class01a.coroutine1a(21, 22);
     async_task<int> t3 = class01.coroutine1(31, 32);
@@ -79,12 +84,14 @@ int main()
     printf("\n");
 
     int ret1 = t1.get_result();
-    printf("main(): ret1 = %d\n", ret1);
     int ret2 = t2.get_result();
-    printf("main(): ret2 = %d\n", ret2);
     int ret3 = t3.get_result();
-    printf("main(): ret3 = %d\n", ret3);
     int ret4 = t4.get_result();
+
+    printf("\n");
+    printf("main(): ret1 = %d\n", ret1);
+    printf("main(): ret2 = %d\n", ret2);
+    printf("main(): ret3 = %d\n", ret3);
     printf("main(): ret4 = %d\n", ret4);
     return 0;
 }

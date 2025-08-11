@@ -1,5 +1,5 @@
 /**
- * @file p1300-sync-nested-loop.cpp
+ * @file p1315-async+thread-nested-loop.cpp
  * @brief
  *
  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
@@ -12,7 +12,7 @@
 #include "eventqueue.h"
 #include "buf+msg.h"
 
-#include "p1300.h"
+#include "p1300thr.h"
 
 class Class01
 {
@@ -29,7 +29,7 @@ public:
             for (int j = 0; j < NR_MSGS_TO_SEND; j++)
             {
                 printf("Class04::function1(): i = %d, j = %d, counter = %d\n", i, j, counter++);
-                int ret1 = remoteObj1.op1(msg);
+                int ret1 = remoteObj1thr.op1(msg);
                 (void)ret1;
             }
         }
@@ -40,6 +40,7 @@ public:
 
 private:
     RemoteObject1 remoteObj1;
+    RemoteObject1Thr remoteObj1thr{ remoteObj1 };
 };
 
 int main()

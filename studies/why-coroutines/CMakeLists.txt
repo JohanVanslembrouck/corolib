@@ -41,6 +41,7 @@ add_executable(p1200-sync-3rmis p1200-sync-3rmis.cpp)
 add_executable(p1202-sync+thread-3rmis p1202-sync+thread-3rmis.cpp)
 add_executable(p1210-async-3rmis p1210-async-3rmis.cpp)
 add_executable(p1212-async-3rmis-local-event-loop p1212-async-3rmis-local-event-loop.cpp)
+add_executable(p1215-async+thread-3rmis p1215-async+thread-3rmis.cpp)
 add_executable(p1220-coroutines-3rmis p1220-coroutines-3rmis.cpp p1200co.cpp)
 target_link_libraries(p1220-coroutines-3rmis corolib)
 add_executable(p1222-coroutines-3rmis-generichandler p1222-coroutines-3rmis-generichandler.cpp p1200cog.cpp)
@@ -48,6 +49,7 @@ target_link_libraries(p1222-coroutines-3rmis-generichandler corolib)
 
 add_executable(p1300-sync-nested-loop p1300-sync-nested-loop.cpp)
 add_executable(p1310-async-nested-loop p1310-async-nested-loop.cpp)
+add_executable(p1315-async+thread-nested-loop p1315-async+thread-nested-loop.cpp)
 add_executable(p1320-coroutines-nested-loop p1320-coroutines-nested-loop.cpp p1300co.cpp)
 target_link_libraries(p1320-coroutines-nested-loop corolib)
 
@@ -63,6 +65,7 @@ target_link_libraries(p1420-coroutines-segmentation corolib)
 
 add_executable(p1500-sync-3-parallel-rmis p1500-sync-3-parallel-rmis.cpp)
 add_executable(p1510-async-3-parallel-rmis p1510-async-3-parallel-rmis.cpp)
+add_executable(p1515-async+thread-3-parallel-rmis p1515-async+thread-3-parallel-rmis.cpp)
 add_executable(p1520-coroutines-3-parallel-rmis p1520-coroutines-3-parallel-rmis.cpp p1200co.cpp)
 target_link_libraries(p1520-coroutines-3-parallel-rmis corolib)
 
