@@ -436,23 +436,9 @@ void TcpClientCo::start_reading_impl(const int idx, bool doDisconnect)
     m_connections[idx] = connect(this, &TcpClientCo::responseReceivedSig,
         [this, idx, doDisconnect](QByteArray msg)
         {
-            print(PRI2, "%p: TcpClientCo::handle_read() lambda: idx = %d\n", this, idx);
-
-            async_operation_base* om_async_operation = get_async_operation(idx);
-            async_operation<QByteArray>* om_async_operation_t =
-                static_cast<async_operation<QByteArray>*>(om_async_operation);
-
-            if (om_async_operation_t)
-            {
-                om_async_operation_t->set_result(msg);
-                om_async_operation_t->completed();
-            }
-            else
-            {
-                // This can occur when the async_operation_base has gone out of scope.
-                print(PRI2, "%p: TcpClientCo::handle_read(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
-            }
-
+            print(PRI2, "%p: TcpClientCo::handle_read(): idx = %d\n", this, idx);
+            completionHandler<QByteArray>(idx, msg);
+ 
             if (doDisconnect)
             {
                 if (!disconnect(m_connections[idx]))
@@ -510,21 +496,8 @@ void TcpClientCo::start_timer_impl(const int idx, QTimer& tmr, int ms)
     m_connections[idx] = connect(&tmr, &QTimer::timeout,
         [this, idx]()
         {
-            print(PRI2, "%p: TcpClientCo::handle_timer() lambda: idx = %d\n", this, idx);
-
-            async_operation_base* om_async_operation = get_async_operation(idx);
-            async_operation<void>* om_async_operation_t =
-                static_cast<async_operation<void>*>(om_async_operation);
-
-            if (om_async_operation_t)
-            {
-                om_async_operation_t->completed();
-            }
-            else
-            {
-                // This can occur when the async_operation_base has gone out of scope.
-                print(PRI2, "%p: TcpClientCo::handle_timer(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
-            }
+            print(PRI2, "%p: TcpClientCo::handle_timer(): idx = %d\n", this, idx);
+            completionHandler_v(idx);
 
             if (!disconnect(m_connections[idx]))
             {
@@ -577,21 +550,8 @@ void TcpClientCo::start_connecting_impl(const int idx, QString& serverIpAddress,
     m_connections[idx] = connect(this, &TcpClientCo::connectedSig,
         [this, idx]()
         {
-            print(PRI2, "%p: TcpClientCo::handle_connect() lambda: idx = %d\n", this, idx);
-
-            async_operation_base* om_async_operation = get_async_operation(idx);
-            async_operation<void>* om_async_operation_t =
-                static_cast<async_operation<void>*>(om_async_operation);
-
-            if (om_async_operation_t)
-            {
-                om_async_operation_t->completed();
-            }
-            else
-            {
-                // This can occur when the async_operation_base has gone out of scope.
-                print(PRI2, "%p: TcpClientCo::handle_connect(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
-            }
+            print(PRI2, "%p: TcpClientCo::handle_connect(): idx = %d\n", this, idx);
+            completionHandler_v(idx);
 
             if (!disconnect(m_connections[idx]))
             {

@@ -129,23 +129,8 @@ bool TcpClientCo1::connectToServer(QString& serverIPaddress, quint16 serverPort)
                     [this](QByteArray msg)
                     {
                         int idx = m_index_read;
-
                         print(PRI2, "%p: TcpClientCo1::handle_read() lambda: idx = %d\n", this, idx);
-
-                        async_operation_base* om_async_operation = get_async_operation(idx);
-                        async_operation<QByteArray>* om_async_operation_t =
-                            static_cast<async_operation<QByteArray>*>(om_async_operation);
-
-                        if (om_async_operation_t)
-                        {
-                            om_async_operation_t->set_result(msg);
-                            om_async_operation_t->completed();
-                        }
-                        else
-                        {
-                            // This can occur when the async_operation_base has gone out of scope.
-                            print(PRI2, "%p: TcpClientCo::handle_read(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
-                        }
+                        completionHandler<QByteArray>(idx, msg);
                     }
                 );
                 
@@ -153,22 +138,8 @@ bool TcpClientCo1::connectToServer(QString& serverIPaddress, quint16 serverPort)
                     [this]()
                     {
                         int idx = m_index_connect;
-
                         print(PRI2, "%p: TcpClientCo1::handle_connect() lambda: idx = %d\n", this, idx);
-
-                        async_operation_base* om_async_operation = get_async_operation(idx);
-                        async_operation<void>* om_async_operation_t =
-                            static_cast<async_operation<void>*>(om_async_operation);
-
-                        if (om_async_operation_t)
-                        {
-                            om_async_operation_t->completed();
-                        }
-                        else
-                        {
-                            // This can occur when the async_operation_base has gone out of scope.
-                            print(PRI2, "%p: TcpClientCo1::handle_connect(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
-                        }
+                        completionHandler_v(idx);
                     }
                 );
 #if 0
@@ -176,22 +147,8 @@ bool TcpClientCo1::connectToServer(QString& serverIPaddress, quint16 serverPort)
                     [this]()
                     {
                         int idx = m_index_timer;
-                        
-                        print(PRI2, "%p: TcpClientCo1::handle_timer() lambda: idx = %d\n", this, idx);
-
-                        async_operation_base* om_async_operation = m_async_operations[idx];
-                        async_operation<void>* om_async_operation_t =
-                            static_cast<async_operation<void>*>(om_async_operation);
-
-                        if (om_async_operation_t)
-                        {
-                            om_async_operation_t->completed();
-                        }
-                        else
-                        {
-                            // This can occur when the async_operation_base has gone out of scope.
-                            print(PRI2, "%p: TcpClientCo1::handle_timer(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
-                        }
+                        print(PRI2, "%p: TcpClientCo1::handle_timer(): idx = %d\n", this, idx);
+                        completionHandler_v(idx);
                     }
                 );
 #endif
