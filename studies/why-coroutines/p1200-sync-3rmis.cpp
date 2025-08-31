@@ -47,7 +47,6 @@ int main()
     printf("main();\n");
     Class01 class01;
     int ret1 = class01.function1(11, 12, 10);
-    printf("\n");
     int ret2 = class01.function1(11, 12, 23);
 
     printf("\n");

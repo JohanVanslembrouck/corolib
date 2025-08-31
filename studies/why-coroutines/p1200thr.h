@@ -9,17 +9,9 @@
 #define _P1200THR_H_
 
 #include <semaphore>
-#include <condition_variable>
-#include <mutex>
+#include <latch>
 
 #include "p1200.h"
-
-struct countingSemaphore
-{
-    std::mutex mu;
-    std::condition_variable cv;
-    int done_count = 0;
-};
 
 class RemoteObject1Thr
 {
@@ -46,20 +38,18 @@ public:
         return ret1;
     }
 
-    void op1(int in1, int in2, int& out1, int& out2, int& ret1, countingSemaphore& cs)
+    void op1(int in1, int in2, int& out1, int& out2, int& ret1, std::latch& latch_)
     {
         printf("op1(): start_op1(in1, in2);\n");
         m_remoteObject.startthr_op1(in1, in2,
-            [this, &cs, &out1, &out2, &ret1](int out1a, int out2a, int ret1a)
+            [this, &latch_, &out1, &out2, &ret1](int out1a, int out2a, int ret1a)
             {
                 printf("RemoteObject1Thr completion handler: out1 = %d, out2 = %d, ret1 = %d\n", out1a, out2a, ret1a);
-                std::lock_guard<std::mutex> lock(cs.mu);
 
                 out1 = out1a;
                 out2 = out2a;
                 ret1 = ret1a;
-                cs.done_count++;
-                cs.cv.notify_all();
+                latch_.count_down();
             });
     }
 

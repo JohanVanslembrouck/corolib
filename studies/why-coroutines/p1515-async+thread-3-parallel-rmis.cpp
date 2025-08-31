@@ -23,14 +23,11 @@ public:
         int ret2 = -1;
         int ret3 = -1;
 
-        countingSemaphore cs;
-        std::unique_lock<std::mutex> lock(cs.mu);
-
-        remoteObj1thr.op1(in1, in2, out11, out12, ret1, cs);
-        remoteObj1thr.op1(in1, in2, out21, out22, ret2, cs);
-        remoteObj1thr.op1(in1, in2, out31, out32, ret3, cs);
-
-        cs.cv.wait(lock, [&]() { return cs.done_count == 3; });
+        std::latch mainLatch{ 3 };
+        remoteObj1thr.op1(in1, in2, out11, out12, ret1, mainLatch);
+        remoteObj1thr.op1(in1, in2, out21, out22, ret2, mainLatch);
+        remoteObj1thr.op1(in1, in2, out31, out32, ret3, mainLatch);
+        mainLatch.wait();
 
         int result = ret1 + ret2 + ret3;
         printf("Class01::function1(): result = %d\n", result);

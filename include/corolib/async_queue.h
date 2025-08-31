@@ -25,6 +25,8 @@ namespace corolib
 
         async_operation<void> push(TYPE value)
         {
+            print(PRI2, "async_queue<...>::push(TYPE value)\n");
+
             int index = get_free_index();
             async_operation<void> ret{ this, index };
 
@@ -45,9 +47,9 @@ namespace corolib
                     // A coroutine is co_await-ing pop()
                     int idx = m_pop_operation_index;
                     m_pop_operation_index = -1;
-                    print(PRI2, "async_queue<...>::push(%d): before complete_pop(%d)\n", value, idx);
+                    print(PRI2, "async_queue<...>::push(value): before complete_pop(%d)\n", idx);
                     complete_pop(idx);
-                    print(PRI2, "async_queue<...>::push(%d): after complete_pop(%d)\n", value, idx);
+                    print(PRI2, "async_queue<...>::push(value): after complete_pop(%d)\n", idx);
                 }
                 print(PRI2, "async_queue<...>::push(%d): ret.completed();\n", value);
                 ret.completed();
@@ -57,13 +59,15 @@ namespace corolib
 
         async_operation<TYPE> pop()
         {
+            print(PRI2, "async_queue<...>::pop()\n");
+            
             int index = get_free_index();
             async_operation<TYPE> ret{ this, index };
 
             TYPE readValue;
             if (m_occupiedCells == 0)
             {
-                print(PRI2, "async_queue<...>::pop(): buffer empty: cannot pop anymore\n");
+                print(PRI2, "async_queue<...>::pop(): buffer empty: cannot pop\n");
                 m_pop_operation_index = index;
             }
             else
