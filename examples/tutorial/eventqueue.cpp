@@ -19,12 +19,12 @@ using namespace corolib;
   * and calls this functor with argument = 10.
   * run uses a delay of 1000 ms before each functor invocation.
   */
-void runEventQueue(EventQueueFunctionVoidInt& queue, int val)
+void runEventQueue(EventQueueFunctionVoidInt& queue, int val, int sleeptime)
 {
     while (!queue.empty())
     {
-        print(PRI1, "runEventQueue(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        print(PRI1, "runEventQueue(): std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", sleeptime);
+        std::this_thread::sleep_for(std::chrono::milliseconds(sleeptime));
 
         print(PRI1, "runEventQueue(): std::function<void(int)> op = queue.pop();\n");
         std::function<void(int)> op = queue.pop();
@@ -33,12 +33,12 @@ void runEventQueue(EventQueueFunctionVoidInt& queue, int val)
     }
 }
 
-void runEventQueue(EventQueueFunctionVoidVoid& queue)
+void runEventQueue(EventQueueFunctionVoidVoid& queue, int sleeptime)
 {
     while (!queue.empty())
     {
-        print(PRI1, "runEventQueue(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        print(PRI1, "runEventQueue(): std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", sleeptime);
+        std::this_thread::sleep_for(std::chrono::milliseconds(sleeptime));
 
         print(PRI1, "runEventQueue(): std::function<void(int)> op = queue.pop();\n");
         std::function<void(void)> op = queue.pop();

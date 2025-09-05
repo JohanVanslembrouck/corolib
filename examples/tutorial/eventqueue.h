@@ -60,7 +60,7 @@ protected:
 using EventQueueFunctionVoidInt = Queue<std::function<void(int)>>;
 using EventQueueFunctionVoidVoid = Queue<std::function<void(void)>>;
 
-void runEventQueue(EventQueueFunctionVoidInt& queue, int val);
-void runEventQueue(EventQueueFunctionVoidVoid& queue);
+void runEventQueue(EventQueueFunctionVoidInt& queue, int val = 10, int sleeptime = 10);
+void runEventQueue(EventQueueFunctionVoidVoid& queue, int sleeptime = 10);
 
 #endif

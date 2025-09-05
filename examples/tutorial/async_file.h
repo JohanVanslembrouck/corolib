@@ -1,6 +1,10 @@
 /**
  * @file async_file.h
- * @brief
+ * @brief class async_file simulates file access using asynchronous versions
+ * of typical file functions (create, open, read, write, close, remove).
+ * There is no access to a real file. Only strings can be written or read.
+ * The information written is added to a member variable m_content.
+ * The read operation returns the complete content of this variable.
  *
  * @author Johan Vanslembrouck
  */
@@ -57,7 +61,11 @@ public:
         print(PRI1, "start_write(%s)\n", str.c_str());
         int index = get_free_index();
         async_operation<int> ret{ this, index };
-        this->m_content += str;
+        if (this->m_content.length() >= 100)
+            // Avoids buffer/stack overflow
+            this->m_content = str;
+        else
+            this->m_content += str;
         this->m_content += "\n";
         if (!m_opened)
             ret.set_result_and_complete(-1);

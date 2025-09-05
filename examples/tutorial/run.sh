@@ -133,6 +133,7 @@ set -x
 ./p1910-async_queue
 ./p1912-async_queue-fibonacci
 ./p1920-async_queue-async_file
+./p1922-async_queue_eq-async_file
 
 ./p2000-async_operation
 ./p2002-async_operation-eventqueue

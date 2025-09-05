@@ -1,5 +1,5 @@
 /**
- * @file p1920-async_queue-async_file.cpp
+ * @file p1922-async_queue_eq-async_file.cpp
  * @brief
  *
  * @author Johan Vanslembrouck
@@ -9,7 +9,7 @@
 
 #include <corolib/async_task.h>
 #include <corolib/when_all.h>
-#include <corolib/async_queue.h>
+#include <corolib/async_queue_eq.h>
 #include <corolib/print.h>
 
 using namespace corolib;
@@ -19,7 +19,7 @@ using namespace corolib;
 EventQueueFunctionVoidVoid eventQueue;
 
 const int QUEUESIZE = 4;
-async_queue<std::string, QUEUESIZE> queue;
+async_queue_eq<std::string, EventQueueFunctionVoidVoid, QUEUESIZE> queue(eventQueue, false);
 
 async_file file(eventQueue);
 
@@ -33,10 +33,10 @@ async_task<void> testfile()
     co_return;
 }
 
-class Class1920 : public CommService
+class Class1922 : public CommService
 {
 public:
-    Class1920(EventQueueFunctionVoidVoid& eventQueue)
+    Class1922(EventQueueFunctionVoidVoid& eventQueue)
         : m_eventQueue(eventQueue)
     {
 
@@ -160,10 +160,10 @@ private:
     EventQueueFunctionVoidVoid& m_eventQueue;
 };
 
-void test01(Class1920& obj1920, int nr_operations, int sleeptime)
+void test01(Class1922& obj1922, int nr_operations, int sleeptime)
 {
     print(PRI1, "test01: async_task<void> mf = mainflow();\n");
-    async_task<void> mf = obj1920.mainflow(nr_operations);
+    async_task<void> mf = obj1922.mainflow(nr_operations);
     print(PRI1, "test01: runEventQueue(eventQueue);\n");
     runEventQueue(eventQueue, sleeptime);
     print(PRI1, "test01: mf.wait();\n");
@@ -178,25 +178,25 @@ int main()
 
     print(PRI1, "main: begin\n");
 
-    Class1920 obj1920(eventQueue);
+    Class1922 obj1922(eventQueue);
 
-    print(PRI1, "main: test01(obj1920, 10, 10);\n");
-    test01(obj1920, 10, 10);
-    print(PRI1, "main: test01(obj1920, 50, 10);\n");
-    test01(obj1920, 50, 10);
+    print(PRI1, "main: test01(obj1922, 10, 10);\n");
+    test01(obj1922, 10, 10);
+    print(PRI1, "main: test01(obj1922, 50, 10);\n");
+    test01(obj1922, 50, 10);
 
     set_print_level(0x00);
 
-    printf("main: test01(obj1920, 100, 0);\n");
-    test01(obj1920, 100, 0);
-    printf("main: test01(obj1920, 10000, 0);\n");
-    test01(obj1920, 10000, 0);
-    printf("main: test01(obj1920, 100000, 0);\n");
-    test01(obj1920, 100000, 0);
-    printf("main: test01(obj1920, 1000000, 0);\n");
-    test01(obj1920, 1000000, 0);
-    printf("main: test01(obj1920, 2000000, 0);\n");
-    test01(obj1920, 2000000, 0);
+    printf("main: test01(obj1922, 100, 0);\n");
+    test01(obj1922, 100, 0);
+    printf("main: test01(obj1922, 10000, 0);\n");
+    test01(obj1922, 10000, 0);
+    printf("main: test01(obj1922, 100000, 0);\n");
+    test01(obj1922, 100000, 0);
+    printf("main: test01(obj1922, 1000000, 0);\n");
+    test01(obj1922, 1000000, 0);
+    printf("main: test01(obj1922, 2000000, 0);\n");
+    test01(obj1922, 2000000, 0);
 
     print(PRI1, "main: return 0;\n");
 

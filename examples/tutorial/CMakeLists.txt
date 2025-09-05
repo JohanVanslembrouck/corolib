@@ -273,6 +273,8 @@ target_link_libraries(p1912-async_queue-fibonacci corolib)
 
 add_executable(p1920-async_queue-async_file p1920-async_queue-async_file.cpp eventqueue.cpp)
 target_link_libraries(p1920-async_queue-async_file corolib)
+add_executable(p1922-async_queue_eq-async_file p1922-async_queue_eq-async_file.cpp eventqueue.cpp)
+target_link_libraries(p1922-async_queue_eq-async_file corolib)
 
 add_executable(p2000-async_operation p2000-async_operation.cpp p2000.cpp)
 target_link_libraries(p2000-async_operation corolib)

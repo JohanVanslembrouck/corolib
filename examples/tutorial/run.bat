@@ -126,6 +126,7 @@ REM p1900-resume_in_middle.exe
 p1910-async_queue.exe
 p1912-async_queue-fibonacci.exe
 p1920-async_queue-async_file.exe
+p1922-async_queue_eq-async_file.exe
 
 p2000-async_operation.exe
 p2002-async_operation-eventqueue.exe
