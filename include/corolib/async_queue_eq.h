@@ -12,6 +12,7 @@
 #define _ASYNC_QUEUE_EQ_H_
 
 #include <array>
+#include <functional>
 
 #include "commservice.h"
 #include "async_operation.h"
@@ -20,11 +21,17 @@ using namespace corolib;
 
 namespace corolib
 {
-    template <typename TYPE, typename EVENT_QUEUE, int ARRAYSIZE>
+    template<typename EVENT_QUEUE>
+    concept EVENTQUEUE =
+        requires(EVENT_QUEUE event_queue, std::function<void(void)> completion_handler) {
+        event_queue.push(completion_handler);
+    };
+
+    template <typename TYPE, typename EVENTQUEUE, int ARRAYSIZE>
     class async_queue_eq : private CommService
     {
     public:
-        async_queue_eq(EVENT_QUEUE& event_queue, bool direct_call = false)
+        async_queue_eq(EVENTQUEUE& event_queue, bool direct_call = false)
             : m_event_queue(event_queue)
             , m_direct_call(direct_call)
         {
@@ -64,7 +71,7 @@ namespace corolib
                     }
                     else
                     {
-                        auto completionHandler = [this, idx]() { this->complete_pop(idx); };
+                        std::function<void(void)> completionHandler = [this, idx]() { this->complete_pop(idx); };
                         m_event_queue.push(std::move(completionHandler));
                     }
                 }
@@ -107,7 +114,7 @@ namespace corolib
                     }
                     else
                     {
-                        auto completionHandler = [this, idx]() { this->complete_push(idx); };
+                        std::function<void(void)> completionHandler = [this, idx]() { this->complete_push(idx); };
                         m_event_queue.push(std::move(completionHandler));
                     }
                 }
@@ -182,7 +189,7 @@ namespace corolib
         }
 
     private:
-        EVENT_QUEUE& m_event_queue;
+        EVENTQUEUE& m_event_queue;
         bool m_direct_call;
 
         std::array<TYPE, ARRAYSIZE> m_buffer;
