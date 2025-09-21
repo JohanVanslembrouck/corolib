@@ -14,10 +14,10 @@
 #ifndef _TASKHOLDER_H_
 #define _TASKHOLDER_H_
 
-#include <corolib/print.h>
-#include <corolib/async_task.h>
-#include <corolib/when_all.h>
-#include <corolib/when_any.h>
+#include "print.h"
+#include "async_task.h"
+#include "when_all.h"
+#include "when_any.h"
 
 using namespace corolib;
 
@@ -75,7 +75,7 @@ namespace corolib
         * or 2) for any task to finish (wait_all == false) and this entry is returned as the free index.
         * See wait_free_index_all for an alternative waiting for all tasks to finixh.
         */
-        async_task<TYPE> wait_free_index(bool wait_all = false)
+        async_task<int> wait_free_index(bool wait_all = false)
         {
             int i = get_free_index();
             if (i == -1)
@@ -85,8 +85,8 @@ namespace corolib
 
                 if (wait_all)
                 {
-                    print(PRI2, "TaskHolder::wait_free_index: when_allT<async_task<int>> wa(tasks, NR_TASKS)\n");
-                    when_allT<async_task<int>> wa(tasks, NR_TASKS);
+                    print(PRI2, "TaskHolder::wait_free_index: when_allT<async_task<TYPE>> wa(tasks, NR_TASKS)\n");
+                    when_allT<async_task<TYPE>> wa(tasks, NR_TASKS);
 
                     print(PRI2, "TaskHolder::wait_free_index: before co_await wa;\n");
                     co_await wa;
@@ -99,8 +99,8 @@ namespace corolib
                 }
                 else
                 {
-                    print(PRI2, "TaskHolder::wait_free_index: when_anyT<async_task<int>> wa(tasks, NR_TASKS)\n");
-                    when_anyT<async_task<int>> wa(tasks, NR_TASKS);
+                    print(PRI2, "TaskHolder::wait_free_index: when_anyT<async_task<TYPE>> wa(tasks, NR_TASKS)\n");
+                    when_anyT<async_task<TYPE>> wa(tasks, NR_TASKS);
 
                     print(PRI2, "TaskHolder::wait_free_index: before co_await wa;\n");
                     i = co_await wa;
