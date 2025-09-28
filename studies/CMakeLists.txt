@@ -1,5 +1,6 @@
 project(studies)
 
+add_subdirectory(cfsms)
 add_subdirectory(corba)
 add_subdirectory(corolab)
 add_subdirectory(initial_suspend)

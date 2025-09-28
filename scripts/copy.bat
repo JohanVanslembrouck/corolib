@@ -51,6 +51,7 @@ if exist ..\out\build\x64-Debug\examples\grpc\cpp\ (
 
 if exist ..\out\build\x64-Debug\studies\corolab\ (
     echo copying files to ..\out\build\x64-Debug\studies\ subdirectories.
+    copy ..\studies\cfsms\run.bat ..\out\build\x64-Debug\studies\cfsms\.
     copy ..\studies\corolab\run.bat ..\out\build\x64-Debug\studies\corolab\.
     copy ..\studies\final_suspend\run.bat ..\out\build\x64-Debug\studies\final_suspend\.
     copy ..\studies\initial_suspend\run.bat ..\out\build\x64-Debug\studies\initial_suspend\.

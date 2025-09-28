@@ -53,6 +53,9 @@ fi
 if [ -d "../../corolib-build/studies/" ]; then
     echo "copying files to ../../corolib-build/studies/ subdirectories."
 
+    cp ../studies/cfsms/run.sh ../../corolib-build/studies/cfsms
+    chmod ug+x  ../../corolib-build/studies/cfsms/run.sh
+
     cp ../studies/corolab/run.sh ../../corolib-build/studies/corolab
     chmod ug+x  ../../corolib-build/studies/corolab/run.sh
 
