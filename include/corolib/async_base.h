@@ -5,12 +5,12 @@
  * of this class, instead of having to define them as class templates taking
  * an async_operation or async_task as template arguments.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
+
 #ifndef _ASYNC_BASE_H_
 #define _ASYNC_BASE_H_
 
-#include "print.h"
 #include "when_all_counter.h"
 #include "when_any_one.h"
 

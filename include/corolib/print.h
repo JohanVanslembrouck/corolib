@@ -7,7 +7,7 @@
  * of messages that will or will not be printed depending on the priority variable
  * defined in the application.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _PRINT_H_
@@ -36,5 +36,13 @@ namespace corolib
     void print(int pri);
     void print(int pri, const char* fmt, ...);
 }
+
+#define DO_PRINT 1
+
+#if DO_PRINT
+#define clprint print
+#else
+#define clprint if (0) print
+#endif
 
 #endif

@@ -30,7 +30,7 @@
  *
  * TODO: verify instantiation of when_any with an appropriate type using C++20 concepts.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _WHEN_ANY_AWAITABLE_
@@ -53,18 +53,18 @@ namespace corolib
         when_any_info(async_base* element = nullptr)
             : m_element(element)
         {
-            print(PRI2, "%p: when_any_info::when_any_info(element = %p)\n", this, element);
+            clprint(PRI2, "%p: when_any_info::when_any_info(element = %p)\n", this, element);
         }
 
         when_any_info(const when_any_info& other)
             : m_element(other.m_element)
         {
-            print(PRI2, "%p: when_any_info::when_any_info(&other = %p)\n", this, &other);
+            clprint(PRI2, "%p: when_any_info::when_any_info(&other = %p)\n", this, &other);
         }
 
         ~when_any_info()
         {
-            print(PRI2, "%p: when_any_info::~when_any_info()\n", this, m_element);
+            clprint(PRI2, "%p: when_any_info::~when_any_info()\n", this, m_element);
             m_element = nullptr;
         }
 
@@ -84,9 +84,9 @@ namespace corolib
         template<typename... AsyncBaseTypes>
         when_any(AsyncBaseTypes&... others)
         {
-            print(PRI2, "%p: when_any::make_when_any(AsyncBaseTypes&... others)\n", this);
+            clprint(PRI2, "%p: when_any::make_when_any(AsyncBaseTypes&... others)\n", this);
             int len = sizeof... (others);
-            print(PRI2, "%p: when_any::make_when_any(AsyncBaseTypes&... others): len = %d\n", this, len);
+            clprint(PRI2, "%p: when_any::make_when_any(AsyncBaseTypes&... others): len = %d\n", this, len);
             m_when_any_info_vector.reserve(len);
             make_when_any(0, others...);
         }
@@ -97,7 +97,7 @@ namespace corolib
          */
         when_any(std::initializer_list<async_base*> async_ops)
         {
-            print(PRI2, "%p: when_any::when_any(std::initializer_list<async_base*> async_ops)\n", this);
+            clprint(PRI2, "%p: when_any::when_any(std::initializer_list<async_base*> async_ops)\n", this);
             m_when_any_info_vector.reserve(async_ops.size());
 
             int i = 0;
@@ -119,7 +119,7 @@ namespace corolib
          */
         when_any(async_base* pasync_ops[], int size)
         {
-            print(PRI2, "%p: when_any::when_any(async_base* pasync_ops, int size)\n", this);
+            clprint(PRI2, "%p: when_any::when_any(async_base* pasync_ops, int size)\n", this);
             m_when_any_info_vector.reserve(size);
             
             for (int i = 0; i < size; i++)
@@ -139,11 +139,11 @@ namespace corolib
 
         ~when_any()
         {
-            print(PRI2, "%p: when_any::~when_any()\n", this);
+            clprint(PRI2, "%p: when_any::~when_any()\n", this);
             for (std::size_t i = 0; i < m_when_any_info_vector.size(); i++)
             {
                 async_base* async_op = m_when_any_info_vector[i].m_element;
-                print(PRI2, "%p: when_any::~when_any(): i = %d, async_op = %p\n", this, i, async_op);
+                clprint(PRI2, "%p: when_any::~when_any(): i = %d, async_op = %p\n", this, i, async_op);
                 if (async_op)
                     async_op->setWaitAny(nullptr);
                 m_when_any_info_vector[i].m_element = nullptr;
@@ -167,7 +167,7 @@ namespace corolib
          */
         void start_all()
         {
-            print(PRI2, "%p: when_any:start_all(): m_first = %d\n", this, m_first);
+            clprint(PRI2, "%p: when_any:start_all(): m_first = %d\n", this, m_first);
             if (m_first)
             {
                 for (std::size_t i = 0; i < m_when_any_info_vector.size(); i++)
@@ -186,34 +186,34 @@ namespace corolib
                 awaiter(when_any& when_any_)
                     : m_when_any(when_any_)
                 {
-                    print(PRI2, "%p: when_any::awaiter::awaiter()\n", this);
+                    clprint(PRI2, "%p: when_any::awaiter::awaiter()\n", this);
                 }
 
                 bool await_ready()
                 {
-                    print(PRI2, "%p: when_any::awaiter::await_ready(): size = %d\n",
+                    clprint(PRI2, "%p: when_any::awaiter::await_ready(): size = %d\n",
                             this, m_when_any.m_when_any_info_vector.size());
                     for (std::size_t i = 0; i < m_when_any.m_when_any_info_vector.size(); i++)
                     {
                         if (m_when_any.m_when_any_info_vector[i].m_when_any_one.get_completed())
                         {
-                            print(PRI2, "%p: when_any::awaiter::await_ready(): return true for i = %d;\n", this, i);
+                            clprint(PRI2, "%p: when_any::awaiter::await_ready(): return true for i = %d;\n", this, i);
                             return true;
                         }
                     }
-                    print(PRI2, "%p: when_any::awaiter::await_ready(): return false;\n", this);
+                    clprint(PRI2, "%p: when_any::awaiter::await_ready(): return false;\n", this);
                     return false;
                 }
 
                 void await_suspend(std::coroutine_handle<> awaiting)
                 {
-                    print(PRI2, "%p: when_any::awaiter::await_suspend(...): size = %ld\n",
+                    clprint(PRI2, "%p: when_any::awaiter::await_suspend(...): size = %ld\n",
                             this, m_when_any.m_when_any_info_vector.size());
                     m_when_any.start_all();    // Will have no effect in case of an eager start
                     for (std::size_t i = 0; i < m_when_any.m_when_any_info_vector.size(); ++i)
                     {
                         when_any_one * p = &m_when_any.m_when_any_info_vector[i].m_when_any_one;
-                        print(PRI2, "%p: when_any::awaiter::await_suspend(...): p = %p\n", this, p);
+                        clprint(PRI2, "%p: when_any::awaiter::await_suspend(...): p = %p\n", this, p);
                         p->set_awaiting(awaiting);
                     }
                 }
@@ -221,7 +221,7 @@ namespace corolib
                 int await_resume()
                 {
                     // Find out which one has completed
-                    print(PRI2, "%p: when_any::awaiter::await_resume(): size = %ld\n",
+                    clprint(PRI2, "%p: when_any::awaiter::await_resume(): size = %ld\n",
                             this, m_when_any.m_when_any_info_vector.size());
 
                     int ret = -1;
@@ -229,14 +229,14 @@ namespace corolib
                     {
                         if (m_when_any.m_when_any_info_vector[i].m_when_any_one.get_and_mark_as_completed())
                         {
-                            print(PRI2, "%p: when_any::awaiter::await_resume(): return i = %d\n", this, i);
+                            clprint(PRI2, "%p: when_any::awaiter::await_resume(): return i = %d\n", this, i);
                             ret = i;
                             break;
                         }
                     }
 
                     if (ret == -1)
-                        print(PRI1, "%p: when_any::awaiter::await_resume(): Error, none has completed, yet the coroutine has been resumed\n", this);
+                        clprint(PRI1, "%p: when_any::awaiter::await_resume(): Error, none has completed, yet the coroutine has been resumed\n", this);
                     return ret;
                 }
             private:
@@ -254,7 +254,7 @@ namespace corolib
         template<typename T, typename... AsyncBaseTypes,
                  typename std::enable_if<std::is_base_of_v<async_base, T>, int>::type = 0>
         void make_when_any(int i, T& t, AsyncBaseTypes&... others) {
-            print(PRI2, "%p: make_when_any() - begin\n", this);
+            clprint(PRI2, "%p: make_when_any() - begin\n", this);
 
             async_base* async_op = static_cast<async_base*>(&t);
             when_any_info info(async_op);
@@ -265,7 +265,7 @@ namespace corolib
             m_when_any_info_vector[i].m_when_any_one.set_completed(ready);
 
             make_when_any(i + 1, others...);
-            print(PRI2, "%p: make_when_any() - end\n", this);
+            clprint(PRI2, "%p: make_when_any() - end\n", this);
         };
 
         //template<>      // g++:  error: explicit specialization in non-namespace scope ‘class corolib::when_any’
@@ -303,7 +303,7 @@ namespace corolib
          */
         when_anyT(TYPE aws[], int size)
         {
-            print(PRI2, "%p: when_anyT::when_anyT(TYPE aws[], int size)\n", this);
+            clprint(PRI2, "%p: when_anyT::when_anyT(TYPE aws[], int size)\n", this);
             m_when_any_info_vector.reserve(size);
 
             for (int i = 0; i < size; i++)
@@ -321,16 +321,16 @@ namespace corolib
 
         when_anyT(when_any&& s)
         {
-            print(PRI2, "%p: when_anyT::when_anyT(when_any&& s)\n", this);
+            clprint(PRI2, "%p: when_anyT::when_anyT(when_any&& s)\n", this);
         }
 
         ~when_anyT()
         {
-            print(PRI2, "%p: when_anyT::~when_anyT()\n", this);
+            clprint(PRI2, "%p: when_anyT::~when_anyT()\n", this);
             for (std::size_t i = 0; i < m_when_any_info_vector.size(); i++)
             {
                 async_base* async_op = m_when_any_info_vector[i].m_element;
-                print(PRI2, "%p: when_anyT::~when_anyT(): i = %d, async_op = %p\n", this, i, async_op);
+                clprint(PRI2, "%p: when_anyT::~when_anyT(): i = %d, async_op = %p\n", this, i, async_op);
                 if (async_op)
                     async_op->setWaitAny(nullptr);
                 m_when_any_info_vector[i].m_element = nullptr;
@@ -342,7 +342,7 @@ namespace corolib
 
         when_anyT& operator = (when_anyT&& s)
         {
-            print(PRI2, "%p: when_anyT::operator = (when_anyT&& s)\n", this);
+            clprint(PRI2, "%p: when_anyT::operator = (when_anyT&& s)\n", this);
             s.coro = nullptr;
             return *this;
         }
@@ -360,7 +360,7 @@ namespace corolib
          */
         void start_all()
         {
-            print(PRI2, "%p: when_anyT:start_all(): m_first = %d\n", this, m_first);
+            clprint(PRI2, "%p: when_anyT:start_all(): m_first = %d\n", this, m_first);
             if (m_first)
             {
                 for (std::size_t i = 0; i < m_when_any_info_vector.size(); i++)
@@ -379,34 +379,34 @@ namespace corolib
                 awaiter(when_anyT& when_any_)
                     : m_when_any(when_any_)
                 {
-                    print(PRI2, "%p: when_anyT::awaiter::awaiter()\n", this);
+                    clprint(PRI2, "%p: when_anyT::awaiter::awaiter()\n", this);
                 }
 
                 bool await_ready()
                 {
-                    print(PRI2, "%p: when_anyT::awaiter::await_ready(); size = %ld\n",
+                    clprint(PRI2, "%p: when_anyT::awaiter::await_ready(); size = %ld\n",
                             this, m_when_any.m_when_any_info_vector.size());
                     for (std::size_t i = 0; i < m_when_any.m_when_any_info_vector.size(); i++)
                     {
                         if (m_when_any.m_when_any_info_vector[i].m_when_any_one.get_completed())
                         {
-                            print(PRI2, "%p: when_anyT::awaiter::await_ready(): return true for i = %d;\n", this, i);
+                            clprint(PRI2, "%p: when_anyT::awaiter::await_ready(): return true for i = %d;\n", this, i);
                             return true;
                         }
                     }
-                    print(PRI2, "%p: when_anyT::awaiter::await_ready(): return false;\n", this);
+                    clprint(PRI2, "%p: when_anyT::awaiter::await_ready(): return false;\n", this);
                     return false;
                 }
 
                 void await_suspend(std::coroutine_handle<> awaiting)
                 {
-                    print(PRI2, "%p: when_anyT::awaiter::await_suspend(...): size = %ld\n",
+                    clprint(PRI2, "%p: when_anyT::awaiter::await_suspend(...): size = %ld\n",
                             this, m_when_any.m_when_any_info_vector.size());
                     m_when_any.start_all();    // Will have no effect in case of an eager start
                     for (std::size_t i = 0; i < m_when_any.m_when_any_info_vector.size(); ++i)
                     {
                         when_any_one * p = &m_when_any.m_when_any_info_vector[i].m_when_any_one;
-                        print(PRI2, "%p: when_any::awaiter::await_suspend(...): p = %p\n", this, p);
+                        clprint(PRI2, "%p: when_any::awaiter::await_suspend(...): p = %p\n", this, p);
                         p->set_awaiting(awaiting);
                     }
                 }
@@ -414,14 +414,14 @@ namespace corolib
                 int await_resume()
                 {
                     // Find out which one has completed
-                    print(PRI2, "%p: when_anyT::awaiter::await_resume(): size = %d\n",
+                    clprint(PRI2, "%p: when_anyT::awaiter::await_resume(): size = %d\n",
                             this, m_when_any.m_when_any_info_vector.size());
                     int ret = -1;
                     for (std::size_t i = 0; i < m_when_any.m_when_any_info_vector.size(); i++)
                     {
                         if (m_when_any.m_when_any_info_vector[i].m_when_any_one.get_and_mark_as_completed())
                         {
-                            print(PRI2, "%p: when_anyT::awaiter::await_resume(): return i = %d\n", this, i);
+                            clprint(PRI2, "%p: when_anyT::awaiter::await_resume(): return i = %d\n", this, i);
                             // TODO: possibly remove i-th element from m_when_any_one and m_elements
                             // or otherwise mark them as not having to be reconsidered again in await_ready
                             ret = i;
@@ -429,7 +429,7 @@ namespace corolib
                         }
                     }
                     if (ret == -1)
-                        print(PRI1, "%p: when_anyT::awaiter::await_resume(): Error, none has completed, yet the coroutine has been resumed\n", this);
+                        clprint(PRI1, "%p: when_anyT::awaiter::await_resume(): Error, none has completed, yet the coroutine has been resumed\n", this);
                     return ret;
                 }
             private:

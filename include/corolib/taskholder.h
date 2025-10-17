@@ -8,7 +8,7 @@
 * Class TaskHolder is typically used by a server application to store async_task<TYPE> objects that are returned
 * from a coroutine launched to handle the communication with a client.
 * 
-* @author Johan Vanslembrouck(johan.vanslembrouck@gmail.com)
+* @author Johan Vanslembrouck
 */
 
 #ifndef _TASKHOLDER_H_
@@ -57,7 +57,7 @@ namespace corolib
                 if (usages[m_index] == usage_status::UNUSED)
                 {
                     // Found free entry
-                    print(PRI2, "TaskHolder::get_free_index() returns %d\n", m_index);
+                    clprint(PRI2, "TaskHolder::get_free_index() returns %d\n", m_index);
                     usages[m_index] = usage_status::RESERVED;
                     return m_index;
                 }
@@ -85,12 +85,12 @@ namespace corolib
 
                 if (wait_all)
                 {
-                    print(PRI2, "TaskHolder::wait_free_index: when_allT<async_task<TYPE>> wa(tasks, NR_TASKS)\n");
+                    clprint(PRI2, "TaskHolder::wait_free_index: when_allT<async_task<TYPE>> wa(tasks, NR_TASKS)\n");
                     when_allT<async_task<TYPE>> wa(tasks, NR_TASKS);
 
-                    print(PRI2, "TaskHolder::wait_free_index: before co_await wa;\n");
+                    clprint(PRI2, "TaskHolder::wait_free_index: before co_await wa;\n");
                     co_await wa;
-                    print(PRI2, "TaskHolder::wait_free_index: after co_await wa;\n");
+                    clprint(PRI2, "TaskHolder::wait_free_index: after co_await wa;\n");
 
                     //inspect();
 
@@ -99,19 +99,19 @@ namespace corolib
                 }
                 else
                 {
-                    print(PRI2, "TaskHolder::wait_free_index: when_anyT<async_task<TYPE>> wa(tasks, NR_TASKS)\n");
+                    clprint(PRI2, "TaskHolder::wait_free_index: when_anyT<async_task<TYPE>> wa(tasks, NR_TASKS)\n");
                     when_anyT<async_task<TYPE>> wa(tasks, NR_TASKS);
 
-                    print(PRI2, "TaskHolder::wait_free_index: before co_await wa;\n");
+                    clprint(PRI2, "TaskHolder::wait_free_index: before co_await wa;\n");
                     i = co_await wa;
-                    print(PRI2, "TaskHolder::wait_free_index: after co_await wa; i = %d\n", i);
+                    clprint(PRI2, "TaskHolder::wait_free_index: after co_await wa; i = %d\n", i);
 
                 }
                 //inspect();
 
                 if (i == -1)
                 {
-                    print(PRI2, "TaskHolder::wait_free_index: could not find free index!!!\n");
+                    clprint(PRI2, "TaskHolder::wait_free_index: could not find free index!!!\n");
                 }
             }
             co_return i;
@@ -125,15 +125,15 @@ namespace corolib
          */
         async_task<void> wait_all_finished()
         {
-            print(PRI2, "TaskHolder::wait_all_finished: wait for all tasks to finish\n");
+            clprint(PRI2, "TaskHolder::wait_all_finished: wait for all tasks to finish\n");
             inspect();
 
-            print(PRI2, "TaskHolder::wait_all_finished: when_allT<async_task<int>> wa(tasks, NR_TASKS)\n");
+            clprint(PRI2, "TaskHolder::wait_all_finished: when_allT<async_task<int>> wa(tasks, NR_TASKS)\n");
             when_allT<async_task<int>> wa(tasks, NR_TASKS);
 
-            print(PRI2, "TaskHolder::wait_all_finished: before co_await wa;\n");
+            clprint(PRI2, "TaskHolder::wait_all_finished: before co_await wa;\n");
             co_await wa;
-            print(PRI2, "TaskHolder::wait_all_finished: after co_await wa;\n");
+            clprint(PRI2, "TaskHolder::wait_all_finished: after co_await wa;\n");
 
             inspect();
         }
@@ -148,7 +148,7 @@ namespace corolib
         {
             for (int i = 0; i < NR_TASKS; i++)
             {
-                print(PRI2, "tasks[%d].is_ready() = %d\n", i, tasks[i].is_ready());
+                clprint(PRI2, "tasks[%d].is_ready() = %d\n", i, tasks[i].is_ready());
             }
         }
 

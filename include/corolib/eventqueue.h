@@ -8,7 +8,7 @@
  * Paul Deitel and Harvey Deitel
  * Copyright (C) Pearson Education, Inc.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
  
 #ifndef _EVENTQUEUE_H_

@@ -2,7 +2,7 @@
  * @file async_operation.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <stdio.h>
@@ -10,8 +10,8 @@
 #include <string>
 #include <thread>
 
-#include "corolib/async_operation.h"
 #include "corolib/print.h"
+#include "corolib/async_operation.h"
 #include "corolib/commservice.h"
 
 namespace corolib
@@ -30,7 +30,7 @@ namespace corolib
         , m_autoreset(false)
         , m_timestamp(timestamp)
     {
-        print(PRI2, "%p: async_operation_base::async_operation_base(CommService* s = %p, index = %d, timestamp = %d)\n",
+        clprint(PRI2, "%p: async_operation_base::async_operation_base(CommService* s = %p, index = %d, timestamp = %d)\n",
             this, s, index, static_cast<int>(timestamp));
         
         if (m_service && m_index != -1)
@@ -44,7 +44,7 @@ namespace corolib
      */
     async_operation_base::~async_operation_base()
     {
-        print(PRI2, "%p: async_operation_base::~async_operation_base(): m_index = %d\n", this, m_index);
+        clprint(PRI2, "%p: async_operation_base::~async_operation_base(): m_index = %d\n", this, m_index);
 
         if (m_service && m_index != -1)
         {
@@ -75,7 +75,7 @@ namespace corolib
         , m_autoreset(other.m_autoreset)
         , m_timestamp(other.m_timestamp)      // Should be the same: we cannot "move" from implementation.
     {
-        print(PRI2, "%p: async_operation_base::async_operation_base(async_operation_base&& s): other.m_index = %d, other.m_service = %p, other.m_timestamp = %d\n",
+        clprint(PRI2, "%p: async_operation_base::async_operation_base(async_operation_base&& s): other.m_index = %d, other.m_service = %p, other.m_timestamp = %d\n",
                 this, other.m_index, other.m_service, static_cast<int>(other.m_timestamp));
 
         // Tell the CommService we are at another address after the move.
@@ -94,7 +94,7 @@ namespace corolib
      */
     async_operation_base& async_operation_base::operator = (async_operation_base&& other) noexcept
     {
-        print(PRI2, "%p: async_operation_base::operator = (async_operation_base&& other):\n\tm_index = %d, other.m_index = %d, other.m_service = %p, other.m_timestamp = %d\n",
+        clprint(PRI2, "%p: async_operation_base::operator = (async_operation_base&& other):\n\tm_index = %d, other.m_index = %d, other.m_service = %p, other.m_timestamp = %d\n",
             this, m_index, other.m_index, other.m_service, static_cast<int>(other.m_timestamp));
 
         if (m_timestamp != other.m_timestamp)
@@ -102,7 +102,7 @@ namespace corolib
                 // We should not go from timestamped to non-timestamped.
                 // Going from non-timestamped to timestamped can occur when the async_operation is declared without
                 // immediately initializing it to an operation (e.g. when it is declared in an array).
-                print(PRI1, "%p: async_operation_base::operator = (async_operation_base&& other): m_timestamp = %d != other.m_timestamp = %d\n",
+                clprint(PRI1, "%p: async_operation_base::operator = (async_operation_base&& other): m_timestamp = %d != other.m_timestamp = %d\n",
                     this, static_cast<int>(m_timestamp), static_cast<int>(other.m_timestamp));
 
         m_timestamp = other.m_timestamp;
@@ -151,7 +151,7 @@ namespace corolib
     */
     void async_operation_base::cleanup()
     {
-        print(PRI2, "%p: async_operation_base::cleanup()\n");
+        clprint(PRI2, "%p: async_operation_base::cleanup()\n");
 
         m_service = nullptr;
         m_ctr = nullptr;
@@ -173,25 +173,25 @@ namespace corolib
      */
     void async_operation_base::inform_interested_parties()
     {
-        print(PRI2, "%p: async_operation_base::inform_interested_parties()\n");
+        clprint(PRI2, "%p: async_operation_base::inform_interested_parties()\n");
         if (m_ctr)
         {
-            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, before m_ctr->completed();\n", this, m_index);
+            clprint(PRI2, "%p: async_operation_base::completed(): m_index = %d, before m_ctr->completed();\n", this, m_index);
             std::coroutine_handle<> handle = m_ctr->completed();
             handle.resume();
-            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, after m_ctr->completed();\n", this, m_index);
+            clprint(PRI2, "%p: async_operation_base::completed(): m_index = %d, after m_ctr->completed();\n", this, m_index);
         }
         else if (m_waitany)
         {
-            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, before m_waitany->completed();\n", this, m_index);
+            clprint(PRI2, "%p: async_operation_base::completed(): m_index = %d, before m_waitany->completed();\n", this, m_index);
             std::coroutine_handle<> handle = m_waitany->completed();
             handle.resume();
-            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, after m_waitany->completed();\n", this, m_index);
+            clprint(PRI2, "%p: async_operation_base::completed(): m_index = %d, after m_waitany->completed();\n", this, m_index);
         }
         else
         {
-            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, m_awaiting not (yet) initialized!\n", this, m_index);
-            print(PRI2, "%p: async_operation_base::completed(): m_index = %d, operation completed before co_waited!\n", this, m_index);
+            clprint(PRI2, "%p: async_operation_base::completed(): m_index = %d, m_awaiting not (yet) initialized!\n", this, m_index);
+            clprint(PRI2, "%p: async_operation_base::completed(): m_index = %d, operation completed before co_waited!\n", this, m_index);
             m_ready = true;     // Set to completed.
         }
     }

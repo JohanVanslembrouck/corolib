@@ -8,7 +8,7 @@
  * This prevents concurrency between the thread on which the coroutines suspend
  * and the thread(s) that resume the coroutines after completion of the asynchronous operation.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _THREADAWAKER_H_
@@ -26,19 +26,19 @@ namespace corolib
         void addThread()
         {
             ++m_nrThreads;
-            print(PRI1, "ThreadAwaker::addThread(): m_nrThreads = %d\n", m_nrThreads);
+            clprint(PRI1, "ThreadAwaker::addThread(): m_nrThreads = %d\n", m_nrThreads);
         }
 
         void awaitRelease()
         {
-            print(PRI1, "ThreadAwaker::awaitRelease(): m_nrThreads = %d\n", m_nrThreads);
+            clprint(PRI1, "ThreadAwaker::awaitRelease(): m_nrThreads = %d\n", m_nrThreads);
             if (m_active)
                 m_semaphore.acquire();
         }
 
         void releaseThreads()
         {
-            print(PRI1, "ThreadAwaker::releaseThreads(): m_nrThreads = %d\n", m_nrThreads);
+            clprint(PRI1, "ThreadAwaker::releaseThreads(): m_nrThreads = %d\n", m_nrThreads);
             m_active = false;   // Disable the use of the semaphore from now on
             m_semaphore.release(m_nrThreads);   // Release all threads that were added by calling addThread()
             m_nrThreads = 0;

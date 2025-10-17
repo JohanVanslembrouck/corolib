@@ -2,11 +2,11 @@
  * @file commservice.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
-#include <corolib/print.h>
-#include <corolib/commservice.h>
+#include "corolib/print.h"
+#include "corolib/commservice.h"
 
 int next_pow2(int x) {
     int p = 1;
@@ -24,7 +24,7 @@ CommService::CommService(int nr_operations)
     : m_nr_operations(next_pow2(nr_operations))
     , m_index(-1)
 {
-    print(PRI2, "%p: CommService::CommService()\n", this);
+    clprint(PRI2, "%p: CommService::CommService()\n", this);
 
     m_async_operation_info = std::make_unique<async_operation_info[]>(m_nr_operations);
     for (int i = 0; i < m_nr_operations; i++)
@@ -36,7 +36,7 @@ CommService::CommService(int nr_operations)
 
 CommService::~CommService()
 {
-    print(PRI2, "%p: CommService::~CommService()\n", this);
+    clprint(PRI2, "%p: CommService::~CommService()\n", this);
     m_nr_operations = 0;
     m_index = -1;
 }
@@ -48,21 +48,21 @@ int CommService::get_free_index_ts()
 
 int CommService::get_free_index()
 {
-    print(PRI3, "%p: CommService::get_free_index_ts(): m_index = %d\n", this, m_index);
+    clprint(PRI3, "%p: CommService::get_free_index_ts(): m_index = %d\n", this, m_index);
     for (int i = 0; i < NROPERATIONS / 2; i++)
     {
         m_index = (m_index + 1) & (NROPERATIONS - 1);
-        print(PRI3, "%p: CommService::get_free_index_ts(): m_index = %d\n", this, m_index);
+        clprint(PRI3, "%p: CommService::get_free_index_ts(): m_index = %d\n", this, m_index);
         if (m_async_operation_info[m_index].async_operation == nullptr)
         {
             // Found free entry
-            print(PRI2, "%p: CommService::get_free_index_ts() returns %d\n", this, m_index);
+            clprint(PRI2, "%p: CommService::get_free_index_ts() returns %d\n", this, m_index);
 			m_async_operation_info[m_index].async_operation = &reserved;
             return m_index;
         }
     }
     // No more free entries
-    print(PRI1, "%p: CommService::get_free_index_ts() returns -1!\n", this);
+    clprint(PRI1, "%p: CommService::get_free_index_ts() returns -1!\n", this);
     return -1;
 }
 
@@ -70,7 +70,7 @@ void CommService::add_entry(int index, async_operation_base* op, bool timestamp)
 {
     if (index == -1)
     {
-        print(PRI1, "%p: CommService::add_entry(): index == -1!\n", this);
+        clprint(PRI1, "%p: CommService::add_entry(): index == -1!\n", this);
         return;
     }
 
@@ -83,17 +83,17 @@ void CommService::add_entry(int index, async_operation_base* op, bool timestamp)
     }
     else
     {
-        print(PRI1, "%p: CommService::add_entry(): m_async_operation_info[%d].async_operation WRONGLY INITIALIZED!!!\n", this, index);
+        clprint(PRI1, "%p: CommService::add_entry(): m_async_operation_info[%d].async_operation WRONGLY INITIALIZED!!!\n", this, index);
     }
 }
 
 void CommService::update_entry(int index, async_operation_base* op, bool timestamp)
 {
-    print(PRI2, "%p: CommService::update_entry(index = %d, op = %p, timestamp = %d)\n",
+    clprint(PRI2, "%p: CommService::update_entry(index = %d, op = %p, timestamp = %d)\n",
                                         this, index, op, static_cast<int>(timestamp));
     if (index == -1)
     {
-        print(PRI1, "%p: CommService::update_entry(index = -1, op = %d, timestamp = %d): index == -1!\n",
+        clprint(PRI1, "%p: CommService::update_entry(index = -1, op = %d, timestamp = %d): index == -1!\n",
                                         this, index, op, static_cast<int>(timestamp));
         return;
     }

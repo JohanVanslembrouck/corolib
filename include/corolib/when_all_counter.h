@@ -10,7 +10,7 @@
  * when (in case of async_operation) the asynchronous operation completes
  * or (in case of async_task) the coroutine co_returns.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _WHEN_ALL_COUNTER_H_
@@ -21,6 +21,7 @@
 #endif
 
 #include <coroutine>
+
 #include "print.h"
 
 namespace corolib
@@ -33,7 +34,7 @@ namespace corolib
             : m_awaiting(nullptr)
             , m_nr(nr)
         {
-            print(PRI2, "%p: when_all_counter::when_all_counter(%d)\n", this, nr);
+            clprint(PRI2, "%p: when_all_counter::when_all_counter(%d)\n", this, nr);
         }
 
         /**
@@ -42,7 +43,7 @@ namespace corolib
          */
         void set_awaiting(std::coroutine_handle<> awaiting)
         {
-            print(PRI2, "%p: when_all_counter::set_awaiting()\n", this);
+            clprint(PRI2, "%p: when_all_counter::set_awaiting()\n", this);
             m_awaiting = awaiting;
         }
 
@@ -53,9 +54,9 @@ namespace corolib
         int get_counter()
         {
 #if USE_IN_MT_APPS
-            print(PRI2, "%p: when_all_counter::get_counter(): returns %d\n", this, m_nr.load());
+            clprint(PRI2, "%p: when_all_counter::get_counter(): returns %d\n", this, m_nr.load());
 #else
-            print(PRI2, "%p: when_all_counter::get_counter(): returns %d\n", this, m_nr);
+            clprint(PRI2, "%p: when_all_counter::get_counter(): returns %d\n", this, m_nr);
 #endif
             return m_nr;
         }
@@ -63,9 +64,9 @@ namespace corolib
         void increment()
         {
 #if USE_IN_MT_APPS
-            print(PRI2, "%p: when_all_counter::increment(): m_nr = %d\n", this, m_nr.load());
+            clprint(PRI2, "%p: when_all_counter::increment(): m_nr = %d\n", this, m_nr.load());
 #else
-            print(PRI2, "%p: when_all_counter::increment(): m_nr = %d\n", this, m_nr);
+            clprint(PRI2, "%p: when_all_counter::increment(): m_nr = %d\n", this, m_nr);
 #endif
             ++m_nr;
         }
@@ -78,13 +79,13 @@ namespace corolib
         std::coroutine_handle<> completed()
         {
 #if USE_IN_MT_APPS
-            print(PRI2, "%p: when_all_counter::completed(): m_nr = %d\n", this, m_nr.load());
+            clprint(PRI2, "%p: when_all_counter::completed(): m_nr = %d\n", this, m_nr.load());
 #else
-            print(PRI2, "%p: when_all_counter::completed(): m_nr = %d\n", this, m_nr);
+            clprint(PRI2, "%p: when_all_counter::completed(): m_nr = %d\n", this, m_nr);
 #endif
             if (--m_nr == 0)
             {
-                print(PRI2, "%p: when_all_counter::completed(): all replies received\n", this);
+                clprint(PRI2, "%p: when_all_counter::completed(): all replies received\n", this);
                 return m_awaiting;
             }
             return std::noop_coroutine();

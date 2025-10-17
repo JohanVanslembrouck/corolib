@@ -2,7 +2,7 @@
  *  Filename: tracker.h
  *  Description:
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)/
+ *  Author: Johan Vanslembrouck
  */
 
 #ifndef _TRACKER_H_

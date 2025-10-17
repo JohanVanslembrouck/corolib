@@ -18,7 +18,7 @@
  * More flexible mechanisms are possible because the array size limits the number of operations 
  * that can be active at any moment: its size may be too big or too small.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _COMMSERVICE_H_
@@ -29,6 +29,7 @@
 #include <memory>
 #include <assert.h>
 
+#include "print.h"
 #include "async_operation.h"
 
 namespace corolib
@@ -97,7 +98,7 @@ namespace corolib
         template<typename TYPE>
         void completionHandler(int idx, TYPE in)
         {
-            print(PRI2, "%p: CommService::completionHandler(idx = %d, in)\n", this, idx);
+            clprint(PRI2, "%p: CommService::completionHandler(idx = %d, in)\n", this, idx);
 
             async_operation_base* om_async_operation = get_async_operation(idx);
             
@@ -107,29 +108,29 @@ namespace corolib
         template<typename TYPE>
         void completionHandler(async_operation_base* om_async_operation, TYPE in)
         {
-            print(PRI2, "%p: CommService::completionHandler(om_async_operation = %p)\n", this, om_async_operation);
+            clprint(PRI2, "%p: CommService::completionHandler(om_async_operation = %p)\n", this, om_async_operation);
 
             async_operation<TYPE>* om_async_operation_t =
                 static_cast<async_operation<TYPE>*>(om_async_operation);
 
             if (om_async_operation_t)
             {
-                print(PRI2, "%p: CommService::completionHandler(om_async_operation = %p): om_async_operation_t->set_result(in)\n", this, om_async_operation_t);
+                clprint(PRI2, "%p: CommService::completionHandler(om_async_operation = %p): om_async_operation_t->set_result(in)\n", this, om_async_operation_t);
                 om_async_operation_t->set_result(in);
-                print(PRI2, "%p: CommService::completionHandler(om_async_operation = %p): om_async_operation_t->completed()\n", this, om_async_operation_t);
+                clprint(PRI2, "%p: CommService::completionHandler(om_async_operation = %p): om_async_operation_t->completed()\n", this, om_async_operation_t);
                 om_async_operation_t->completed();
             }
             else
             {
                 // This can occur when the async_operation_base has gone out of scope.
-                print(PRI1, "%p: CommService::completionHandler(om_async_operation = %p): Warning: om_async_operation_t == nullptr\n", this, om_async_operation_t);
+                clprint(PRI1, "%p: CommService::completionHandler(om_async_operation = %p): Warning: om_async_operation_t == nullptr\n", this, om_async_operation_t);
             }
         }
 
         template<typename TYPE>
         void completionHandler_rmc(int idx, TYPE in)
         {
-            print(PRI2, "%p: CommService::completionHandler_rmc(idx = %d, in)\n", this, idx);
+            clprint(PRI2, "%p: CommService::completionHandler_rmc(idx = %d, in)\n", this, idx);
 
             async_operation_base* om_async_operation = get_async_operation(idx);
 
@@ -139,22 +140,22 @@ namespace corolib
         template<typename TYPE>
         void completionHandler_rmc(async_operation_base* om_async_operation, TYPE in)
         {
-            print(PRI2, "%p: CommService::completionHandler_rmc(om_async_operation = %p)\n", this, om_async_operation);
+            clprint(PRI2, "%p: CommService::completionHandler_rmc(om_async_operation = %p)\n", this, om_async_operation);
 
             async_operation_rmc<TYPE>* om_async_operation_t =
                 static_cast<async_operation_rmc<TYPE>*>(om_async_operation);
 
             if (om_async_operation_t)
             {
-                print(PRI2, "%p: CommService::completionHandler_rmc(om_async_operation = %p): om_async_operation_t->set_result(in)\n", this, om_async_operation_t);
+                clprint(PRI2, "%p: CommService::completionHandler_rmc(om_async_operation = %p): om_async_operation_t->set_result(in)\n", this, om_async_operation_t);
                 om_async_operation_t->set_result(in);
-                print(PRI2, "%p: CommService::completionHandler_rmc(om_async_operation = %p): om_async_operation_t->completed()\n", this, om_async_operation_t);
+                clprint(PRI2, "%p: CommService::completionHandler_rmc(om_async_operation = %p): om_async_operation_t->completed()\n", this, om_async_operation_t);
                 om_async_operation_t->completed();
             }
             else
             {
                 // This can occur when the async_operation_base has gone out of scope.
-                print(PRI1, "%p: CommService::completionHandler_rmc(om_async_operation = %p): Warning: om_async_operation_t == nullptr\n", this, om_async_operation_t);
+                clprint(PRI1, "%p: CommService::completionHandler_rmc(om_async_operation = %p): Warning: om_async_operation_t == nullptr\n", this, om_async_operation_t);
             }
         }
 
@@ -167,7 +168,7 @@ namespace corolib
           */ 
         void completionHandler_v(int idx)
         {
-            print(PRI2, "%p: CommService::completionHandler_v(idx = %d)\n", this, idx);
+            clprint(PRI2, "%p: CommService::completionHandler_v(idx = %d)\n", this, idx);
 
             async_operation_base* om_async_operation = get_async_operation(idx);
             
@@ -176,26 +177,26 @@ namespace corolib
         
         void completionHandler_v(async_operation_base* om_async_operation)
         {
-            print(PRI2, "%p: CommService::completionHandler_v(om_async_operation = %p)\n", this, om_async_operation);
+            clprint(PRI2, "%p: CommService::completionHandler_v(om_async_operation = %p)\n", this, om_async_operation);
 
             async_operation<void>* om_async_operation_t =
                 static_cast<async_operation<void>*>(om_async_operation);
 
             if (om_async_operation_t)
             {
-                print(PRI2, "%p: CommService::completionHandler_v(om_async_operation = %p): om_async_operation_t->completed()\n", this, om_async_operation_t);
+                clprint(PRI2, "%p: CommService::completionHandler_v(om_async_operation = %p): om_async_operation_t->completed()\n", this, om_async_operation_t);
                 om_async_operation_t->completed();
             }
             else
             {
                 // This can occur when the async_operation_base has gone out of scope.
-                print(PRI1, "%p: CommService::completionHandler_v(om_async_operation = %p): Warning: om_async_operation_t == nullptr\n", this, om_async_operation);
+                clprint(PRI1, "%p: CommService::completionHandler_v(om_async_operation = %p): Warning: om_async_operation_t == nullptr\n", this, om_async_operation);
             }
         }
 
         void completionHandler_v_rmc(int idx)
         {
-            print(PRI2, "%p: CommService::completionHandler_v_rmc(idx = %d)\n", this, idx);
+            clprint(PRI2, "%p: CommService::completionHandler_v_rmc(idx = %d)\n", this, idx);
 
             async_operation_base* om_async_operation = get_async_operation(idx);
 
@@ -204,20 +205,20 @@ namespace corolib
 
         void completionHandler_v_rmc(async_operation_base* om_async_operation)
         {
-            print(PRI2, "%p: CommService::completionHandler_v_rmc(om_async_operation = %p)\n", this, om_async_operation);
+            clprint(PRI2, "%p: CommService::completionHandler_v_rmc(om_async_operation = %p)\n", this, om_async_operation);
 
             async_operation_rmc<void>* om_async_operation_t =
                 static_cast<async_operation_rmc<void>*>(om_async_operation);
 
             if (om_async_operation_t)
             {
-                print(PRI2, "%p: CommService::completionHandler_v_rmc(om_async_operation = %p): om_async_operation_t->completed()\n", this, om_async_operation_t);
+                clprint(PRI2, "%p: CommService::completionHandler_v_rmc(om_async_operation = %p): om_async_operation_t->completed()\n", this, om_async_operation_t);
                 om_async_operation_t->completed();
             }
             else
             {
                 // This can occur when the async_operation_base has gone out of scope.
-                print(PRI1, "%p: CommService::completionHandler_v_rmc(om_async_operation = %p): Warning: om_async_operation_t == nullptr\n", this, om_async_operation);
+                clprint(PRI1, "%p: CommService::completionHandler_v_rmc(om_async_operation = %p): Warning: om_async_operation_t == nullptr\n", this, om_async_operation);
             }
         }
 
@@ -235,7 +236,7 @@ namespace corolib
         template<typename TYPE>
         void completionHandler_ts(const int idx, std::chrono::high_resolution_clock::time_point start_time, TYPE in)
         {
-            print(PRI2, "%p: CommService::completionHandler_ts(idx = %d)\n", this, idx);
+            clprint(PRI2, "%p: CommService::completionHandler_ts(idx = %d)\n", this, idx);
 
             async_operation_info* info = get_async_operation_info(idx);
 
@@ -243,33 +244,33 @@ namespace corolib
             async_operation<TYPE>* om_async_operation_t =
                 static_cast<async_operation<TYPE>*>(om_async_operation);
 
-            print(PRI2, "%p: CommService::completionHandler_ts(idx = %d): om_async_operation_t = %p\n", this, idx, om_async_operation_t);
+            clprint(PRI2, "%p: CommService::completionHandler_ts(idx = %d): om_async_operation_t = %p\n", this, idx, om_async_operation_t);
 
             if (om_async_operation_t)
             {
                 if (info->start == start_time)
                 {
-                    print(PRI2, "%p: CommService::completionHandler_ts(idx = %d): om_async_operation_t->set_result(in)\n", this, idx);
+                    clprint(PRI2, "%p: CommService::completionHandler_ts(idx = %d): om_async_operation_t->set_result(in)\n", this, idx);
                     om_async_operation_t->set_result(in);
-                    print(PRI2, "%p: CommService::completionHandler_ts(idx = %d): om_async_operation_t->completed()\n", this, idx);
+                    clprint(PRI2, "%p: CommService::completionHandler_ts(idx = %d): om_async_operation_t->completed()\n", this, idx);
                     om_async_operation_t->completed();
                 }
                 else
                 {
-                    print(PRI1, "%p: CommService::completionHandler_ts(idx = %d): Warning: entry already taken by other operation\n", this, idx);
+                    clprint(PRI1, "%p: CommService::completionHandler_ts(idx = %d): Warning: entry already taken by other operation\n", this, idx);
                 }
             }
             else
             {
                 // This can occur when the async_operation_base has gone out of scope.
-                print(PRI1, "%p: CommService::completionHandler_ts(idx = %d): Warning: om_async_operation_t == nullptr\n", this, idx);
+                clprint(PRI1, "%p: CommService::completionHandler_ts(idx = %d): Warning: om_async_operation_t == nullptr\n", this, idx);
             }
         }
 
         template<typename TYPE>
         void completionHandler_ts_rmc(const int idx, std::chrono::high_resolution_clock::time_point start_time, TYPE in)
         {
-            print(PRI2, "%p: CommService::completionHandler_ts_rmc(idx = %d)\n", this, idx);
+            clprint(PRI2, "%p: CommService::completionHandler_ts_rmc(idx = %d)\n", this, idx);
 
             async_operation_info* info = get_async_operation_info(idx);
 
@@ -277,26 +278,26 @@ namespace corolib
             async_operation_rmc<TYPE>* om_async_operation_t =
                 static_cast<async_operation_rmc<TYPE>*>(om_async_operation);
 
-            print(PRI2, "%p: CommService::completionHandler_ts_rmc(idx = %d): om_async_operation_t = %p\n", this, idx, om_async_operation_t);
+            clprint(PRI2, "%p: CommService::completionHandler_ts_rmc(idx = %d): om_async_operation_t = %p\n", this, idx, om_async_operation_t);
 
             if (om_async_operation_t)
             {
                 if (info->start == start_time)
                 {
-                    print(PRI2, "%p: CommService::completionHandler_ts_rmc(idx = %d): om_async_operation_t->set_result(in)\n", this, idx);
+                    clprint(PRI2, "%p: CommService::completionHandler_ts_rmc(idx = %d): om_async_operation_t->set_result(in)\n", this, idx);
                     om_async_operation_t->set_result(in);
-                    print(PRI2, "%p: CommService::completionHandler_ts_rmc(idx = %d): om_async_operation_t->completed()\n", this, idx);
+                    clprint(PRI2, "%p: CommService::completionHandler_ts_rmc(idx = %d): om_async_operation_t->completed()\n", this, idx);
                     om_async_operation_t->completed();
                 }
                 else
                 {
-                    print(PRI1, "%p: CommService::completionHandler_ts_rmc(idx = %d): Warning: entry already taken by other operation\n", this, idx);
+                    clprint(PRI1, "%p: CommService::completionHandler_ts_rmc(idx = %d): Warning: entry already taken by other operation\n", this, idx);
                 }
             }
             else
             {
                 // This can occur when the async_operation_base has gone out of scope.
-                print(PRI1, "%p: CommService::completionHandler_ts_rmc(idx = %d): Warning: om_async_operation_t == nullptr\n", this, idx);
+                clprint(PRI1, "%p: CommService::completionHandler_ts_rmc(idx = %d): Warning: om_async_operation_t == nullptr\n", this, idx);
             }
         }
 
@@ -312,7 +313,7 @@ namespace corolib
           */ 
         void completionHandler_ts_v(int idx, std::chrono::high_resolution_clock::time_point start_time)
         {
-            print(PRI2, "%p: CommService::completionHandler_ts_v(idx = %d)\n", this, idx);
+            clprint(PRI2, "%p: CommService::completionHandler_ts_v(idx = %d)\n", this, idx);
 
             async_operation_info* info = get_async_operation_info(idx);
 
@@ -320,30 +321,30 @@ namespace corolib
             async_operation<void>* om_async_operation_t =
                 static_cast<async_operation<void>*>(om_async_operation);
 
-            print(PRI2, "%p: CommService::completionHandler_ts_v(idx = %d): om_async_operation = %p\n", this, idx, om_async_operation);
+            clprint(PRI2, "%p: CommService::completionHandler_ts_v(idx = %d): om_async_operation = %p\n", this, idx, om_async_operation);
 
             if (om_async_operation_t)
             {
                 if (info->start == start_time)
                 {
-                    print(PRI2, "%p: CommService::completionHandler_ts_v(idx = %d): om_async_operation_t->completed()\n", this, idx);
+                    clprint(PRI2, "%p: CommService::completionHandler_ts_v(idx = %d): om_async_operation_t->completed()\n", this, idx);
                     om_async_operation_t->completed();
                 }
                 else
                 {
-                    print(PRI2, "%p: CommService::completionHandler_ts_v(idx = %d): Warning: entry already taken by other operation\n", this, idx);
+                    clprint(PRI2, "%p: CommService::completionHandler_ts_v(idx = %d): Warning: entry already taken by other operation\n", this, idx);
                 }
             }
             else
             {
                 // This can occur when the async_operation_base has gone out of scope.
-                print(PRI1, "%p: CommService::completionHandler_ts_v(idx = %d): Warning: om_async_operation_t == nullptr\n", this, idx);
+                clprint(PRI1, "%p: CommService::completionHandler_ts_v(idx = %d): Warning: om_async_operation_t == nullptr\n", this, idx);
             }
         }
 
         void completionHandler_ts_v_rmc(int idx, std::chrono::high_resolution_clock::time_point start_time)
         {
-            print(PRI2, "%p: CommService::completionHandler_ts_v_rmc(idx = %d)\n", this, idx);
+            clprint(PRI2, "%p: CommService::completionHandler_ts_v_rmc(idx = %d)\n", this, idx);
 
             async_operation_info* info = get_async_operation_info(idx);
 
@@ -351,24 +352,24 @@ namespace corolib
             async_operation_rmc<void>* om_async_operation_t =
                 static_cast<async_operation_rmc<void>*>(om_async_operation);
 
-            print(PRI2, "%p: CommService::completionHandler_ts_v_rmc(idx = %d): om_async_operation = %p\n", this, idx, om_async_operation);
+            clprint(PRI2, "%p: CommService::completionHandler_ts_v_rmc(idx = %d): om_async_operation = %p\n", this, idx, om_async_operation);
 
             if (om_async_operation_t)
             {
                 if (info->start == start_time)
                 {
-                    print(PRI2, "%p: CommService::completionHandler_ts_v_rmc(idx = %d): om_async_operation_t->completed()\n", this, idx);
+                    clprint(PRI2, "%p: CommService::completionHandler_ts_v_rmc(idx = %d): om_async_operation_t->completed()\n", this, idx);
                     om_async_operation_t->completed();
                 }
                 else
                 {
-                    print(PRI2, "%p: CommService::completionHandler_ts_v_rmc(idx = %d): Warning: entry already taken by other operation\n", this, idx);
+                    clprint(PRI2, "%p: CommService::completionHandler_ts_v_rmc(idx = %d): Warning: entry already taken by other operation\n", this, idx);
                 }
             }
             else
             {
                 // This can occur when the async_operation_base has gone out of scope.
-                print(PRI1, "%p: CommService::completionHandler_ts_v_rmc(idx = %d): Warning: om_async_operation_t == nullptr\n", this, idx);
+                clprint(PRI1, "%p: CommService::completionHandler_ts_v_rmc(idx = %d): Warning: om_async_operation_t == nullptr\n", this, idx);
             }
         }
 

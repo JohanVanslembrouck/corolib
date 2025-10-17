@@ -18,7 +18,7 @@
  *    the application has to call co_await on the coroutine return object to enter the user-written part of the coroutine.
  * 
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
  /**
@@ -198,12 +198,12 @@ namespace corolib
             , m_ready{completion_status::INITIAL}
             , m_wait_for_semaphore_release{false}
         {
-            print(PRI2, "%p: result_t::result_t();\n", this);
+            clprint(PRI2, "%p: result_t::result_t();\n", this);
         }
 
         ~result_t()
         {
-            print(PRI2, "%p: result_t::~result_t();\n", this);
+            clprint(PRI2, "%p: result_t::~result_t();\n", this);
 
             m_value = {};
             m_exception = nullptr;
@@ -219,7 +219,7 @@ namespace corolib
             , m_ready(other.m_ready)
             , m_wait_for_semaphore_release(other.m_wait_for_semaphore_release)
         {
-            print(PRI2, "%p: result_t::result_t(result_t&& other);\n", this);
+            clprint(PRI2, "%p: result_t::result_t(result_t&& other);\n", this);
             other.m_exception = nullptr;
             other.m_ready = completion_status::INITIAL;
             other.m_wait_for_semaphore_release = false;
@@ -229,7 +229,7 @@ namespace corolib
  
         result_t& operator = (result_t&& other) noexcept
         {
-            print(PRI2, "%p: result_t::operator = (result_t&& other);\n", this);
+            clprint(PRI2, "%p: result_t::operator = (result_t&& other);\n", this);
             m_value = other.m_value;
             m_exception = other.m_exception;
             m_ready = other.m_ready;
@@ -242,14 +242,14 @@ namespace corolib
 
         void set_value(const TYPE& value)
         {
-            print(PRI2, "%p: result_t::set_value(const TYPE& value);\n", this);
+            clprint(PRI2, "%p: result_t::set_value(const TYPE& value);\n", this);
             m_value = value;
             
 #if USE_IN_MT_APPS
             completion_status expected = completion_status::INITIAL;
             if (!m_ready.compare_exchange_strong(expected, completion_status::COMPLETED)) {
                 if (expected != completion_status::WAIT_FOR_SEMAPHORE_RELEASE)
-                    print(PRI1, "%p: result_t::set_value(const TYPE& value): expected = %d != completion_status::WAIT_FOR_SEMAPHORE_RELEASE\n", this);
+                    clprint(PRI1, "%p: result_t::set_value(const TYPE& value): expected = %d != completion_status::WAIT_FOR_SEMAPHORE_RELEASE\n", this);
                 //assert(expected == completion_status::WAIT_FOR_SEMAPHORE_RELEASE);
                 m_ready = completion_status::COMPLETED;
                 m_wait_for_semaphore_release = true;
@@ -290,7 +290,7 @@ namespace corolib
         bool is_ready()
         {
             bool ready = (m_ready == completion_status::COMPLETED);
-            print(PRI2, "%p: result_t::is_ready(): return %d;\n", this, ready);
+            clprint(PRI2, "%p: result_t::is_ready(): return %d;\n", this, ready);
             return ready;
         }
 
@@ -309,7 +309,7 @@ namespace corolib
             }
             else {
                 if (expected != completion_status::COMPLETED)
-                    print(PRI1, "%p: result_t::wait_for_result(): expected = %d != completion_status::COMPLETED\n", this);
+                    clprint(PRI1, "%p: result_t::wait_for_result(): expected = %d != completion_status::COMPLETED\n", this);
                 assert(expected == completion_status::COMPLETED);
             }
 #else
@@ -321,26 +321,26 @@ namespace corolib
                 assert(m_ready == completion_status::COMPLETED);
             }
 #endif
-            print(PRI2, "%p: result_t::wait_for_result(): return %d;\n", this, wait);
+            clprint(PRI2, "%p: result_t::wait_for_result(): return %d;\n", this, wait);
             return wait;
         }
         
         TYPE retrieve_result()
         {
             if (m_ready == completion_status::INITIAL)
-                print(PRI1, "%p: result_t::retrieve_result(): m_ready == INITIAL!!!\n", this);
+                clprint(PRI1, "%p: result_t::retrieve_result(): m_ready == INITIAL!!!\n", this);
             if (m_exception != nullptr)
             {
-                print(PRI1, "%p: result_t::retrieve_result(): std::rethrow_exception(m_exception);\n", this);
+                clprint(PRI1, "%p: result_t::retrieve_result(): std::rethrow_exception(m_exception);\n", this);
                 std::rethrow_exception(m_exception);
             }
-            print(PRI2, "%p: result_t::retrieve_result(): return m_value;\n", this);
+            clprint(PRI2, "%p: result_t::retrieve_result(): return m_value;\n", this);
             return m_value;
         }
         
         bool wait_for_semaphore_release()
         {
-            print(PRI2, "%p: result_t::wait_for_semaphore_release(): return %d;\n", this, m_wait_for_semaphore_release);
+            clprint(PRI2, "%p: result_t::wait_for_semaphore_release(): return %d;\n", this, m_wait_for_semaphore_release);
             return m_wait_for_semaphore_release;
         }
         
@@ -378,7 +378,7 @@ namespace corolib
             , m_result{ }
 #endif
         {
-            print(PRI2, "%p: async_task_base::async_task_base(handle_type h): promise = %p\n", this, &m_coro_handle.promise());
+            clprint(PRI2, "%p: async_task_base::async_task_base(handle_type h): promise = %p\n", this, &m_coro_handle.promise());
 #if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
             m_coro_handle.promise().link_coroutine_object(this);
 #endif
@@ -407,7 +407,7 @@ namespace corolib
             , m_result{ std::move(other.m_result) }
 #endif
         {
-            print(PRI2, "%p: async_task_base::async_task_base(async_task_base&& other)\n", this);
+            clprint(PRI2, "%p: async_task_base::async_task_base(async_task_base&& other)\n", this);
             other.m_coro_handle = nullptr;
 #if USE_RESULT_FROM_COROUTINE_OBJECT
             other.m_result = { };
@@ -431,7 +431,7 @@ namespace corolib
                     m_coro_handle.destroy();    // Call "destroy" function
                 }
                 else {
-                    print(PRI1, "%p: async_task_base::destroy_coroutine_frame(): m_coro_handle.done() returned false\n", this);
+                    clprint(PRI1, "%p: async_task_base::destroy_coroutine_frame(): m_coro_handle.done() returned false\n", this);
                     ++tracker_obj.nr_dying_coroutines_handle_not_done;
                 }
             }
@@ -439,7 +439,7 @@ namespace corolib
 
         ~async_task_base()
         {
-            print(PRI2, "%p: async_task_base::~async_task_base()\n", this);
+            clprint(PRI2, "%p: async_task_base::~async_task_base()\n", this);
 #if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
             coroutine_destructor_admin();
 #endif
@@ -452,7 +452,7 @@ namespace corolib
 #else
         async_task_base& operator = (async_task_base&& other)
         {
-            print(PRI2, "%p: async_task_base::async_task_base = (async_task_base&& other)\n", this);
+            clprint(PRI2, "%p: async_task_base::async_task_base = (async_task_base&& other)\n", this);
             destroy_coroutine_frame();
             m_coro_handle = other.m_coro_handle;
 #if USE_RESULT_FROM_COROUTINE_OBJECT
@@ -477,7 +477,9 @@ namespace corolib
          */
         void baseStart()
         {
+            clprint(PRI2, "baseStart(): before m_coro_handle.resume();\n");
             m_coro_handle.resume();
+            clprint(PRI2, "baseStart(): after m_coro_handle.resume();\n");
         }
 
         /**
@@ -497,30 +499,30 @@ namespace corolib
          */
         TYPE get_result(bool waitIfNotReady = true)
         {
-            print(PRI2, "%p: async_task_base::get_result(%d)\n", this, waitIfNotReady);
+            clprint(PRI2, "%p: async_task_base::get_result(%d)\n", this, waitIfNotReady);
 #if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
             get_result_admin();
 #endif
 
             if (waitIfNotReady) {
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
-                print(PRI2, "%p: async_task_base::get_result(): m_coro_handle.promise().m_result.wait_for_result()\n", this);
+                clprint(PRI2, "%p: async_task_base::get_result(): m_coro_handle.promise().m_result.wait_for_result()\n", this);
                 if (m_coro_handle.promise().m_result.wait_for_result())
 #else
-                print(PRI2, "%p: async_task_base::get_result(): m_result.wait_for_result()\n", this);
+                clprint(PRI2, "%p: async_task_base::get_result(): m_result.wait_for_result()\n", this);
                 if (m_result.wait_for_result())
 #endif
                 {
-                    print(PRI2, "%p: async_task_base::get_result(): m_coro_handle.promise().m_sema.wait()\n", this);
+                    clprint(PRI2, "%p: async_task_base::get_result(): m_coro_handle.promise().m_sema.wait()\n", this);
                     m_coro_handle.promise().m_sema.wait();
                 }
             }
 
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
-            print(PRI2, "%p: async_task_base::get_result(): return m_coro_handle.promise().m_result.retrieve_result();\n", this);
+            clprint(PRI2, "%p: async_task_base::get_result(): return m_coro_handle.promise().m_result.retrieve_result();\n", this);
             return m_coro_handle.promise().m_result.retrieve_result();
 #else
-            print(PRI2, "%p: async_task_base::get_result(): return m_result.retrieve_result();\n", this);
+            clprint(PRI2, "%p: async_task_base::get_result(): return m_result.retrieve_result();\n", this);
             return m_result.retrieve_result();
 #endif
         }
@@ -534,7 +536,7 @@ namespace corolib
 #else
             ready = m_result.is_ready();
 #endif
-            print(PRI2, "%p: async_task_base::is_ready() returns %d\n", this, ready);
+            clprint(PRI2, "%p: async_task_base::is_ready() returns %d\n", this, ready);
             return ready;
         }
 
@@ -554,7 +556,7 @@ namespace corolib
          */
         void setCounter(when_all_counter* ctr) override
         {
-            print(PRI2, "%p: void m_async_task_base::setCounter(%p)\n", this, ctr);
+            clprint(PRI2, "%p: void m_async_task_base::setCounter(%p)\n", this, ctr);
             m_coro_handle.promise().m_ctr = ctr;
         }
 
@@ -564,7 +566,7 @@ namespace corolib
          */
         void setWaitAny(when_any_one* waitany) override
         {
-            print(PRI2, "%p: void m_async_task_base::setWaitAny(%p)\n", this, waitany);
+            clprint(PRI2, "%p: void m_async_task_base::setWaitAny(%p)\n", this, waitany);
             m_coro_handle.promise().m_waitany = waitany;
         }
 
@@ -582,7 +584,7 @@ namespace corolib
 
         void coroutine_destructor_admin()
         {
-            print(PRI2, "%p: async_task_base::coroutine_destructor_admin(): promise = %p (valid = %d)\n", 
+            clprint(PRI2, "%p: async_task_base::coroutine_destructor_admin(): promise = %p (valid = %d)\n", 
                         this, m_promise_type, m_promise_valid);
             if (m_promise_valid)
             {
@@ -601,14 +603,14 @@ namespace corolib
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
             if (!m_promise_valid)
             {
-                print(PRI1, "%p: async_task_base::get_result_admin(): promise %p invalid!!!\n", 
+                clprint(PRI1, "%p: async_task_base::get_result_admin(): promise %p invalid!!!\n", 
                             this, m_promise_type);
                 ++tracker_obj.nr_access_errors;
             }
 #else
             if (!m_promise_valid)
             {
-                print(PRI1, "%p: async_task_base::get_result_admin(): promise %p invalid!!!\n", 
+                clprint(PRI1, "%p: async_task_base::get_result_admin(): promise %p invalid!!!\n", 
                             this, m_promise_type);
             }
 #endif
@@ -627,12 +629,12 @@ namespace corolib
                 , m_result{ }
 #endif
             {
-                print(PRI2, "%p: async_task_base::promise_type::promise_type()\n", this);
+                clprint(PRI2, "%p: async_task_base::promise_type::promise_type()\n", this);
             }
 
             ~promise_type()
             {
-                print(PRI2, "%p: async_task_base::promise_type::~promise_type()\n", this);
+                clprint(PRI2, "%p: async_task_base::promise_type::~promise_type()\n", this);
 #if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
                 promise_destructor_admin();
 #endif
@@ -649,35 +651,36 @@ namespace corolib
              */
             void inform_interested_parties()
             {
-                print(PRI2, "%p: async_task_base::promise_type::inform_interested_parties():\n\tm_ctr = %p, m_waitany = %p, m_continuation = %p\n",
+                clprint(PRI2, "%p: async_task_base::promise_type::inform_interested_parties():\n"
+                              "\tm_ctr = %p, m_waitany = %p, m_continuation = %p\n",
                     this, m_ctr, m_waitany, m_continuation);
                 if (m_ctr)
                 {
-                    print(PRI2, "%p: async_task_base::promise_type::inform_interested_parties(): before m_ctr->completed();\n", this);
+                    clprint(PRI2, "%p: async_task_base::promise_type::inform_interested_parties(): before m_ctr->completed();\n", this);
                     m_continuation = m_ctr->completed();
-                    print(PRI2, "%p: async_task_base::promise_type::inform_interested_parties(): after m_ctr->completed();\n", this);
+                    clprint(PRI2, "%p: async_task_base::promise_type::inform_interested_parties(): after m_ctr->completed();\n", this);
                 }
                 else if (m_waitany)
                 {
-                    print(PRI2, "%p: async_task_base::promise_type::inform_interested_parties(): before m_waitany->completed();\n", this);
+                    clprint(PRI2, "%p: async_task_base::promise_type::inform_interested_parties(): before m_waitany->completed();\n", this);
                     m_continuation = m_waitany->completed();
-                    print(PRI2, "%p: async_task_base::promise_type::inform_interested_parties(): after m_waitany->completed();\n", this);
+                    clprint(PRI2, "%p: async_task_base::promise_type::inform_interested_parties(): after m_waitany->completed();\n", this);
                 }
                 else if (m_result.wait_for_semaphore_release())
                 {
-                    print(PRI2, "%p: async_task_base::promise_type::inform_interested_parties(): before m_sema.signal();\n", this);
+                    clprint(PRI2, "%p: async_task_base::promise_type::inform_interested_parties(): before m_sema.signal();\n", this);
                     m_sema.signal();
-                    print(PRI2, "%p: async_task_base::promise_type::inform_interested_parties(): after m_sema.signal();\n", this);
+                    clprint(PRI2, "%p: async_task_base::promise_type::inform_interested_parties(): after m_sema.signal();\n", this);
                 }
             }
 
             void return_value(TYPE v)
             {
-                print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): begin\n", this);
+                clprint(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): begin\n", this);
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
                 m_result.set_value(v);
 #else
-                print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): m_coroutine_object = %p (m_coroutine_valid = %d)\n",
+                clprint(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): m_coroutine_object = %p (m_coroutine_valid = %d)\n",
                     this, m_coroutine_object, m_coroutine_valid);
                 if (m_coroutine_valid)
                 {
@@ -685,12 +688,12 @@ namespace corolib
                 }
 #endif
                 inform_interested_parties();
-                print(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): end\n", this);
+                clprint(PRI2, "%p: async_task_base::promise_type::return_value(TYPE v): end\n", this);
             }
 
             void unhandled_exception()
             {
-                print(PRI1, "%p: async_task_base::promise_type::unhandled_exception()\n", this);
+                clprint(PRI1, "%p: async_task_base::promise_type::unhandled_exception()\n", this);
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
                 m_result.set_exception(std::current_exception());
 #else
@@ -723,7 +726,8 @@ namespace corolib
 
             void promise_destructor_admin()
             {
-                print(PRI2, "%p: async_task_base::promise_type::promise_destructor_admin(): m_coroutine_object = %p (m_coroutine_valid = %d)\n", 
+                clprint(PRI2, "%p: async_task_base::promise_type::promise_destructor_admin():\n"
+                              "\tm_coroutine_object = %p (m_coroutine_valid = %d)\n", 
                             this, m_coroutine_object, m_coroutine_valid);
                 if (m_coroutine_valid)
                 {
@@ -781,7 +785,7 @@ namespace corolib
         async_task(handle_type h)
             : async_task_base<TYPE>(h)
         {
-            print(PRI2, "%p: async_task<TYPE>::async_task(handle_type h)\n", this);
+            clprint(PRI2, "%p: async_task<TYPE>::async_task(handle_type h)\n", this);
         }
 
         /**
@@ -815,19 +819,19 @@ namespace corolib
 #else
                     const bool ready = m_async_task.m_result.is_ready();
 #endif
-                    print(PRI2, "%p: async_task<TYPE>::await_ready(): return %d;\n", this, ready);
+                    clprint(PRI2, "%p: async_task<TYPE>::await_ready(): return %d;\n", this, ready);
                     return ready;
                 }
 
                 void await_suspend(std::coroutine_handle<> h)
                 {
-                    print(PRI2, "%p: async_task<TYPE>::await_suspend(std::coroutine_handle<> h)\n", this);
+                    clprint(PRI2, "%p: async_task<TYPE>::await_suspend(std::coroutine_handle<> h)\n", this);
                     m_async_task.m_coro_handle.promise().m_continuation = h;
                 }
 
                 TYPE await_resume()
                 {
-                    print(PRI2, "%p: async_task<TYPE>::await_resume()\n", this);
+                    clprint(PRI2, "%p: async_task<TYPE>::await_resume()\n", this);
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
                     const TYPE r = m_async_task.m_coro_handle.promise().get_result_promise();
 #else
@@ -849,13 +853,13 @@ namespace corolib
             
             auto get_return_object()
             {
-                print(PRI2, "%p: async_task<TYPE>::promise_type::get_return_object()\n", this);
+                clprint(PRI2, "%p: async_task<TYPE>::promise_type::get_return_object()\n", this);
                 return async_task<TYPE>{handle_type::from_promise(*this)};
             }
 
             auto initial_suspend()
             {
-                print(PRI2, "%p: async_task<TYPE>::promise_type::initial_suspend()\n", this);
+                clprint(PRI2, "%p: async_task<TYPE>::promise_type::initial_suspend()\n", this);
                 return std::suspend_never{};
             }
 
@@ -863,21 +867,23 @@ namespace corolib
             {
                 bool await_ready() noexcept
                 {
-                    print(PRI2, "%p: async_task<TYPE>::promise_type::final_awaiter0::await_ready()\n", this);
+                    clprint(PRI2, "%p: async_task<TYPE>::promise_type::final_awaiter0::await_ready()\n", this);
                     return false;
                 }
 
                 void await_suspend(handle_type_own h) noexcept
                 {
-                    print(PRI2, "%p: async_task<TYPE>::promise_type::final_awaiter0::await_suspend()\n\th.promise().m_continuation = %p\n",
-                        this, h.promise().m_continuation);
+                    clprint(PRI2, "%p: async_task<TYPE>::promise_type::final_awaiter0::await_suspend()\n"
+                                  "\th.promise().m_continuation = %p\n"
+                                  "\t(will resume if != nullptr)\n",
+                                this, h.promise().m_continuation);
                     if (h.promise().m_continuation)
                         h.promise().m_continuation.resume();
                 }
 
                 void await_resume() noexcept
                 {
-                    print(PRI2, "%p: async_task<TYPE>::promise_type::final_awaiter2::await_resume()\n", this);
+                    clprint(PRI2, "%p: async_task<TYPE>::promise_type::final_awaiter2::await_resume()\n", this);
                 }
             };
 
@@ -885,14 +891,16 @@ namespace corolib
             {
                 bool await_ready() const noexcept
                 {
-                    print(PRI2, "%p: async_task<TYPE>::promise_type::final_awaiter1::await_ready()\n", this);
+                    clprint(PRI2, "%p: async_task<TYPE>::promise_type::final_awaiter1::await_ready()\n", this);
                     return false;
                 }
 
                 bool await_suspend(handle_type_own h) noexcept
                 {
-                    print(PRI2, "%p: async_task<TYPE>::promise_type::final_awaiter1::await_suspend()\n\th.promise().m_continuation = %p\n",
-                        this, h.promise().m_continuation);
+                    clprint(PRI2, "%p: async_task<TYPE>::promise_type::final_awaiter1::await_suspend()\n"
+                                  "\th.promise().m_continuation = %p\n"
+                                  "\t(will resume if != nullptr)\n",
+                                this, h.promise().m_continuation);
                     if (h.promise().m_continuation)
                         h.promise().m_continuation.resume();
                     return true;
@@ -900,7 +908,7 @@ namespace corolib
                 
                 void await_resume() noexcept
                 {
-                    print(PRI2, "%p: async_task<TYPE>::promise_type::final_awaiter1::await_resume()\n", this);
+                    clprint(PRI2, "%p: async_task<TYPE>::promise_type::final_awaiter1::await_resume()\n", this);
                 }
             };
 
@@ -908,13 +916,15 @@ namespace corolib
             {
                 bool await_ready() noexcept
                 {
-                    print(PRI2, "%p: async_task<TYPE>::promise_type::final_awaiter2::await_ready()\n", this);
+                    clprint(PRI2, "%p: async_task<TYPE>::promise_type::final_awaiter2::await_ready()\n", this);
                     return false;
                 }
 
                 std::coroutine_handle<> await_suspend(handle_type_own h) noexcept
                 {
-                    print(PRI2, "%p: async_task<TYPE>::promise_type::final_awaiter2::await_suspend()\n\th.promise().m_continuation = %p\n",
+                    clprint(PRI2, "%p: async_task<TYPE>::promise_type::final_awaiter2::await_suspend()\n"
+                                  "\th.promise().m_continuation = %p\n"
+                                  "\t(will resume if != nullptr)\n",
                         this, h.promise().m_continuation);
                     if (h.promise().m_continuation)
                         return h.promise().m_continuation;
@@ -924,26 +934,26 @@ namespace corolib
 
                 void await_resume() noexcept
                 {
-                    print(PRI2, "%p: async_task<TYPE>::promise_type::final_awaiter2::await_resume()\n", this);
+                    clprint(PRI2, "%p: async_task<TYPE>::promise_type::final_awaiter2::await_resume()\n", this);
                 }
             };
 
 #if USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL
             auto final_suspend() noexcept
             {
-                print(PRI2, "%p: async_task<TYPE>::promise_type::final_suspend()\n", this);
+                clprint(PRI2, "%p: async_task<TYPE>::promise_type::final_suspend()\n", this);
                 return final_awaiter1{};
             }
 #elif USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_HANDLE
             auto final_suspend() noexcept
             {
-                print(PRI2, "%p: async_task<TYPE>::promise_type::final_suspend()\n", this);
+                clprint(PRI2, "%p: async_task<TYPE>::promise_type::final_suspend()\n", this);
                 return final_awaiter2{};
             }
 #else
             auto final_suspend() noexcept
             {
-                print(PRI2, "%p: async_task<TYPE>::promise_type::final_suspend()\n", this);
+                clprint(PRI2, "%p: async_task<TYPE>::promise_type::final_suspend()\n", this);
                 return final_awaiter0{};
             }
 #endif
@@ -970,7 +980,7 @@ namespace corolib
         async_ltask(handle_type h)
             : async_task_base<TYPE>(h)
         {
-            print(PRI2, "%p: async_ltask<TYPE>::async_task(handle_type h)\n", this);
+            clprint(PRI2, "%p: async_ltask<TYPE>::async_task(handle_type h)\n", this);
         }
 
         /**
@@ -1005,21 +1015,22 @@ namespace corolib
 #else
                     const bool ready = m_async_ltask.m_result.is_ready();
 #endif
-                    print(PRI2, "%p: m_async_ltask<TYPE>::await_ready(): return %d;\n", this, ready);
+                    clprint(PRI2, "%p: m_async_ltask<TYPE>::await_ready(): return %d;\n", this, ready);
                     return ready;
                 }
 
                 void await_suspend(std::coroutine_handle<> h)
                 {
-                    print(PRI2, "%p: m_async_ltask<TYPE>::await_suspend(std::coroutine_handle<> h)\n", this);
+                    clprint(PRI2, "%p: m_async_ltask<TYPE>::await_suspend(std::coroutine_handle<> h = %p)\n", this, h);
                     m_async_ltask.m_coro_handle.promise().m_continuation = h;
-
+                    clprint(PRI2, "%p: m_async_ltask<TYPE>::await_suspend(std::coroutine_handle<> h)\n"
+                                  "\tm_async_ltask.m_coro_handle.resume(); \n", this);
                     m_async_ltask.m_coro_handle.resume();
                 }
 
                 TYPE await_resume()
                 {
-                    print(PRI2, "%p: m_async_ltask<TYPE>::await_resume()\n", this);
+                    clprint(PRI2, "%p: m_async_ltask<TYPE>::await_resume()\n", this);
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
                     const TYPE r = m_async_ltask.m_coro_handle.promise().get_result_promise();
 #else
@@ -1041,13 +1052,13 @@ namespace corolib
  
             auto get_return_object()
             {
-                print(PRI2, "%p: async_ltask<TYPE>::promise_type::get_return_object()\n", this);
+                clprint(PRI2, "%p: async_ltask<TYPE>::promise_type::get_return_object()\n", this);
                 return async_ltask<TYPE>{handle_type::from_promise(*this)};
             }
 
             auto initial_suspend()
             {
-                print(PRI2, "%p: async_ltask<TYPE>::promise_type::initial_suspend()\n", this);
+                clprint(PRI2, "%p: async_ltask<TYPE>::promise_type::initial_suspend()\n", this);
                 return std::suspend_always{};
             }
 
@@ -1055,13 +1066,15 @@ namespace corolib
             {
                 bool await_ready() noexcept
                 {
-                    print(PRI2, "%p: async_ltask<TYPE>::promise_type::final_awaiter0::await_ready()\n", this);
+                    clprint(PRI2, "%p: async_ltask<TYPE>::promise_type::final_awaiter0::await_ready()\n", this);
                     return false;
                 }
 
                 void await_suspend(handle_type_own h) noexcept
                 {
-                    print(PRI2, "%p: async_ltask<TYPE>::promise_type::final_awaiter0::await_suspend()\n\th.promise().m_continuation = %p\n",
+                    clprint(PRI2, "%p: async_ltask<TYPE>::promise_type::final_awaiter0::await_suspend()\n"
+                                  "\th.promise().m_continuation = %p\n"
+                                  "\t(will resume if != nullptr)\n",
                         this, h.promise().m_continuation);
                     if (h.promise().m_continuation)
                         h.promise().m_continuation.resume();
@@ -1069,7 +1082,7 @@ namespace corolib
 
                 void await_resume() noexcept
                 {
-                    print(PRI2, "%p: async_ltask<TYPE>::promise_type::final_awaiter0::await_resume()\n", this);
+                    clprint(PRI2, "%p: async_ltask<TYPE>::promise_type::final_awaiter0::await_resume()\n", this);
                 }
             };
 
@@ -1077,14 +1090,16 @@ namespace corolib
             {
                 bool await_ready() const noexcept
                 {
-                    print(PRI2, "%p: async_ltask<TYPE>::promise_type::final_awaiter1::await_ready()\n", this);
+                    clprint(PRI2, "%p: async_ltask<TYPE>::promise_type::final_awaiter1::await_ready()\n", this);
                     return false;
                 }
 
                 bool await_suspend(handle_type_own h) noexcept
                 {
-                    print(PRI2, "%p: async_ltask<TYPE>::promise_type::final_awaiter1::await_suspend()\n\th.promise().m_continuation = %p\n",
-                        this, h.promise().m_continuation);
+                    clprint(PRI2, "%p: async_ltask<TYPE>::promise_type::final_awaiter1::await_suspend()\n"
+                                  "\th.promise().m_continuation = %p\n" 
+                                  "\t(will resume if != nullptr)\n",
+                                this, h.promise().m_continuation);
                     if (h.promise().m_continuation)
                         h.promise().m_continuation.resume();
                     return true;
@@ -1092,7 +1107,7 @@ namespace corolib
 
                 void await_resume() noexcept
                 {
-                    print(PRI2, "%p: async_ltask<TYPE>::promise_type::final_awaiter1::await_resume()\n", this);
+                    clprint(PRI2, "%p: async_ltask<TYPE>::promise_type::final_awaiter1::await_resume()\n", this);
                 }
             };
 
@@ -1100,14 +1115,16 @@ namespace corolib
             {
                 bool await_ready() noexcept
                 {
-                    print(PRI2, "%p: async_ltask<TYPE>::promise_type::final_awaiter2::await_ready()\n", this);
+                    clprint(PRI2, "%p: async_ltask<TYPE>::promise_type::final_awaiter2::await_ready()\n", this);
                     return false;
                 }
 
                 std::coroutine_handle<> await_suspend(handle_type_own h) noexcept
                 {
-                    print(PRI2, "%p: async_ltask<TYPE>::promise_type::final_awaiter2::await_suspend()\n\th.promise().m_continuation = %p\n",
-                        this,  h.promise().m_continuation);
+                    clprint(PRI2, "%p: async_ltask<TYPE>::promise_type::final_awaiter2::await_suspend()\n"
+                                  "\th.promise().m_continuation = %p\n"
+                                  "\t(will resume if != nullptr)\n",
+                                this,  h.promise().m_continuation);
                     if (h.promise().m_continuation)
                         return h.promise().m_continuation;
                     else
@@ -1116,26 +1133,26 @@ namespace corolib
 
                 void await_resume() noexcept
                 {
-                    print(PRI2, "%p: async_ltask<TYPE>::promise_type::final_awaiter2::await_resume()\n", this);
+                    clprint(PRI2, "%p: async_ltask<TYPE>::promise_type::final_awaiter2::await_resume()\n", this);
                 }
             };
 
 #if USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL
             auto final_suspend() noexcept
             {
-                print(PRI2, "%p: async_task<TYPE>::promise_type::final_suspend()\n", this);
+                clprint(PRI2, "%p: async_task<TYPE>::promise_type::final_suspend()\n", this);
                 return final_awaiter1{};
             }
 #elif USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_HANDLE
             auto final_suspend() noexcept
             {
-                print(PRI2, "%p: async_task<TYPE>::promise_type::final_suspend()\n", this);
+                clprint(PRI2, "%p: async_task<TYPE>::promise_type::final_suspend()\n", this);
                 return final_awaiter2{};
             }
 #else
             auto final_suspend() noexcept
             {
-                print(PRI2, "%p: async_task<TYPE>::promise_type::final_suspend()\n", this);
+                clprint(PRI2, "%p: async_task<TYPE>::promise_type::final_suspend()\n", this);
                 return final_awaiter0{};
             }
 #endif
@@ -1165,7 +1182,7 @@ namespace corolib
             , m_result{ }
 #endif
         {
-            print(PRI2, "%p: async_task_base::async_task_base(handle_type h): promise = %p\n", this, &m_coro_handle.promise());
+            clprint(PRI2, "%p: async_task_base::async_task_base(handle_type h): promise = %p\n", this, &m_coro_handle.promise());
 #if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
             m_coro_handle.promise().link_coroutine_object(this);
 #endif
@@ -1194,7 +1211,7 @@ namespace corolib
             , m_result{ std::move(other.m_result) }
 #endif
         {
-            print(PRI2, "%p: async_task_void::async_task_void(async_task&& other)\n", this);
+            clprint(PRI2, "%p: async_task_void::async_task_void(async_task&& other)\n", this);
             other.m_coro_handle = nullptr;
 #if USE_RESULT_FROM_COROUTINE_OBJECT
             other.m_result = {};
@@ -1218,7 +1235,7 @@ namespace corolib
                     m_coro_handle.destroy();    // Call the "destroy" function
                 }
                 else {
-                    print(PRI1, "%p: async_task_void::~async_task_void(): m_coro_handle.done() returned false\n", this);
+                    clprint(PRI1, "%p: async_task_void::~async_task_void(): m_coro_handle.done() returned false\n", this);
                     ++tracker_obj.nr_dying_coroutines_handle_not_done;
                 }
             }
@@ -1226,7 +1243,7 @@ namespace corolib
 
         ~async_task_void()
         {
-            print(PRI2, "%p: async_task_void::~async_task_void()\n", this);
+            clprint(PRI2, "%p: async_task_void::~async_task_void()\n", this);
 #if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
             coroutine_destructor_admin();
 #endif
@@ -1239,7 +1256,7 @@ namespace corolib
 #else
         async_task_void& operator = (async_task_void&& other)
         {
-            print(PRI2, "%p: async_task_void::async_task_void = (async_task&& other)\n", this);
+            clprint(PRI2, "%p: async_task_void::async_task_void = (async_task&& other)\n", this);
             destroy_coroutine_frame();
             m_coro_handle = other.m_coro_handle;
 #if USE_RESULT_FROM_COROUTINE_OBJECT
@@ -1264,7 +1281,9 @@ namespace corolib
          */
         void baseStart()
         {
+            clprint(PRI2, "baseStart(): before m_coro_handle.resume();\n");
             m_coro_handle.resume();
+            clprint(PRI2, "baseStart(): after m_coro_handle.resume();\n");
         }
 
         /**
@@ -1276,17 +1295,17 @@ namespace corolib
          */
         void wait(bool waitIfNotReady = true)
         {
-            print(PRI2, "%p: async_task_void::wait(%d)\n", this, waitIfNotReady);
+            clprint(PRI2, "%p: async_task_void::wait(%d)\n", this, waitIfNotReady);
             if (waitIfNotReady) {
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
-                print(PRI2, "%p: async_task_base::wait(): m_coro_handle.promise().m_result.wait_for_result()\n", this);
+                clprint(PRI2, "%p: async_task_base::wait(): m_coro_handle.promise().m_result.wait_for_result()\n", this);
                 if (m_coro_handle.promise().m_result.wait_for_result())
 #else
-                print(PRI2, "%p: async_task_base::wait(): m_result.wait_for_result()\n", this);
+                clprint(PRI2, "%p: async_task_base::wait(): m_result.wait_for_result()\n", this);
                 if (m_result.wait_for_result())
 #endif
                 {
-                    print(PRI2, "%p: async_task_base::wait(): m_coro_handle.promise().m_sema.wait()\n", this);
+                    clprint(PRI2, "%p: async_task_base::wait(): m_coro_handle.promise().m_sema.wait()\n", this);
                     m_coro_handle.promise().m_sema.wait();
                 }
             }
@@ -1304,23 +1323,23 @@ namespace corolib
             ready_admin();
 #endif
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
-            print(PRI2, "%p: void async_task_void::is_ready() returns %d\n", this, m_coro_handle.promise().m_result.is_ready());
+            clprint(PRI2, "%p: void async_task_void::is_ready() returns %d\n", this, m_coro_handle.promise().m_result.is_ready());
             return m_coro_handle.promise().m_result.is_ready();
 #else
-            print(PRI2, "%p: void async_task_void::is_ready() returns %d\n", this, m_result.is_ready());
+            clprint(PRI2, "%p: void async_task_void::is_ready() returns %d\n", this, m_result.is_ready());
             return m_result.is_ready();
 #endif
         }
 
         void setCounter(when_all_counter* ctr) override
         {
-            print(PRI2, "%p: void async_task_void::setCounter(%p)\n", this, ctr);
+            clprint(PRI2, "%p: void async_task_void::setCounter(%p)\n", this, ctr);
             m_coro_handle.promise().m_ctr = ctr;
         }
 
         void setWaitAny(when_any_one* waitany) override
         {
-            print(PRI2, "%p: void async_task_void::setWaitAny(%p)\n", this, waitany);
+            clprint(PRI2, "%p: void async_task_void::setWaitAny(%p)\n", this, waitany);
             m_coro_handle.promise().m_waitany = waitany;
         }
 
@@ -1338,7 +1357,7 @@ namespace corolib
 
         void coroutine_destructor_admin()
         {
-            print(PRI2, "%p: async_task_void::coroutine_destructor_admin(): promise = %p (valid = %d)\n",
+            clprint(PRI2, "%p: async_task_void::coroutine_destructor_admin(): promise = %p (valid = %d)\n",
                         this, m_promise_type, m_promise_valid);
             if (m_promise_valid)
             {
@@ -1356,7 +1375,7 @@ namespace corolib
         {
             if (!m_promise_valid)
             {
-                print(PRI1, "%p: async_task_void::ready_admin(): retrieving value from destructed promise %p!!!\n",
+                clprint(PRI1, "%p: async_task_void::ready_admin(): retrieving value from destructed promise %p!!!\n",
                             this, m_promise_type);
                 ++tracker_obj.nr_access_errors;
             }
@@ -1375,12 +1394,12 @@ namespace corolib
                 , m_result{ }
 #endif
             {
-                print(PRI2, "%p: async_task_void::promise_type::promise_type()\n", this);
+                clprint(PRI2, "%p: async_task_void::promise_type::promise_type()\n", this);
             }
 
             ~promise_type()
             {
-                print(PRI2, "%p: async_task_void::promise_type::~promise_type()\n", this);
+                clprint(PRI2, "%p: async_task_void::promise_type::~promise_type()\n", this);
 #if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
                 promise_destructor_admin();
 #endif
@@ -1397,33 +1416,34 @@ namespace corolib
              */
             void inform_interested_parties()
             {
-                print(PRI2, "%p: async_task_void::promise_type::inform_interested_parties():\n\tm_ctr = %p, m_waitany = %p, m_continuation = %p\n",
+                clprint(PRI2, "%p: async_task_void::promise_type::inform_interested_parties():\n"
+                              "\tm_ctr = %p, m_waitany = %p, m_continuation = %p\n",
                     this, m_ctr, m_waitany, m_continuation);
                 if (m_ctr)
                 {
-                    print(PRI2, "%p: async_task_void::promise_type::inform_interested_parties(): before m_ctr->completed();\n", this);
+                    clprint(PRI2, "%p: async_task_void::promise_type::inform_interested_parties(): before m_ctr->completed();\n", this);
                     m_continuation = m_ctr->completed();
-                    print(PRI2, "%p: async_task_void::promise_type::inform_interested_parties(): after m_ctr->completed();\n", this);
+                    clprint(PRI2, "%p: async_task_void::promise_type::inform_interested_parties(): after m_ctr->completed();\n", this);
                 }
                 else if (m_waitany)
                 {
-                    print(PRI2, "%p: async_task_void::promise_type::inform_interested_parties(): before m_waitany->completed();\n", this);
+                    clprint(PRI2, "%p: async_task_void::promise_type::inform_interested_parties(): before m_waitany->completed();\n", this);
                     m_continuation = m_waitany->completed();
-                    print(PRI2, "%p: async_task_void::promise_type::inform_interested_parties(): after m_waitany->completed();\n", this);
+                    clprint(PRI2, "%p: async_task_void::promise_type::inform_interested_parties(): after m_waitany->completed();\n", this);
                 }
                 else if (m_result.wait_for_semaphore_release())
                 {
-                    print(PRI2, "%p: async_task_void::promise_type::inform_interested_parties(): before m_sema.signal();\n", this);
+                    clprint(PRI2, "%p: async_task_void::promise_type::inform_interested_parties(): before m_sema.signal();\n", this);
                     m_sema.signal();
-                    print(PRI2, "%p: async_task_void::promise_type::inform_interested_parties(): after m_sema.signal();\n", this);
+                    clprint(PRI2, "%p: async_task_void::promise_type::inform_interested_parties(): after m_sema.signal();\n", this);
                 }
             }
 
             void return_void()
             {
-                print(PRI2, "%p: async_task_void::promise_type::return_void(): begin\n", this);
+                clprint(PRI2, "%p: async_task_void::promise_type::return_void(): begin\n", this);
 #if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
-                print(PRI2, "%p: async_task_void::promise_type::return_void(): m_coroutine_object = %p (m_coroutine_valid = %d)\n",
+                clprint(PRI2, "%p: async_task_void::promise_type::return_void(): m_coroutine_object = %p (m_coroutine_valid = %d)\n",
                                  this, m_coroutine_object, m_coroutine_valid);
 #endif
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
@@ -1433,12 +1453,12 @@ namespace corolib
                     m_coroutine_object->m_result.set_value(0);
 #endif
                 inform_interested_parties();
-                print(PRI2, "%p: async_task_void::promise_type::return_void(): end\n", this);
+                clprint(PRI2, "%p: async_task_void::promise_type::return_void(): end\n", this);
             }
 
             void unhandled_exception()
             {
-                print(PRI1, "%p: async_task_void::promise_type::unhandled_exception()\n", this);
+                clprint(PRI1, "%p: async_task_void::promise_type::unhandled_exception()\n", this);
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
                 m_result.set_exception(std::current_exception());
 #else
@@ -1452,7 +1472,7 @@ namespace corolib
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
             void get_result_promise()
             {
-                print(PRI2, "%p: async_task_void::promise_type::get_result_promise()\n", this);
+                clprint(PRI2, "%p: async_task_void::promise_type::get_result_promise()\n", this);
                 m_result.retrieve_result();
             }
 #endif
@@ -1472,7 +1492,7 @@ namespace corolib
 
             void promise_destructor_admin()
             {
-                print(PRI2, "%p: async_task_void::promise_type::promise_destructor_admin(): m_coroutine_object = %p (m_coroutine_valid = %d)\n", 
+                clprint(PRI2, "%p: async_task_void::promise_type::promise_destructor_admin(): m_coroutine_object = %p (m_coroutine_valid = %d)\n", 
                             this, m_coroutine_object, m_coroutine_valid);
                 if (m_coroutine_valid)
                 {
@@ -1531,7 +1551,7 @@ namespace corolib
         async_task(handle_type h)
             : async_task_void(h)
         {
-            print(PRI2, "%p: async_task<void>::async_task(handle_type h)\n", this);
+            clprint(PRI2, "%p: async_task<void>::async_task(handle_type h)\n", this);
         }
 
         /**
@@ -1565,19 +1585,19 @@ namespace corolib
 #else
                     const bool ready = m_async_task.is_ready();
 #endif
-                    print(PRI2, "%p: async_task<void>::await_ready(): return %d;\n", this, ready);
+                    clprint(PRI2, "%p: async_task<void>::await_ready(): return %d;\n", this, ready);
                     return ready;
                 }
 
                 void await_suspend(std::coroutine_handle<> h)
                 {
-                    print(PRI2, "%p: async_task<void>::await_suspend(std::coroutine_handle<> h)\n", this);
+                    clprint(PRI2, "%p: async_task<void>::await_suspend(std::coroutine_handle<> h)\n", this);
                     m_async_task.m_coro_handle.promise().m_continuation = h;
                 }
 
                 void await_resume()
                 {
-                    print(PRI2, "%p: async_task<void>::await_resume()\n", this);
+                    clprint(PRI2, "%p: async_task<void>::await_resume()\n", this);
                 }
 
             private:
@@ -1593,13 +1613,13 @@ namespace corolib
             
             auto get_return_object()
             {
-                print(PRI2, "%p: async_task<void>::promise_type::get_return_object()\n", this);
+                clprint(PRI2, "%p: async_task<void>::promise_type::get_return_object()\n", this);
                 return async_task<void>{handle_type::from_promise(*this)};
             }
 
             auto initial_suspend()
             {
-                print(PRI2, "%p: async_task<void>::promise_type::initial_suspend()\n", this);
+                clprint(PRI2, "%p: async_task<void>::promise_type::initial_suspend()\n", this);
                 return std::suspend_never{};
             }
 
@@ -1607,21 +1627,23 @@ namespace corolib
             {
                 bool await_ready() noexcept
                 {
-                    print(PRI2, "%p: async_task<void>::promise_type::final_awaiter0::await_ready()\n", this);
+                    clprint(PRI2, "%p: async_task<void>::promise_type::final_awaiter0::await_ready()\n", this);
                     return false;
                 }
 
                 void await_suspend(handle_type_own h) noexcept
                 {
-                    print(PRI2, "%p: async_task<void>::promise_type::final_awaiter0::await_suspend()\n\th.promise().m_continuation = %p\n",
-                        this, h.promise().m_continuation);
+                    clprint(PRI2, "%p: async_task<void>::promise_type::final_awaiter0::await_suspend()\n"
+                                  "\th.promise().m_continuation = %p\n"
+                                  "\t(will resume if != nullptr)\n",
+                                this, h.promise().m_continuation);
                     if (h.promise().m_continuation)
                         h.promise().m_continuation.resume();
                 }
 
                 void await_resume() noexcept
                 {
-                    print(PRI2, "%p: async_task<void>::promise_type::final_awaiter0::await_resume()\n", this);
+                    clprint(PRI2, "%p: async_task<void>::promise_type::final_awaiter0::await_resume()\n", this);
                 }
             };
 
@@ -1629,14 +1651,16 @@ namespace corolib
             {
                 bool await_ready() const noexcept
                 {
-                    print(PRI2, "%p: async_task<void>::promise_type::final_awaiter1::await_ready()\n", this);
+                    clprint(PRI2, "%p: async_task<void>::promise_type::final_awaiter1::await_ready()\n", this);
                     return false;
                 }
 
                 bool await_suspend(handle_type_own h) noexcept
                 {
-                    print(PRI2, "%p: async_task<void>::promise_type::final_awaiter1::await_suspend()\n\th.promise().m_continuation = %p\n",
-                        this, h.promise().m_continuation);
+                    clprint(PRI2, "%p: async_task<void>::promise_type::final_awaiter1::await_suspend()\n"
+                                  "\th.promise().m_continuation = %p\n"
+                                  "\t(will resume if != nullptr)\n",
+                                this, h.promise().m_continuation);
                     if (h.promise().m_continuation)
                         h.promise().m_continuation.resume();
                     return true;
@@ -1644,7 +1668,7 @@ namespace corolib
 
                 void await_resume() noexcept
                 {
-                    print(PRI2, "%p: async_task<void>::promise_type::final_awaiter1::await_resume()\n", this);
+                    clprint(PRI2, "%p: async_task<void>::promise_type::final_awaiter1::await_resume()\n", this);
                 }
             };
 
@@ -1652,14 +1676,16 @@ namespace corolib
             {
                 bool await_ready() noexcept
                 {
-                    print(PRI2, "%p: async_task<void>::promise_type::final_awaiter2::await_ready()\n", this);
+                    clprint(PRI2, "%p: async_task<void>::promise_type::final_awaiter2::await_ready()\n", this);
                     return false;
                 }
 
                 std::coroutine_handle<> await_suspend(handle_type_own h) noexcept
                 {
-                    print(PRI2, "%p: async_task<void>::promise_type::final_awaiter2::await_suspend()\n\th.promise().m_continuation = %p\n",
-                        this, h.promise().m_continuation);
+                    clprint(PRI2, "%p: async_task<void>::promise_type::final_awaiter2::await_suspend()\n"
+                                  "\th.promise().m_continuation = %p\n"
+                                  "\t(will resume if != nullptr)\n",
+                                this, h.promise().m_continuation);
                     if (h.promise().m_continuation)
                         return h.promise().m_continuation;
                     else
@@ -1668,26 +1694,26 @@ namespace corolib
 
                 void await_resume() noexcept
                 {
-                    print(PRI2, "%p: async_task<void>::promise_type::final_awaiter2::await_resume()\n", this);
+                    clprint(PRI2, "%p: async_task<void>::promise_type::final_awaiter2::await_resume()\n", this);
                 }
             };
 
 #if USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL
             auto final_suspend() noexcept
             {
-                print(PRI2, "%p: async_task<TYPE>::promise_type::final_suspend()\n", this);
+                clprint(PRI2, "%p: async_task<TYPE>::promise_type::final_suspend()\n", this);
                 return final_awaiter1{};
             }
 #elif USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_HANDLE
             auto final_suspend() noexcept
             {
-                print(PRI2, "%p: async_task<TYPE>::promise_type::final_suspend()\n", this);
+                clprint(PRI2, "%p: async_task<TYPE>::promise_type::final_suspend()\n", this);
                 return final_awaiter2{};
             }
 #else
             auto final_suspend() noexcept
             {
-                print(PRI2, "%p: async_task<TYPE>::promise_type::final_suspend()\n", this);
+                clprint(PRI2, "%p: async_task<TYPE>::promise_type::final_suspend()\n", this);
                 return final_awaiter0{};
             }
 #endif
@@ -1714,7 +1740,7 @@ namespace corolib
         async_ltask(handle_type h)
             : async_task_void(h)
         {
-            print(PRI2, "%p: async_ltask<void>::async_ltask(handle_type h)\n", this);
+            clprint(PRI2, "%p: async_ltask<void>::async_ltask(handle_type h)\n", this);
         }
 
         /**
@@ -1748,21 +1774,22 @@ namespace corolib
 #else
                     const bool ready = m_async_ltask.is_ready();
 #endif
-                    print(PRI2, "%p: async_ltask<void>::await_ready(): return %d;\n", this, ready);
+                    clprint(PRI2, "%p: async_ltask<void>::await_ready(): return %d;\n", this, ready);
                     return ready;
                 }
 
                 void await_suspend(std::coroutine_handle<> h)
                 {
-                    print(PRI2, "%p: async_ltask<void>::await_suspend(std::coroutine_handle<> h)\n", this);
+                    clprint(PRI2, "%p: async_ltask<void>::await_suspend(std::coroutine_handle<> h)\n", this);
                     m_async_ltask.m_coro_handle.promise().m_continuation = h;
-
+                    clprint(PRI2, "%p: async_ltask<void>::await_suspend(std::coroutine_handle<> h)\n"
+                                  "\tm_async_ltask.m_coro_handle.resume()\n", this);
                     m_async_ltask.m_coro_handle.resume();
                 }
 
                 void await_resume()
                 {
-                    print(PRI2, "%p: async_ltask<void>::await_resume()\n", this);
+                    clprint(PRI2, "%p: async_ltask<void>::await_resume()\n", this);
                 }
 
             private:
@@ -1778,13 +1805,13 @@ namespace corolib
             
             auto get_return_object()
             {
-                print(PRI2, "%p: async_ltask<void>::promise_type::get_return_object()\n", this);
+                clprint(PRI2, "%p: async_ltask<void>::promise_type::get_return_object()\n", this);
                 return async_ltask<void>{handle_type::from_promise(*this)};
             }
 
             auto initial_suspend()
             {
-                print(PRI2, "%p: async_ltask<void>::promise_type::initial_suspend()\n", this);
+                clprint(PRI2, "%p: async_ltask<void>::promise_type::initial_suspend()\n", this);
                 return std::suspend_always{};
             }
 
@@ -1792,21 +1819,23 @@ namespace corolib
             {
                 bool await_ready() noexcept
                 {
-                    print(PRI2, "%p: async_ltask<void>::promise_type::final_awaiter0::await_ready()\n", this);
+                    clprint(PRI2, "%p: async_ltask<void>::promise_type::final_awaiter0::await_ready()\n", this);
                     return false;
                 }
 
                 void await_suspend(handle_type_own h) noexcept
                 {
-                    print(PRI2, "%p: async_ltask<void>::promise_type::final_awaiter0::await_suspend()\n\th.promise().m_continuation = %p\n",
-                        this, h.promise().m_continuation);
+                    clprint(PRI2, "%p: async_ltask<void>::promise_type::final_awaiter0::await_suspend()\n"
+                                  "\th.promise().m_continuation = %p\n"
+                                  "\t(will resume if != nullptr)\n",
+                                this, h.promise().m_continuation);
                     if (h.promise().m_continuation)
                         h.promise().m_continuation.resume();
                 }
 
                 void await_resume() noexcept
                 {
-                    print(PRI2, "%p: async_ltask<void>::promise_type::final_awaiter0::await_resume()\n", this);
+                    clprint(PRI2, "%p: async_ltask<void>::promise_type::final_awaiter0::await_resume()\n", this);
                 }
             };
 
@@ -1814,14 +1843,16 @@ namespace corolib
             {
                 bool await_ready() const noexcept
                 {
-                    print(PRI2, "%p: async_ltask<void>::promise_type::final_awaiter1::await_ready()\n", this);
+                    clprint(PRI2, "%p: async_ltask<void>::promise_type::final_awaiter1::await_ready()\n", this);
                     return false;
                 }
 
                 bool await_suspend(handle_type_own h) noexcept
                 {
-                    print(PRI2, "%p: async_ltask<void>::promise_type::final_awaiter1::await_suspend()\n\th.promise().m_continuation = %p\n",
-                        this, h.promise().m_continuation);
+                    clprint(PRI2, "%p: async_ltask<void>::promise_type::final_awaiter1::await_suspend()\n"
+                                  "\th.promise().m_continuation = %p\n"
+                                  "\t(will resume if != nullptr)\n",
+                                this, h.promise().m_continuation);
                     if (h.promise().m_continuation)
                         h.promise().m_continuation.resume();
                     return true;
@@ -1829,7 +1860,7 @@ namespace corolib
 
                 void await_resume() noexcept
                 {
-                    print(PRI2, "%p: async_ltask<void>::promise_type::final_awaiter1::await_resume()\n", this);
+                    clprint(PRI2, "%p: async_ltask<void>::promise_type::final_awaiter1::await_resume()\n", this);
                 }
             };
 
@@ -1837,14 +1868,16 @@ namespace corolib
             {
                 bool await_ready() noexcept
                 {
-                    print(PRI2, "%p: async_ltask<void>::promise_type::final_awaiter2::await_ready()\n", this);
+                    clprint(PRI2, "%p: async_ltask<void>::promise_type::final_awaiter2::await_ready()\n", this);
                     return false;
                 }
 
                 std::coroutine_handle<> await_suspend(handle_type_own h) noexcept
                 {
-                    print(PRI2, "%p: async_ltask<void>::promise_type::final_awaiter2::await_suspend()\n\th.promise().m_continuation = %p\n",
-                        this, h.promise().m_continuation);
+                    clprint(PRI2, "%p: async_ltask<void>::promise_type::final_awaiter2::await_suspend()\n"
+                                  "\th.promise().m_continuation = %p\n"
+                                  "\t(will resume if != nullptr)\n",
+                                this, h.promise().m_continuation);
                     if (h.promise().m_continuation)
                         return h.promise().m_continuation;
                     else
@@ -1853,26 +1886,26 @@ namespace corolib
 
                 void await_resume() noexcept
                 {
-                    print(PRI2, "%p: async_ltask<void>::promise_type::final_awaiter2::await_resume()\n", this);
+                    clprint(PRI2, "%p: async_ltask<void>::promise_type::final_awaiter2::await_resume()\n", this);
                 }
             };
 
 #if USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL
             auto final_suspend() noexcept
             {
-                print(PRI2, "%p: async_task<TYPE>::promise_type::final_suspend()\n", this);
+                clprint(PRI2, "%p: async_task<TYPE>::promise_type::final_suspend()\n", this);
                 return final_awaiter1{};
             }
 #elif USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_HANDLE
             auto final_suspend() noexcept
             {
-                print(PRI2, "%p: async_task<TYPE>::promise_type::final_suspend()\n", this);
+                clprint(PRI2, "%p: async_task<TYPE>::promise_type::final_suspend()\n", this);
                 return final_awaiter2{};
             }
 #else
             auto final_suspend() noexcept
             {
-                print(PRI2, "%p: async_task<TYPE>::promise_type::final_suspend()\n", this);
+                clprint(PRI2, "%p: async_task<TYPE>::promise_type::final_suspend()\n", this);
                 return final_awaiter0{};
             }
 #endif

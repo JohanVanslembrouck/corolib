@@ -7,7 +7,7 @@
  * of messages that will or will not be printed depending on the priority variable
  * defined in the application.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <stdio.h>
@@ -15,7 +15,7 @@
 #include <string>
 #include <thread>
 
-#include <corolib/print.h>
+#include "corolib/print.h"
 
 namespace corolib
 {

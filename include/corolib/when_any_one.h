@@ -3,7 +3,7 @@
  * @brief
  * Auxiliary class used in the implementation of when_any, async_operation and async_task.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _WHEN_ANY_ONE_H_
@@ -36,12 +36,12 @@ namespace corolib
             , m_completed(false)
             , m_completion_status(when_any_one_status::NOT_COMPLETED)
         {
-            print(PRI2, "%p: when_any_one::when_any_one()\n", this);
+            clprint(PRI2, "%p: when_any_one::when_any_one()\n", this);
         }
 
         ~when_any_one()
         {
-            print(PRI2, "%p: when_any_one::~when_any_one()\n", this);
+            clprint(PRI2, "%p: when_any_one::~when_any_one()\n", this);
             m_awaiting = nullptr;
             m_completed = false;
             m_completion_status = when_any_one_status::NOT_COMPLETED;
@@ -59,7 +59,7 @@ namespace corolib
          */
         void set_awaiting(std::coroutine_handle<> awaiting)
         {
-            print(PRI2, "%p: when_any_one::set_awaiting()\n", this);
+            clprint(PRI2, "%p: when_any_one::set_awaiting()\n", this);
             m_awaiting = awaiting;
         }
 
@@ -70,9 +70,9 @@ namespace corolib
         bool get_completed()
         {
 #if USE_IN_MT_APPS
-            print(PRI2, "%p: when_any_one::get_completed(): m_completed = %d\n", this, m_completed.load());
+            clprint(PRI2, "%p: when_any_one::get_completed(): m_completed = %d\n", this, m_completed.load());
 #else
-            print(PRI2, "%p: when_any_one::get_completed(): m_completed = %d\n", this, m_completed);
+            clprint(PRI2, "%p: when_any_one::get_completed(): m_completed = %d\n", this, m_completed);
 #endif
             return m_completed;
         }
@@ -83,7 +83,7 @@ namespace corolib
          */
         bool get_and_mark_as_completed()
         {
-            print(PRI2, "%p: when_any_one::get_and_mark_as_completed()\n", this);
+            clprint(PRI2, "%p: when_any_one::get_and_mark_as_completed()\n", this);
 #if USE_IN_MT_APPS
             bool expected = true;
             if (m_completed.compare_exchange_strong(expected, false)) {
@@ -108,7 +108,7 @@ namespace corolib
          */
         std::coroutine_handle<> completed()
         {
-            print(PRI2, "%p: when_any_one::completed()\n", this);
+            clprint(PRI2, "%p: when_any_one::completed()\n", this);
             m_completion_status = when_any_one_status::NEWLY_COMPLETED;
             m_completed = true;
             return m_awaiting;

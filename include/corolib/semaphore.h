@@ -3,7 +3,7 @@
  * @brief
  * Semaphore implemented using a mutex and a condition variable.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _CSEMAPHORE_H_
