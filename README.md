@@ -1,6 +1,7 @@
 # corolib
 
-corolib is a C++ coroutine library for writing asynchronous distributed applications.
+corolib is a C++ coroutine library for writing asynchronous distributed applications 
+using Boost ASIO, Qt, gRPC, ROS2, TAO, ..., as communication frameworks.
 
 ## Objectives
 
@@ -11,12 +12,18 @@ corolib has two main objectives:
   * Asynchronous operations can be completed on the same thread they are started on (completion functions are called from an event loop) or on another thread.
   * There is no need to make changes to these frameworks or to the corolib library, but sometimes an "adaptation layer" is useful. This layer contains functionality that would otherwise be replicated in the applications.
   
-* Learning about and experimenting with coroutines
+* Learning about and experimenting with coroutines.
 
-  * Directory studies/corolab (short for "coroutine laboratory") contains simple stand-alone programs that also include a coroutine definition; the reader just has to open a single file to have access to all source code.
-  * Directory examples/tutorial contains many examples using one or more corolib classes (async_task, async_operation, ...), but without using any communication framework.
-  * Directory studies/why-coroutines explains why you should consider the use of coroutines, by comparing three programming styles: synchronous, asynchronous (with callbacks) and coroutines.
-  * Directory studies/transform explains how coroutines are transformed or lowered to non-coroutine C++ code.
+  * Directory [corolab](./studies/corolab) (short for "coroutine laboratory") contains simple stand-alone programs that also include a coroutine definition; the reader just has to open a single file to have access to all source code.
+  * Directory [tutorial](./examples/tutorial) contains many examples using one or more corolib classes (async_task, async_operation, ...), but without using any communication framework.
+  * Directory [why-coroutines](./studies/why-coroutines) explains why you should consider the use of coroutines for writing (distributed) asynchronous applications, by comparing three programming styles: synchronous, asynchronous (with callbacks) and coroutines.
+  * Directory [why-coroutines2](./studies/why-coroutines2) contains examples that explain the advantages of C++ coroutines for writing asynchronous I/O-based applications.
+  * Directory [transform](./studies/transform) explains how coroutines are transformed or lowered to non-coroutine C++ code.
+  
+ The reader is referred to [studies](./studies) for more examples and experiments.
+
+ In addition:
+
   * corolib contains a dedicated print function, taking a print level as first argument; this allows following the control flow of a coroutine program at various levels: application level, corolib level, user-specific level, ...
   * corolib contains tracking functions that allow verifying whether all coroutine return type objects, operation objects, promise objects and final awaiter objects are released.
   * Class async_task can be tailored, allowing to experiment with the three await_suspend return types (void, bool, std::coroutine_typs<>), so that the user can compare the pros and cons of these variants.
@@ -54,10 +61,10 @@ Building the Visual Studio projects makes use of the CMake support of Visual Stu
 
 	File -> Open -> CMake...
 	
-and select the CMakeLists.txt in the top-level folder.
+and select the CMakeLists.txt in the top-level folder (directory).
 
-Go to the examples/ subdirectories and start the executables.
-(See README.md files in the corresponding source directories.)
+Go to [tutorial](./examples/tutorial) or any of the [studies](./studies) subdirectories and start the executables.
+(See the README.md files in these directories.)
 
 #### Boost
 
@@ -89,8 +96,8 @@ In the top-level CMakeLists.txt, adapt BOOST_ROOT to your own installation of th
 
     set(BOOST_ROOT C:/local/boost/boost_1_82_0/)
 
-After installing Boost ASIO, set the BOOST_INSTALLED flag to TRUE in the top-level CMakelists.txt file
-if you want to build the Boost eaamples in examples/boost and examples/corolab.
+After installing Boost, set the BOOST_INSTALLED flag to TRUE in the top-level CMakelists.txt file
+if you want to build the Boost examples in [boost](./examples/boost) and [corolab](./studies/corolab).
 
 #### Qt
 
@@ -101,8 +108,14 @@ Download the Qt Online Installer for your operating system (macOS, Windows, Linu
 
 Run the installer. I installed Qt in C:\Qt.
 
+Edit the Environment Variables and add the following directory to the Path variable:
+
+    C:\Qt\5.15.2\msvc2019_64\bin
+
+The version (5.15.2 in my case) will depend on your installation.
+
 After installing Qt5, set the QT5_INSTALLED flag to TRUE in the top-level CMakelists.txt file
-if you want to build the Qt5 eaamples in examples/qt5.
+if you want to build the Qt5 examples in [qt5](./examples/qt5).
 
 You can build the Qt examples from the top-level CMakeLists.txt file.
 In addition, you can also build them from the qt5.pro file in the top-level directory.
@@ -118,9 +131,9 @@ Rather, I used the instructions under https://github.com/grpc/grpc/tree/master/s
 	git clone https://github.com/Microsoft/vcpkg.git
 	cd vcpkg
 
-I cloned vcpkg.git into C:\local, giving C:\local\vcpkg  
+I cloned vcpkg.git into C:\local, giving C:\local\vcpkg.
 
-Note: this of course requires the installation of Git if this is not yet the case, see https://gitforwindows.org/
+Note: this, of course, requires the installation of Git. If this is not yet the case, see https://gitforwindows.org/
 
 	./bootstrap-vcpkg.bat
 	
@@ -134,11 +147,13 @@ Finally, I added the following folders to my PATH:
 	C:\local\vcpkg\installed\x64-windows\tools\grpc
 
 After installing gRPC, set the GRPC_INSTALLED flag to TRUE in the top-level CMakelists.txt file
-if you want to build the gRPC eaamples in examples/grpc.
+if you want to build the gRPC examples in [grpc](./examples/grpc).
 
 #### ROS 2
 
-I did not manage to install ROS 2 on Windows 11. I tried to follow the instructions at https://docs.ros.org/en/humble/Installation/Windows-Install-Binary.html. According to https://docs.ros.org/en/humble/Installation/Windows-Install-Binary.html#system-requirements, only Windows 10 is supported.
+I did not manage to install ROS 2 on Windows 11.
+I tried to follow the instructions at https://docs.ros.org/en/humble/Installation/Windows-Install-Binary.html.
+According to https://docs.ros.org/en/humble/Installation/Windows-Install-Binary.html#system-requirements, only Windows 10 is supported.
 
 See below for an installation on Ubuntu 22.04 LTS.
 
@@ -163,7 +178,7 @@ In directory ...\ACE_wrappers\ace, create a file called config.h and enter the f
 
     #include "ace/config-win32.h"
 
-Open the file ..\ACE_wrappers\ACE_vs2019.sln with Visual Studio 2019 or 2022 (or ACE_vs2017.sln with Visual Studio 2017).
+Open the file ...\ACE_wrappers\ACE_vs2019.sln with Visual Studio 2019 or 2022 (or ACE_vs2017.sln with Visual Studio 2017).
 
 Visual Studio 2022 reports the use of an earlier version of the Visual Studio platform toolset 
 and proposes to upgrade the projects to target the latest Microsoft toolset. I upgraded to the latest toolset.
@@ -173,7 +188,7 @@ Build the solution. This builds ACE (The ADAPTIVE Communication Environment). We
 Open the file ...\ACE_wrappers\TAO\TAO-INSTALL.html in a web browser and follow the instructions in section 
 "On Windows NT and Windows 2000 and Windows XP". In short:
 
-Open the file ..\ACE_wrappers\TAO\TAO_vs2019.sln with Visual Studio and build the solution.
+Open the file ...\ACE_wrappers\TAO\TAO_vs2019.sln with Visual Studio and build the solution.
 
 Edit the Environment Variables and add the following directories to the Path variable:
 
@@ -187,7 +202,7 @@ The last line is needed if you want to run the TAO IDL compiler (tao_idl in C:\l
 If the last line is not present, running tao_idl will fail with the message that CL.exe is not found.
 
 After installing TAO, set the TAO_INSTALLED flag to TRUE in the top-level CMakelists.txt file
-if you want to build the TAO eaamples in examples/tao.
+if you want to build the TAO examples in [tao](./examples/tao).
 
 #### libevent
 
@@ -209,7 +224,7 @@ Edit the Environment Variables and add the following directory to the Path varia
     C:\local\libevent\build\bin\Release
 
 After installing libevent, set the LIBEVENT_INSTALLED flag to TRUE in the top-level CMakelists.txt file
-if you want to build the libevent eaamples in examples/libevent.
+if you want to build the libevent examples in examples/libevent.
 
 #### curl
 
@@ -233,7 +248,7 @@ Edit the Environment Variables and add the following directory to the Path varia
     C:\local\curl-8.9.1\build\bin\Release
 
 After installing curl, set the CURL_INSTALLED flag to TRUE in the top-level CMakelists.txt file 
-if you want to build the curl examples in examples/curl.
+if you want to build the curl examples in [curl](./examples/curl).
 
 ### On Ubuntu 22.04 LTS or Ubuntu 24.04 LTS
 
@@ -277,25 +292,29 @@ There are a few things to install to be able to build corolib. These are describ
 
 #### gcc
 
-gcc is not installed:
+If gcc is not installed:
 
-prompt$ gcc
-Command 'gcc' not found, but can be installed with:
-sudo apt install gcc
-prompt$
+    prompt$ gcc
+    Command 'gcc' not found, but can be installed with:
+    sudo apt install gcc
+    prompt$
+
+Solution:
 
     sudo apt install gcc
 
 #### CMake
 
-cmake is not installed:
+If cmake is not installed:
 
-prompt$ cmake
-Command 'cmake' not found, but can be installed with:
-sudo snap install cmake  # version 3.31.4, or
-sudo apt  install cmake  # version 3.27.8-1build1
-See 'snap info cmake' for additional versions.
-prompt$
+    prompt$ cmake
+    Command 'cmake' not found, but can be installed with:
+    sudo snap install cmake  # version 3.31.4, or
+    sudo apt  install cmake  # version 3.27.8-1build1
+    See 'snap info cmake' for additional versions.
+    prompt$
+
+Solution:
 
     sudo apt install cmake
 
@@ -321,7 +340,7 @@ I propose to build corolib as follows:
 	cmake ../
 	make -j 4
 
-or
+or (better)
 
     cd <path>/corolib
     cd ..
@@ -330,12 +349,13 @@ or
     cmake ../corolib
     make -j 4
 
-This second alternative keeps your build directory completly out of the source code.
-When using Visual Studio to build corolib,
-it occurred that Visual Studio got confused by the content of the build directory.
+This second alternative keeps your build directory completely apart from the source code.
 
-Go to the examples/tutorial subdirectory and start the executables. 
-(See README.md files in the corresponding source directories.)
+When using the same corolib source code directory to build corolib both on Windows and on WSL Ubuntu (using /mnt/...),
+it occurred that Visual Studio got confused by the content of the Ubuntu build directory.
+
+Go to [tutorial](./examples/tutorial) or any of the [studies](./studies) subdirectories and start the executables.
+(See the README.md files in these directories.)
 
 #### Boost
 
@@ -353,7 +373,7 @@ On my computer, the Boost libraries (version 1.74.0) are located in
 	/usr/lib/x86_64-linux-gnu/
 
 After installing Boost ASIO, set the BOOST_INSTALLED flag to TRUE in the top-level CMakelists.txt file
-if you want to build the Boost eaamples in examples/boost and examples/corolab.
+if you want to build the Boost examples in [boost](./examples/boost) and [corolab](./studies/corolab).
 
 #### Qt
 
@@ -363,7 +383,7 @@ https://askubuntu.com/questions/1404263/how-do-you-install-qt-on-ubuntu22-04:
 	sudo apt install -y qtcreator qtbase5-dev qt5-qmake cmake
 
 After installing Qt5, set the QT5_INSTALLED flag to TRUE in the top-level CMakelists.txt file
-if you want to build the Qt5 eaamples in examples/qt5.
+if you want to build the Qt5 examples in [qt5](./examples/qt5).
 
 You can build the Qt examples from the top-level CMakeLists.txt file.
 In addition, you can also build them from the qt5.pro file in the top-level directory.
@@ -410,7 +430,7 @@ or, in my setup:
     export PATH=$HOME/grpcbin/bin:$PATH
 
 After installing gRPC, set the GRPC_INSTALLED flag to TRUE in the top-level CMakelists.txt file
-if you want to build the gRPC eaamples in examples/grpc.
+if you want to build the gRPC examples in [grpc](./examples/grpc).
 
 #### ROS 2
 
@@ -421,6 +441,7 @@ Please follow the instructions at https://docs.ros.org/en/humble/Installation/Ub
 Starting point: https://download.dre.vanderbilt.edu/
 
 Download the file ACE+TAO-7.1.1.tar.gz and place it in (e.g.) your home directory, $HOME.
+
 Unzip the file:
 
     tar xvf ACE+TAO-7.1.1.tar.gz
@@ -485,7 +506,7 @@ Add the following lines to .bashrc:
     export LD_LIBRARY_PATH=$ACE_ROOT/lib:$LD_LIBRARY_PATH
 
 After installing TAO, set the TAO_INSTALLED flag to TRUE in the top-level CMakelists.txt file
-if you want to build the TAO eaamples in examples/tao.
+if you want to build the TAO examples in [tao](./examples/tao).
 
 #### libevent
 
@@ -494,23 +515,25 @@ The installation instructions can be found here: https://github.com/libevent/lib
 libevent was already installed on my Ubuntu installation, so I did not have to do anything.
 
 Set the LIBEVENT_INSTALLED flag to TRUE in the top-level CMakelists.txt file
-if you want to build the libevent eaamples in examples/libevent.
+if you want to build the libevent examples in [libevent](./examples/libevent).
 
 #### curl
 
 curl is by default installed on Ubuntu (and other Linux) distributions, so I did not have to do anything.
 
 Set the CURL_INSTALLED flag to TRUE in the top-level CMakelists.txt file 
-if you want to build the curl eaamples in examples/curl.
+if you want to build the curl examples in [curl](./examples/curl).
 
 ## Organization of corolib
 
-The GitHub repository contains the library itself and several examples.
+The GitHub repository contains the library itself and several examples and studies.
 
-The README.md file in include/corolib gives more information on each of the classes of corolib.
-Folder lib contains the source (.cpp) files for the header files (.h) in include/corolib.
+The README.md file in [corolib](./include/corolib) gives more information on each of the classes of corolib.
+Folder [lib](./lib) contains the source (.cpp) files for the header files (.h) in [include](./include/corolib).
 
-The examples folder contains a README.md file with more information on the examples.
+The [examples](./examples) folder contains a README.md file with more information on the examples.
+
+The [studies](./studies) folder contains a README.md file with more information on the studies.
 
 ## Why coroutines?
 
@@ -529,7 +552,7 @@ itself runs on a separate thread.
 proceed with other tasks that do not depend on the response and then await the response 
 either using polling or using a callback function that is called from a local or global event loop.
 
-    The reader is referred to reading/CORBA-AMI.md for more information on this approach.
+    The reader is referred to [CORBA-AMI](./docs/CORBA-AMI.md) for more information on this approach.
 	
 * Using an asynchronous operation in combination with coroutines, the callback function can be hidden in the library (corolib in this case) 
 and the response will be returned by the co_await statement.
@@ -539,7 +562,7 @@ Usually this co_await statement will be placed in the coroutine in which the asy
 The application will then continue its flow and invoke new asynchronous operations.
 This is a more natural place than handling the response in the callback function from which new operations will be invoked.
 
-   The reader is also referred to examples/why-coroutines for examples demonstrating the three approaches in several stand-alone applications.
+   The reader is also referred to [why-coroutines](./studies/why-coroutines) for examples demonstrating the three approaches in several stand-alone applications.
    
 Reason 2: Coroutines can be used as an alternative for threads.
 
@@ -580,10 +603,10 @@ the application can proceed with actions that do not rely on the result.
 above all statements that do not depend on the result, but at a place where all inputs are available.
 Several operations can be started one after the other and the results can then be processed afterwards.
 
-2. When learning coroutines, the first approach shows more clearly what is going on.
+2. When learning about coroutines, the first approach shows more clearly what is going on.
 It shows the return type of the asynchronous operation, making it easier to find and examine the implementation.
 
-3. An explicit declaration makes it easier to await the result of several operations using wait_all or wait_any.
+3. An explicit declaration makes it easier to await the result of several operations using when_all or when_any.
 
 4. corolib allows reusing the return object (retObj in this case)
 for several asynchronous operation invocations that return an object of the same type.
@@ -593,11 +616,11 @@ Therefore the object has to be declared explicitly.
 In between the declaration and the start (or after the start), one or more coroutines can co_wait on the async_operation<aType> object.
 All coroutines that co_await-ed the async_operation<aType> object will be resumed when the asynchronous operation completes.
 
-    The reader is referred to examples\various-boost\timer03.cpp and examples\various-qt\timer03.cpp for examples.
+    The reader is referred to [boost-timer03](./examples/boost/various/timer03.cpp) and [qt5-timer03](./examples/qt5/various/timer03.cpp) for examples.
 
 6. The proposed style is closer to the polling style used in CORBA AMI.
 
-    The reader is referred again to reading/CORBA-AMI.md for more information on this approach.
+    The reader is referred again to [CORBA-AMI](./docs/CORBA-AMI.md) for more information on this approach.
 
 ## Comparison with other libraries
 
@@ -606,16 +629,19 @@ Some code in corolib has been inspired by  https://github.com/lewissbaker/cppcor
 
 The approach in corolib is different from cppcoro in the following ways:
 * corolib is meant as a library to learn about coroutines in C++, not as a means for evaluating the coroutines TS.
-That is why there are many print statements in the code: running the programs with priority level 2 reveals the flow of control when using coroutines.
+That is why there are many print statements in the code: running the programs with print level 2 reveals the flow of control when using coroutines.
 The output also shows that all coroutines run on the same thread but that several coroutines run in an interleaved way.
 * I wanted to make a strict separation between the coroutine part and the asynchronous communication library.
-This explains the use of Boost ASIO and Qt: the code in these libraries is not "aware" that is used by coroutines.
+This explains the use of Boost ASIO, Qt5, gRPC, etc.: the code in these libraries is not "aware" that is used by coroutines.
 
 ## Presentations
 
-* Belgian C++ Users Group, 29 January 2020: Slides + code samples: http://becpp.org/blog/wp-content/uploads/2020/02/Johan-Vanslembrouck-Coroutines-in-C20.zip
+* Belgian C++ Users Group, 29 January 2020: "Coroutines in C++ 20" Slides + code samples: http://becpp.org/blog/wp-content/uploads/2020/02/Johan-Vanslembrouck-Coroutines-in-C20.zip
 An updated version of the code samples can be found in examples/corolab.
-* Meeting C++ Online, 7 September 2022: Slides: https://meetingcpp.com/mcpp/slides/2022/Corolib-DistributedProgrammingWithC++Coroutines1807.pdf
+* Meeting C++ Online, 7 September 2022: "Corolib: Distributed programming with C++ coroutines" Slides: https://meetingcpp.com/mcpp/slides/2022/Corolib-DistributedProgrammingWithC++Coroutines1807.pdf
+* Belgian C++ Users Group, 15 January 2025: "Why use coroutines for asynchronous applications?" Slides: https://becpp.org/blog/wp-content/uploads/2025/01/Johan-Vanslembrouck-Why-Use-Coroutines-For-Asynchronous-Applications.pdf
+* Meeting C++ 2025, 8 November 2025: "Why use coroutines for asynchronous applications?" Slides: https://meetingcpp.com/mcpp/slides/2025/WhyUseCoroutinesForAsynchronousApplications564642.pdf
+* Belgian C++ Users Group, 2 December 2025: "Distributed programming with coroutines and asynchronous communication frameworks" Slides: https://becpp.org/blog/wp-content/uploads/2025/12/Johan-Vanslembrouck-DistributedProgrammingWithCoroutinesAndACFs.pdf
 
 ## Contact
 
