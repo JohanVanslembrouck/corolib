@@ -11,13 +11,13 @@ in [initial_suspend](../initial_suspend) and  [final_suspend](../final_suspend),
 Functions support two operations: call and return.
 This is illustrated in the following scenario.
 
-![legend01-function](https://github.com/JohanVanslembrouck/corolib/tree/master/studies/control-flow/drawings/legend01-function.jpg)
+![legend01-function](./drawings/legend01-function.jpg)
 
 Coroutines support four operations: call and return, and suspend and resume.
 Therefore, coroutines can be considered to be a generalization of functions.
 This is illustrated in the following scenario.
 
-![legend02-coroutine](https://github.com/JohanVanslembrouck/corolib/tree/master/studies/control-flow/drawings/legend02-coroutine.jpg)
+![legend02-coroutine](./drawings/legend02-coroutine.jpg)
 
 Both diagrams are based upon UML sequence diagrams, with 2 differences.
 * The vertical timelines correspond to functions and coroutines instead of objects.
@@ -65,7 +65,9 @@ more in particular concerning avoiding memory leaks.
 
 The following scenario shows the control flow in an application that only uses functions.
 
-Scenario: ![p0000 trace](https://github.com/JohanVanslembrouck/corolib/tree/master/studies/control-flow/drawings/p0000.jpg)
+Scenario:
+
+![p0000 trace](./drawings/p0000.jpg)
 
 There is no source code, because it is trivial to reconstruct the source code from the scenario.
 
@@ -213,7 +215,9 @@ For a more correct translation to pre C++20 code, the reader is referred to [tra
 
 Source code: [p2010e_void-sc.cpp](./p2010e_void-sc.cpp).
 
-Scenario: ![p2010e_void-sc trace](https://github.com/JohanVanslembrouck/corolib/tree/master/studies/control-flow/drawings/p2010e_void-sc.jpg)
+Scenario:
+
+![p2010e_void-sc trace](./drawings/p2010e_void-sc.jpg)
 
 The control flow sequence is as follows:
 
@@ -257,7 +261,9 @@ The control flow is the same as if all coroutines were "ordinary" functions.
 
 Source code: [p2010l_void-sc.cpp](./p2010l_void-sc.cpp).
 
-Scenario: ![p2010l_void-sc trace](https://github.com/JohanVanslembrouck/corolib/tree/master/studies/control-flow/drawings/p2010l_void-sc.jpg).
+Scenario:
+
+![p2010l_void-sc trace](./drawings/p2010l_void-sc.jpg).
 
 The control flow sequence is as follows:
 
@@ -348,10 +354,14 @@ int main() {
 
 Source code: [p2020e_void-ma.cpp](./p2012e_void-ma.cpp).
 
-Scenario: ![p2020e_void-ma trace](https://github.com/JohanVanslembrouck/corolib/tree/master/studies/control-flow/drawings/p2020e_void-ma.jpg).
+Scenario:
+
+![p2020e_void-ma trace](./drawings/p2020e_void-ma.jpg).
 
 ### Lazy start
 
 Source code: [p2020l_void-ma.cpp](./p2012l_void-ma.cpp).
 
-Scenario: ![p2020l_void-ma trace](https://github.com/JohanVanslembrouck/corolib/tree/master/studies/control-flow/drawings/p2020l_void-ma.jpg).
+Scenario:
+
+![p2020l_void-ma trace](./drawings/p2020l_void-ma.jpg).
