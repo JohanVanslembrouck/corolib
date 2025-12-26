@@ -53,7 +53,10 @@ namespace std
 In a coroutine with return type 'task' and *lazy* start, task::promise_type::initial_suspend() returns std::suspend_always
 (or an equivalent type).
 
-![coroutine with lazy start](https://github.com/JohanVanslembrouck/corolib/tree/master/studies/initial_suspend/drawings/coroutine-with-lazy-start.jpg) illustrates the control flow at the initial suspend point.
+![coroutine with lazy start](./drawings/coroutine-with-lazy-start.jpg)
+
+illustrates the control flow at the initial suspend point.
+
 std::suspend_always::await_ready() unconditionally returns false, so the next function that is called is 
 std::suspend_always::await_suspend().
 Next, the coroutine suspends and returning control to its caller.
@@ -63,7 +66,10 @@ Then the coroutine starts executing the code in its body.
 In a coroutine with return type 'task' and *eager* start, task::promise_type::initial_suspend() returns std::suspend_never
 (or an equivalent type).
 
-![coroutine with eager start](https://github.com/JohanVanslembrouck/corolib/tree/master/studies/initial_suspend/drawings/coroutine-with-eager-start.jpg) illustrates the control flow at the initial suspend point.
+![coroutine with eager start](./drawings/coroutine-with-eager-start.jpg)
+
+illustrates the control flow at the initial suspend point.
+
 std::suspend_never::await_ready() unconditionally returns true, so the next function that is called is 
 unconditionally returns true, so the next function that is called is std::suspend_never::await_resume().
 Then the coroutine starts executing the code in its body.
@@ -159,7 +165,7 @@ task::promise_type::final_awaiter::await_suspend(), leading to nine possible com
 
 ## Introductory examples
 
-The reader is referred to [controlflow](../controlflow) for some introductory examples.
+The reader is referred to [control-flow](../control-flow) for some introductory examples.
 These examples illustrate a complete control flow, including initial and final suspend points.
 (Therefore they have been placed in a separate study.)
 
@@ -291,7 +297,9 @@ For a more correct translation to pre C++20 code, the reader is referred to [tra
 
 Source code: [p1100e_void.cpp](../control-flow/p1100e_void.cpp).
 
-Scenario: ![p1100e_void trace](https://github.com/JohanVanslembrouck/corolib/tree/master/studies/control-flow/drawings/p1100e_void.jpg)
+Scenario:
+
+![p1100e_void trace](../control-flow/drawings/p1100e_void.jpg)
 
 This control flow is not described.
 
@@ -320,7 +328,9 @@ but just use call and return.
 
 Source code: [p1100l_void.cpp](../control-flow/p1100l_void.cpp).
 
-Scenario: ![p1100l_void trace](https://github.com/JohanVanslembrouck/corolib/tree/master/studies/control-flow/drawings/p1100l_void.jpg)
+Scenario:
+
+![p1100l_void trace](../control-flow/drawings/p1100l_void.jpg)
 
 The control flow sequence is as follows:
 
