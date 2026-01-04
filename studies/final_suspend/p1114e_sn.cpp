@@ -1,5 +1,5 @@
 /**
- * @file p1110_sn.cpp
+ * @file p1110e_sn.cpp
  * @brief
  * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
@@ -9,8 +9,8 @@
 
 #include "print.h"
 
-#include "task_sn.h"
-#include "class_async.h"
+#include "taske_sn.h"
+#include "class_async4.h"
 
 mini_awaiter are1;
 
@@ -21,10 +21,7 @@ int main()
     Class obj;
     print(PRI1, "main(): task a = obj.coroutine1();\n");
     task a = obj.coroutine1();
-
-    print(PRI1, "main(): a.start();\n");
-    a.start();
-
+	
     print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 

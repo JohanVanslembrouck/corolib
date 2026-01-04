@@ -4,10 +4,11 @@
  *
  * Uses eager start.
  * 
+ * task::promise_type::final_awaiter::await_ready() returns false.
  * task::promise_type::final_awaiter::await_suspend() returns std::coroutine_handle<>.
  * task::awaiter::await_suspend() returns coroutine_handle<>.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _TASKE_COROUTINE_HANDLE_H_
@@ -20,6 +21,8 @@
 #include "print.h"
 
 using namespace std;
+
+#define ALLOW_CO_AWAIT_TASK_OBJECT 1
 
 class task : private coroutine_tracker {
 public:
@@ -53,7 +56,7 @@ public:
             std::terminate();
         }
 
-        struct final_awaiter : public final_awaiter_tracker {
+        struct final_awaiter : private final_awaiter_tracker {
             bool await_ready() noexcept {
                 print(PRI3, "%p: promise_type::final_awaiter::await_ready() -> bool: return false;\n", this);
                 return false;
@@ -137,11 +140,11 @@ public:
         }
 #
         std::coroutine_handle<> await_suspend(coroutine_handle<> continuation) noexcept {
-            print(PRI3, "%p: promise_type::final_awaiter::await_suspend() -> std::coroutine_handle<>: enter\n", this);
+            print(PRI3, "%p: task::awaiter::await_suspend() -> std::coroutine_handle<>: enter\n", this);
             // Store the continuation in the task's promise so that the final_suspend()
             // knows to resume this coroutine when the task completes.
             coro_.promise().continuation = continuation;
-            print(PRI3, "%p: promise_type::final_awaiter::await_suspend() -> std::coroutine_handle<>: return std::noop_coroutine();\n", this);
+            print(PRI3, "%p: task::awaiter::await_suspend() -> std::coroutine_handle<>: return std::noop_coroutine();\n", this);
             return std::noop_coroutine();
         }
 

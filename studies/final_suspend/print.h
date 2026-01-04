@@ -2,9 +2,8 @@
  *  Filename: print.h
  *  Description:
  *
- *  Tested with Visual Studio 2019.
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)/
+ *  Author: Johan Vanslembrouck
  */
 
 #pragma once
@@ -28,16 +27,8 @@ const int PRI2 = 0x02;
 const int PRI3 = 0x04;
 const int PRI4 = 0x08;
 
-extern int priority;
+extern int print_priority;
 
-inline void set_print_level(int pri) { priority = pri; }
+inline void set_print_level(int pri) { print_priority = pri; }
 
-int get_thread_number(uint64_t id);
-int get_thread_number64(uint64_t id);
-int get_thread_number32(uint32_t id);
-
-uint64_t get_thread_id();
-
-void print();
-void print(const char* fmt, ...);
 void print(int pri, const char* fmt, ...);

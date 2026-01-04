@@ -2,7 +2,7 @@
  *  Filename: print.cpp
  *  Description:
  *
- *  Author: Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)/
+ *  Author: Johan Vanslembrouck
  */
 
 #include "print.h"
@@ -58,34 +58,10 @@ uint64_t get_thread_id()
     return (uint64_t)(*ptr);
 }
 
-void print()
-{
-    fprintf(stderr, "\n");
-}
-
-void print(const char* fmt, ...)
-{
-    va_list arg;
-    char msg[256];
-
-    va_start(arg, fmt);
-#if defined(_WIN32)
-    int n = vsprintf_s(msg, fmt, arg);
-#else
-    vsprintf(msg, fmt, arg);
-#endif
-    va_end(arg);
-
-    int threadid = (sizeof(std::thread::id) == sizeof(uint32_t)) ?
-        get_thread_number32((uint32_t)get_thread_id()) :
-        get_thread_number64(get_thread_id());
-    fprintf(stderr, "%02d: %s", threadid, msg);
-}
-
 void print(int pri, const char* fmt, ...)
 {
     va_list arg;
-    if (priority & pri)
+    if (print_priority & pri)
     {
         char msg[512];
 
@@ -105,4 +81,4 @@ void print(int pri, const char* fmt, ...)
     }
 }
 
-int priority = 0x01;
+int print_priority = 0x01;

@@ -1,18 +1,23 @@
 /**
- * @file task_bool.h
+ * @file task_bool2.h
  * @brief
  *
- * Uses lazy start.
+ * Contains the task class that is used in p0110_bool.cpp.
  * 
- * task::promise_type::final_awaiter::await_ready() returns false.
- * task::promise_type::final_awaiter::await_suspend() returns bool (false).
+ * task::promise_type::final_awaiter::await_ready() returns true.
+ * task::promise_type::final_awaiter::await_suspend() returns bool (true).
  * task::awaiter::await_suspend() returns bool.
+ * 
+ * A major difference with the other task files is that the task destructor in this file
+ * has in essence an empty implementation: it will not call destroy() on any coroutine_handle.
+ * The reason is that the coroutines using this task definition will run to completion
+ * (i.e., they will not suspend at the final suspend point).
  * 
  * @author Johan Vanslembrouck
  */
 
-#ifndef _TASK_BOOL_H_
-#define _TASK_BOOL_H_
+#ifndef _TASK_BOOL2_H_
+#define _TASK_BOOL2_H_
 
 #include <coroutine>
 #include <atomic>
@@ -35,6 +40,7 @@ public:
 
         ~promise_type() {
             print(PRI2, "%p: promise_type::~promise_type()\n", this);
+            mytask = nullptr;
         }
 
         task get_return_object() noexcept {
@@ -47,9 +53,14 @@ public:
             return {};
         }
 
+        void link_task(task* t) {
+            mytask = t;
+        }
+
         void return_value(int v) noexcept {
             print(PRI3, "%p: promise_type::return_value(%d) -> void\n", this, v);
-            value = v;
+            if (mytask)
+                mytask->value = v;
         }
 
         void unhandled_exception() noexcept {
@@ -58,37 +69,46 @@ public:
         }
 
         struct final_awaiter : private final_awaiter_tracker {
-            bool await_ready() noexcept {
-                print(PRI3, "%p: promise_type::final_awaiter::await_ready() -> bool: return false;\n", this);
-                return false;
+            promise_type* p{ nullptr };
+
+            final_awaiter(promise_type* p1)
+                : p(p1) {
+                print(PRI3, "%p: promise_type::final_awaiter::final_awaiter(%p)\n", this, p);
             }
+            ~final_awaiter() {
+                print(PRI3, "%p: promise_type::final_awaiter::~final_awaiter()\n", this);
+                p = nullptr;
+            }
+            bool await_ready() noexcept {
+                print(PRI3, "%p: promise_type::final_awaiter::await_ready() -> bool: return true;\n", this);
+                return true;
+            }
+            // The following function will never be called.
             bool await_suspend(coroutine_handle<promise_type> h) noexcept {
-                print(PRI3, "%p: promise_type::final_awaiter::await_suspend() -> bool: enter\n", this);
-                auto& promise = h.promise();
-                if (promise.ready.exchange(true, std::memory_order_acq_rel)) {
-                    print(PRI3, "%p: promise_type::final_awaiter::await_suspend() -> bool: before h.promise().continuation.resume();\n", this);
-                    h.promise().continuation.resume();
-                    print(PRI3, "%p: promise_type::final_awaiter::await_suspend() -> bool: after h.promise().continuation.resume();\n", this);
-                }
-                // This function must return true.
-                // Otherwise the coroutine will run to an end and the coroutine frame will be deleted.
-                // The call of get_result() will retrieve the result from released memory.
-                print(PRI3, "%p: promise_type::final_awaiter::await_suspend() -> bool: leave: return true;\n", this);
+                print(PRI3, "%p: promise_type::final_awaiter::await_suspend() -> bool\n", this);
                 return true;
             }
             void await_resume() noexcept {
-                print(PRI3, "%p: promise_type::final_awaiter::await_resume() -> void()\n", this);
+                print(PRI3, "%p: promise_type::final_awaiter::await_resume() -> void(): enter\n", this);
+                if (p)
+                    if (p->continuation)
+                        p->continuation.resume();
+                    else
+                        print(PRI3, "%p: promise_type::final_awaiter::await_resume() -> void(): nothing to resume\n", this);
+                else
+                    print(PRI3, "%p: promise_type::final_awaiter::await_resume() -> void(): nothing to resume (1)\n", this);
+                print(PRI3, "%p: promise_type::final_awaiter::await_resume() -> void(): leave\n", this);
             }
         };
 
         final_awaiter final_suspend() noexcept {
             print(PRI3, "%p: promise_type::final_suspend() -> final_awaiter()\n", this);
-            return {};
+            return {this};
         }
 
         coroutine_handle<> continuation{ nullptr };
+        task* mytask{ nullptr };
         std::atomic<bool> ready{ false };
-        int value{ 0 };
     };
 
 #if 0
@@ -96,44 +116,14 @@ public:
         : coro_(std::exchange(t.coro_, {}))
     {}
 #endif
-#if USE_CORO_DONE_TEST
+
     ~task() {
-        print(PRI2, "%p: task::~task(): test on coro_.done()\n", this);
-        if (coro_)
-            if (coro_.done()) {
-                print(PRI2, "%p: task::~task(): coro_.destroy();\n", this);
-                coro_.destroy();
-                coro_ = {};
-            }
-            else {
-                print(PRI2, "%p: task::~task(): !coro.done()\n", this);
-            }
-        else
-            print(PRI2, "%p: task::~task(): coro_ == nullptr\n", this);
+        print(PRI2, "%p: task::~task(): coro_.done() = %d\n", this, coro_.done());
     }
-#else
-    ~task() {
-        print(PRI2, "%p: task::~task(): no test on coro_.done()\n", this);
-        if (coro_) {
-            print(PRI2, "%p: task::~task(): coro_.destroy();\n", this);
-            coro_.destroy();
-            coro_ = {};
-        }
-        else
-            print(PRI2, "%p: task::~task(): coro_ == nullptr\n", this);
-    }
-#endif
 
     int get_result() {
-        if (coro_) {
-            int value = coro_.promise().value;
-            print(PRI3, "%p: task::get_result() -> int: return %d;\n", this, value);
-            return value;
-        }
-        else {
-            print(PRI3, "%p: task::get_result() -> int: return -1;\n", this);
-            return -1;
-        }
+        print(PRI3, "%p: task::get_result() -> int: return %d;\n", this, value);
+        return value;
     }
 
     void start() {
@@ -179,32 +169,26 @@ public:
 
         int await_resume() noexcept {
             print(PRI3, "%p: task::awaiter::await_resume() -> int\n", this);
-            if (coro_) {
-                int value = coro_.promise().value;
-                print(PRI3, "%p: task::awaiter::await_resume() -> int: return %d;\n", this, value);
-                return value;
-            }
-            else {
-                print(PRI3, "%p: task::awaiter::await_resume() -> int: return -1;\n", this);
-                return -1;
-            }
+            return mytask_->value;
         }
 
     private:
         friend task;
-        explicit awaiter(coroutine_handle<promise_type> h) noexcept
+        explicit awaiter(coroutine_handle<promise_type> h, task* t) noexcept
             : coro_(h)
+            , mytask_(t)
         {
             print(PRI3, "%p: task::awaiter::awaiter(...)\n", this);
         }
 
         coroutine_handle<promise_type> coro_;
+        task* mytask_;
     };
 
 #if ALLOW_CO_AWAIT_TASK_OBJECT
     awaiter operator co_await() noexcept {
         print(PRI3, "%p: task::operation co_await() -> awaiter\n", this);
-        return awaiter{ coro_ };
+        return awaiter{ coro_, this };
     }
 #else
     /*
@@ -213,7 +197,7 @@ public:
      */
     awaiter operator co_await() && noexcept {
         print(PRI3, "%p: task::operation co_await() && -> awaiter\n", this);
-        return awaiter{ coro_ };
+        return awaiter{ coro_, this };
     }
 #endif
 
@@ -222,9 +206,11 @@ private:
         : coro_(h)
     {
         print(PRI2, "%p: task::task(...)\n", this);
+        coro_.promise().link_task(this);
     }
 
     coroutine_handle<promise_type> coro_{ };
+    int value{ 0 };
 };
 
 #endif

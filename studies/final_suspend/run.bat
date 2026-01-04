@@ -48,6 +48,13 @@ stfs2-p1310_bool
 stfs2-p1320e_bool
 stfs2-p1320_bool
 
+stfs-p1350e_bool2
+stfs-p1350_bool2
+stfs-p1360e_bool2
+stfs-p1360_bool2
+stfs-p1370e_bool2
+stfs-p1370_bool2
+
 stfs-p1400e_coroutine_handle
 stfs-p1400_coroutine_handle
 stfs-p1410e_coroutine_handle

@@ -5,8 +5,10 @@
 The reader is referred to [awaiter type variants](../../docs/awaiter_type_variants.md) for an introduction to awaiter types.
 
 In this document we study the control flow in some simple functions and coroutines.
+The examples originate from [initial_suspend](../initial_suspend) and use the same name as in mentioned directory.
+
 These examples serve as an introduction to a more detailed study of the behavior at the initial and final suspend points
-in [initial_suspend](../initial_suspend) and  [final_suspend](../final_suspend), respectively.
+in [initial_suspend](../initial_suspend) and [final_suspend](../final_suspend), respectively.
 
 Functions support two operations: call and return.
 This is illustrated in the following scenario.
@@ -20,24 +22,27 @@ This is illustrated in the following scenario.
 ![legend02-coroutine](./drawings/legend02-coroutine.jpg)
 
 Both diagrams are based upon UML sequence diagrams, with 2 differences.
-* The vertical timelines correspond to functions and coroutines instead of objects.
-* The horizontal arrows correspond to the 2 (4) operations on functions (coroutines) instead of member function calls on objects.
+* The vertical timelines correspond to functions/coroutines instead of objects.
+* The horizontal arrows correspond to the two/four operations on functions/coroutines instead of to member function calls on objects.
 
 In more detail:
-* Call and resume operations are depicted with full lines, return and suspend operation with dashed lines.
+* Call and resume operations are depicted with full lines, return and suspend operations with dashed lines.
 * A call/resume operation with number N must be followed with a return/suspend operation in the other direction with the same number.
-* In case of functions, a call operation is always paired with a return operation with the same number.
-* In case of coroutines, a call operation can be paired with a return operation with the same number.
-* A call operation can also be paired with a suspend operation.
-* A suspend operation requires a resume operation to continue the flow in the coroutine.
-* Coroutines may not use the return operation, but suspend at their final awaiter point.
+* In case of functions:
+    * a call operation is always paired with a return operation with the same number.
+* In case of coroutines:
+    * a call operation can be paired with a return operation with the same number.
+    * a call operation can also be paired with a suspend operation with the same number.
+    * a suspend operation requires a resume operation to continue the flow in the coroutine.
+* Coroutines may not use the return or resume operation, but suspend at their final suspend point.
+  In other words, the last operation on a coroutine can be suspend.
   In that case a 5th operation, destroy, must be used to release the coroutine state.
 
 Note: the destroy operation will not be illustrated in the diagrams.
 
 For a explanation of eager and lazy start, the reader is referred to [initial_suspend_](../initial_suspend]).
 
-We consider 2 forms of completion:
+We consider two forms of completion:
 * Synchronous completion: the leaf coroutine doesn't contain a co_await statement, only a co_return statement.
 * Asynchronous completion: the leaf coroutine contains a co_await statement at which it will suspend and must be resumed later.
 
@@ -59,13 +64,11 @@ At the final suspend point, a user-defined type (final_awaiter) is used, with th
     void await_suspend(coroutine_handle<promise_type> h) noexcept
 
 The reader is referred to [final_suspend_](../final_suspend]) for a more in-depth study of final awaiter types,
-more in particular concerning avoiding memory leaks.
+more in particular concerning the avoidance of memory leaks.
 
 ## Functions
 
 The following scenario shows the control flow in an application that only uses functions.
-
-Scenario:
 
 ![p0000 trace](./drawings/p0000.jpg)
 
@@ -213,7 +216,7 @@ For a more correct translation to pre C++20 code, the reader is referred to [tra
 
 ### Eager start
 
-Source code: [p2010e_void-sc.cpp](./p2010e_void-sc.cpp).
+Source code: [p2010e_void-sc.cpp](./p2010e_void-sc.cpp)
 
 Scenario:
 
@@ -259,11 +262,11 @@ The control flow is the same as if all coroutines were "ordinary" functions.
 
 ### Lazy start
 
-Source code: [p2010l_void-sc.cpp](./p2010l_void-sc.cpp).
+Source code: [p2010l_void-sc.cpp](./p2010l_void-sc.cpp)
 
 Scenario:
 
-![p2010l_void-sc trace](./drawings/p2010l_void-sc.jpg).
+![p2010l_void-sc trace](./drawings/p2010l_void-sc.jpg)
 
 The control flow sequence is as follows:
 
@@ -352,16 +355,60 @@ int main() {
 
 ### Eager start
 
-Source code: [p2020e_void-ma.cpp](./p2012e_void-ma.cpp).
+Source code: [p2020e_void-ma.cpp](./p2012e_void-ma.cpp)
 
 Scenario:
 
-![p2020e_void-ma trace](./drawings/p2020e_void-ma.jpg).
+![p2020e_void-ma trace](./drawings/p2020e_void-ma.jpg)
 
 ### Lazy start
 
-Source code: [p2020l_void-ma.cpp](./p2012l_void-ma.cpp).
+Source code: [p2020l_void-ma.cpp](./p2012l_void-ma.cpp)
 
 Scenario:
 
-![p2020l_void-ma trace](./drawings/p2020l_void-ma.jpg).
+![p2020l_void-ma trace](./drawings/p2020l_void-ma.jpg)
+
+## Coroutines: synchronous completion in the presence of a loop
+
+Consider the following example 
+(see [p1100e_void.cpp](./p1100e_void.cpp) 
+ and [p1100l_void.cpp](./p1100l_void.cpp) for the full source code):
+
+```c++
+task completes_synchronously(int i) {
+    co_return i;
+}
+
+task loop_synchronously(int count) {
+    int res = 0;
+    for (int i = 0; i < count; ++i) {
+        task cs = completes_synchronously(i);
+        res += co_await cs;
+    }
+    co_return res;
+}
+
+int main() {
+    task ls = loop_synchronously(2);
+    ls.start();
+    int res = ls.get_result();
+    return 0;
+}
+```
+
+### Eager start
+
+Source code: [p1100e_void.cpp](./p1100e_void.cpp)
+
+Scenario:
+
+![p1100e_void trace](./drawings/p1100e_void.jpg)
+
+### Lazy start
+
+Source code: [p1100l_void.cpp](./p1100l_void.cpp)
+
+Scenario:
+
+![p1100l_void trace](./drawings/p1100l_void.jpg)

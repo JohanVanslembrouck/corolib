@@ -3,7 +3,18 @@
  * @brief
  * Class with 4 coroutines and synchronous completion in the last-called coroutine.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * This file does not include a definition of class 'task'.
+ * A task header file will be included in the pXXXX files in which
+ * this file will be included just after the inclusion of this task header file.
+ * This allows the same coroutine code to be used with different task definitions.
+ * 
+ * Execution of the statement
+ *      int v = co_await coroutineX();
+ * creates a temporary task object that will go out-of-scope
+ * at the end of the statement.
+ * Task's destructor will thus be called before execution of the co_return statement.
+ * 
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _CLASS_SYNC_H_

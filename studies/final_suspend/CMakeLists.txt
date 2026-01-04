@@ -59,6 +59,13 @@ foreach(_target
     p1320_bool
     p1320e_bool
 
+    p1350_bool2
+    p1350e_bool2
+    p1360_bool2
+    p1360e_bool2
+    p1370_bool2
+    p1370e_bool2
+
     p1400_coroutine_handle
     p1400e_coroutine_handle
     p1410_coroutine_handle

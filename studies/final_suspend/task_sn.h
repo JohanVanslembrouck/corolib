@@ -4,10 +4,10 @@
  * 
  * Uses lazy start.
  *
- * task::promise_type::final_suspend returns std::suspend_never
+ * task::promise_type::final_suspend returns std::suspend_never.
  * task::awaiter::await_suspend() returns void.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _TASK_SN_H_
@@ -20,6 +20,8 @@
 #include "print.h"
 
 using namespace std;
+
+#define ALLOW_CO_AWAIT_TASK_OBJECT 1
 
 class task : private coroutine_tracker {
 public:
@@ -59,14 +61,15 @@ public:
             std::terminate();
         }
 
-        suspend_never_p final_suspend() noexcept {
-            print(PRI3, "%p: promise_type::final_suspend() -> suspend_never_p\n", this);
+        final_awaiter_suspend_never_p final_suspend() noexcept {
+            print(PRI3, "%p: promise_type::final_suspend() -> final_awaiter_suspend_never_p\n", this);
             return {};
         }
 
-        coroutine_handle<> continuation{ nullptr };
+        coroutine_handle<> continuation{ };
         int value{ 0 };
     };
+
 #if 0
     task(task&& t) noexcept
         : coro_(std::exchange(t.coro_, {}))
@@ -81,22 +84,22 @@ public:
                 coro_.destroy();
                 coro_ = {};
             }
-            else {
+            else
                 print(PRI2, "%p: task::~task(): !coro.done()\n", this);
-            }
         else
-            print(PRI2, "%p: task::~task(): coro_ == nullptr\n", this);
+            print(PRI2, "%p: task::~task(): coro_ == {}\n", this);
     }
 #else
     ~task() {
         print(PRI2, "%p: task::~task(): no test on coro_.done()\n", this);
         if (coro_) {
+            print(PRI2, "%p: task::~task(): note: coro_.done() = %d\n", this, coro_.done());
             print(PRI2, "%p: task::~task(): coro_.destroy();\n", this);
             coro_.destroy();
             coro_ = {};
         }
         else
-            print(PRI2, "%p: task::~task(): coro_ == nullptr\n", this);
+            print(PRI2, "%p: task::~task(): coro_ == {}\n", this);
     }
 #endif
 
@@ -166,10 +169,21 @@ public:
         coroutine_handle<promise_type> coro_;
     };
 
-    awaiter operator co_await() && noexcept {
+#if ALLOW_CO_AWAIT_TASK_OBJECT
+    awaiter operator co_await() noexcept {
         print(PRI3, "%p: task::operation co_await() -> awaiter\n", this);
         return awaiter{ coro_ };
     }
+#else
+    /*
+     * task t = coroutineX();
+     * int v = co_await t;      // Not possible with the && variant
+     */
+    awaiter operator co_await() && noexcept {
+        print(PRI3, "%p: task::operation co_await() && -> awaiter\n", this);
+        return awaiter{ coro_ };
+    }
+#endif
 
 private:
     explicit task(coroutine_handle<promise_type> h) noexcept
@@ -178,7 +192,7 @@ private:
         print(PRI2, "%p: task::task(...)\n", this);
     }
 
-    coroutine_handle<promise_type> coro_{ nullptr };
+    coroutine_handle<promise_type> coro_{ };
 };
 
 #endif

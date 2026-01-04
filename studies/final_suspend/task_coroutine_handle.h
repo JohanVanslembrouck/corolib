@@ -2,12 +2,13 @@
  * @file task_coroutine_handle.h
  * @brief
  *
- * Contains the task class that is used in p0120_coroutine_handle.cpp.
+ * Uses lazy start.
  * 
+ * task::promise_type::final_awaiter::await_ready() returns false.
  * task::promise_type::final_awaiter::await_suspend() returns std::coroutine_handle<>.
  * task::awaiter::await_suspend() returns coroutine_handle<>.
  * 
- * @author Lewis Baker
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _TASK_COROUTINE_HANDLE_H_
@@ -20,6 +21,8 @@
 #include "print.h"
 
 using namespace std;
+
+#define ALLOW_CO_AWAIT_TASK_OBJECT 1
 
 class task : private coroutine_tracker {
 public:
@@ -53,7 +56,7 @@ public:
             std::terminate();
         }
 
-        struct final_awaiter : public final_awaiter_tracker {
+        struct final_awaiter : private final_awaiter_tracker {
             bool await_ready() noexcept {
                 print(PRI3, "%p: promise_type::final_awaiter::await_ready() -> bool: return false;\n", this);
                 return false;
@@ -83,6 +86,7 @@ public:
         coroutine_handle<> continuation{ };
         int value{ 0 };
     };
+
 #if 0
     task(task&& t) noexcept
         : coro_(std::exchange(t.coro_, {}))
@@ -145,14 +149,14 @@ public:
         }
 
         std::coroutine_handle<> await_suspend(coroutine_handle<> continuation) noexcept {
-            print(PRI3, "%p: promise_type::final_awaiter::await_suspend() -> std::coroutine_handle<>: enter\n", this);
+            print(PRI3, "%p: task::awaiter::await_suspend() -> std::coroutine_handle<>: enter\n", this);
             // Store the continuation in the task's promise so that the final_suspend()
             // knows to resume this coroutine when the task completes.
             coro_.promise().continuation = continuation;
 
             // Then we resume the task's coroutine, which is currently suspended
             // at the initial-suspend-point (ie. at the open curly brace).
-            print(PRI3, "%p: promise_type::final_awaiter::await_suspend() -> std::coroutine_handle<>: return coro_;\n", this);
+            print(PRI3, "%p: task::awaiter::await_suspend() -> std::coroutine_handle<>: return coro_;\n", this);
             return coro_;
         }
 
@@ -180,10 +184,21 @@ public:
         coroutine_handle<promise_type> coro_;
     };
 
-    awaiter operator co_await() && noexcept {
+#if ALLOW_CO_AWAIT_TASK_OBJECT
+    awaiter operator co_await() noexcept {
         print(PRI3, "%p: task::operation co_await() -> awaiter\n", this);
         return awaiter{ coro_ };
     }
+#else
+    /*
+     * task t = coroutineX();
+     * int v = co_await t;      // Not possible with the && variant
+     */
+    awaiter operator co_await() && noexcept {
+        print(PRI3, "%p: task::operation co_await() && -> awaiter\n", this);
+        return awaiter{ coro_ };
+    }
+#endif
 
 private:
     explicit task(coroutine_handle<promise_type> h) noexcept

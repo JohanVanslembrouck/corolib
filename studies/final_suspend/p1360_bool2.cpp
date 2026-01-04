@@ -1,15 +1,15 @@
 /**
- * @file p1110_sn.cpp
+ * @file p1360_bool.cpp
  * @brief
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <thread>
 
 #include "print.h"
 
-#include "task_sn.h"
+#include "task_bool2.h"
 #include "class_async.h"
 
 mini_awaiter are1;
@@ -33,7 +33,7 @@ int main()
 
     print(PRI1, "main(): int v = a.get_result();\n");
     int v = a.get_result();
-    print(PRI1, "main(): v = %d = 0x%x;\n", v, v);
+    print(PRI1, "main(): v = %d;\n", v);
 	
     print(PRI1, "main(): return 0;\n");
     return 0;

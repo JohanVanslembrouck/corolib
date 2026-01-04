@@ -7,7 +7,7 @@
  * task::promise_type::final_suspend returns std::suspend_always.
  * task::awaiter::await_suspend() returns void.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _TASKE_SA_H_
@@ -20,6 +20,8 @@
 #include "print.h"
 
 using namespace std;
+
+#define ALLOW_CO_AWAIT_TASK_OBJECT 1
 
 class task : private coroutine_tracker {
 public:
@@ -59,14 +61,15 @@ public:
             std::terminate();
         }
 
-        suspend_always_p final_suspend() noexcept {
-            print(PRI3, "%p: promise_type::final_suspend() -> suspend_always_p\n", this);
+        final_awaiter_suspend_always_p final_suspend() noexcept {
+            print(PRI3, "%p: promise_type::final_suspend() -> final_awaiter_suspend_always_p\n", this);
             return {};
         }
 
         coroutine_handle<> continuation{ nullptr };
         int value{ 0 };
     };
+
 #if 0
     task(task&& t) noexcept
         : coro_(std::exchange(t.coro_, {}))
@@ -152,10 +155,21 @@ public:
         coroutine_handle<promise_type> coro_;
     };
 
-    awaiter operator co_await() && noexcept {
+#if ALLOW_CO_AWAIT_TASK_OBJECT
+    awaiter operator co_await() noexcept {
         print(PRI3, "%p: task::operation co_await() -> awaiter\n", this);
         return awaiter{ coro_ };
     }
+#else
+    /*
+     * task t = coroutineX();
+     * int v = co_await t;      // Not possible with the && variant
+     */
+    awaiter operator co_await() && noexcept {
+        print(PRI3, "%p: task::operation co_await() && -> awaiter\n", this);
+        return awaiter{ coro_ };
+    }
+#endif
 
 private:
     explicit task(coroutine_handle<promise_type> h) noexcept

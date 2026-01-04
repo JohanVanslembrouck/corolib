@@ -49,9 +49,10 @@ if exist ..\out\build\x64-Debug\examples\grpc\cpp\ (
     echo "set(GRPC_INSTALLED TRUE)" in CMakeList.txt and rebuild.
 )
 
-if exist ..\out\build\x64-Debug\studies\corolab\ (
+if exist ..\out\build\x64-Debug\studies\ (
     echo copying files to ..\out\build\x64-Debug\studies\ subdirectories.
     copy ..\studies\cfsms\run.bat ..\out\build\x64-Debug\studies\cfsms\.
+    copy ..\studies\control-flow\run.bat ..\out\build\x64-Debug\studies\control-flow\.
     copy ..\studies\corolab\run.bat ..\out\build\x64-Debug\studies\corolab\.
     copy ..\studies\final_suspend\run.bat ..\out\build\x64-Debug\studies\final_suspend\.
     copy ..\studies\initial_suspend\run.bat ..\out\build\x64-Debug\studies\initial_suspend\.

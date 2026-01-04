@@ -1,5 +1,5 @@
 /**
- * @file p1210e_void.cpp
+ * @file p1350e_bool2.cpp
  * @brief
  * 
  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
@@ -9,10 +9,8 @@
 
 #include "print.h"
 
-#include "taske_void.h"
-#include "class_async.h"
-
-mini_awaiter are1;
+#include "taske_bool2.h"
+#include "class_sync.h"
 
 int main()
 {
@@ -22,12 +20,6 @@ int main()
     print(PRI1, "main(): task a = obj.coroutine1();\n");
     task a = obj.coroutine1();
 	
-    print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
-    print(PRI1, "main(): are1.resume();\n");
-    are1.resume();
-
     print(PRI1, "main(): int v = a.get_result();\n");
     int v = a.get_result();
     print(PRI1, "main(): v = %d;\n", v);

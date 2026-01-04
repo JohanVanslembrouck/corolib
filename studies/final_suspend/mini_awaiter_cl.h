@@ -1,17 +1,19 @@
 /**
- * @file mini_awaiter.h
+ * @file mini_awaiter_cl.h
  * @brief
- * Defines a simple awaitable.
+ * Defines a simple awaitable. Uses the corolib print function.
  *
  * @author Johan Vanslembrouck
  */
 
-#ifndef _MINI_AWAITER_H_
-#define _MINI_AWAITER_H_
+#ifndef _MINI_AWAITER_CL_H_
+#define _MINI_AWAITER_CL_H_
 
 #include <coroutine>
 
-#include "print.h"
+#include <corolib/print.h>
+
+using namespace corolib;
 
 /**
  * @brief mini_awaiter mini0 defines a simple awaitable type with two member functions:

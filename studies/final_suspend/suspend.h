@@ -4,7 +4,7 @@
  *
  * Redefines std::suspend_never and std::suspend_always to print tracing information.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _SUSPEND_H_
@@ -35,6 +35,29 @@ struct suspend_always_p {
     }
     void await_resume() const noexcept {
         print(PRI3, "%p: void suspend_always_p::await_resume() -> void\n", this);
+    }
+};
+
+
+struct final_awaiter_suspend_never_p : public suspend_never_p, private final_awaiter_tracker
+{
+    final_awaiter_suspend_never_p() {
+        print(PRI3, "%p: final_awaiter_suspend_never_p::final_awaiter_suspend_never_p()\n", this);
+    }
+
+    ~final_awaiter_suspend_never_p() {
+        print(PRI3, "%p: final_awaiter_suspend_never_p::~final_awaiter_suspend_never_p()\n", this);
+    }
+};
+
+struct final_awaiter_suspend_always_p : public suspend_always_p, private final_awaiter_tracker
+{
+    final_awaiter_suspend_always_p() {
+        print(PRI3, "%p: final_awaiter_suspend_always_p::final_awaiter_suspend_always_p()\n", this);
+    }
+
+    ~final_awaiter_suspend_always_p() {
+        print(PRI3, "%p: final_awaiter_suspend_always_p::~final_awaiter_suspend_always_p()\n", this);
     }
 };
 

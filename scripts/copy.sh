@@ -56,6 +56,9 @@ if [ -d "../../corolib-build/studies/" ]; then
     cp ../studies/cfsms/run.sh ../../corolib-build/studies/cfsms
     chmod ug+x  ../../corolib-build/studies/cfsms/run.sh
 
+    cp ../studies/cfsms/run.sh ../../corolib-build/studies/control-flow
+    chmod ug+x  ../../corolib-build/studies/control-flow/run.sh
+
     cp ../studies/corolab/run.sh ../../corolib-build/studies/corolab
     chmod ug+x  ../../corolib-build/studies/corolab/run.sh
 

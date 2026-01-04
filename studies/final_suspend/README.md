@@ -26,7 +26,10 @@ The following gives an overview of the study applications:
 |                             |                          |                      |
 | p1100e_sn.cpp               | taske_sn.h               | class_sync.h         |
 | p1100_sn.cpp                | task_sn.h                | class_sync.h         |
+| p1112e_sn.cpp               | taske_sn.h               | class_async2.h       |
+| p1114e_sn.cpp               | taske_sn.h               | class_async4.h       |
 | p1110e_sn.cpp               | taske_sn.h               | class_async.h        |
+
 | p1110_sn.cpp                | task_sn.h                | class_async.h        |
 | p1120e_sn.cpp               | taske_sn.h               | class_async-thread.h |
 | p1120_sn.cpp                | task_sn.h                | class_async-thread.h |
@@ -52,6 +55,13 @@ The following gives an overview of the study applications:
 | p1320e_bool.cpp             | taske_bool.h             | class_async-thread.h |
 | p1320_bool.cpp              | task_bool.h              | class_async-thread.h |
 |                             |                          |                      |
+| p1350e_bool.cpp             | taske_bool2.h            | class_sync.h         |
+| p1360_bool.cpp              | task_bool2.h             | class_sync.h         |
+| p1360e_bool.cpp             | taske_bool2.h            | class_async.h        |
+| p1360_bool.cpp              | task_bool2.h             | class_async.h        |
+| p1370e_bool.cpp             | taske_bool2.h            | class_async-thread.h |
+| p1370_bool.cpp              | task_bool2.h             | class_async-thread.h |
+|                             |                          |                      |
 | p1400e_coroutine_handle.cpp | taske_coroutine_handle.h | class_sync.h         |
 | p1400_coroutine_handle.cpp  | task_coroutine_handle.h  | class_sync.h         | 
 | p1410e_coroutine_handle.cpp | taske_coroutine_handle.h | class_async.h        |
@@ -71,20 +81,34 @@ See [initial_suspend](../initial_suspend/README.md) for a study of eager and laz
 
 The following table gives an overview of the major differences between the task(e)_xyz.h header files used in this study.
 
-| file                       | final_suspend() returns | await_suspend() return type | resume() call in | return_value() saved to |
+| file                       | final_suspend() returns | await_suspend() return type | resume() call in | return_value() saves to |
 | -------------------------- | ----------------------- | --------------------------- | ---------------- | ----------------------- |
 | task(e)_sa.h               | std::suspend_always     | void                        | return_value()   | promise_type            |
 | task(e)_sn.h               | std::suspend_never      | void                        | return_value()   | promise_type            |
 | task(e)_sn2.h              | std::suspend_never      | void                        | return_value()   | task                    |
 | task(e)_void.h             | final_awaiter           | void                        | await_suspend()  | promise_type            |
-| task(e)_bool.h             | final_awaiter           | bool                        | await_suspend()  | promise_type            |
-| task(e)_coroutine_handle.h | final_awaiter           | std::coroutine_handle<>     | infrastructure code | promise_type         |
+| task(e)_bool.h             | final_awaiter           | bool (false)                | await_suspend()  | task                    |
+| task(e)_bool2.h            | final_awaiter           | bool (true)                 | await_resume ()  | promise_type            |
+| task(e)_coroutine_handle.h | final_awaiter           | std::coroutine_handle<>     | std::coroutine_handle<>::resume() | promise_type |
+
+The task(e)_XXX.h file define a ALLOW_CO_AWAIT_TASK_OBJECT compiler directive set to 1.
+Using this setting it is possible to rewrite the statement
+
+    int v = co_await coroutineX();
+
+as follows
+
+    int v = 0;
+    task t = coroutineX();
+    v = co_await t;
+
+With ALLOW_CO_AWAIT_TASK_OBJECT set to 0, the last statement does not compile.
 
 Files class_sync.h, class_async.h and class_async-thread.h contain a small coroutine application class 
 with 4 coroutine member functions.
 The difference between the 3 header files is the implementation of the lowest level coroutine4:
 
-* coroutine4 in class_sync.h does not suspend its calling coroutine3: it only contains a co_return statment.
+* coroutine4 in class_sync.h does not suspend its calling coroutine3: it only contains a co_return statement.
 This is called "synchronous completion." All coroutines behave as "ordinary" functions.
 
 * coroutine4 in class_async.h first suspends itself and, consequently, also its calling coroutine3
@@ -95,9 +119,9 @@ and so on). This is called "asynchronous completion."
 * The implementation of coroutine4 in class_async-thread.h is similar to the one in class_async.h,
 except that coroutine4 now resumes coroutine3 on a separate thread.
 
-* From one p1XXX_xyz.cpp source code file, two eexecutables will be produced, stfs-p1XXX_xyz and stfs2-p1XXX_xyz,
-where stfs stands for "study final_suspend". If the compiler directive USE_CORO_DONE_TEST=1, stfs-p1XXX_xyz is produced,
-if USE_CORO_DONE_TEST=0, stfs2-p1XXX_xyz will be produced:
+* From one p1XXX_xyz.cpp source code file, two executables will be produced, stfs-p1XXX_xyz and stfs2-p1XXX_xyz,
+where stfs stands for "study final_suspend." If compiler directive USE_CORO_DONE_TEST=1, stfs-p1XXX_xyz will be produced;
+if compiler directive USE_CORO_DONE_TEST=0, stfs2-p1XXX_xyz will be produced:
 
 ```c++
 #if USE_CORO_DONE_TEST
@@ -240,7 +264,11 @@ The following table gives an overview of all related applications and their resu
 | ./stfs-p1110e_sn    | incorrect     | no            | 4/4 | 4/4 |
 | ./stfs-p1110_sn     | incorrect     | no            | 4/4 | 4/4 |
 | ./stfs-p1120e_sn    | incorrect     | no            | 4/4 | 4/4 |
-| ./stfs-p1120_sn     | incoorect     | no            | 4/4 | 4/4 |
+| ./stfs-p1120_sn     | incorrect     | no            | 4/4 | 4/4 |
+
+The reason is that we read the results from a promise_type object in a coroutine frame that has already been deallocated.
+The Windows operating system has filled the memory with 0xdddddddd.
+Note that on Ubuntu 22.04 and 24.04, the result is correct, because the memory has not been re-initialized.
 
 | program             | get_result()  | memory leaks? | cor | pro | error |
 | ------------------- | ------------- | ------------- | --- | --- | ----- |
@@ -252,9 +280,185 @@ The following table gives an overview of all related applications and their resu
 | ./stfs2-p1120_sn    | incorrect     | no            | ?   | ?   | free(): double free detected in tcache 2 |
 
 
-The reason is that we read the results from a promise_type object in a coroutine frame that has already been deallocated.
-The Windows operating system has filled the memory with 0xdddddddd.
-Note that on Ubuntu 22.04 and 24.04, the result is correct, because the memory has not been re-initialized.
+Consider the following code fragment from [class_async.h](class_async.h)
+that is used in [p1110e_sn.cpp](p1110e_sn.cpp):
+
+```c++
+    task coroutine1()
+    {
+        int v = co_await coroutine2();
+        co_return v + 1;
+    }
+```
+
+This code uses a temporary task object as return value
+of coroutine3() and can be rewritten as
+
+```c++
+    task coroutine1()
+    {
+        int v = 0;
+        {
+            task t = coroutine2();
+            v = co_await t;
+        }
+        co_return v + 1;
+    }
+```
+
+In the case of stfs, the following task destructor implementation from [taske_sn.h](taske_sn.h) is used:
+
+```c++
+    ~task() {
+        if (coro_)
+            if (coro_.done()) {
+                coro_.destroy();
+                coro_ = {};
+            }
+    }
+```
+
+In the case of stfs2, the following task destructor implementation is used instead:
+
+```c++
+    ~task() {
+        if (coro_) {
+            coro_.destroy();
+            coro_ = {};
+        }
+    }
+```
+
+In the second implementation used in stfs2, the task destructor will unconditionally destroy the coroutine frame of
+the coroutine referred to in the task object, even if the coroutine has not reached its final suspend point
+For example, in coroutine1, we have
+
+```c++
+    task coroutine1()
+    {
+        int v = 0;
+        {
+            task t = coroutine2();
+            v = co_await t;
+        }                       // t goes out-of-scope here
+                                // task destructor will destroy the coroutine2 state object which contains
+                                // coroutine2's promise_type object.
+        co_return v + 1;
+                                // final suspend point is only reached here.
+    }
+```
+
+Because of the use of std::suspend_never at the final suspend point, coroutine1 will run to completion,
+destroying its own coroutine state object with its embedded promise_type object.
+Next, coroutine2 (after having resumed coroutine1) will run to completion,
+also destroying its own coroutine state object with its embedded promise_type object.
+
+However, this coroutine2's promise_type object has already been destroyed. This explains the double free.
+The complete trace of stfs2-p1110e_sn (on Ubuntu 22.04) is as follows:
+
+```
+...$ ./stfs2-p1110e_sn
+00: main(): task a = obj.coroutine1();
+00: 0x6017c68542c0: promise_type::promise_type()
+00: 0x6017c68542c0: promise_type::get_return_object() -> task
+00: 0x7ffd62b26bd8: task::task(...)
+00: 0x6017c68542c0: promise_type::initial_suspend() -> suspend_never_p
+00: 0x6017c68542e4: suspend_never_p::await_ready() -> bool: return true;
+00: 0x6017c68542e4: void suspend_never_p::await_resume() -> void
+00: coroutine1(): int v = co_await coroutine2();
+00: 0x6017c6854320: promise_type::promise_type()
+00: 0x6017c6854320: promise_type::get_return_object() -> task
+00: 0x6017c68542f8: task::task(...)
+00: 0x6017c6854320: promise_type::initial_suspend() -> suspend_never_p
+00: 0x6017c6854344: suspend_never_p::await_ready() -> bool: return true;
+00: 0x6017c6854344: void suspend_never_p::await_resume() -> void
+00: coroutine2(): int v = co_await coroutine3();
+00: 0x6017c6854380: promise_type::promise_type()
+00: 0x6017c6854380: promise_type::get_return_object() -> task
+00: 0x6017c6854358: task::task(...)
+00: 0x6017c6854380: promise_type::initial_suspend() -> suspend_never_p
+00: 0x6017c68543a4: suspend_never_p::await_ready() -> bool: return true;
+00: 0x6017c68543a4: void suspend_never_p::await_resume() -> void
+00: coroutine3(): int v = co_await coroutine4();
+00: 0x6017c68543e0: promise_type::promise_type()
+00: 0x6017c68543e0: promise_type::get_return_object() -> task
+00: 0x6017c68543b8: task::task(...)
+00: 0x6017c68543e0: promise_type::initial_suspend() -> suspend_never_p
+00: 0x6017c6854404: suspend_never_p::await_ready() -> bool: return true;
+00: 0x6017c6854404: void suspend_never_p::await_resume() -> void
+00: coroutine4(): co_await are1;
+00: 0x7ffd62b26960: mini_awaiter::awaiter::awaiter(...)
+00: 0x6017c6854408: mini_awaiter::awaiter::await_ready() -> bool: return false;
+00: 0x6017c6854408: mini_awaiter::awaiter::await_suspend() -> void
+00: 0x6017c68543b8: task::operation co_await() -> awaiter
+00: 0x7ffd62b269f0: task::awaiter::awaiter(...)
+00: 0x6017c68543b0: task::awaiter::await_ready() -> bool: return 0;
+00: 0x6017c68543b0: task::awaiter::await_suspend() -> void: enter
+00: 0x6017c68543b0: task::awaiter::await_suspend() -> void: leave
+00: 0x6017c6854358: task::operation co_await() -> awaiter
+00: 0x7ffd62b26a80: task::awaiter::awaiter(...)
+00: 0x6017c6854350: task::awaiter::await_ready() -> bool: return 0;
+00: 0x6017c6854350: task::awaiter::await_suspend() -> void: enter
+00: 0x6017c6854350: task::awaiter::await_suspend() -> void: leave
+00: 0x6017c68542f8: task::operation co_await() -> awaiter
+00: 0x7ffd62b26b10: task::awaiter::awaiter(...)
+00: 0x6017c68542f0: task::awaiter::await_ready() -> bool: return 0;
+00: 0x6017c68542f0: task::awaiter::await_suspend() -> void: enter
+00: 0x6017c68542f0: task::awaiter::await_suspend() -> void: leave
+00: main(): std::this_thread::sleep_for(std::chrono::milliseconds(10));
+00: main(): are1.resume();
+00: 0x60178de1e028: mini_awaiter::resume() -> void: enter
+00: 0x60178de1e028: mini_awaiter::resume() -> void: before m_awaiting.resume();
+00: 0x6017c6854408: mini_awaiter::awaiter::await_resume() -> void
+00: coroutine4(): co_return 1;
+00: 0x6017c68543e0: promise_type::return_value(1) -> void: enter
+00: 0x6017c68543e0: promise_type::return_value(1) -> void: before continuation.resume();
+00: 0x6017c68543b0: task::awaiter::await_resume() -> int: return 1;
+00: 0x6017c68543b8: task::~task(): no test on coro_.done()
+00: 0x6017c68543b8: task::~task(): note: coro_.done() = 0
+00: 0x6017c68543b8: task::~task(): coro_.destroy();
+00: 0x6017c68543e0: promise_type::~promise_type()
+00: coroutine3(): co_return 2;
+00: 0x6017c6854380: promise_type::return_value(2) -> void: enter
+00: 0x6017c6854380: promise_type::return_value(2) -> void: before continuation.resume();
+00: 0x6017c6854350: task::awaiter::await_resume() -> int: return 2;
+00: 0x6017c6854358: task::~task(): no test on coro_.done()
+00: 0x6017c6854358: task::~task(): note: coro_.done() = 0
+00: 0x6017c6854358: task::~task(): coro_.destroy();
+00: 0x6017c68543b8: task::~task(): no test on coro_.done()
+00: 0x6017c68543b8: task::~task(): coro_ == {}
+00: 0x6017c6854380: promise_type::~promise_type()
+00: coroutine2(): co_return 3;
+00: 0x6017c6854320: promise_type::return_value(3) -> void: enter
+00: 0x6017c6854320: promise_type::return_value(3) -> void: before continuation.resume();
+00: 0x6017c68542f0: task::awaiter::await_resume() -> int: return 3;
+00: 0x6017c68542f8: task::~task(): no test on coro_.done()
+00: 0x6017c68542f8: task::~task(): note: coro_.done() = 0
+00: 0x6017c68542f8: task::~task(): coro_.destroy();
+00: 0x6017c6854358: task::~task(): no test on coro_.done()
+00: 0x6017c6854358: task::~task(): coro_ == {}
+00: 0x6017c6854320: promise_type::~promise_type()
+00: coroutine1(): co_return 4;
+00: 0x6017c68542c0: promise_type::return_value(4) -> void: enter
+00: 0x6017c68542c0: promise_type::return_value(4) -> void: leave
+00: 0x6017c68542c0: promise_type::final_suspend() -> final_awaiter_suspend_never_p
+00: 0x6017c6854300: final_awaiter_suspend_never_p::final_awaiter_suspend_never_p()
+00: 0x6017c6854300: suspend_never_p::await_ready() -> bool: return true;
+00: 0x6017c6854300: void suspend_never_p::await_resume() -> void
+00: 0x6017c6854300: final_awaiter_suspend_never_p::~final_awaiter_suspend_never_p()
+00: 0x6017c68542c0: promise_type::~promise_type()
+00: 0x6017c6854320: promise_type::return_value(3) -> void: after continuation.resume();
+00: 0x6017c6854320: promise_type::return_value(3) -> void: leave
+00: 0x6017c6854320: promise_type::final_suspend() -> final_awaiter_suspend_never_p
+00: 0x6017c6854360: final_awaiter_suspend_never_p::final_awaiter_suspend_never_p()
+00: 0x6017c6854360: suspend_never_p::await_ready() -> bool: return true;
+00: 0x6017c6854360: void suspend_never_p::await_resume() -> void
+00: 0x6017c6854360: final_awaiter_suspend_never_p::~final_awaiter_suspend_never_p()
+00: 0x6017c6854320: promise_type::~promise_type()
+free(): double free detected in tcache 2
+Aborted (core dumped)
+...$
+```
 
 ### final_suspend() returns std::suspend_never with result stored in the task object
 
@@ -344,11 +548,11 @@ The following table gives an overview of all related applications and their resu
 | ./stfs2-p1220_void  | correct       | no            | 4/4 | 4/4 |
 
 
-### await_suspend() returns bool
+### await_suspend() returns bool (false)
 
-In this implementation, task::promise_type::final_awaiter::await_suspend() and task::awaiter::await_suspend() returns bool.
+In this implementation, task::promise_type::final_awaiter::await_suspend() and task::awaiter::await_suspend() returns bool (false).
 
-The examples p13X0_sn.cpp (lazy start coroutines) and p13X0e_sn.cpp (eager start coroutines) show that the results are correct and
+The examples p13X0_bool.cpp (lazy start coroutines) and p13X0e_bool.cpp (eager start coroutines) show that the results are correct and
 that all promise_type objects are released.
 
 The following table gives an overview of all related applications and their results:
@@ -371,6 +575,38 @@ The following table gives an overview of all related applications and their resu
 | ./stfs2-p1310_bool  | correct       | no            | 4/4 | 4/4 |
 | ./stfs2-p1320e_bool | correct       | no            | 4/4 | 4/4 |
 | ./stfs2-p1320_bool  | correct       | no            | 4/4 | 4/4 |
+
+### await_suspend() returns bool (true)
+
+In this implementation, task::promise_type::final_awaiter::await_suspend() and task::awaiter::await_suspend() returns bool (true).
+
+The examples p13X0_bool2.cpp (lazy start coroutines) and p13X0e_bool2.cpp (eager start coroutines) show that the results are
+mostly correct, but that there are differences between Windows and Ubuntu for stfs-p1350e_bool2 and stfs-p1350_bool2.
+
+The following table gives an overview of all related applications and their results:
+
+On Windows 11 (Visual Studio 2022):
+
+| program              | get_result()  | memory leaks? | cor | pro |
+| -------------------- | ------------- | ------------- | --- | --- |
+| ./stfs-p1350e_bool2  | correct       | no            | 4/4 | 4/4 |
+| ./stfs-p1350_bool2   | incorrect     | no            |     |     | does not terminate properly
+| ./stfs-p1360e_bool2  | correct       | no            | 4/4 | 4/4 |
+| ./stfs-p1360_bool2   | correct       | no            | 4/4 | 4/4 |
+| ./stfs-p1370e_bool2  | correct       | no            | 4/4 | 4/4 |
+| ./stfs-p1370_bool2   | correct       | no            | 4/4 | 4/4 |
+
+On Ubuntu 24.04 (gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0):
+
+| program              | get_result()  | memory leaks? | cor | pro |
+| -------------------- | ------------- | ------------- | --- | --- |
+| ./stfs-p1350e_bool2  | incorrect     | no            | 1/4 | 1/4 |
+| ./stfs-p1350_bool2   | correct       | no            | 4/4 | 4/4 |
+| ./stfs-p1360e_bool2  | correct       | no            | 4/4 | 4/4 |
+| ./stfs-p1360_bool2   | correct       | no            | 4/4 | 4/4 |
+| ./stfs-p1370e_bool2  | correct       | no            | 4/4 | 4/4 |
+| ./stfs-p1370_bool2   | correct       | no            | 4/4 | 4/4 |
+
 
 ### await_suspend() returns std::coroutine_handle<>
 

@@ -2,12 +2,13 @@
  * @file task_void.h
  * @brief
  * 
- * Contains the task class that is common to p0000_void.cpp and p0110_void.cpp.
+ * Uses lazy start.
  * 
+ * task::promise_type::final_awaiter::await_ready() returns false.
  * task::promise_type::final_awaiter::await_suspend() returns void.
  * task::awaiter::await_suspend() returns void.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _TASK_VOID_H_
@@ -20,6 +21,8 @@
 #include "print.h"
 
 using namespace std;
+
+#define ALLOW_CO_AWAIT_TASK_OBJECT 1
 
 class task : private coroutine_tracker {
 public:
@@ -53,7 +56,7 @@ public:
             std::terminate();
         }
 
-        struct final_awaiter : public final_awaiter_tracker {
+        struct final_awaiter : private final_awaiter_tracker {
             bool await_ready() noexcept {
                 print(PRI3, "%p: promise_type::final_awaiter::await_ready() -> bool: return false;\n", this);
                 return false;
@@ -80,6 +83,7 @@ public:
         coroutine_handle<> continuation{ nullptr };
         int value{ 0 };
     };
+
 #if 0
     task(task&& t) noexcept
         : coro_(std::exchange(t.coro_, {}))
@@ -183,10 +187,21 @@ public:
         coroutine_handle<promise_type> coro_;
     };
 
-    awaiter operator co_await() && noexcept {
+#if ALLOW_CO_AWAIT_TASK_OBJECT
+    awaiter operator co_await() noexcept {
         print(PRI3, "%p: task::operation co_await() -> awaiter\n", this);
         return awaiter{ coro_ };
     }
+#else
+    /*
+     * task t = coroutineX();
+     * int v = co_await t;      // Not possible with the && variant
+     */
+    awaiter operator co_await() && noexcept {
+        print(PRI3, "%p: task::operation co_await() && -> awaiter\n", this);
+        return awaiter{ coro_ };
+    }
+#endif
 
 private:
     explicit task(coroutine_handle<promise_type> h) noexcept
