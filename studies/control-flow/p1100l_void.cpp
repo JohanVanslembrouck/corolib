@@ -16,28 +16,28 @@ task completes_synchronously(int i) {
 
 task loop_synchronously(int count) {
     print(PRI1, "loop_synchronously(%d)\n", count);
-    int res = 0;
+    int v = 0;
     for (int i = 0; i < count; ++i) {
         counter++;
-        print(PRI1, "%d: loop_synchronously(%d): completes_synchronously(%d)\n", counter, count, i);
+        print(PRI1, "%d: loop_synchronously(%d): task cs = completes_synchronously(%d)\n", counter, count, i);
         task cs = completes_synchronously(i);
-        print(PRI1, "loop_synchronously(%d): res += co_await cs;\n", count);
-        res += co_await cs;
+        print(PRI1, "loop_synchronously(%d): v += co_await cs;\n", count);
+        v += co_await cs;
     }
-    print(PRI1, "loop_synchronously(%d): co_return %d;\n", count, res);
-    co_return res;
+    print(PRI1, "loop_synchronously(%d): co_return %d;\n", count, v);
+    co_return v;
 }
 
 int main() {
-    set_print_level(0x07);
+    set_print_level(0x01);      // Use 0x07 to see the detailed control flow.
 
     counter++;
-    print(PRI1, "%d: main(): task ls = loop_synchronously(3);\n", counter);
-    task ls = loop_synchronously(2);
+    print(PRI1, "%d: main(): task ls = loop_synchronously(4);\n", counter);
+    task ls = loop_synchronously(4);
     print(PRI1, "main(): ls.start();\n");
     ls.start();
-    print(PRI1, "main(): int res = ls.get_result();\n");
-    int res = ls.get_result();
-    print(PRI1, "res = %d\n", res);
+    print(PRI1, "main(): int v = ls.get_result();\n");
+    int v = ls.get_result();
+    print(PRI1, "v = %d\n", v);
     return 0;
 }

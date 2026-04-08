@@ -32,7 +32,7 @@ task bar() {
 }
 
 int main() {
-    set_print_level(0x07);
+    set_print_level(0x01);      // Use 0x07 to see the detailed control flow.
 
     counter++;
     print(PRI1, "%d: main(): task b = bar();\n", counter);

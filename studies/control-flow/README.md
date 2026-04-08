@@ -1,5 +1,253 @@
 # Study: Control flow
 
+## Overview
+
+The following table gives an overview of the eight examples used in this study.
+
+| Program            | Description                                                       |
+| ------------------ | ----------------------------------------------------------------- |
+| p1100e_void.cpp    | Eager start, synchronous completion coroutine called 4 times.     |
+| p1100l_void.cpp    | Lazy start, synchronous completion coroutine called 4 times.      |
+| p1100ae_void.cpp   | Eager start, synchronous completion coroutine called 10000 times. |
+| p1100al_void.cpp   | Lazy start, synchronous completion coroutine called 10000 times.  |
+|                    | Crashes!                                                          |
+| p2010e_void-sc.cpp | Eager start, synchronous completion coroutine called once.        |
+| p2010l_void-sc.cpp | Lazy start, synchronous completion coroutine called once.         |
+| p2020e_void-ma.cpp | Eager start, asynchronous completion coroutine called once.       |
+| p2020l_void-ma.cpp | Lazy start, asynchronous completion coroutine called once.        |
+
+The 'void' in the name of the programs refers to using a final_awaiter type
+with the await_suspend() function using void as return type.
+This explains the crash of p1100al_void.cpp.
+See [initial_suspend](../initial_suspend) for an analysis and solution to this problem.
+
+The following is the output of the eight examples:
+
+```
+C:\...\corolib\out\build\x64-Debug\studies\control-flow>.\cf-p1100e_void.exe
+00: 1: main(): task ls = loop_synchronously(4);
+00: loop_synchronously(4)
+00: 4: loop_synchronously(4): task cs = completes_synchronously(0)
+00: completes_synchronously(0): co_return 0;
+00: loop_synchronously(4): v += co_await cs;
+00: 11: loop_synchronously(4): task cs = completes_synchronously(1)
+00: completes_synchronously(1): co_return 1;
+00: loop_synchronously(4): v += co_await cs;
+00: 18: loop_synchronously(4): task cs = completes_synchronously(2)
+00: completes_synchronously(2): co_return 2;
+00: loop_synchronously(4): v += co_await cs;
+00: 25: loop_synchronously(4): task cs = completes_synchronously(3)
+00: completes_synchronously(3): co_return 3;
+00: loop_synchronously(4): v += co_await cs;
+00: loop_synchronously(4): co_return 6;
+00: main(): ls.start();
+00: main(): int v = ls.get_result();
+00: v = 6
+00: --------------------------------------------------------
+00: nr_resumptions = 0
+00:     cons    dest    diff    max
+00: cor 5       5       0       2
+00: pro 5       5       0       2
+00: ini 5       5       0       1
+00: awa 4       4       0       1
+00: fin 5       5       0       1
+00: --------------------------------------------------------
+00: Waiting 1000 milliseconds before exiting
+
+C:\...\corolib\out\build\x64-Debug\studies\control-flow>.\cf-p1100l_void.exe
+00: 1: main(): task ls = loop_synchronously(4);
+00: main(): ls.start();
+00: loop_synchronously(4)
+00: 7: loop_synchronously(4): task cs = completes_synchronously(0)
+00: loop_synchronously(4): v += co_await cs;
+00: completes_synchronously(0): co_return 0;
+00: 18: loop_synchronously(4): task cs = completes_synchronously(1)
+00: loop_synchronously(4): v += co_await cs;
+00: completes_synchronously(1): co_return 1;
+00: 29: loop_synchronously(4): task cs = completes_synchronously(2)
+00: loop_synchronously(4): v += co_await cs;
+00: completes_synchronously(2): co_return 2;
+00: 40: loop_synchronously(4): task cs = completes_synchronously(3)
+00: loop_synchronously(4): v += co_await cs;
+00: completes_synchronously(3): co_return 3;
+00: loop_synchronously(4): co_return 6;
+00: main(): int v = ls.get_result();
+00: v = 6
+00: --------------------------------------------------------
+00: nr_resumptions = 9
+00:     cons    dest    diff    max
+00: cor 5       5       0       2
+00: pro 5       5       0       2
+00: ini 5       5       0       1
+00: awa 4       4       0       1
+00: fin 5       5       0       1
+00: --------------------------------------------------------
+00: Waiting 1000 milliseconds before exiting
+
+C:\...\corolib\out\build\x64-Debug\studies\control-flow>.\cf-p1100ae_void.exe
+00: main(): task ls = loop_synchronously(10000);
+00: main(): ls.start();
+00: main(): int v = ls.get_result();
+00: v = 49995000
+00: --------------------------------------------------------
+00: nr_resumptions = 0
+00:     cons    dest    diff    max
+00: cor 10001   10001   0       2
+00: pro 10001   10001   0       2
+00: ini 10001   10001   0       1
+00: awa 10000   10000   0       1
+00: fin 10001   10001   0       1
+00: --------------------------------------------------------
+00: Waiting 1000 milliseconds before exiting
+
+C:\...\corolib\out\build\x64-Debug\studies\control-flow>.\cf-p1100al_void.exe
+00: main(): task ls = loop_synchronously(10000);
+00: main(): ls.start();
+
+C:\...\corolib\out\build\x64-Debug\studies\control-flow>.\cf-p2010e_void-sc.exe
+00: 1: main(): task b = bar();
+00: 4: bar(): task f = foo();
+00: foo(): co_return 1;
+00: bar(): int v = co_await f;
+00: bar(): co_return 2;
+00: main(): b.start();
+00: main(): int v = b.get_result();
+00: main(): v = 2;
+00: main(): return 0;
+00: --------------------------------------------------------
+00: nr_resumptions = 0
+00:     cons    dest    diff    max
+00: cor 2       2       0       2
+00: pro 2       2       0       2
+00: ini 2       2       0       1
+00: awa 1       1       0       1
+00: fin 2       2       0       1
+00: --------------------------------------------------------
+00: Waiting 1000 milliseconds before exiting
+
+C:\...\corolib\out\build\x64-Debug\studies\control-flow>.\cf-p2010l_void-sc.exe
+00: 1: main(): task b = bar();
+00: main(): b.start();
+00: 7: bar(): task f = foo();
+00: bar(): int v = co_await f;
+00: foo(): co_return 1;
+00: bar(): co_return 2;
+00: main(): int v = b.get_result();
+00: main(): v = 2;
+00: main(): return 0;
+00: --------------------------------------------------------
+00: nr_resumptions = 3
+00:     cons    dest    diff    max
+00: cor 2       2       0       2
+00: pro 2       2       0       2
+00: ini 2       2       0       1
+00: awa 1       1       0       1
+00: fin 2       2       0       1
+00: --------------------------------------------------------
+00: Waiting 1000 milliseconds before exiting
+
+C:\...\corolib\out\build\x64-Debug\studies\control-flow>.\cf-p2020e_void-ma.exe
+00: 1: main(): task b = bar();
+00: 4: bar(): task f = foo();
+00: foo(): int v = co_await ma;
+00: bar(): int v = co_await f;
+00: main(): b.start();
+00: main(): ma.set_result_and_resume(10);
+00: foo(): co_return 11;
+00: bar(): co_return 12;
+00: main(): int v = b.get_result();
+00: main(): v = 12;
+00: main(): return 0;
+00: --------------------------------------------------------
+00: nr_resumptions = 2
+00:     cons    dest    diff    max
+00: cor 2       2       0       2
+00: pro 2       2       0       2
+00: ini 2       2       0       1
+00: awa 1       1       0       1
+00: fin 2       2       0       1
+00: --------------------------------------------------------
+00: Waiting 1000 milliseconds before exiting
+
+C:\...\corolib\out\build\x64-Debug\studies\control-flow>.\cf-p2020l_void-ma.exe
+00: 1: main(): task b = bar();
+00: main(): b.start();
+00: 7: bar(): task f = foo();
+00: bar(): int v = co_await f;
+00: foo(): int v = co_await ma;
+00: main(): ma.set_result_and_resume(10);
+00: foo(): co_return 11;
+00: bar(): co_return 12;
+00: main(): int v = b.get_result();
+00: main(): v = 12;
+00: main(): return 0;
+00: --------------------------------------------------------
+00: nr_resumptions = 4
+00:     cons    dest    diff    max
+00: cor 2       2       0       2
+00: pro 2       2       0       2
+00: ini 2       2       0       1
+00: awa 1       1       0       1
+00: fin 2       2       0       1
+00: --------------------------------------------------------
+00: Waiting 1000 milliseconds before exiting
+PS C:\...\corolib\out\build\x64-Debug\studies\control-flow>
+```
+
+Consider the following code extract from p1100e_void.cpp and p1100l_void.cpp.
+The numbers indicate the order in which statements are executed.
+Although the code is exactly the same, the order in which the statements are executed is different in both programs.
+This is because these programs include another definition of a task type.
+
+```c++
+task completes_synchronously(int i) {
+    print(PRI1, "completes_synchronously(%d): co_return %d;\n", i, i);      // 2 (eager start) or 3 (lazy start)
+    co_return i;                                                            // 2 (eager start) or 3 (lazy start)
+}
+
+task loop_synchronously(int count) {
+    print(PRI1, "loop_synchronously(%d)\n", count);
+    int v = 0;
+    for (int i = 0; i < count; ++i) {
+        counter++;
+        print(PRI1, "%d: loop_synchronously(%d): task cs = completes_synchronously(%d)\n", counter, count, i);      // 1
+        task cs = completes_synchronously(i);                                                                       // 1
+        print(PRI1, "loop_synchronously(%d): v += co_await cs;\n", count);      // 3 (eager start) or 2 (lazy start)
+        v += co_await cs;                                                       // 3 (eager start) or 2 (lazy start)
+    }
+    print(PRI1, "loop_synchronously(%d): co_return %d;\n", count, v);
+    co_return v;
+}
+```
+
+Consider the following code extract from p2010e_void-sc.cpp and p2010l_void-sc.cpp.
+The numbers indicate the order in which statements are executed.
+Although the code is exactly the same, the order in which the statements are executed is different in both programs.
+This is because these programs include another definition of a task type.
+
+```c++
+task foo() {
+    print(PRI1, "foo(): co_return 1;\n");       // 2 (eager start) or 3 (lazy start)
+    co_return 1;                                // 2 (eager start) or 3 (lazy start)
+}
+
+task bar() {
+    counter++;
+    print(PRI1, "%d: bar(): task f = foo();\n", counter);       // 1
+    task f = foo();                                             // 1
+    print(PRI1, "bar(): int v = co_await f;\n");                // 3 (eager start) or 2 (lazy start)
+    int v = co_await f;                                         // 3 (eager start) or 2 (lazy start)
+    print(PRI1, "bar(): co_return %d;\n", v+1);
+    co_return v+1;
+}
+```
+
+In contrast to C# that uses eager start (see [control-flow-cs](../control-flow-cs)) and
+Python that uses lazy start (see [control-flow-python](../control-flow-python)),
+in C++ we can program the behavior ourselves.
+
+The rest of this document illustrates the control flow using a variant of UML sequence diagrams.
+
 ## Introduction
 
 The reader is referred to [awaiter type variants](../../docs/awaiter_type_variants.md) for an introduction to awaiter types.

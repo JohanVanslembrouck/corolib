@@ -27,7 +27,9 @@ foreach(_target
     p2020e_void-ma
     p2020l_void-ma
     p1100e_void
+    p1100ae_void
     p1100l_void
+    p1100al_void
  )
  add_executable(cf-${_target} ${_target}.cpp print.cpp tracker.cpp counter.cpp)
 endforeach()
