@@ -9,7 +9,7 @@
  * instead of co_awaiting the co_return of the 4 observer coroutines.
  * This makes mainflow() in fact the 5th observer.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <string>

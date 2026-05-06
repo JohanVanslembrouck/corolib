@@ -42,7 +42,7 @@ void CommClient::start()
     int index = get_free_index_ts();
     print(PRI2, "%p: CommClient::start(): index = %d\n", this, index);
     assert(get_async_operation_info(index)->async_operation == nullptr);
-    start_connecting_impl(index);
+    start_connecting_impl(index, m_ep);
 
     // Start the deadline actor. You will note that we're not setting any
     // particular deadline here. Instead, the connect and input actors will
@@ -50,24 +50,25 @@ void CommClient::start()
     m_deadline.async_wait(std::bind(&CommClient::check_deadline, this));
 }
 
-async_operation<void> CommClient::start_connecting()
+async_operation<void> CommClient::start_connecting(boost::asio::ip::tcp::endpoint ep)
 {
     print(PRI2, "%p: CommClient::start_connecting()\n", this);
     int index = get_free_index_ts();
     print(PRI2, "%p: CommClient::start_connecting(): index = %d\n", this, index);
     async_operation<void> ret{ this, index, true };
-    start_connecting_impl(index);
+    start_connecting_impl(index, ep);
     return ret;
 }
 
-void CommClient::start_connecting_impl(const int idx)
+void CommClient::start_connecting_impl(const int idx, boost::asio::ip::tcp::endpoint ep)
 {
     print(PRI2, "%p: CommClient::start_connecting_impl()\n", this);
 
     m_stopped = false;
 
     std::vector<boost::asio::ip::tcp::endpoint> eps;
-    eps.push_back(m_ep);
+    //eps.push_back(m_ep);
+    eps.push_back(ep);
 
     tcp::resolver::results_type::iterator endpoint_iter;
 
@@ -80,7 +81,7 @@ void CommClient::start_connecting_impl(const int idx)
     boost::asio::async_connect(
         m_socket,
         eps,
-        [this, idx, now](const boost::system::error_code& error,
+        [this, idx, ep, now](const boost::system::error_code& error,
                          const tcp::endpoint& result_endpoint)
         {
             (void)result_endpoint;
@@ -98,7 +99,7 @@ void CommClient::start_connecting_impl(const int idx)
                 print(PRI2, "%p: CommClient::handle_connect(): idx = %d, Connect timed out\n", this, idx);
 
                 // Try the next available endpoint.
-                start_connecting_impl(idx);
+                start_connecting_impl(idx, ep);
             }
             // Check if the connect operation failed before the deadline expired.
             else if (error)
@@ -110,7 +111,7 @@ void CommClient::start_connecting_impl(const int idx)
                 m_socket.close();
 
                 // Try the next available endpoint.
-                start_connecting_impl(idx);
+                start_connecting_impl(idx, ep);
             }
             // Otherwise we have successfully established a connection.
             else

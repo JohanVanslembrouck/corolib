@@ -7,7 +7,7 @@
  *
  * It also uses when_any that allows awaiting the completion of 1 of N asychronous operations.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
  
 #include <corolib/print.h>
@@ -18,6 +18,12 @@
 #include <commclient.h>
 
 #include "endpoints.h"
+
+#if USE_LAZY_START_TASKS
+#define task async_ltask
+#else
+#define task async_task
+#endif
 
 using namespace corolib;
 
@@ -40,7 +46,7 @@ using namespace corolib;
  * @param c2 is the third client
  * @return always 0
  */
-async_task<int> mainflowWA0(CommClient& c1, CommClient& c2, CommClient& c3)
+task<int> mainflowWA0(CommClient& c1, CommClient& c2, CommClient& c3)
 {
     print(PRI1, "mainflowWA0: begin\n");
 
@@ -156,7 +162,7 @@ async_task<int> mainflowWA0(CommClient& c1, CommClient& c2, CommClient& c3)
  * @param clients is an initializer list with all clients
  * @return always 0
  */
-async_task<int> mainflowWA1(std::initializer_list<CommClient*> client_il)
+task<int> mainflowWA1(std::initializer_list<CommClient*> client_il)
 {
     print(PRI1, "mainflowWA1: begin\n");
 
@@ -278,7 +284,7 @@ async_task<int> mainflowWA1(std::initializer_list<CommClient*> client_il)
  * @param clients is an initializer list with all clients
  * @return always 0
  */
-async_task<int> mainflowWA2(std::initializer_list<CommClient*> client_il)
+task<int> mainflowWA2(std::initializer_list<CommClient*> client_il)
 {
     print(PRI1, "mainflowWA2: begin\n");
     const int nrClients = 3; // clients.size();
@@ -400,7 +406,7 @@ async_task<int> mainflowWA2(std::initializer_list<CommClient*> client_il)
  * @param counter is used to compose a string that uses the value of the iteration counter of the calling coroutine
  * @return always 0
  */
-async_task<int> mainflowOneClient(CommClient& c1, int instance, int counter)
+task<int> mainflowOneClient(CommClient& c1, int instance, int counter)
 {
     print(PRI1, "mainflowOneClient: %d: begin\n", instance);
 
@@ -441,7 +447,7 @@ async_task<int> mainflowOneClient(CommClient& c1, int instance, int counter)
  * @param c3 is the third client
  * @return always 0
  */
-async_task<int> mainflowWA3(CommClient& c1, CommClient& c2, CommClient& c3)
+task<int> mainflowWA3(CommClient& c1, CommClient& c2, CommClient& c3)
 {
     print(PRI1, "mainflowWA3: begin\n");
 
@@ -451,11 +457,11 @@ async_task<int> mainflowWA3(CommClient& c1, CommClient& c2, CommClient& c3)
         print(PRI1, "mainflowWA3: %d ------------------------------------------------------------------\n", i);
 
         print(PRI1, "mainflowWA3: mainflowOneClient(c1, 0, counter++);\n");
-        async_task<int> tc1 = mainflowOneClient(c1, 0, counter++);
+        task<int> tc1 = mainflowOneClient(c1, 0, counter++);
         print(PRI1, "mainflowWA3: mainflowOneClient(c2, 1, counter++);\n");
-        async_task<int> tc2 = mainflowOneClient(c2, 1, counter++);
+        task<int> tc2 = mainflowOneClient(c2, 1, counter++);
         print(PRI1, "mainflowWA3: mainflowOneClient(c3, 2, counter++);\n");
-        async_task<int> tc3 = mainflowOneClient(c3, 2, counter++);
+        task<int> tc3 = mainflowOneClient(c3, 2, counter++);
 
         print(PRI1, "mainflowWA3: when_any wat({ &tc1, &tc2, &tc3 });\n");
         when_any wat({ &tc1, &tc2, &tc3 });
@@ -480,7 +486,7 @@ async_task<int> mainflowWA3(CommClient& c1, CommClient& c2, CommClient& c3)
  * @param c3 is the third client
  * @return always 0
  */
-async_task<int> mainflowWA4(CommClient& c1, CommClient& c2, CommClient& c3)
+task<int> mainflowWA4(CommClient& c1, CommClient& c2, CommClient& c3)
 {
     print(PRI1, "mainflowWA4: begin\n");
 
@@ -490,11 +496,11 @@ async_task<int> mainflowWA4(CommClient& c1, CommClient& c2, CommClient& c3)
         print(PRI1, "mainflowWA4: %d ------------------------------------------------------------------\n", i);
 
         print(PRI1, "mainflowWA4: mainflowOneClient(c1, 0, counter++);\n");
-        async_task<int> tc1 = mainflowOneClient(c1, 0, counter++);
+        task<int> tc1 = mainflowOneClient(c1, 0, counter++);
         print(PRI1, "mainflowWA4: mainflowOneClient(c2, 1, counter++);\n");
-        async_task<int> tc2 = mainflowOneClient(c2, 1, counter++);
+        task<int> tc2 = mainflowOneClient(c2, 1, counter++);
         print(PRI1, "mainflowWA4: mainflowOneClient(c3, 2, counter++);\n");
-        async_task<int> tc3 = mainflowOneClient(c3, 2, counter++);
+        task<int> tc3 = mainflowOneClient(c3, 2, counter++);
 
         print(PRI1, "mainflowWA4: when_any wat(tc1, tc2, tc3);\n");
         when_any wat(tc1, tc2, tc3);
@@ -519,7 +525,7 @@ async_task<int> mainflowWA4(CommClient& c1, CommClient& c2, CommClient& c3)
  * @param clients is an initializer list with all clients
  * @return always 0
  */
-async_task<int> mainflowWA5(std::initializer_list<CommClient*> client_il)
+task<int> mainflowWA5(std::initializer_list<CommClient*> client_il)
 {
     print(PRI1, "mainflowWA5: begin\n");
 
@@ -630,7 +636,7 @@ async_task<int> mainflowWA5(std::initializer_list<CommClient*> client_il)
  * @param clients is an initializer list with all clients
  * @return always 0
  */
-async_task<int> mainflowWA6(std::initializer_list<CommClient*> client_il)
+task<int> mainflowWA6(std::initializer_list<CommClient*> client_il)
 {
     print(PRI1, "mainflowWA6: begin\n");
     const int nrClients = 3; // clients.size();
@@ -741,61 +747,61 @@ async_task<int> mainflowWA6(std::initializer_list<CommClient*> client_il)
  * @param c3 is the third client
  * @param selected is the mainflowWA variant (defined above) to be used
  */
-async_task<int> mainflowX(CommClient& c1, CommClient& c2, CommClient& c3, int selected)
+task<int> mainflowX(CommClient& c1, CommClient& c2, CommClient& c3, int selected)
 {
     switch (selected) {
     case 0:
     {
-        print(PRI1, "mainflowX: async_task<int> si0 = mainflowWA0(c1, c2, c3);\n");
-        async_task<int> si0 = mainflowWA0(c1, c2, c3);
+        print(PRI1, "mainflowX: task<int> si0 = mainflowWA0(c1, c2, c3);\n");
+        task<int> si0 = mainflowWA0(c1, c2, c3);
         print(PRI1, "mainflowX: co_await si0;\n");
         co_await si0;
     }
     break;
     case 1:
     {
-        print(PRI1, "mainflowX: async_task<int> si1 = mainflowWA1( {&c1, &c2, &c3} )\n");
-        async_task<int> si1 = mainflowWA1({ &c1, &c2, &c3 });
+        print(PRI1, "mainflowX: task<int> si1 = mainflowWA1( {&c1, &c2, &c3} )\n");
+        task<int> si1 = mainflowWA1({ &c1, &c2, &c3 });
         print(PRI1, "mainflowX: co_await si1;\n");
         co_await si1;
     }
     break;
     case 2:
     {
-        print(PRI1, "mainflowX: async_task<int> si2 = mainflowWA2( {&c1, &c2, &c3} )\n");
-        async_task<int> si2 = mainflowWA2({ &c1, &c2, &c3 });
+        print(PRI1, "mainflowX: task<int> si2 = mainflowWA2( {&c1, &c2, &c3} )\n");
+        task<int> si2 = mainflowWA2({ &c1, &c2, &c3 });
         print(PRI1, "mainflowX: co_await si2;\n");
         co_await si2;
     }
     break;
     case 3:
     {
-        print(PRI1, "mainflowX: async_task<int> si3 = mainflowWA3(c1, c2, c3} )\n");
-        async_task<int> si3 = mainflowWA3(c1, c2, c3);
+        print(PRI1, "mainflowX: task<int> si3 = mainflowWA3(c1, c2, c3} )\n");
+        task<int> si3 = mainflowWA3(c1, c2, c3);
         print(PRI1, "mainflowX: co_await si3;\n");
         co_await si3;
     }
     break;
     case 4:
     {
-        print(PRI1, "mainflowX: async_task<int> si4 = mainflowWA4(c1, c2, c3} )\n");
-        async_task<int> si4 = mainflowWA4(c1, c2, c3);
+        print(PRI1, "mainflowX: task<int> si4 = mainflowWA4(c1, c2, c3} )\n");
+        task<int> si4 = mainflowWA4(c1, c2, c3);
         print(PRI1, "mainflowX: co_await si4;\n");
         co_await si4;
     }
     break;
     case 5:
     {
-        print(PRI1, "mainflowX: async_task<int> si5 = mainflowWA5( {&c1, &c2, &c3} )\n");
-        async_task<int> si5 = mainflowWA5({ &c1, &c2, &c3 });
+        print(PRI1, "mainflowX: task<int> si5 = mainflowWA5( {&c1, &c2, &c3} )\n");
+        task<int> si5 = mainflowWA5({ &c1, &c2, &c3 });
         print(PRI1, "mainflowX: co_await si5;\n");
         co_await si5;
     }
     break;
     case 6:
     {
-        print(PRI1, "mainflowX: async_task<int> si6 = mainflowWA6( {&c1, &c2, &c3} )\n");
-        async_task<int> si6 = mainflowWA6({ &c1, &c2, &c3 });
+        print(PRI1, "mainflowX: task<int> si6 = mainflowWA6( {&c1, &c2, &c3} )\n");
+        task<int> si6 = mainflowWA6({ &c1, &c2, &c3 });
         print(PRI1, "mainflowX: co_await si6;\n");
         co_await si6;
     }
@@ -813,40 +819,40 @@ async_task<int> mainflowX(CommClient& c1, CommClient& c2, CommClient& c3, int se
  * @param c3 is the third client
  * @return always 0
  */
-async_task<int> mainflowAll(CommClient& c1, CommClient& c2, CommClient& c3)
+task<int> mainflowAll(CommClient& c1, CommClient& c2, CommClient& c3)
 {
-    print(PRI1, "mainflowAll: async_task<int> si0 = mainflowWA0(c1, c2, c3);\n");
-    async_task<int> si0 = mainflowWA0(c1, c2, c3);
+    print(PRI1, "mainflowAll: task<int> si0 = mainflowWA0(c1, c2, c3);\n");
+    task<int> si0 = mainflowWA0(c1, c2, c3);
     print(PRI1, "mainflowAll: co_await si0;\n");
     co_await si0;
 
-    print(PRI1, "mainflowAll: async_task<int> si1 = mainflowWA1( {&c1, &c2, &c3} )\n");
-    async_task<int> si1 = mainflowWA1({ &c1, &c2, &c3 });
+    print(PRI1, "mainflowAll: task<int> si1 = mainflowWA1( {&c1, &c2, &c3} )\n");
+    task<int> si1 = mainflowWA1({ &c1, &c2, &c3 });
     print(PRI1, "mainflowAll: co_await si1;\n");
     co_await si1;
     
-    print(PRI1, "mainflowAll: async_task<int> si2 = mainflowWA2( {&c1, &c2, &c3} )\n");
-    async_task<int> si2 = mainflowWA2({ &c1, &c2, &c3 });
+    print(PRI1, "mainflowAll: task<int> si2 = mainflowWA2( {&c1, &c2, &c3} )\n");
+    task<int> si2 = mainflowWA2({ &c1, &c2, &c3 });
     print(PRI1, "mainflowAll: co_await si2;\n");
     co_await si2;
     
-    print(PRI1, "mainflowAll: async_task<int> si3 = mainflowWA3(c1, c2, c3} )\n");
-    async_task<int> si3 = mainflowWA3(c1, c2, c3);
+    print(PRI1, "mainflowAll: task<int> si3 = mainflowWA3(c1, c2, c3} )\n");
+    task<int> si3 = mainflowWA3(c1, c2, c3);
     print(PRI1, "mainflowAll: co_await si3;\n");
     co_await si3;
 
-    print(PRI1, "mainflowAll: async_task<int> si4 = mainflowWA4(c1, c2, c3} )\n");
-    async_task<int> si4 = mainflowWA4(c1, c2, c3);
+    print(PRI1, "mainflowAll: task<int> si4 = mainflowWA4(c1, c2, c3} )\n");
+    task<int> si4 = mainflowWA4(c1, c2, c3);
     print(PRI1, "mainflowAll: co_await si4;\n");
     co_await si4;
 
-    print(PRI1, "mainflowAll: async_task<int> si5 = mainflowWA5( {&c1, &c2, &c3} )\n");
-    async_task<int> si5 = mainflowWA5({ &c1, &c2, &c3 });
+    print(PRI1, "mainflowAll: task<int> si5 = mainflowWA5( {&c1, &c2, &c3} )\n");
+    task<int> si5 = mainflowWA5({ &c1, &c2, &c3 });
     print(PRI1, "mainflowAll: co_await si5;\n");
     co_await si5;
 
-    print(PRI1, "mainflowAll: async_task<int> si6 = mainflowWA6( {&c1, &c2, &c3} )\n");
-    async_task<int> si6 = mainflowWA6({ &c1, &c2, &c3 });
+    print(PRI1, "mainflowAll: task<int> si6 = mainflowWA6( {&c1, &c2, &c3} )\n");
+    task<int> si6 = mainflowWA6({ &c1, &c2, &c3 });
     print(PRI1, "mainflowAll: co_await si2;\n");
     co_await si6;
 
@@ -859,6 +865,12 @@ int main(int argc, char* argv[])
     set_priority(0x01);
 
     boost::asio::io_context ioContext;
+
+#if USE_LAZY_START
+    print(PRI1, "Using lazy start async_ltask\n");
+#else
+    print(PRI1, "Using eager start async_task\n");
+#endif
 
     print(PRI1, "main: CommClient c1(ioContext, ep1);\n");
     CommClient c1(ioContext, ep1);
@@ -877,7 +889,10 @@ int main(int argc, char* argv[])
             return 0;
         }
         print(PRI1, "main: mainflowX(c1, c2, c3, selected);\n");
-        async_task<int> si = mainflowX(c1, c2, c3, selected);
+        task<int> si = mainflowX(c1, c2, c3, selected);
+
+        print(PRI1, "main: si.start();\n");
+        si.start();
 
         // Keep mainflowX in the same scope as ioContext.run() to
         // ensure that all promise_type objects and final_awaiter objects
@@ -888,8 +903,11 @@ int main(int argc, char* argv[])
     }
     else
     {
-        print(PRI1, "main: async_task<int> si = mainflowAll(c1, c2, c3);\n");
-        async_task<int> si = mainflowAll(c1, c2, c3);
+        print(PRI1, "main: task<int> si = mainflowAll(c1, c2, c3);\n");
+        task<int> si = mainflowAll(c1, c2, c3);
+
+        print(PRI1, "main: si.start();\n");
+        si.start();
 
         // Keep mainflowAll in the same scope as ioContext.run() to
         // ensure that all promise_type objects and final_awaiter objects

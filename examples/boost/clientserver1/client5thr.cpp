@@ -4,7 +4,7 @@
  * Example of a client application.
  * This client application uses 3 CommClient objects that run in a thread of their own.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <string>

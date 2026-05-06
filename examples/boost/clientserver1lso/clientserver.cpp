@@ -15,9 +15,9 @@
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
 
-#include <commcore.h>
-#include <commclient.h>
-#include <commserver.h>
+#include <commcorelso.h>
+#include <commclientlso.h>
+#include <commserverlso.h>
 
 #include "endpoints.h"
 
@@ -73,20 +73,20 @@ public:
         for (int i = 0; i < 1; i++)
         {
             // Connecting
-            print(PRI1, "mainflow_client: async_operation<void> sc = commClient.start_connecting();\n");
-            async_operation<void> sc = commClient.start_connecting();
+            print(PRI1, "mainflow_client: connect_operation sc = commClient.start_connecting(ep2);\n");
+            connect_operation sc = commClient.start_connecting(ep2);
             print(PRI1, "mainflow_client: co_await sc;\n");
             co_await sc;
 
             // Writing
-            print(PRI1, "mainflow_client: async_operation<void> sw = commClient.start_writing(...);\n");
-            async_operation<void> sw = commClient.start_writing(str.c_str(), str.length() + 1);
+            print(PRI1, "mainflow_client: write_operation sw = commClient.start_writing(...);\n");
+            write_operation sw = commClient.start_writing(str.c_str(), str.length() + 1);
             print(PRI1, "mainflow_client: co_await sw;\n");
             co_await sw;
 
             // Reading
-            print(PRI1, "mainflow_client: async_operation<std::string> sr = commClient.start_reading();\n");
-            async_operation<std::string> sr = commClient.start_reading();
+            print(PRI1, "mainflow_client: read_operation sr = commClient.start_reading();\n");
+            read_operation sr = commClient.start_reading();
             print(PRI1, "mainflow_client: std::string strout = co_await sr;\n");
             std::string strout = co_await sr;
             print(PRI1, "mainflow_client: strout = %s\n", strout.c_str());
@@ -95,8 +95,8 @@ public:
             // after having read the response.
             // Delaying
             steady_timer client_timer(ioContextServer);
-            print(PRI1, "mainflow_client: async_operation<void> st = commClient.start_timer(client_timer, 2000);\n");
-            async_operation<void> st = commClient.start_timer(client_timer, 2000);
+            print(PRI1, "mainflow_client: timing_operation st = commClient.start_timer(client_timer, 2000);\n");
+            timing_operation st = commClient.start_timer(client_timer, 2000);
             print(PRI1, "mainflow_client: co_await st;\n");
             co_await st;
 
@@ -127,8 +127,8 @@ public:
     oneway_task mainflow_reading_writing(spCommCore commCore)
     {
         // Reading
-        print(PRI1, "mainflow_reading_writing: async_operation<std::string> sr = start_reading(clientSession);\n");
-        async_operation<std::string> sr = commCore->start_reading();
+        print(PRI1, "mainflow_reading_writing: read_operation sr = start_reading(clientSession);\n");
+        read_operation sr = commCore->start_reading();
         print(PRI1, "mainflow_reading_writing: std::string strout = co_await sr;\n");
         std::string strout = co_await sr;
         print(PRI1, "mainflow_reading_writing: received %s;\n", strout.c_str());
@@ -141,8 +141,8 @@ public:
         // to simulate a long calculation.
         // Delaying
         boost::asio::steady_timer client_timer(m_IoContext);
-        print(PRI1, "mainflow_reading_writing: async_operation<void> st = start_timer(client_timer, 300);\n");
-        async_operation<void> st = commCore->start_timer(client_timer, 300);
+        print(PRI1, "mainflow_reading_writing: timing_operation st = start_timer(client_timer, 300);\n");
+        timing_operation st = commCore->start_timer(client_timer, 300);
         print(PRI1, "mainflow_reading_writing: co_await st;\n");
         co_await st;
 
@@ -151,8 +151,8 @@ public:
         for (auto& c : strtoecho) c = toupper(c);
 
         // Writing
-        print(PRI1, "mainflow_reading_writing: async_operation<void> sw = start_writing(clientSession);\n");
-        async_operation<void> sw = commCore->start_writing(strtoecho.c_str(), strtoecho.length() + 1);
+        print(PRI1, "mainflow_reading_writing: write_operation sw = start_writing(clientSession);\n");
+        write_operation sw = commCore->start_writing(strtoecho.c_str(), strtoecho.length() + 1);
         print(PRI1, "mainflow_reading_writing: co_await sw;\n");
         co_await sw;
 
@@ -186,8 +186,8 @@ public:
             spCommCore commCore = std::make_shared<CommCore>(m_IoContext);
 
             // Accepting
-            print(PRI1, "mainflow: async_operation<void> sa = start_accepting(commCore);\n");
-            async_operation<void> sa = start_accepting(commCore);
+            print(PRI1, "mainflow: accept_operation sa = start_accepting(commCore);\n");
+            accept_operation sa = start_accepting(commCore);
             print(PRI1, "mainflow: co_await sa;\n");
             co_await sa;
 

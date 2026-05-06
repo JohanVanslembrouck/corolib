@@ -1,4 +1,4 @@
-# Three-tier client-server application
+# Three-tier client-server applications
 
 server.cpp (executable: cs1-server.exe or cs1-server) is a pure server application with clientserver.cpp as its client.
 
@@ -104,3 +104,7 @@ After building, launch the applications in the following order:
 * 'cs1-client4obs2' (one or more instances)
 * 'cs1-client4obs3' (one or more instances)
 * 'cs1-client5thr' (one or more instances)
+
+The applications client1.cpp, client1a.cpp, client3WA.cpp, client3WAny.cpp, clientserver.cpp and server.cpp
+can aslo be compiled to use async_ltask instead of async_task.
+The prefix for their executables is now cs1l- instead of cs1-.

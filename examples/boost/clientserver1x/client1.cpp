@@ -13,15 +13,19 @@
 #include <corolib/async_operation.h>
 #include <corolib/async_task.h>
 
+#if USE_LAZY_START_OPS
+#include <commclientlso.h>
+#else
 #include <commclient.h>
-
-#include "endpoints.h"
+#endif
 
 #if USE_LAZY_START_TASKS
 #define task async_ltask
 #else
 #define task async_task
 #endif
+
+#include "endpoints.h"
 
 using namespace corolib;
 
@@ -63,8 +67,8 @@ public:
             }
 
             // Connecting
-            print(PRI1, "mainflow: async_operation<void> sc = start_connecting();\n");
-            async_operation<void> sc = start_connecting();
+            print(PRI1, "mainflow: auto sc = start_connecting(m_ep);\n");
+            auto sc = start_connecting(m_ep);
             print(PRI1, "mainflow: co_await sc;\n");
             co_await sc;
 
@@ -73,20 +77,14 @@ public:
             str1 += " to echo\n";
 
             // Writing
-            print(PRI1, "mainflow: async_operation<void> sw = start_writing(...);\n");
-            async_operation<void> sw = start_writing(str1.c_str(), str1.length() + 1);
-
-            // Experiment: do not co_await sw every 10th iteration
-            if ((i % 10) != 0) {
-                print(PRI1, "mainflow: co_await sw;\n");
-                co_await sw;
-            }
-            else
-                print(PRI1, "mainflow: does not co_await sw; !!!!!!\n");
+            print(PRI1, "mainflow: auto sw = start_writing(...);\n");
+            auto sw = start_writing(str1.c_str(), str1.length() + 1);
+            print(PRI1, "mainflow: co_await sw;\n");
+            co_await sw;
 
             // Reading
-            print(PRI1, "mainflow: async_operation<std::string> sr = start_reading();\n");
-            async_operation<std::string> sr = start_reading();
+            print(PRI1, "mainflow: auto sr = start_reading();\n");
+            auto sr = start_reading();
             print(PRI1, "mainflow: std::string strout = co_await sr;\n");
             std::string strout = co_await sr;
             print(PRI1, "mainflow: strout = %s", strout.c_str());
@@ -95,8 +93,8 @@ public:
             // after having read the response.
             // Delaying
             steady_timer client_timer(m_ioContext);
-            print(PRI1, "mainflow: async_operation<void> st = start_timer(100);\n");
-            async_operation<void> st = start_timer(client_timer, 100);
+            print(PRI1, "mainflow: auto st = start_timer(100);\n");
+            auto st = start_timer(client_timer, 100);
             print(PRI1, "mainflow: co_await st;\n");
             co_await st;
 

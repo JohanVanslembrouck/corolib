@@ -9,7 +9,7 @@
  * the first coroutine handling a single connection, the second coroutine calling
  * the first coroutine 100 times.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <string>
@@ -21,6 +21,12 @@
 #include <commclient.h>
 
 #include "endpoints.h"
+
+#if USE_LAZY_START_TASKS
+#define task async_ltask
+#else
+#define task async_task
+#endif
 
 using namespace corolib;
 
@@ -45,7 +51,7 @@ public:
      * @param counter
      * @return i
      */
-    async_task<int> mainflow(int i, int& counter)
+    task<int> mainflow(int i, int& counter)
     {
         // Connecting
         print(PRI1, "mainflow: async_operation<void> sc = start_connecting();\n");
@@ -92,7 +98,7 @@ public:
      * and it prints its result.
      * @return always 0
      */
-    async_task<int> mainflow()
+    task<int> mainflow()
     {
         print(PRI1, "mainflow: begin\n");
         int counter = 0;
@@ -109,14 +115,14 @@ public:
                 co_await start_timer(client_timer, 3000);
             }
 
-            print(PRI1, "mainflow: async_task<int> task = mainflow(i, counter);\n");
-            async_task<int> task = mainflow(i, counter);
+            print(PRI1, "mainflow: task<int> t = mainflow(i, counter);\n");
+            task<int> t = mainflow(i, counter);
             print(PRI1, "mainflow: int ret1 = co_await task\n");
-            int ret1 = co_await task;
+            int ret1 = co_await t;
             print(PRI1, "mainflow: ret1 = %d\n", ret1);
 
             print(PRI1, "mainflow: int ret2 = task.get()\n");
-            int ret2 = task.get_result();
+            int ret2 = t.get_result();
             print(PRI1, "mainflow: ret2 = %d\n", ret2);
         }
 
@@ -138,7 +144,10 @@ int main()
     ClientApp c1(ioContext, ep1);
 
     print(PRI1, "main: async_task<int> si = c1.mainflow();\n");
-    async_task<int> si = c1.mainflow();
+    task<int> si = c1.mainflow();
+
+    print(PRI1, "main: si.start();\n");
+    si.start();
 
     print(PRI1, "main: before ioContext.run();\n");
     ioContext.run();

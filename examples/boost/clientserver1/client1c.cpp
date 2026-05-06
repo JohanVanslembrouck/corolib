@@ -10,7 +10,7 @@
  * Instead, it uses a timer to give the remote object some time to process the operation.
  * This is an experimental style. Do not use it for real applications!
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <string>

@@ -26,3 +26,7 @@ add_subdirectory(clientserver2)
 add_subdirectory(clientserver3)
 add_subdirectory(clientserver4)
 add_subdirectory(various)
+
+add_subdirectory(commonlso)
+add_subdirectory(clientserver1lso)
+add_subdirectory(clientserver1x)

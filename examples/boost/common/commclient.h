@@ -33,10 +33,12 @@ namespace corolib
 
         // Called by the user of the CommClient class to initiate the connection process.
         void start();
-        async_operation<void> start_connecting();
+        async_operation<void> start_connecting(boost::asio::ip::tcp::endpoint ep);
+
+        async_operation<void> start_connecting() { return start_connecting(m_ep); }
 
     protected:
-        void start_connecting_impl(const int idx);
+        void start_connecting_impl(const int idx, boost::asio::ip::tcp::endpoint ep);
         
     protected:
         boost::asio::ip::tcp::endpoint m_ep;

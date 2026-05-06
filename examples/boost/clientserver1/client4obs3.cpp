@@ -8,7 +8,7 @@
  * In contrast to client4obs.cpp and client4obs2.cpp, the observer coroutines are started only once
  * before the loop.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <string>

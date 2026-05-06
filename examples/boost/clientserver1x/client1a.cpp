@@ -1,13 +1,13 @@
 /** 
- * @file client1b.cpp
+ * @file client1a.cpp
  * @brief
  * Example of a client application.
  * This client application uses 1 CommClient object.
  *
- * This application is a variant of client1a.cpp.
- * The main difference between client1b.cpp and client1a.cpp
- * is that client1b.cpp applies co_await directly on the asynchronous operation or coroutine
- * without using intermediate async_operation or async_task objects.
+ * This application is a variant of client1.cpp.
+ * It splits the mainflow() coroutine of client1.cpp into two coroutines,
+ * the first coroutine handling a single connection, the second coroutine calling
+ * the first coroutine 100 times.
  *
  * @author Johan Vanslembrouck
  */
@@ -18,7 +18,17 @@
 #include <corolib/async_operation.h>
 #include <corolib/async_task.h>
 
+#if USE_LAZY_START_OPS
+#include <commclientlso.h>
+#else
 #include <commclient.h>
+#endif
+
+#if USE_LAZY_START_TASKS
+#define task async_ltask
+#else
+#define task async_task
+#endif
 
 #include "endpoints.h"
 
@@ -41,35 +51,44 @@ public:
      * mainflow opens a connection to a server object, 
      * prepares a string and writes this string to the object,
      * reads the response and closes the connection. 
-     * @param
-     * @param
-     * @return
+     * @param i
+     * @param counter
+     * @return i
      */
-    async_task<int> mainflow(int i, int& counter)
+    task<int> mainflow(int i, int& counter)
     {
         // Connecting
-        print(PRI1, "mainflow: co_await start_connecting();\n");
-        co_await start_connecting();
+        print(PRI1, "mainflow: auto sc = start_connecting();\n");
+        auto sc = start_connecting(m_ep);
+
+        print(PRI1, "mainflow: co_await sc;\n");
+        co_await sc;
 
         std::string str1 = "This is string ";
         str1 += std::to_string(counter++);
         str1 += " to echo\n";
 
         // Writing
-        print(PRI1, "mainflow: async_operation<void> co_await start_writing(...);\n");
-        co_await start_writing(str1.c_str(), str1.length() + 1);
+        print(PRI1, "mainflow: auto sw = start_writing(...);\n");
+        auto sw = start_writing(str1.c_str(), str1.length() + 1);
+        print(PRI1, "mainflow: co_await sw;\n");
+        co_await sw;
 
         // Reading
-        print(PRI1, "mainflow: std::string strout = co_await start_reading();\n");
-        std::string strout = co_await start_reading();
+        print(PRI1, "mainflow: read_operation sr = start_reading();\n");
+        auto sr = start_reading();
+        print(PRI1, "mainflow: std::string strout = co_await sr;\n");
+        std::string strout = co_await sr;
         print(PRI1, "mainflow: strout = %s", strout.c_str());
 
         // Just start a timer to introduce a delay to simulate a long asynchronous calculation 
         // after having read the response.
         // Delaying
         steady_timer client_timer(m_ioContext);
-        print(PRI1, "mainflow: co_await start_timer(100);\n");
-        co_await start_timer(client_timer, 100);
+        print(PRI1, "mainflow: auto st = start_timer(100);\n");
+        auto st = start_timer(client_timer, 100);
+        print(PRI1, "mainflow: co_await st;\n");
+        co_await st;
 
         // Closing
         print(PRI1, "mainflow: stop();\n");
@@ -80,10 +99,11 @@ public:
 
     /**
      * @brief
-     * @param
+     * mainflow calls the overloaded mainflow above 100 times
+     * and it prints its result.
      * @return always 0
      */
-    async_task<int> mainflow()
+    task<int> mainflow()
     {
         print(PRI1, "mainflow: begin\n");
         int counter = 0;
@@ -100,9 +120,15 @@ public:
                 co_await start_timer(client_timer, 3000);
             }
 
-            print(PRI1, "mainflow: int ret = co_await mainflow(i, counter);\n");
-            int ret = co_await mainflow(i, counter);
-            print(PRI1, "mainflow: ret = %d\n", ret);
+            print(PRI1, "mainflow: task<int> t = mainflow(i, counter);\n");
+            task<int> t = mainflow(i, counter);
+            print(PRI1, "mainflow: int ret1 = co_await t\n");
+            int ret1 = co_await t;
+            print(PRI1, "mainflow: ret1 = %d\n", ret1);
+
+            print(PRI1, "mainflow: int ret2 = t.get()\n");
+            int ret2 = t.get_result();
+            print(PRI1, "mainflow: ret2 = %d\n", ret2);
         }
 
         print(PRI1, "mainflow: co_return 0;\n");
@@ -122,8 +148,11 @@ int main()
     print(PRI1, "main: ClientApp c1(ioContext, ep1);\n");
     ClientApp c1(ioContext, ep1);
 
-    print(PRI1, "main: async_task<int> si = c1.mainflow();\n");
-    async_task<int> si = c1.mainflow();
+    print(PRI1, "main: task<int> si = c1.mainflow();\n");
+    task<int> si = c1.mainflow();
+
+    print(PRI1, "main: si.start();\n");
+    si.start();
 
     print(PRI1, "main: before ioContext.run();\n");
     ioContext.run();

@@ -5,7 +5,7 @@
  * This client application uses 1 CommClient object and 4 observer coroutines observer1 .. observer4
  * that each handle the result of the read operation.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <string>

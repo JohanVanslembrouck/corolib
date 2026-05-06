@@ -6,7 +6,7 @@
  * Apart from async_operation and async_task, this example
  * also uses oneway_task and auto_reset_event.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
  
 #include <boost/asio.hpp>

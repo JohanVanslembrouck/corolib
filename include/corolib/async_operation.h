@@ -121,6 +121,7 @@ namespace corolib
          */
         void start() override
         {
+            clprint(PRI2, "%p: async_operation_base::start()\n", this);
         }
 
     protected:
@@ -771,6 +772,55 @@ namespace corolib
     protected:
         std::vector<std::coroutine_handle<>> m_awaitings;
     }; // template<> class async_operation_rmc<void>
+
+    // ---------------------------------------------------------
+    // ---------------------------------------------------------
+
+    class async_operation_ls_base // : public async_operation_base
+    {
+    public:
+        void completed()
+        {
+            m_awaitingCoroutine.resume();
+        }
+
+        void start()
+        {
+            clprint(PRI2, "%p: async_operation_ls_base::start()\n", this);
+            if (m_awaitingCoroutine)
+                m_awaitingCoroutine.resume();
+        }
+
+    protected:
+        std::coroutine_handle<> m_awaitingCoroutine;
+    };
+
+
+    template<typename OPERATION>
+    class async_operation_ls : public async_operation_ls_base
+    {
+    public:
+        async_operation_ls() {}
+
+        bool await_ready() const noexcept
+        {
+            clprint(PRI2, "%p: async_operation_ls::await_ready()\n", this);
+            return false;
+        }
+
+        bool await_suspend(std::coroutine_handle<> awaitingCoroutine)
+        {
+            clprint(PRI2, "%p: async_operation_ls::await_suspend()\n", this);
+            m_awaitingCoroutine = awaitingCoroutine;
+            return static_cast<OPERATION*>(this)->try_start();
+        }
+
+        decltype(auto) await_resume()
+        {
+            clprint(PRI2, "%p: async_operation_ls::await_resume()\n", this);
+            return static_cast<OPERATION*>(this)->get_result();
+        }
+    };
 
     // ---------------------------------------------------------
 

@@ -2,9 +2,12 @@
 
 ## Contents
 
-* Folder common contains the common code that is used by all client-server applications in the following folders.
+* Folder common contains the source code to build a library that is used by the client-server applications in the following folders.
 
-* Folders clientserver0, clientserver1, clientserver2, clientserver3 and clientserver4 use Boost for client-server communication.
-Two or more applications have to be started, e.g. a server application and one or more client applications.
+* Folders clientserver0, clientserver1, clientserver2, clientserver3 and clientserver4 use the common library for building their applications.
+
+* Folder commonlso (lso stands for lazy start operations) contains the source code to build a library that is used by the applications in folder clientserver1lso.
+
+* Folder clientserver1x uses the common and commonlso libraries for building its applications.
 
 * Folder various contains stand-alone applications. At this moment it contains only timer applications.
