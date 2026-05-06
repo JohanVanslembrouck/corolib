@@ -42,7 +42,7 @@ async_ltask<int> Class1730::coroutine5b()
     co_return v + 1;
 }
 
-#define USE_WHEN_ALL 0
+#define USE_WHEN_ALL 1
 
 async_ltask<int> Class1730::coroutine4()
 {

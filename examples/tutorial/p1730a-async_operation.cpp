@@ -65,8 +65,8 @@ int main()
         int v = a.get_result();
         print(PRI1, "main(): v = %d\n", v);
 
-        print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
-        std::this_thread::sleep_for(std::chrono::milliseconds(0));
+        print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(100));\n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
     print(PRI1, "main(): return 0;\n");
