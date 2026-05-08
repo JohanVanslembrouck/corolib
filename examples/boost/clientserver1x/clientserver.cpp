@@ -13,7 +13,6 @@
 #include <corolib/print.h>
 #include <corolib/oneway_task.h>
 #include <corolib/async_task.h>
-#include <corolib/async_operation.h>
 
 #if USE_LAZY_START_OPS
 #include <commcorelso.h>

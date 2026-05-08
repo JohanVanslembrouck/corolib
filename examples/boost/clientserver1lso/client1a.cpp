@@ -15,7 +15,6 @@
 #include <string>
 
 #include <corolib/print.h>
-#include <corolib/async_operation.h>
 #include <corolib/async_task.h>
 
 #include <commclientlso.h>

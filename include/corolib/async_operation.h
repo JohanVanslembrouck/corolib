@@ -23,10 +23,10 @@
                              ^
                              |
                              |
-             ----------------------------------
-             |                   |            |
-             |                   |            |
-     template<typename TYPE>     |      template<>
+             ------------------------------------------------------------------------
+             |                   |            |                                     |
+             |                   |            |                                     |
+     template<typename TYPE>     |      template<>                            async_operation_ls_base
      class async_operation       |      class async_operation<void>
                                  |
                                  |
@@ -774,27 +774,32 @@ namespace corolib
     }; // template<> class async_operation_rmc<void>
 
     // ---------------------------------------------------------
+    // Lazy start (ls) operations
     // ---------------------------------------------------------
 
-    class async_operation_ls_base // : public async_operation_base
+    class async_operation_ls_base : public async_operation_base
     {
     public:
         void completed()
         {
-            m_awaitingCoroutine.resume();
-        }
+            clprint(PRI2, "%p: async_operation_ls_base::completed()\n", this);
 
-        void start()
-        {
-            clprint(PRI2, "%p: async_operation_ls_base::start()\n", this);
+            bool hasCompleted = false;
             if (m_awaitingCoroutine)
+            {
                 m_awaitingCoroutine.resume();
+                hasCompleted = true;
+            }
+
+            if (!hasCompleted)
+            {
+                inform_interested_parties();
+            }
         }
 
     protected:
         std::coroutine_handle<> m_awaitingCoroutine;
     };
-
 
     template<typename OPERATION>
     class async_operation_ls : public async_operation_ls_base
@@ -802,23 +807,47 @@ namespace corolib
     public:
         async_operation_ls() {}
 
-        bool await_ready() const noexcept
+        auto operator co_await() noexcept
         {
-            clprint(PRI2, "%p: async_operation_ls::await_ready()\n", this);
-            return false;
+            class awaiter
+            {
+            public:
+                awaiter(async_operation_ls& async_) :
+                    m_async(async_)
+                {
+                    clprint(PRI2, "%p: async_operation_ls::awaiter::await_ready()\n", this);
+                }
+
+                bool await_ready() const noexcept
+                {
+                    clprint(PRI2, "%p: async_operation_ls::awaiter::await_ready()\n", this);
+                    return false;
+                }
+
+                bool await_suspend(std::coroutine_handle<> awaitingCoroutine)
+                {
+                    clprint(PRI2, "%p: async_operation_ls::awaiter::await_suspend()\n", this);
+                    m_async.m_awaitingCoroutine = awaitingCoroutine;
+                    return static_cast<OPERATION*>(&m_async)->try_start();
+                }
+
+                decltype(auto) await_resume()
+                {
+                    clprint(PRI2, "%p: async_operation_ls::await_resume()\n", this);
+                    return static_cast<OPERATION*>(&m_async)->get_result();
+                }
+
+            private:
+                async_operation_ls<OPERATION>& m_async;
+            };
+
+            return awaiter{ *this };
         }
 
-        bool await_suspend(std::coroutine_handle<> awaitingCoroutine)
+        void start() override
         {
-            clprint(PRI2, "%p: async_operation_ls::await_suspend()\n", this);
-            m_awaitingCoroutine = awaitingCoroutine;
-            return static_cast<OPERATION*>(this)->try_start();
-        }
-
-        decltype(auto) await_resume()
-        {
-            clprint(PRI2, "%p: async_operation_ls::await_resume()\n", this);
-            return static_cast<OPERATION*>(this)->get_result();
+            clprint(PRI2, "%p: async_operation_ls::start()\n", this);
+            static_cast<OPERATION*>(this)->try_start();
         }
     };
 

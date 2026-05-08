@@ -38,7 +38,12 @@ namespace corolib
 
         void check_deadline();
 
-    public:
+        boost_context& get_boost_context()
+        {
+            return m_boost_context;
+        }
+
+    protected:
         friend class CommServer;
         boost_context m_boost_context;
 

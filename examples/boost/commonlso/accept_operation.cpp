@@ -35,6 +35,7 @@ namespace corolib
                 }
                 else
                 {
+                    print(PRI2, "%p: accept_operation_impl::handle_accept(): connection successfully established\n", this);
                     operation.completed();
                 }
                 print(PRI2, "%p: accept_operation_impl::handle_accept(): exit\n\n", this);

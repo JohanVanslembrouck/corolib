@@ -4,6 +4,7 @@ include_directories(../../../include ../commonlso)
 
 foreach(_target
     client1 client1a
+    client3WA client3WAny
     clientserver
     server
   )
@@ -14,6 +15,7 @@ endforeach()
 
 foreach(_target
     client1 client1a
+    client3WA client3WAny
     clientserver
     server
   )

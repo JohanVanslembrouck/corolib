@@ -1,0 +1,455 @@
+/** 
+ * @file client3WAny.cpp
+ * @brief
+ * This example illustrates the use of coroutines
+ * in combination with Boost ASIO to implement CommClient.
+ * This example uses 3 CommClient objects.
+ *
+ * It also uses when_any that allows awaiting the completion of 1 of N asychronous operations.
+ *
+ * @author Johan Vanslembrouck
+ */
+ 
+#include <corolib/print.h>
+#include <corolib/async_task.h>
+#include <corolib/when_any.h>
+
+#include <commclientlso.h>
+
+#include "endpoints.h"
+
+#if USE_LAZY_START_TASKS
+#define task async_ltask
+#else
+#define task async_task
+#endif
+
+using namespace corolib;
+
+/**
+ * @brief
+ * mainflowWA0 uses 3 clients that each open a connection to a server (could be one and the same),
+ * waits for the connection to each server to be established,
+ * prepares 3 strings, one for every client/server,
+ * writes the strings to the servers, waits for the 3 write operations to complete,
+ * starts reading the response from each server, waits for the 3 read operations to complete
+ * and then closes the connections.
+ * mainflowWA0 performs the previous the previous actions 40 times.
+ *
+ * mainflowWA0 uses when_any to group the async_operation objects that have to be completed.
+ * Because we start 3 operations, co_await is applied 3 times on the when_any object
+ * to "collect" all 3 completions.
+ *
+ * @param c1 is the first client
+ * @param c2 is the second client
+ * @param c2 is the third client
+ * @return always 0
+ */
+task<int> mainflowWA0(CommClient& c1, CommClient& c2, CommClient& c3)
+{
+    print(PRI1, "mainflowWA0: begin\n");
+
+    int counter = 0;
+    for (int i = 0; i < 60; i++)
+    {
+        print(PRI1, "mainflowWA0: %d ------------------------------------------------------------------\n", i);
+
+        // Connecting
+        print(PRI1, "mainflowWA0: connect_operation sc1 = c1.start_connecting(ep1);\n");
+        connect_operation sc1 = c1.start_connecting(ep1);
+        print(PRI1, "mainflowWA0: connect_operation sc2 = c2.start_connecting(ep1);\n");
+        connect_operation sc2 = c2.start_connecting(ep1);
+        print(PRI1, "mainflowWA0: connect_operation sc3 = c3.start_connecting(ep1);\n");
+        connect_operation sc3 = c3.start_connecting(ep1);
+
+        print(PRI1, "mainflowWA0: when_any wac( { &sc1, &sc2, &sc3 } );\n");
+        when_any wac({ &sc1, &sc2, &sc3 });
+        for (int i = 0; i < 3; i++) {
+            print(PRI1, "mainflowWA0: co_await wac;\n");
+            co_await wac;
+            print(PRI1, "mainflowWA0: wac %d completed\n", i);
+        }
+
+        // Writing
+        std::string str1 = "This is string ";
+        str1 += std::to_string(counter++);
+        str1 += " to echo\n";
+        std::string str2 = "This is string ";
+        str2 += std::to_string(counter++);
+        str2 += " to echo\n";
+        std::string str3 = "This is string ";
+        str3 += std::to_string(counter++);
+        str3 += " to echo\n";
+
+        print(PRI1, "mainflowWA0: write_operation sw1 = c1.start_writing(...);\n");
+        write_operation sw1 = c1.start_writing(str1.c_str(), str1.length() + 1);
+        print(PRI1, "mainflowWA0: write_operation sw2 = c2.start_writing(...);\n");
+        write_operation sw2 = c2.start_writing(str2.c_str(), str2.length() + 1);
+        print(PRI1, "mainflowWA0: write_operation sw3 = c3.start_writing(...);\n");
+        write_operation sw3 = c3.start_writing(str3.c_str(), str3.length() + 1);
+
+        print(PRI1, "mainflowWA0: when_any waw( { &sw1, &sw2, &sw3 } );\n");
+        when_any waw({ &sw1, &sw2, &sw3 });
+        for (int i = 0; i < 3; i++) {
+            print(PRI1, "mainflowWA0: int r = co_await waw;\n");
+            int r = co_await waw;
+            print(PRI1, "mainflowWA0: waw %d completed\n", r);
+        }
+        
+        // Reading
+        print(PRI1, "mainflowWA0: read_operation sr1 = c1.start_reading();\n");
+        read_operation sr1 = c1.start_reading();
+        print(PRI1, "mainflowWA0: read_operation sr2 = c2.start_reading();\n");
+        read_operation sr2 = c2.start_reading();
+        print(PRI1, "mainflowWA0: read_operation sr3 = c3.start_reading();\n");
+        read_operation sr3 = c3.start_reading();
+
+        print(PRI1, "mainflowWA0: when_any war( { &sr1, &sr2, &sr3 } ) ;\n");
+        when_any war({ &sr1, &sr2, &sr3 });
+        for (int i = 0; i < 3; i++) {
+            print(PRI1, "mainflowWA0: int r = co_await war;\n");
+            int r = co_await war;
+            switch (r) {
+            case 0:
+                print(PRI1, "mainflowWA0: r = 0: sr1.get_result() = %s", sr1.get_result().c_str());
+                break;
+            case 1:
+                print(PRI1, "mainflowWA0: r = 1: sr2.get_result() = %s", sr2.get_result().c_str());
+                break;
+            case 2:
+                print(PRI1, "mainflowWA0: r = 2: sr3.get_result() = %s", sr3.get_result().c_str());
+                break;
+            default:
+                print(PRI1, "mainflowWA0: co_await war returned invalid value %d\n", r);
+            }
+        }
+#if 0
+        print(PRI1, "mainflowWA0: sr1.get_result() = %s", sr1.get_result().c_str());
+        print(PRI1, "mainflowWA0: sr2.get_result() = %s", sr2.get_result().c_str());
+        print(PRI1, "mainflowWA0: sr3.get_result() = %s", sr3.get_result().c_str());
+#endif
+        // Closing
+        print(PRI1, "mainflowWA0: c1.stop();\n");
+        c1.stop();
+        print(PRI1, "mainflowWA0: c2.stop();\n");
+        c2.stop();
+        print(PRI1, "mainflowWA0: c3.stop();\n");
+        c3.stop();
+
+        print(PRI1, "mainflowWA0: std::this_thread::sleep_for(std::chrono::milliseconds(100))\n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+    print(PRI1, "mainflowWA0: co_return 0;\n");
+    co_return 0;
+}
+
+/**
+ * @brief
+ * mainflowOneClient is a coroutine that is used an an auxiliary to mainflowWA3.
+ *
+ * @param c1 is the client object
+ * @param instance allows distinguishing between several client objects while printing output
+ * @param counter is used to compose a string that uses the value of the iteration counter of the calling coroutine
+ * @return always 0
+ */
+task<int> mainflowOneClient(CommClient& c1, int instance, int counter)
+{
+    print(PRI1, "mainflowOneClient: %d: begin\n", instance);
+
+    // Connecting
+    print(PRI1, "mainflowOneClient: %d: connect_operation sc1 = c1.start_connecting(ep1);\n", instance);
+    connect_operation sc1 = c1.start_connecting(ep1);
+    print(PRI1, "mainflowOneClient: %d: co_await sc1;\n", instance);
+    co_await sc1;
+
+    // Writing
+    std::string str = "This is string ";
+    str += std::to_string(counter);
+    str += " to echo\n";
+    print(PRI1, "mainflowOneClient: %d: write_operation sw1 = c1.start_writing(...);\n", instance);
+    write_operation sw1 = c1.start_writing(str.c_str(), str.length() + 1);
+    print(PRI1, "mainflowOneClient: %d: co_await sw1;\n", instance);
+    co_await sw1;
+
+    // Reading
+    print(PRI1, "mainflowOneClient: %d: read_operation sr1 = c1.start_reading();\n", instance);
+    read_operation sr1 = c1.start_reading('\n');
+    print(PRI1, "mainflowOneClient: %d: std::string strout = co_await sr1;\n", instance);
+    std::string strout = co_await sr1;
+    print(PRI1, "mainflowOneClient: %d: strout = %s", instance, strout.c_str());
+
+    // Closing
+    print(PRI1, "mainflowOneClient: %d: c1.stop();\n", instance);
+    c1.stop();
+
+    co_return 0;
+}
+
+/**
+ * @brief
+ *
+ * @param c1 is the first client
+ * @param c2 is the second client
+ * @param c3 is the third client
+ * @return always 0
+ */
+task<int> mainflowWA3(CommClient& c1, CommClient& c2, CommClient& c3)
+{
+    print(PRI1, "mainflowWA3: begin\n");
+
+    int counter = 0;
+    for (int i = 0; i < 60; i++)
+    {
+        print(PRI1, "mainflowWA3: %d ------------------------------------------------------------------\n", i);
+
+        print(PRI1, "mainflowWA3: mainflowOneClient(c1, 0, counter++);\n");
+        task<int> tc1 = mainflowOneClient(c1, 0, counter++);
+        print(PRI1, "mainflowWA3: mainflowOneClient(c2, 1, counter++);\n");
+        task<int> tc2 = mainflowOneClient(c2, 1, counter++);
+        print(PRI1, "mainflowWA3: mainflowOneClient(c3, 2, counter++);\n");
+        task<int> tc3 = mainflowOneClient(c3, 2, counter++);
+
+        print(PRI1, "mainflowWA3: when_any wat({ &tc1, &tc2, &tc3 });\n");
+        when_any wat({ &tc1, &tc2, &tc3 });
+        for (int i = 0; i < 3; i++) {
+            print(PRI1, "mainflowWA3: int r = co_await wat;\n");
+            int r = co_await wat;
+            print(PRI1, "mainflowWA3: wat %d completed\n", r);
+        }
+
+        print(PRI1, "mainflowWA3: std::this_thread::sleep_for(std::chrono::milliseconds(100))\n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    print(PRI1, "mainflowWA3: co_return 0;\n");
+    co_return 0;
+}
+
+/**
+ * @brief
+ *
+ * @param c1 is the first client
+ * @param c2 is the second client
+ * @param c3 is the third client
+ * @return always 0
+ */
+task<int> mainflowWA4(CommClient& c1, CommClient& c2, CommClient& c3)
+{
+    print(PRI1, "mainflowWA4: begin\n");
+
+    int counter = 0;
+    for (int i = 0; i < 60; i++)
+    {
+        print(PRI1, "mainflowWA4: %d ------------------------------------------------------------------\n", i);
+
+        print(PRI1, "mainflowWA4: mainflowOneClient(c1, 0, counter++);\n");
+        task<int> tc1 = mainflowOneClient(c1, 0, counter++);
+        print(PRI1, "mainflowWA4: mainflowOneClient(c2, 1, counter++);\n");
+        task<int> tc2 = mainflowOneClient(c2, 1, counter++);
+        print(PRI1, "mainflowWA4: mainflowOneClient(c3, 2, counter++);\n");
+        task<int> tc3 = mainflowOneClient(c3, 2, counter++);
+
+        print(PRI1, "mainflowWA4: when_any wat(tc1, tc2, tc3);\n");
+        when_any wat(tc1, tc2, tc3);
+        for (int i = 0; i < 3; i++) {
+            print(PRI1, "mainflowWA4: int r = co_await wat;\n");
+            int r = co_await wat;
+            print(PRI1, "mainflowWA4: wat %d completed\n", r);
+        }
+
+        print(PRI1, "mainflowWA4: std::this_thread::sleep_for(std::chrono::milliseconds(100))\n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    print(PRI1, "mainflowWA4: co_return 0;\n");
+    co_return 0;
+}
+
+/**
+ * @brief
+ * mainflowX selects one of the 4 mainflowWA implementations (mainflowWA0 till mainflowWA4) to be used
+ *
+ * @param c1 is the first client
+ * @param c2 is the second client
+ * @param c3 is the third client
+ * @param selected is the mainflowWA variant (defined above) to be used
+ */
+task<int> mainflowX(CommClient& c1, CommClient& c2, CommClient& c3, int selected)
+{
+    switch (selected) {
+    case 0:
+    {
+        print(PRI1, "mainflowX: task<int> si0 = mainflowWA0(c1, c2, c3);\n");
+        task<int> si0 = mainflowWA0(c1, c2, c3);
+        print(PRI1, "mainflowX: co_await si0;\n");
+        co_await si0;
+    }
+    break;
+#if 0
+    case 1:
+    {
+        print(PRI1, "mainflowX: task<int> si1 = mainflowWA1( {&c1, &c2, &c3} )\n");
+        task<int> si1 = mainflowWA1({ &c1, &c2, &c3 });
+        print(PRI1, "mainflowX: co_await si1;\n");
+        co_await si1;
+    }
+    break;
+    case 2:
+    {
+        print(PRI1, "mainflowX: task<int> si2 = mainflowWA2( {&c1, &c2, &c3} )\n");
+        task<int> si2 = mainflowWA2({ &c1, &c2, &c3 });
+        print(PRI1, "mainflowX: co_await si2;\n");
+        co_await si2;
+    }
+    break;
+#endif
+    case 3:
+    {
+        print(PRI1, "mainflowX: task<int> si3 = mainflowWA3(c1, c2, c3} )\n");
+        task<int> si3 = mainflowWA3(c1, c2, c3);
+        print(PRI1, "mainflowX: co_await si3;\n");
+        co_await si3;
+    }
+    break;
+    case 4:
+    {
+        print(PRI1, "mainflowX: task<int> si4 = mainflowWA4(c1, c2, c3} )\n");
+        task<int> si4 = mainflowWA4(c1, c2, c3);
+        print(PRI1, "mainflowX: co_await si4;\n");
+        co_await si4;
+    }
+    break;
+#if 0
+    case 5:
+    {
+        print(PRI1, "mainflowX: task<int> si5 = mainflowWA5( {&c1, &c2, &c3} )\n");
+        task<int> si5 = mainflowWA5({ &c1, &c2, &c3 });
+        print(PRI1, "mainflowX: co_await si5;\n");
+        co_await si5;
+    }
+    break;
+    case 6:
+    {
+        print(PRI1, "mainflowX: task<int> si6 = mainflowWA6( {&c1, &c2, &c3} )\n");
+        task<int> si6 = mainflowWA6({ &c1, &c2, &c3 });
+        print(PRI1, "mainflowX: co_await si6;\n");
+        co_await si6;
+    }
+#endif
+    break;
+    }
+    co_return 0;
+}
+
+/**
+ * @brief
+ * mainflowAll executes all 4 mainflowWA implementations (mainflowWA0 till mainflowWA3) in sequence
+ *
+ * @param c1 is the first client
+ * @param c2 is the second client
+ * @param c3 is the third client
+ * @return always 0
+ */
+task<int> mainflowAll(CommClient& c1, CommClient& c2, CommClient& c3)
+{
+    print(PRI1, "mainflowAll: task<int> si0 = mainflowWA0(c1, c2, c3);\n");
+    task<int> si0 = mainflowWA0(c1, c2, c3);
+    print(PRI1, "mainflowAll: co_await si0;\n");
+    co_await si0;
+#if 0
+    print(PRI1, "mainflowAll: task<int> si1 = mainflowWA1( {&c1, &c2, &c3} )\n");
+    task<int> si1 = mainflowWA1({ &c1, &c2, &c3 });
+    print(PRI1, "mainflowAll: co_await si1;\n");
+    co_await si1;
+    
+    print(PRI1, "mainflowAll: task<int> si2 = mainflowWA2( {&c1, &c2, &c3} )\n");
+    task<int> si2 = mainflowWA2({ &c1, &c2, &c3 });
+    print(PRI1, "mainflowAll: co_await si2;\n");
+    co_await si2;
+#endif
+    print(PRI1, "mainflowAll: task<int> si3 = mainflowWA3(c1, c2, c3} )\n");
+    task<int> si3 = mainflowWA3(c1, c2, c3);
+    print(PRI1, "mainflowAll: co_await si3;\n");
+    co_await si3;
+
+    print(PRI1, "mainflowAll: task<int> si4 = mainflowWA4(c1, c2, c3} )\n");
+    task<int> si4 = mainflowWA4(c1, c2, c3);
+    print(PRI1, "mainflowAll: co_await si4;\n");
+    co_await si4;
+#if 0
+    print(PRI1, "mainflowAll: task<int> si5 = mainflowWA5( {&c1, &c2, &c3} )\n");
+    task<int> si5 = mainflowWA5({ &c1, &c2, &c3 });
+    print(PRI1, "mainflowAll: co_await si5;\n");
+    co_await si5;
+
+    print(PRI1, "mainflowAll: task<int> si6 = mainflowWA6( {&c1, &c2, &c3} )\n");
+    task<int> si6 = mainflowWA6({ &c1, &c2, &c3 });
+    print(PRI1, "mainflowAll: co_await si2;\n");
+    co_await si6;
+#endif
+    print(PRI1, "mainflowAll: co_return 0;\n");
+    co_return 0;
+}
+
+int main(int argc, char* argv[])
+{
+    set_priority(0x01);
+
+    boost::asio::io_context ioContext;
+
+#if USE_LAZY_START
+    print(PRI1, "Using lazy start async_ltask\n");
+#else
+    print(PRI1, "Using eager start async_task\n");
+#endif
+
+    print(PRI1, "main: CommClient c1(ioContext, ep1);\n");
+    CommClient c1(ioContext, ep1);
+    print(PRI1, "main: CommClient c2(ioContext, ep1);\n");
+    CommClient c2(ioContext, ep1);
+    print(PRI1, "main: CommClient c3(ioContext, ep1);\n");
+    CommClient c3(ioContext, ep1);
+
+    if (argc == 2)
+    {
+        int selected = 0;
+        selected = atoi(argv[1]);
+        if (selected < 0 || selected > 6)
+        {
+            print(PRI1, "main: selection must be in the range [0..6]\n");
+            return 0;
+        }
+        print(PRI1, "main: mainflowX(c1, c2, c3, selected);\n");
+        task<int> si = mainflowX(c1, c2, c3, selected);
+
+        print(PRI1, "main: si.start();\n");
+        si.start();
+
+        // Keep mainflowX in the same scope as ioContext.run() to
+        // ensure that all promise_type objects and final_awaiter objects
+        // are released.
+        print(PRI1, "main: before ioContext.run();\n");
+        ioContext.run();
+        print(PRI1, "main: after ioContext.run();\n");
+    }
+    else
+    {
+        print(PRI1, "main: task<int> si = mainflowAll(c1, c2, c3);\n");
+        task<int> si = mainflowAll(c1, c2, c3);
+
+        print(PRI1, "main: si.start();\n");
+        si.start();
+
+        // Keep mainflowAll in the same scope as ioContext.run() to
+        // ensure that all promise_type objects and final_awaiter objects
+        // are released.
+        print(PRI1, "main: before ioContext.run();\n");
+        ioContext.run();
+        print(PRI1, "main: after ioContext.run();\n");
+    }
+
+    print(PRI1, "main: std::this_thread::sleep_for(std::chrono::seconds(1))\n");
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    print(PRI1, "main: return 0;\n");
+    return 0;
+}

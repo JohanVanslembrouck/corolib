@@ -3,8 +3,8 @@ project (clientserver1x)
 include_directories(../../../include ../common ../commonlso)
 
 foreach(_target
-    client1
-    client1a
+    client1 client1a
+    client3WA client3WAny
     clientserver
     server
   )
@@ -14,8 +14,8 @@ foreach(_target
 endforeach()
 
 foreach(_target
-    client1
-    client1a
+    client1 client1a
+    client3WA client3WAny
     clientserver
     server
   )
@@ -25,8 +25,8 @@ foreach(_target
 endforeach()
 
 foreach(_target
-    client1
-    client1a
+    client1 client1a
+    client3WA client3WAny
     clientserver
     server
   )
@@ -36,8 +36,8 @@ foreach(_target
 endforeach()
 
 foreach(_target
-    client1
-    client1a
+    client1 client1a
+    client3WA client3WAny
     clientserver
     server
   )

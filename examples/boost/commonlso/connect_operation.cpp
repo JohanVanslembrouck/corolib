@@ -43,7 +43,7 @@ namespace corolib
             {
                 (void)result_endpoint;
 
-                print(PRI2, "%p: CommClient::handle_connect(): entry\n", this);
+                print(PRI2, "%p: connect_operation_impl::handle_connect(): entry\n", this);
 
                 if (m_boost_context.m_stopped)
                     return;
@@ -53,7 +53,7 @@ namespace corolib
                 // the timeout handler must have run first.
                 if (!m_boost_context.m_socket.is_open())
                 {
-                    print(PRI2, "%p: CommClient::handle_connect(): Connect timed out\n", this);
+                    print(PRI2, "%p: connect_operation_impl::handle_connect(): Connect timed out\n", this);
 
                     // Try the next available endpoint.
                     //start_connecting_impl(idx);
@@ -62,7 +62,7 @@ namespace corolib
                 // Check if the connect operation failed before the deadline expired.
                 else if (error)
                 {
-                    print(PRI2, "%p: CommClient::handle_connect(): Connect error: %d\n", this, error);
+                    print(PRI2, "%p: connect_operation_impl::handle_connect(): Connect error: %d\n", this, error);
 
                     // We need to close the socket used in the previous connection attempt
                     // before starting a new one.
@@ -75,10 +75,10 @@ namespace corolib
                 // Otherwise we have successfully established a connection.
                 else
                 {
-                    print(PRI2, "%p: CommClient::handle_connect(): Connection successfully established\n", this);
+                    print(PRI2, "%p: connect_operation_impl::handle_connect(): Connection successfully established\n", this);
                     operation.completed();
                 }
-                print(PRI2, "%p: CommClient::handle_connect(): exit\n\n", this);
+                print(PRI2, "%p: connect_operation_impl::handle_connect(): exit\n\n", this);
             });
 
         return true;

@@ -13,7 +13,6 @@
 #include <corolib/print.h>
 #include <corolib/oneway_task.h>
 #include <corolib/async_task.h>
-#include <corolib/async_operation.h>
 
 #include <commcorelso.h>
 #include <commclientlso.h>
