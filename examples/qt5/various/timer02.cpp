@@ -2,7 +2,7 @@
  * @file timer02.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <QThread>
@@ -401,8 +401,8 @@ async_task<int> Timer02::mainTask()
     async_task<int> t3 = timerTask03();
     async_task<int> t4 = timerTask04();
 
-    print(PRI1, "--- mainTask: when_all wa({ &t1, &t2, &t3, &t4 });\n");
-    when_all wa({ &t1, &t2, &t3, &t4 });
+    print(PRI1, "--- mainTask: when_all wa(t1, t2, t3, t4);\n");
+    when_all wa(t1, t2, t3, t4);
     print(PRI1, "--- mainTask: co_await wa;\n");
     co_await wa;
 

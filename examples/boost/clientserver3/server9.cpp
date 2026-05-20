@@ -8,7 +8,7 @@
  * In contrast to cs3-server8.cpp, cs3-server9.cpp uses a coroutine "chain" from read_client_request to serverRequest.operationX,
  * i.e. all functions in between (in server8.cpp) have been turned into coroutines.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
  
 #include <boost/asio/signal_set.hpp>
@@ -345,8 +345,8 @@ public:
 
         dispatcher.invokeAll("EOF");
 
-        print(PRI1, "main_one_client: when_all obs({ &sr1, &sr2, &sr3, &sr4 });\n");
-        when_all obs({ &sr1, &sr2, &sr3, &sr4 });
+        print(PRI1, "main_one_client: when_all obs(sr1, sr2, sr3, sr4);\n");
+        when_all obs(sr1, sr2, sr3, sr4);
         print(PRI1, "main_one_client: co_await obs;\n");
         co_await obs;
         (void)i;

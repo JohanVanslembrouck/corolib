@@ -2,7 +2,7 @@
  * @file timer02.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include "timer02.h"
@@ -292,7 +292,7 @@ async_task<int> Timer02::timerTask04()
         start_timer(op_timer1, timer1, 5000);
         start_timer(op_timer2, timer2, 5500);
 
-        when_all wa5({ &op_timer1, &op_timer2 });
+        when_all wa5(op_timer1, op_timer2);
         co_await wa5;
         print(PRI1, "--- timerTask04: after co_await wa5 --- 5000 + 5500\n");
     }

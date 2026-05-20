@@ -89,8 +89,8 @@ set -x
 ./p1469-async_operation-thread-imm
 ./p1472-async_operation-eventqueue
 #./p1474-async_operation-thread
-# ./p1475-async_operation-thread-queue
-# ./p1476-async_operation-immediate
+#./p1475-async_operation-thread-queue
+#./p1476-async_operation-immediate
 ./p1482-async_operation-eventqueue
 ./p1484-async_operation-thread
 ./p1485-async_operation-thread-queue
@@ -106,7 +106,7 @@ set -x
 ./p1730-async_operation
 ./p1730a-async_operation
 ./p1734-async_operation-thread
-./p1736-async_operation-immediate
+#./p1736-async_operation-immediate
 
 ./p1800-async_operation
 ./p1802-async_operation-eventqueue

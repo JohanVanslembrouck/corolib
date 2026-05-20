@@ -3,7 +3,7 @@
  * @brief This example shows how one instance of an async_operation<void> object
  * can be used to resume several coroutines that co_wait this object.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <QThread>
@@ -182,8 +182,8 @@ async_task<int> Timer03::mainTask()
     // Start the timer: when it expires, the 3 coroutines will leave their loop.
     timer1.start(1000);
     
-    print(PRI1, "--- mainTask: when_all wa({ &t1a, &t1b, &t1c });\n");
-    when_all wa({ &t1a, &t1b, &t1c });
+    print(PRI1, "--- mainTask: when_all wa(t1a, t1b, t1c);\n");
+    when_all wa(t1a, t1b, t1c);
     print(PRI1, "--- mainTask: co_await wa;\n");
     co_await wa;
 

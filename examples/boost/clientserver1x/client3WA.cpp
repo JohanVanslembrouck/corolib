@@ -64,8 +64,8 @@ task<int> mainflowWA0(CommClient& c1, CommClient& c2, CommClient& c3)
         print(PRI1, "mainflowWA0: auto sc3 = c3.start_connecting(ep1);\n");
         auto sc3 = c3.start_connecting(ep1);
 
-        print(PRI1, "mainflowWA0: when_all wac( { &sc1, &sc2, &sc3 } );\n");
-        when_all wac({ &sc1, &sc2, &sc3 });
+        print(PRI1, "mainflowWA0: when_all wac(sc1, sc2, sc3);\n");
+        when_all wac(sc1, sc2, sc3);
         print(PRI1, "mainflowWA0: co_await wac;\n");
         co_await wac;
 
@@ -87,8 +87,8 @@ task<int> mainflowWA0(CommClient& c1, CommClient& c2, CommClient& c3)
         print(PRI1, "mainflowWA0: auto sw3 = c3.start_writing(...);\n");
         auto sw3 = c3.start_writing(str3.c_str(), str3.length() + 1);
 
-        print(PRI1, "mainflowWA0: when_all waw( { &sw1, &sw2, &sw3 } );\n");
-        when_all waw({ &sw1, &sw2, &sw3 });
+        print(PRI1, "mainflowWA0: when_all waw(sw1, sw2, sw3);\n");
+        when_all waw(sw1, sw2, sw3);
         print(PRI1, "mainflowWA0: co_await waw;\n");
         co_await waw;
 
@@ -100,8 +100,8 @@ task<int> mainflowWA0(CommClient& c1, CommClient& c2, CommClient& c3)
         print(PRI1, "mainflowWA0: auto sr3 = c3.start_reading();\n");
         auto sr3 = c3.start_reading();
 
-        print(PRI1, "mainflowWA0: when_all war( { &sr1, &sr2, &sr3 } ) ;\n");
-        when_all war({ &sr1, &sr2, &sr3 });
+        print(PRI1, "mainflowWA0: when_all war(sr1, sr2, sr3) ;\n");
+        when_all war(sr1, sr2, sr3);
         print(PRI1, "mainflowWA0: co_await war;\n");
         co_await war;
         print(PRI1, "mainflowWA0: sr1.get_result() = %s", sr1.get_result().c_str());
@@ -121,6 +121,18 @@ task<int> mainflowWA0(CommClient& c1, CommClient& c2, CommClient& c3)
     }
 
     print(PRI1, "mainflowWA0: co_return 0;\n");
+    co_return 0;
+}
+
+task<int> mainflowWA1(std::initializer_list<CommClient*> client_il)
+{
+    print(PRI1, "mainflowWA1: not implemented because lazy start operations do not have a default constructor\n");
+    co_return 0;
+}
+
+task<int> mainflowWA2(std::initializer_list<CommClient*> client_il)
+{
+    print(PRI1, "mainflowWA2: not implemented because lazy start operations do not have a default constructor\n");
     co_return 0;
 }
 
@@ -177,8 +189,8 @@ task<int> mainflowOneClient(CommClient& c1, int instance, int counter)
  */
 task<int> mainflowWA3(CommClient& c1, CommClient& c2, CommClient& c3)
 {
+#if USE_ASYNC_BASE
     print(PRI1, "mainflowWA3: begin\n");
-
     int counter = 0;
     for (int i = 0; i < 60; i++)
     {
@@ -201,6 +213,9 @@ task<int> mainflowWA3(CommClient& c1, CommClient& c2, CommClient& c3)
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
     print(PRI1, "mainflowWA3: co_return 0;\n");
+#else
+    print(PRI1, "mainflowWA3: replaced with mainflowWA4\n");
+#endif
     co_return 0;
 }
 
@@ -241,6 +256,18 @@ task<int> mainflowWA4(CommClient& c1, CommClient& c2, CommClient& c3)
     co_return 0;
 }
 
+task<int> mainflowWA5(std::initializer_list<CommClient*> client_il)
+{
+    print(PRI1, "mainflowWA5: not implemented because lazy start operations do not have a default constructor\n");
+    co_return 0;
+}
+
+task<int> mainflowWA6(std::initializer_list<CommClient*> client_il)
+{
+    print(PRI1, "mainflowWA6: not implemented because lazy start operations do not have a default constructor\n");
+    co_return 0;
+}
+
 /**
  * @brief
  * mainflowX selects one of the 4 mainflowWA implementations (mainflowWA0 till mainflowWA4) to be used
@@ -261,7 +288,6 @@ task<int> mainflowX(CommClient& c1, CommClient& c2, CommClient& c3, int selected
         co_await si0;
     }
     break;
-#if 0
     case 1:
     {
         print(PRI1, "mainflowX: task<int> si1 = mainflowWA1( {&c1, &c2, &c3} )\n");
@@ -278,7 +304,6 @@ task<int> mainflowX(CommClient& c1, CommClient& c2, CommClient& c3, int selected
         co_await si2;
     }
     break;
-#endif
     case 3:
     {
         print(PRI1, "mainflowX: task<int> si3 = mainflowWA3(c1, c2, c3)\n");
@@ -295,7 +320,6 @@ task<int> mainflowX(CommClient& c1, CommClient& c2, CommClient& c3, int selected
         co_await si4;
     }
     break;
-#if 0
     case 5:
     {
         print(PRI1, "mainflowX: task<int> si5 = mainflowWA5( {&c1, &c2, &c3} )\n");
@@ -312,7 +336,6 @@ task<int> mainflowX(CommClient& c1, CommClient& c2, CommClient& c3, int selected
         co_await si6;
     }
     break;
-#endif
     }
     co_return 0;
 }
@@ -332,7 +355,7 @@ task<int> mainflowAll(CommClient& c1, CommClient& c2, CommClient& c3)
     task<int> si0 = mainflowWA0(c1, c2, c3);
     print(PRI1, "mainflowAll: co_await si0;\n");
     co_await si0;
-#if 0
+
     print(PRI1, "mainflowAll: task<int> si1 = mainflowWA1( {&c1, &c2, &c3} )\n");
     task<int> si1 = mainflowWA1({ &c1, &c2, &c3 });
     print(PRI1, "mainflowAll: co_await si1;\n");
@@ -342,7 +365,7 @@ task<int> mainflowAll(CommClient& c1, CommClient& c2, CommClient& c3)
     task<int> si2 = mainflowWA2({ &c1, &c2, &c3 });
     print(PRI1, "mainflowAll: co_await si2;\n");
     co_await si2;
-#endif
+
     print(PRI1, "mainflowAll: task<int> si3 = mainflowWA3(c1, c2, c3} )\n");
     task<int> si3 = mainflowWA3(c1, c2, c3);
     print(PRI1, "mainflowAll: co_await si3;\n");
@@ -352,7 +375,7 @@ task<int> mainflowAll(CommClient& c1, CommClient& c2, CommClient& c3)
     task<int> si4 = mainflowWA4(c1, c2, c3);
     print(PRI1, "mainflowAll: co_await si4;\n");
     co_await si4;
-#if 0
+
     print(PRI1, "mainflowAll: task<int> si5 = mainflowWA5( {&c1, &c2, &c3} )\n");
     task<int> si5 = mainflowWA5({ &c1, &c2, &c3 });
     print(PRI1, "mainflowAll: co_await si5;\n");
@@ -362,7 +385,7 @@ task<int> mainflowAll(CommClient& c1, CommClient& c2, CommClient& c3)
     task<int> si6 = mainflowWA6({ &c1, &c2, &c3 });
     print(PRI1, "mainflowAll: co_await si6;\n");
     co_await si6;
-#endif
+
     print(PRI1, "mainflowAll: co_return 0;\n");
     co_return 0;
 }

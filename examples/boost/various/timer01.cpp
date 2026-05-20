@@ -276,7 +276,7 @@ async_task<int> Timer01::timerTask04()
     async_operation<void> op_timer2 = start_timer(timer2, 550);
     op_timer2.auto_reset(true);
 
-    when_all wa({ &op_timer1, &op_timer2 });
+    when_all wa(op_timer1, op_timer2);
     co_await wa;
     print(PRI1, "--- timerTask04: after co_await wa --- 500 + 550\n");
 

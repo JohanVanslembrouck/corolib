@@ -352,18 +352,14 @@ async_task<void> coroutineN_when_all()
     CORBA::Double inout1 = 1;
     CORBA::Double inout1a;
 
-    async_operation<operation1_result> async_ops[NR];
+    std::vector<async_operation<operation1_result>> async_ops{ NR };
 
     for (int i = 0; i < NR; ++i) {
         inout1a = inout1 + i;
         async_ops[i] = interfaceACoObj.start_operation1(in1 + i, inout1a);
     }
 
-    async_base* pasyncsc[NR];
-    for (int i = 0; i < NR; ++i)
-        pasyncsc[i] = &async_ops[i];
-
-    co_await when_all(pasyncsc, NR);
+    co_await when_all(async_ops);
 
     for (int i = 0; i < NR; ++i) {
         operation1_result result = async_ops[i].get_result();
@@ -391,17 +387,14 @@ async_task<void> coroutineN_when_any()
     CORBA::Double inout1 = 1;
     CORBA::Double inout1a;
 
-    async_operation<operation1_result> async_ops[NR];
+    std::vector<async_operation<operation1_result>> async_ops{ NR };
 
     for (int i = 0; i < NR; ++i) {
         inout1a = inout1 + i;
         async_ops[i] = interfaceACoObj.start_operation1(in1 + i, inout1a);
     }
 
-    async_base* pasyncsc[NR];
-    for (int i = 0; i < NR; ++i)
-        pasyncsc[i] = &async_ops[i];
-    when_any wa(pasyncsc, NR);
+    when_any wa(async_ops);
 
     for (int i = 0; i < NR; ++i) {
         int r = co_await wa;

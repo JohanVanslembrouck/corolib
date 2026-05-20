@@ -20,8 +20,8 @@
 |                |               | use async_base in their implementation. |
 */
 
-#define USE_ASYNC_BASE 1
-#define USE_WHEN_TYPE 0
+#define USE_ASYNC_BASE 0
+#define USE_WHEN_TYPE 1
 
 #if USE_ASYNC_BASE
 #define override_if_async_base override

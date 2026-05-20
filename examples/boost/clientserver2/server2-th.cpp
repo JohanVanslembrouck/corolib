@@ -7,7 +7,7 @@
  * 
  * See README.md for further information.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
  
 #include <boost/asio/signal_set.hpp>
@@ -83,8 +83,8 @@ public:
         // a) the timer to expire
         // b) the action to be canceled by the client,
         // whichever occurs first.
-        print(PRI1, "one_client_write_reply: when_any war( { &st, &cancelAction } ) ;\n");
-        when_any war({ &st, &cancelAction });
+        print(PRI1, "one_client_write_reply: when_any war(st, cancelAction) ;\n");
+        when_any war(st, cancelAction);
         
         print(PRI1, "one_client_write_reply: int i = co_await war;\n");
         int i = co_await war;
@@ -202,8 +202,8 @@ public:
             // a) writing of the reply to the client to be started
             // b) the action to be cancelled by the client,
             // whichever occurs first.
-            print(PRI1, "one_client: when_any war( { &completeAction, &sr2 } ) ;\n");
-            when_any war({ &completeAction, &sr2 });
+            print(PRI1, "one_client: when_any war(completeAction, sr2) ;\n");
+            when_any war(completeAction, sr2);
             print(PRI1, "one_client: int i = co_await war;\n");
             int i = co_await war;
 

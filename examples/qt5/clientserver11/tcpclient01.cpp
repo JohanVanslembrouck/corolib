@@ -3,7 +3,7 @@
  * @brief 
  * Implementation of the first TCP client appliation.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <QCoreApplication>
@@ -533,7 +533,7 @@ async_task<int> TcpClient01::measurementLoop4(int selection)
         async_operation<QByteArray> op1 = start_reading();
         async_operation<QByteArray> op2 = start_reading();
 
-        when_all wa( { &op1, &op2 } );
+        when_all wa(op1, op2);
         co_await wa;
 
         QByteArray dataOut1 = op1.get_result();

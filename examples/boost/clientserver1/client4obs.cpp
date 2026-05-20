@@ -40,7 +40,7 @@ public:
      */
     async_task<int> observer1(async_operation_rmc<std::string>& op_read)
     {
-        print(PRI1, "--- observer1: std::string strout = co_await op_read\n");
+        print(PRI1, "--- observer1: std::string strout = co_await op_read;\n");
         std::string strout = co_await op_read;
         print(PRI1, "--- observer1: strout = %s", strout.c_str());
         co_return 1;
@@ -53,7 +53,7 @@ public:
      */
     async_task<int> observer2(async_operation_rmc<std::string>& op_read)
     {
-        print(PRI1, "--- observer2: std::string strout = co_await op_read\n");
+        print(PRI1, "--- observer2: std::string strout = co_await op_read;\n");
         std::string strout = co_await op_read;
         print(PRI1, "--- observer2: strout = %s", strout.c_str());
         co_return 1;
@@ -66,7 +66,7 @@ public:
      */
     async_task<int> observer3(async_operation_rmc<std::string>& op_read)
     {
-        print(PRI1, "--- observer3: std::string strout = co_await op_read\n");
+        print(PRI1, "--- observer3: std::string strout = co_await op_read;\n");
         std::string strout = co_await op_read;
         print(PRI1, "--- observer3: strout = %s", strout.c_str());
         co_return 1;
@@ -79,7 +79,7 @@ public:
      */
     async_task<int> observer4(async_operation_rmc<std::string>& op_read)
     {
-        print(PRI1, "--- observer4: std::string strout = co_await op_read\n");
+        print(PRI1, "--- observer4: std::string strout = co_await op_read;\n");
         std::string strout = co_await op_read;
         print(PRI1, "--- observer4: strout = %s", strout.c_str());
         co_return 1;
@@ -146,8 +146,8 @@ public:
             print(PRI1, "mainflow: start_reading_impl_rmc(index = %d);\n", index);
             start_reading_impl_rmc(index);
             
-            print(PRI1, "mainflow: when_all war( { &sr1, &sr2, &sr3, &sr4 } );\n");
-            when_all war({ &sr1, &sr2, &sr3, &sr4 });
+            print(PRI1, "mainflow: when_all war(sr1, sr2, sr3, sr4);\n");
+            when_all war(sr1, sr2, sr3, sr4);
             // Wait until all observers have completed their task
             print(PRI1, "mainflow: before co_await war;\n");
             co_await war;
@@ -157,8 +157,8 @@ public:
             // after having read the response.
             // Delaying
             steady_timer client_timer(m_ioContext);
-            print(PRI1, "mainflow: async_operation<void> st = start_timer(1000);\n");
-            async_operation<void> st = start_timer(client_timer, 1000);
+            print(PRI1, "mainflow: async_operation<void> st = start_timer(100);\n");
+            async_operation<void> st = start_timer(client_timer, 100);
             print(PRI1, "mainflow: co_await st;\n");
             co_await st;
 

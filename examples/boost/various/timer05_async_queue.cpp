@@ -2,7 +2,7 @@
  * @file timer05_async_queue.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include "timer05_async_queue.h"

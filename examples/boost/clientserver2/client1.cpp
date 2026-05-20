@@ -7,7 +7,7 @@
  *
  * See README.md for further information.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <string>
@@ -162,8 +162,8 @@ public:
         print(PRI1, "start_reading_timed: async_operation<void> st = start_timer(client_timer, timeout);\n");
         async_operation<void> st = start_timer(client_timer, timeout);
 
-        print(PRI1, "start_reading_timed: when_any war( { &sr, &st } ) ;\n");
-        when_any war({ &sr, &st });
+        print(PRI1, "start_reading_timed: when_any war(sr, st);\n");
+        when_any war(sr, st);
         print(PRI1, "start_reading_timed: int i = co_await war;\n");
         int i = co_await war;
         

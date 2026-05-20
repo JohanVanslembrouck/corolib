@@ -7,7 +7,7 @@
  *
  * See README.md for further information.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <string>
@@ -93,8 +93,8 @@ public:
 		print(PRI1, "performAction: async_operation<void> st = start_timer(client_timer, timeout);\n");
 		async_operation<void> st = start_timer(client_timer, timeout);
 
-        print(PRI1, "performAction: when_any war( { &sr, &st } ) ;\n");
-        when_any war({ &sr, &st });
+        print(PRI1, "performAction: when_any war(sr, st) ;\n");
+        when_any war(sr, st);
 
 		int counter = 0;
 		bool done = false;

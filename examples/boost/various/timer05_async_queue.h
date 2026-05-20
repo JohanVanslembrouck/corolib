@@ -2,7 +2,7 @@
  * @file timer05_async_queue.h
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef TIMER05_ASYNC_QUEUE_H

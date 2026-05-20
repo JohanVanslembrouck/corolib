@@ -7,7 +7,7 @@
  * The difference with server2.cpp is the use of a dedicated coroutine read_client_request 
  * that is co_awaited in mainflow_one_client.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
  
 #include <boost/asio/signal_set.hpp>

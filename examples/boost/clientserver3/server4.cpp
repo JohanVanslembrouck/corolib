@@ -10,7 +10,7 @@
  * an asynchronous operation. This way main_one_client gets feedback on the invoked operation
  * and can (if applicable) take some additional actions.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
  
 #include <boost/asio/signal_set.hpp>
@@ -101,7 +101,7 @@ public:
         Dispatcher dispatcher;
         ServerRequest serverRequest(commClient, m_IoContext);
 
-        async_operation<std::string> reqs[4];
+        std::vector<async_operation<std::string>> reqs{4};
 
         reqs[0] = dispatcher.registerFunctor(
             "Req1",
@@ -139,12 +139,8 @@ public:
                 (void)serverRequest.operation4(req4);
             });
 
-        async_base* preqs[4];
-        for (int i = 0; i < 4; ++i)
-            preqs[i] = &reqs[i];
-
-        print(PRI1, "main_one_client: when_any wat(preqs, 4);\n");
-        when_any wat(preqs, 4);
+        print(PRI1, "main_one_client: when_any wat(reqs);\n");
+        when_any wat(reqs);
 
         bool done = false;
         print(PRI1, "main_one_client: async_task<int> rcr = read_client_request(commClient, dispatcher);\n");

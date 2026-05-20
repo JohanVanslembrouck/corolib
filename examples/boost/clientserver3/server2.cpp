@@ -7,7 +7,7 @@
  * server2.cpp is equivalent to server.cpp but it uses include files dispather.h and serverrequest.h
  * instead of placing all code in a single file.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
  
 #include <boost/asio/signal_set.hpp>

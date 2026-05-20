@@ -102,7 +102,7 @@ p1706a-async_operation-immediate.exe
 p1730-async_operation.exe
 p1730a-async_operation.exe
 p1734-async_operation-thread.exe
-p1736-async_operation-immediate.exe
+REM p1736-async_operation-immediate.exe
 
 p1800-async_operation.exe
 p1802-async_operation-eventqueue.exe

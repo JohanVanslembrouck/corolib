@@ -46,7 +46,7 @@ public:
         print(PRI1, "--- observer1: begin\n");
         while (m_running)
         {
-            print(PRI1, "--- observer1: std::string strout = co_await op_read\n");
+            print(PRI1, "--- observer1: std::string strout = co_await op_read;\n");
             std::string strout = co_await op_read;
             print(PRI1, "--- observer1: strout = %s", strout.c_str());
         }
@@ -64,7 +64,7 @@ public:
         print(PRI1, "--- observer2: begin\n");
         while (m_running)
         {
-            print(PRI1, "--- observer2: std::string strout = co_await op_read\n");
+            print(PRI1, "--- observer2: std::string strout = co_await op_read;\n");
             std::string strout = co_await op_read;
             print(PRI1, "--- observer2: strout = %s", strout.c_str());
         }
@@ -82,7 +82,7 @@ public:
         print(PRI1, "--- observer3: begin\n");
         while (m_running)
         {
-            print(PRI1, "--- observer3: std::string strout = co_await op_read\n");
+            print(PRI1, "--- observer3: std::string strout = co_await op_read;\n");
             std::string strout = co_await op_read;
             print(PRI1, "--- observer3: strout = %s", strout.c_str());
         }
@@ -100,7 +100,7 @@ public:
         print(PRI1, "--- observer4: begin\n");
         while (m_running)
         {
-            print(PRI1, "--- observer4: std::string strout = co_await op_read\n");
+            print(PRI1, "--- observer4: std::string strout = co_await op_read;\n");
             std::string strout = co_await op_read;
             print(PRI1, "--- observer4: strout = %s", strout.c_str());
         }
@@ -194,8 +194,8 @@ public:
             stop();
         }
 
-        print(PRI1, "mainflow: when_all war( { &sr1, &sr2, &sr3, &sr4 } );\n");
-        when_all war({ &sr1, &sr2, &sr3, &sr4 });
+        print(PRI1, "mainflow: when_all war(sr1, sr2, sr3, sr4);\n");
+        when_all war(sr1, sr2, sr3, sr4);
         // Wait until all observers have completed their task
         print(PRI1, "mainflow: before co_await war;\n");
         co_await war;

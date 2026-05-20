@@ -107,7 +107,7 @@ async_task<int> send(socket_wrapper& sw)
 
     async_task<int> cl = send(sw);
     async_task<int> rc = receive(sw);
-    when_all wa({ &cl, &rc });
+    when_all wa(cl, rc);
     co_await wa;
     print(PRI5, "echoClient - after co_await wa\n");
 

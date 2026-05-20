@@ -8,7 +8,7 @@
  * server8.cpp uses "observer" couroutines, where one observer waits for and handles 1 specific request.
  * server8.cpp resumes the observer coroutine that is interested in that request.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
  
 #include <boost/asio/signal_set.hpp>
@@ -322,8 +322,8 @@ public:
 
         dispatcher.invokeAll("EOF");
 
-        print(PRI1, "main_one_client: when_all obs({ &sr1, &sr2, &sr3, &sr4 });\n");
-        when_all obs({ &sr1, &sr2, &sr3, &sr4 });
+        print(PRI1, "main_one_client: when_all obs(sr1, sr2, sr3, sr4);\n");
+        when_all obs(sr1, sr2, sr3, sr4);
         print(PRI1, "main_one_client: co_await obs;\n");
         co_await obs;
         (void)i;
