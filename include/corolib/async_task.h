@@ -25,7 +25,7 @@
  Class hierarchy
  ===============
 
-                     class async_base
+                     (class async_base)
                              ^
                              |
                              |
@@ -75,9 +75,14 @@ apart from the common base class async_base.
 #include "print.h"
 #include "tracker.h"
 #include "semaphore.h"
-#include "async_base.h"
 #include "when_all_counter.h"
 #include "when_any_one.h"
+
+#include "config.h"
+
+#if USE_ASYNC_BASE
+#include "async_base.h"
+#endif
 
 // Some compilers require the copy or move constructor to be present
 // to be able to return an object from get_return_object().
@@ -361,8 +366,13 @@ namespace corolib
     /**
      * @brief class async_task_base
      */
+#if USE_ASYNC_BASE
     template<typename TYPE>
     class async_task_base : public async_base, private coroutine_tracker
+#else
+    template<typename TYPE>
+    class async_task_base : private coroutine_tracker
+#endif
     {
     public:
     
@@ -527,7 +537,7 @@ namespace corolib
 #endif
         }
 
-        bool is_ready() override
+        bool is_ready() override_if_async_base
         {
             bool ready = false;
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
@@ -540,21 +550,11 @@ namespace corolib
             return ready;
         }
 
-        void reset()
-        {
-#if !USE_RESULT_FROM_COROUTINE_OBJECT
-            if (m_coro_handle)
-                m_coro_handle.promise().m_result.reset();
-#else
-            m_result.reset();
-#endif
-        }
-
         /**
          * @brief called from the constructors and destructor of when_all
          *
          */
-        void setCounter(when_all_counter* ctr) override
+        void setCounter(when_all_counter* ctr) override_if_async_base
         {
             clprint(PRI2, "%p: void m_async_task_base::setCounter(%p)\n", this, ctr);
             m_coro_handle.promise().m_ctr = ctr;
@@ -564,10 +564,20 @@ namespace corolib
          * @brief called from the constructors and destructor of when_any
          *
          */
-        void setWaitAny(when_any_one* waitany) override
+        void setWaitAny(when_any_one* waitany) override_if_async_base
         {
             clprint(PRI2, "%p: void m_async_task_base::setWaitAny(%p)\n", this, waitany);
             m_coro_handle.promise().m_waitany = waitany;
+        }
+
+        void reset()
+        {
+#if !USE_RESULT_FROM_COROUTINE_OBJECT
+            if (m_coro_handle)
+                m_coro_handle.promise().m_result.reset();
+#else
+            m_result.reset();
+#endif
         }
 
 #if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
@@ -799,7 +809,7 @@ namespace corolib
          * @brief start is a dummy function for eager start coroutines, but it required because
          * of its call in when_all and when_any.
          */
-        void start() override
+        void start() override_if_async_base
         {
         }
 
@@ -994,7 +1004,7 @@ namespace corolib
          * @brief start starts a lazy coroutine.
          * 
          */
-        void start() override
+        void start() override_if_async_base
         {
             this->baseStart();
         }
@@ -1166,7 +1176,11 @@ namespace corolib
     /**
      * @brief class async_task_void
      */
+#if USE_ASYNC_BASE
     class async_task_void : public async_base, private coroutine_tracker
+#else
+    class async_task_void : private coroutine_tracker
+#endif
     {
     public:
 
@@ -1317,7 +1331,7 @@ namespace corolib
 #endif
         }
 
-        bool is_ready() override
+        bool is_ready() override_if_async_base
         {
 #if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
             ready_admin();
@@ -1331,13 +1345,13 @@ namespace corolib
 #endif
         }
 
-        void setCounter(when_all_counter* ctr) override
+        void setCounter(when_all_counter* ctr) override_if_async_base
         {
             clprint(PRI2, "%p: void async_task_void::setCounter(%p)\n", this, ctr);
             m_coro_handle.promise().m_ctr = ctr;
         }
 
-        void setWaitAny(when_any_one* waitany) override
+        void setWaitAny(when_any_one* waitany) override_if_async_base
         {
             clprint(PRI2, "%p: void async_task_void::setWaitAny(%p)\n", this, waitany);
             m_coro_handle.promise().m_waitany = waitany;
@@ -1565,7 +1579,7 @@ namespace corolib
          * @brief start is a dummy function for eager start coroutines, but it required because
          * of its call in when_all and when_any.
          */
-        void start() override
+        void start() override_if_async_base
         {
         }
 
@@ -1753,7 +1767,7 @@ namespace corolib
         /**
          * @brief start starts a lazy coroutine.
          */
-        void start() override
+        void start() override_if_async_base
         {
             this->baseStart();
         }

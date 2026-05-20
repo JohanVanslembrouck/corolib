@@ -15,7 +15,7 @@
  Class hierarchy
  ===============
 
-                     class async_base
+                     (class async_base)
                              ^
                              |
                              |
@@ -49,9 +49,14 @@
 
 #include "print.h"
 #include "tracker.h"
-#include "async_base.h"
 #include "when_all_counter.h"
 #include "when_any_one.h"
+
+#include "config.h"
+
+#if USE_ASYNC_BASE
+#include "async_base.h"
+#endif
 
 #define REPORT_OUT_OF_SCOPE 1
 
@@ -61,7 +66,11 @@ namespace corolib
 
     // ---------------------------------------------------------
 
+#if USE_ASYNC_BASE
     class async_operation_base : public async_base, operation_tracker
+#else
+    class async_operation_base : public operation_tracker
+#endif
     {
     public:
         async_operation_base(CommService* s = nullptr, int index = -1, bool timestamp = false);
@@ -73,7 +82,7 @@ namespace corolib
         async_operation_base& operator = (const async_operation_base&) = delete;
         async_operation_base& operator = (async_operation_base&&) noexcept;
     
-        bool is_ready() override
+        bool is_ready() override_if_async_base
         {
 #if USE_IN_MT_APPS
             clprint(PRI2, "%p: void async_operation_base::is_ready() returns %d\n", this, m_ready.load());
@@ -87,7 +96,7 @@ namespace corolib
          * @brief called from the constructors and destructor of when_all
          *
          */
-        void setCounter(when_all_counter* ctr) override
+        void setCounter(when_all_counter* ctr) override_if_async_base
         {
             clprint(PRI2, "%p: void async_operation_base::setCounter(%p)\n", this, ctr);
             m_ctr = ctr;
@@ -97,10 +106,19 @@ namespace corolib
          * @brief called from the constructors and destructor of when_any
          *
          */
-        void setWaitAny(when_any_one* waitany) override
+        void setWaitAny(when_any_one* waitany) override_if_async_base
         {
             clprint(PRI2, "%p: void async_operation_base::setWaitAny(%p)\n", this, waitany);
             m_waitany = waitany;
+        }
+
+        /**
+       * @brief start is a dummy function for asynchronous operations, but it required because
+       * of its call in when_all and when_any.
+       */
+        void start() override_if_async_base
+        {
+            clprint(PRI2, "%p: async_operation_base::start()\n", this);
         }
 
         int get_index()
@@ -113,15 +131,6 @@ namespace corolib
         {
             clprint(PRI2, "%p: async_operation_base::auto_reset(%d)\n", this, autoreset);
             m_autoreset = autoreset;
-        }
-
-        /**
-         * @brief start is a dummy function for asynchronous operations, but it required because
-         * of its call in when_all and when_any.
-         */
-        void start() override
-        {
-            clprint(PRI2, "%p: async_operation_base::start()\n", this);
         }
 
     protected:
@@ -844,7 +853,7 @@ namespace corolib
             return awaiter{ *this };
         }
 
-        void start() override
+        void start() override_if_async_base
         {
             clprint(PRI2, "%p: async_operation_ls::start()\n", this);
             static_cast<OPERATION*>(this)->try_start();

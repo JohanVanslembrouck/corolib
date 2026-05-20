@@ -1,9 +1,12 @@
 /**
  * @file async_base.h
  * @brief async_base is the base class for async_operation and async_task classes.
- * It has been introduced to allow defining wait_all and wait_any in terms
- * of this class, instead of having to define them as class templates taking
- * an async_operation or async_task as template arguments.
+ * It has been introduced to allow defining wait_all and wait_any using async_base*.
+ * This is the sole purpose of async_base: allow using async_operation and async_task
+ * from when_all and when_any.
+ * In a new approach using the WHEN_TYPE concept, it is possible to avoid
+ * the use of this base class. This is the preferred approach.
+ * See config.h on how to use the original and new configuration.
  *
  * @author Johan Vanslembrouck
  */
