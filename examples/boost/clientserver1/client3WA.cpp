@@ -159,9 +159,9 @@ task<int> mainflowWA1(std::initializer_list<CommClient*> client_il)
     for (int i = 0; i < nrClients; ++i)
         pasyncsr[i] = &asyncsr[i];
 #else
-    std::vector<async_operation<void>> asyncsc{ nrClients };
-    std::vector<async_operation<void>> asyncsw{ nrClients };
-    std::vector<async_operation<std::string>> asyncsr{ nrClients };
+    std::vector<async_operation<void>> asyncsc(nrClients);
+    std::vector<async_operation<void>> asyncsw(nrClients);
+    std::vector<async_operation<std::string>> asyncsr(nrClients);
 #endif
 
     std::string results[nrClients];
@@ -287,18 +287,9 @@ task<int> mainflowWA2(std::initializer_list<CommClient*> client_il)
         for (int i = 0; i < nrClients; ++i)
             pasyncsr[i] = &asyncsr[i];
 #else
-#if 0
-        // Does not compile with gcc: 
-        // gcc uses the when_all(AsyncBaseTypes&... others) definition
-        // instead of the when_all(std::array<AsyncBaseType, Size>& async_ops) definition.
-        std::array<async_operation<void>, nrClients> asyncsc;
-        std::array<async_operation<void>, nrClients> asyncsw;
-        std::array<async_operation<std::string>, nrClients> asyncsr;
-#else
-        std::vector<async_operation<void>> asyncsc{ nrClients };
-        std::vector<async_operation<void>> asyncsw{ nrClients };
-        std::vector<async_operation<std::string>> asyncsr{ nrClients };
-#endif
+        std::vector<async_operation<void>> asyncsc(nrClients);
+        std::vector<async_operation<void>> asyncsw(nrClients);
+        std::vector<async_operation<std::string>> asyncsr(nrClients);
 #endif
         std::string str[nrClients];
         std::string results[nrClients];

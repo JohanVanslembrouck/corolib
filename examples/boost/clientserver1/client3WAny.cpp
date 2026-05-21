@@ -183,9 +183,9 @@ task<int> mainflowWA1(std::initializer_list<CommClient*> client_il)
     for (int i = 0; i < nrClients; ++i)
         pasyncsr[i] = &asyncsr[i];
 #else
-    std::vector<async_operation<void>> asyncsc{ nrClients };
-    std::vector<async_operation<void>> asyncsw{ nrClients };
-    std::vector<async_operation<std::string>> asyncsr{ nrClients };
+    std::vector<async_operation<void>> asyncsc(nrClients);
+    std::vector<async_operation<void>> asyncsw(nrClients);
+    std::vector<async_operation<std::string>> asyncsr(nrClients);
 #endif
 
     std::string results[nrClients];
@@ -327,9 +327,9 @@ task<int> mainflowWA2(std::initializer_list<CommClient*> client_il)
         for (int i = 0; i < nrClients; ++i)
             pasyncsr[i] = &asyncsr[i];
 #else
-        std::vector<async_operation<void>> asyncsc{ nrClients };
-        std::vector<async_operation<void>> asyncsw{ nrClients };
-        std::vector<async_operation<std::string>> asyncsr{ nrClients };
+        std::vector<async_operation<void>> asyncsc(nrClients);
+        std::vector<async_operation<void>> asyncsw(nrClients);
+        std::vector<async_operation<std::string>> asyncsr(nrClients);
 #endif
 
         std::string str[nrClients];

@@ -101,7 +101,7 @@ public:
         Dispatcher dispatcher;
         ServerRequest serverRequest(commClient, m_IoContext);
 
-        std::vector<async_operation<std::string>> reqs{ 4 };
+        std::vector<async_operation<std::string>> reqs(4);
 
         reqs[0] = dispatcher.registerFunctor(
             "Req1",
