@@ -33,6 +33,7 @@ using namespace corolib;
 
 #include <string.h>
 #include <stdlib.h>
+#include <vector>
 
 int64_t total_bytes_read = 0;
 int64_t total_messages_read = 0;
@@ -43,8 +44,7 @@ class tcpclient : public CommService
 public:
     struct context_t
     {
-        int idx;
-        async_base* base;
+        async_operation<std::string>* op;
     };
 
     static void set_tcp_no_delay(evutil_socket_t fd)
@@ -85,16 +85,11 @@ public:
         /* Copy all the data from the input buffer to the output buffer. */
         //evbuffer_add_buffer(output, input);
 
+        // Addition for coroutines
+        // -----------------------
         context_t* ctxt = static_cast<context_t*>(ctx);
-        int idx = ctxt->idx;
-        async_base* om_async_base = ctxt->base;
-
-        print(PRI2, "readcb: idx = %d, om_async_base = %p\n", idx, om_async_base);
-
-        async_operation<std::string>* om_async_operation_t =
-            static_cast<async_operation<std::string>*>(om_async_base);
+        async_operation<std::string>* om_async_operation_t = ctxt->op;
         if (om_async_operation_t) {
-            print(PRI1, "readcb: set_result: %d\n", idx);
             om_async_operation_t->set_result(msg);
         }
     }
@@ -116,16 +111,11 @@ public:
         else {
             print(PRI1, "eventcb: else\n");
 
+            // Addition for coroutines
+            // -----------------------
             context_t* ctxt = static_cast<context_t*>(ctx);
-            int idx = ctxt->idx;
-            async_base* om_async_base = ctxt->base;
-
-            print(PRI2, "eventcb: idx = %d, om_async_base = %p\n", idx, om_async_base);
-            
-            async_operation<std::string>* om_async_operation_t =
-                static_cast<async_operation<std::string>*>(om_async_base);
+            async_operation<std::string>* om_async_operation_t = ctxt->op;
             if (om_async_operation_t) {
-                print(PRI1, "eventcb: completing: %d\n", idx);
                 om_async_operation_t->completed();
             }
         }
@@ -146,18 +136,16 @@ public:
         timeout.tv_usec = 0;
     }
 
-    async_operation<std::string> start_operation(int request, context_t *ctxt)
+    async_operation<std::string> start_operation(int request)
     {
         int index = get_free_index();
-        ctxt->idx = index;
         async_operation<std::string> ret{ this, index };
-        start_operation_impl(index, request);
         return ret;
     }
 
-    void start_operation_impl(int idx, int request)
+    void start_operation_impl(int request)
     {
-        print(PRI1, "start_operation_impl: idx = %d, request = %d\n", idx, request);
+        print(PRI1, "start_operation_impl: request = %d\n", request);
 
         struct bufferevent* bev = bufferevent_socket_new(base, -1, BEV_OPT_CLOSE_ON_FREE);
 
@@ -204,20 +192,22 @@ public:
 
         bevs = (struct bufferevent**) malloc(session_count * sizeof(struct bufferevent*));
 
-        async_operation<std::string>* asyncsc = new async_operation<std::string>[session_count];
-        async_base** ppasyncsc = new async_base * [session_count];
-        ctxt = new context_t[session_count];
+        std::vector< async_operation<std::string>> asyncsc(session_count);
+        ctxt.reserve(session_count);
+        print(PRI1, "ctxt.size() = %zd, session_count = %d\n", ctxt.size(), session_count);
 
         for (int i = 0; i < session_count; ++i)
         {
             print(PRI1, "i = % d\n", i);
-            ppasyncsc[i] = &asyncsc[i];
-            ctxt[i].base = ppasyncsc[i];
-            async_operation <std::string> op = start_operation(i, &ctxt[i]);
+            context_t t;
+            t.op = &asyncsc[i];
+            ctxt.push_back(t);
+            async_operation <std::string> op = start_operation(i);
             asyncsc[i] = std::move(op);
+            start_operation_impl(i);
         }
 
-        when_all wa(ppasyncsc, session_count);
+        when_all wa(asyncsc);
         co_await wa;
 
         // print results
@@ -225,10 +215,6 @@ public:
         {
             print(PRI1, "init: %s\n", asyncsc[i].get_result().c_str());
         }
-
-        delete[] asyncsc;
-        delete[] ppasyncsc;
-        delete[] ctxt;
     }
 
     void deinit()
@@ -263,7 +249,7 @@ private:
     struct timeval timeout;
     int block_size;
     int session_count;
-    context_t* ctxt;
+    std::vector<context_t> ctxt;
     char* message;
 };
 
