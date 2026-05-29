@@ -50,7 +50,6 @@ async_task<int> echoServer(io_service& ioSvc, socket& listeningSocket)
         if (bytesReceived > 0)
         {
             std::size_t bytesSent = 0;
-            std::size_t bytesSent1 = 0;
             do
             {
                 // Original statement:
@@ -107,6 +106,7 @@ int main()
     async_task<int> t = mainflow(ioSvc);
     ioSvc.process_events();
     int v = t.get_result();
+    (void)v;
     print(PRI1, "main - leaving\n");
     return 0;
 }

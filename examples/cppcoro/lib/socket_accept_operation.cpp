@@ -11,10 +11,10 @@
 #include <system_error>
 
 #if CPPCORO_OS_WINNT
-# include <WinSock2.h>
-# include <WS2tcpip.h>
-# include <MSWSock.h>
-# include <Windows.h>
+# include <winsock2.h>
+# include <ws2tcpip.h>
+# include <mswsock.h>
+# include <windows.h>
 
 // TODO: Eliminate duplication of implementation between socket_accept_operation
 // and socket_accept_operation_cancellable.
@@ -124,6 +124,60 @@ void cppcoro::net::socket_accept_operation_impl::get_result(
 			};
 		}
 	}
+}
+#elif CPPCORO_OS_LINUX
+# include <sys/socket.h>
+# include <netinet/in.h>
+# include <netinet/tcp.h>
+# include <netinet/udp.h>
+bool cppcoro::net::socket_accept_operation_impl::try_start(
+	cppcoro::detail::linux_async_operation_base& operation) noexcept
+{
+	static_assert(
+		(sizeof(m_addressBuffer) / 2) >= (16 + sizeof(sockaddr_in)) &&
+		(sizeof(m_addressBuffer) / 2) >= (16 + sizeof(sockaddr_in6)),
+		"AcceptEx requires address buffer to be at least 16 bytes more than largest address.");
+
+	operation.m_completeFunc = [operation, this]() {
+		socklen_t len = sizeof(m_addressBuffer) / 2;
+		int res = accept(m_listeningSocket.native_handle(), reinterpret_cast<sockaddr*>(m_addressBuffer), &len);
+		operation.m_mq->remove_fd_watch(m_listeningSocket.native_handle());
+		return res;
+	};
+	operation.m_mq->add_fd_watch(m_listeningSocket.native_handle(), reinterpret_cast<void*>(&operation), EPOLLIN);
+	return true;
+}
+
+void cppcoro::net::socket_accept_operation_impl::cancel(
+	cppcoro::detail::linux_async_operation_base& operation) noexcept
+{
+	operation.m_mq->remove_fd_watch(m_listeningSocket.native_handle());
+}
+
+void cppcoro::net::socket_accept_operation_impl::get_result(
+	cppcoro::detail::linux_async_operation_base& operation)
+{
+	if (operation.m_res < 0)
+	{
+		throw std::system_error{
+			static_cast<int>(-operation.m_res),
+			std::system_category(),
+			"Accepting a connection failed: accept"
+		};
+	}
+
+	m_acceptingSocket = socket(operation.m_res, m_acceptingSocket.m_mq);
+	sockaddr* remoteSockaddr = reinterpret_cast<sockaddr*>(m_addressBuffer);
+	sockaddr* localSockaddr = reinterpret_cast<sockaddr*>(m_addressBuffer + sizeof(m_addressBuffer)/2);
+
+	socklen_t len = sizeof(m_addressBuffer) / 2;
+	getsockname(m_acceptingSocket.native_handle(), localSockaddr, &len);
+
+	m_acceptingSocket.m_localEndPoint =
+		detail::sockaddr_to_ip_endpoint(*localSockaddr);
+
+	m_acceptingSocket.m_remoteEndPoint =
+		detail::sockaddr_to_ip_endpoint(*remoteSockaddr);
 }
 
 #endif

@@ -2,6 +2,8 @@ project (cppocoroexamplescl)
 
 include_directories(../include ../../../include)
 
+if(WIN32)
+
 foreach(_target
     cd_client2
     cd_server2
@@ -16,3 +18,22 @@ endforeach()
 
 add_executable(cl-file_write_read2 file_write_read2.cpp)
 target_link_libraries(cl-file_write_read2 cppcorolib corolib synchronization ws2_32)
+
+elseif(CMAKE_SYSTEM_NAME MATCHES "Linux")
+
+foreach(_target
+    cd_client2
+    cd_server2
+    echo_client2
+    echo_server2
+    udp_client2
+    udp_server2
+  )
+  add_executable(cl-${_target} ${_target}.cpp addressfile.cpp)
+  target_link_libraries(cl-${_target} cppcorolib corolib)
+endforeach()
+
+add_executable(cl-file_write_read2 file_write_read2.cpp)
+target_link_libraries(cl-file_write_read2 cppcorolib corolib)
+
+endif()

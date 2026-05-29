@@ -11,10 +11,10 @@
 #include <system_error>
 
 #if CPPCORO_OS_WINNT
-# include <WinSock2.h>
-# include <WS2tcpip.h>
-# include <MSWSock.h>
-# include <Windows.h>
+# include <winsock2.h>
+# include <ws2tcpip.h>
+# include <mswsock.h>
+# include <windows.h>
 
 bool cppcoro::net::socket_disconnect_operation_impl::try_start(
 	cppcoro::detail::win32_overlapped_operation_base& operation) noexcept
@@ -103,5 +103,45 @@ void cppcoro::net::socket_disconnect_operation_impl::get_result(
 		};
 	}
 }
+#elif CPPCORO_OS_LINUX
+# include <sys/socket.h>
+# include <netinet/in.h>
+# include <netinet/tcp.h>
+# include <netinet/udp.h>
 
+bool cppcoro::net::socket_disconnect_operation_impl::try_start(
+	cppcoro::detail::linux_async_operation_base& operation) noexcept
+{
+	operation.m_completeFunc = [operation, this]() {
+		operation.m_mq->remove_fd_watch(m_socket.native_handle());
+		int res = m_socket.close();
+		return res;
+	};
+	operation.m_mq->add_fd_watch(m_socket.native_handle(), reinterpret_cast<void*>(&operation), EPOLLOUT);
+	return true;
+}
+
+void cppcoro::net::socket_disconnect_operation_impl::cancel(
+	cppcoro::detail::linux_async_operation_base& operation) noexcept
+{
+	operation.m_mq->remove_fd_watch(m_socket.native_handle());
+}
+
+void cppcoro::net::socket_disconnect_operation_impl::get_result(
+	cppcoro::detail::linux_async_operation_base& operation)
+{
+	if (operation.m_res < 0)
+	{
+		if (operation.m_res == -cppcoro::detail::error_operation_cancelled)
+		{
+			throw operation_cancelled{};
+		}
+
+		throw std::system_error{
+			static_cast<int>(-operation.m_res),
+			std::system_category(),
+			"Disconnect operation failed: disconnect"
+		};
+	}
+}
 #endif

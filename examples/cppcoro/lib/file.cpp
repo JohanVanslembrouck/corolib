@@ -13,7 +13,7 @@
 # ifndef WIN32_LEAN_AND_MEAN
 #  define WIN32_LEAN_AND_MEAN
 # endif
-# include <Windows.h>
+# include <windows.h>
 #endif
 
 cppcoro::file::~file()
@@ -36,9 +36,23 @@ std::uint64_t cppcoro::file::size() const
 	}
 
 	return size.QuadPart;
+#elif CPPCORO_OS_LINUX
+	struct stat sb;
+	if (fstat(m_fileData.fd.fd(), &sb) < 0)
+	{
+		throw std::system_error
+		{
+			errno,
+			std::system_category(),
+			"error getting file size: fstat"
+		};
+	}
+
+	return sb.st_size;
 #endif
 }
 
+#if CPPCORO_OS_WINNT
 cppcoro::file::file(detail::win32::safe_handle&& fileHandle) noexcept
 	: m_fileHandle(std::move(fileHandle))
 {
@@ -47,7 +61,7 @@ cppcoro::file::file(detail::win32::safe_handle&& fileHandle) noexcept
 cppcoro::detail::win32::safe_handle cppcoro::file::open(
 	detail::win32::dword_t fileAccess,
 	io_service& ioService,
-	const std::filesystem::path& path,
+	const cppcoro::filesystem::path& path,
 	file_open_mode openMode,
 	file_share_mode shareMode,
 	file_buffering_mode bufferingMode)
@@ -166,3 +180,79 @@ cppcoro::detail::win32::safe_handle cppcoro::file::open(
 
 	return std::move(fileHandle);
 }
+
+#elif CPPCORO_OS_LINUX
+
+cppcoro::file::file(detail::linux::safe_file_data &&fileData) noexcept
+	: m_fileData(std::move(fileData))
+{
+}
+
+cppcoro::detail::linux::safe_file_data cppcoro::file::open(
+	int fileAccess,
+	io_service &ioService,
+	const std::filesystem::path &path,
+	cppcoro::file_open_mode openMode,
+	cppcoro::file_share_mode shareMode,
+	cppcoro::file_buffering_mode bufferingMode)
+{
+	int flags = fileAccess;
+
+	if ((bufferingMode & file_buffering_mode::temporary) == file_buffering_mode::temporary)
+	{
+		// TODO
+	}
+	if ((bufferingMode & file_buffering_mode::unbuffered) == file_buffering_mode::unbuffered)
+	{
+		// TODO
+	}
+
+	if ((shareMode & file_share_mode::read) == file_share_mode::read)
+	{
+		// TODO
+	}
+	if ((shareMode & file_share_mode::write) == file_share_mode::write)
+	{
+		// TODO
+	}
+	if ((shareMode & file_share_mode::delete_) == file_share_mode::delete_)
+	{
+		// TODO
+	}
+
+	switch (openMode)
+	{
+	case file_open_mode::create_or_open:
+		flags |= O_CREAT;
+		break;
+	case file_open_mode::create_always:
+		flags |= O_CREAT | O_TRUNC;
+		break;
+	case file_open_mode::create_new:
+		flags |= O_EXCL;
+		break;
+	case file_open_mode::open_existing:
+		// Default.
+		break;
+	case file_open_mode::truncate_existing:
+		flags |= O_TRUNC;
+		break;
+	}
+
+	cppcoro::detail::linux::safe_fd fd(
+		::open(path.c_str(), flags | O_NONBLOCK, S_IRWXU | S_IRWXG));
+	if (fd.fd() < 0)
+	{
+		throw std::system_error
+		{
+			errno,
+			std::system_category(),
+			"error opening file: open"
+		};
+	}
+
+	//posix_fadvise(fd.get(), 0, 0, advice);
+
+	return {std::move(fd), ioService.get_mq()};
+}
+#endif

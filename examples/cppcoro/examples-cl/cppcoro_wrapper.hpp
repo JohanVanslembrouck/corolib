@@ -27,9 +27,13 @@
 
 struct cppcoro_result
 {
+#if CPPCORO_OS_WINNT
     cppcoro::detail::win32::dword_t m_errorCode{};
     cppcoro::detail::win32::dword_t m_numberOfBytesTransferred{};
-
+#elif CPPCORO_OS_LINUX
+    std::int32_t  m_errorCode{};
+    std::int32_t m_numberOfBytesTransferred{};
+#endif
     std::size_t get_result()
     {
         if (m_errorCode != 0)
@@ -62,6 +66,7 @@ protected:
         if (op.try_start())
         {
             // asynchronous completion
+#if CPPCORO_OS_WINNT
             // register_corolib_cb is defined in cppcoro/detail/win32_overlapped_operation.hpp
             op.register_corolib_cb(
                 [this, idx](cppcoro::detail::win32::dword_t errorCode,
@@ -70,6 +75,15 @@ protected:
                     cppcoro_result res{ errorCode, numberOfBytesTransferred };
                     completionHandler(idx, res);
                 });
+#elif CPPCORO_OS_LINUX
+            op.register_corolib_cb(
+                [this, idx](std::int32_t errorCode,
+                            std::int32_t numberOfBytesTransferred)
+                {
+                    cppcoro_result res{ errorCode, numberOfBytesTransferred };
+                    completionHandler(idx, res);
+                });
+#endif
         }
         else
         {
@@ -136,6 +150,7 @@ public:
         cppcoro_result res1 = co_await start(srfo);
         try {
             std::size_t bytesReceived = res1.get_result();
+            (void)bytesReceived;
         }
         catch (...) {
             corolib::print(corolib::PRI1, "cppcoro_wrapper::recv_from caught exception 1\n");

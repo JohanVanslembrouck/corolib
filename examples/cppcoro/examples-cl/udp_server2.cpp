@@ -111,6 +111,7 @@ int main()
     async_task<int> t = mainflow(ioSvc);
     ioSvc.process_events();
     int v = t.get_result();
+    (void)v;
     print(PRI1, "main - leaving\n");
     return 0;
 }

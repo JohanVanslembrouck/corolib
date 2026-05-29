@@ -43,7 +43,7 @@ cppcoro::task<> write(cppcoro::io_service& ioService, std::filesystem::path& fil
 
     char buffer[1024];
     char c = 'a';
-    for (int i = 0; i < sizeof(buffer); ++i, c = (c == 'z' ? 'a' : c + 1))
+    for (size_t i = 0; i < sizeof(buffer); ++i, c = (c == 'z' ? 'a' : c + 1))
     {
         buffer[i] = c;
     }

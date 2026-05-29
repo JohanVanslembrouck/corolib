@@ -4,17 +4,24 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "socket_helpers.hpp"
-
+#include <functional>
 #include <cppcoro/net/ip_endpoint.hpp>
 
-#if CPPCORO_OS_WINNT
 #include <cstring>
 #include <cassert>
-
-#include <WinSock2.h>
-#include <WS2tcpip.h>
-#include <MSWSock.h>
-#include <Windows.h>
+#if CPPCORO_OS_WINNT
+# include <winsock2.h>
+# include <ws2tcpip.h>
+# include <mswsock.h>
+# include <windows.h>
+#elif CPPCORO_OS_LINUX
+# include <sys/socket.h>
+# include <netinet/in.h>
+# include <netinet/tcp.h>
+# include <netinet/udp.h>
+#define SOCKADDR_IN sockaddr_in
+#define SOCKADDR_IN6 sockaddr_in6
+#endif
 
 
 cppcoro::net::ip_endpoint
@@ -41,7 +48,7 @@ cppcoro::net::detail::sockaddr_to_ip_endpoint(const sockaddr& address) noexcept
 		std::memcpy(&ipv6Address, &address, sizeof(ipv6Address));
 
 		return ipv6_endpoint{
-			ipv6_address{ ipv6Address.sin6_addr.u.Byte },
+			ipv6_address{ ipv6Address.sin6_addr.s6_addr },
 			ntohs(ipv6Address.sin6_port)
 		};
 	}
@@ -69,17 +76,14 @@ int cppcoro::net::detail::ip_endpoint_to_sockaddr(
 	{
 		const auto& ipv6EndPoint = endPoint.to_ipv6();
 
-		SOCKADDR_IN6 ipv6Address;
+		SOCKADDR_IN6 ipv6Address {0};
 		ipv6Address.sin6_family = AF_INET6;
 		std::memcpy(&ipv6Address.sin6_addr, ipv6EndPoint.address().bytes(), 16);
 		ipv6Address.sin6_port = htons(ipv6EndPoint.port());
 		ipv6Address.sin6_flowinfo = 0;
-		ipv6Address.sin6_scope_struct = SCOPEID_UNSPECIFIED_INIT;
 
 		std::memcpy(&address.get(), &ipv6Address, sizeof(ipv6Address));
 
 		return sizeof(SOCKADDR_IN6);
 	}
 }
-
-#endif // CPPCORO_OS_WINNT

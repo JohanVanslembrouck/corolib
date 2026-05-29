@@ -5,13 +5,16 @@
 #ifndef CPPCORO_PRIVATE_SOCKET_HELPERS_HPP_INCLUDED
 #define CPPCORO_PRIVATE_SOCKET_HELPERS_HPP_INCLUDED
 
+#include <functional>
 #include <cppcoro/config.hpp>
 
 #if CPPCORO_OS_WINNT
 # include <cppcoro/detail/win32.hpp>
+#elif CPPCORO_OS_LINUX
+# include <cppcoro/detail/linux.hpp>
+#endif
 struct sockaddr;
 struct sockaddr_storage;
-#endif
 
 namespace cppcoro
 {
@@ -21,7 +24,6 @@ namespace cppcoro
 
 		namespace detail
 		{
-#if CPPCORO_OS_WINNT
 			/// Convert a sockaddr to an IP endpoint.
 			ip_endpoint sockaddr_to_ip_endpoint(const sockaddr& address) noexcept;
 
@@ -38,8 +40,6 @@ namespace cppcoro
 			int ip_endpoint_to_sockaddr(
 				const ip_endpoint& endPoint,
 				std::reference_wrapper<sockaddr_storage> address) noexcept;
-
-#endif
 		}
 	}
 }

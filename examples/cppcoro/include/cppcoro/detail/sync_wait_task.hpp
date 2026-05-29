@@ -9,7 +9,7 @@
 #include <cppcoro/awaitable_traits.hpp>
 #include <cppcoro/detail/lightweight_manual_reset_event.hpp>
 
-#include <coroutine>
+#include <cppcoro/coroutine.hpp>
 #include <cassert>
 #include <exception>
 #include <utility>
@@ -24,7 +24,7 @@ namespace cppcoro
 		template<typename RESULT>
 		class sync_wait_task_promise final
 		{
-			using coroutine_handle_t = std::coroutine_handle<sync_wait_task_promise<RESULT>>;
+			using coroutine_handle_t = cppcoro::coroutine_handle<sync_wait_task_promise<RESULT>>;
 
 		public:
 
@@ -44,7 +44,7 @@ namespace cppcoro
 				return coroutine_handle_t::from_promise(*this);
 			}
 
-			std::suspend_always initial_suspend() noexcept
+			cppcoro::suspend_always initial_suspend() noexcept
 			{
 				return{};
 			}
@@ -68,6 +68,7 @@ namespace cppcoro
 				return completion_notifier{};
 			}
 
+//#if CPPCORO_COMPILER_MSVC && CPPCORO_COMPILER_MSVC < 19'20'00000
 #if CPPCORO_COMPILER_MSVC
 			// HACK: This is needed to work around a bug in MSVC 2017.7/2017.8.
 			// See comment in make_sync_wait_task below.
@@ -89,7 +90,7 @@ namespace cppcoro
 					bool await_ready() noexcept {
 						return true;
 					}
-					void await_suspend(std::coroutine_handle<>) noexcept {}
+					void await_suspend(cppcoro::coroutine_handle<>) noexcept {}
 					sync_wait_task_promise& await_resume() noexcept
 					{
 						return *m_promise;
@@ -140,7 +141,7 @@ namespace cppcoro
 		template<>
 		class sync_wait_task_promise<void>
 		{
-			using coroutine_handle_t = std::coroutine_handle<sync_wait_task_promise<void>>;
+			using coroutine_handle_t = cppcoro::coroutine_handle<sync_wait_task_promise<void>>;
 
 		public:
 
@@ -158,7 +159,7 @@ namespace cppcoro
 				return coroutine_handle_t::from_promise(*this);
 			}
 
-			std::suspend_always initial_suspend() noexcept
+			cppcoro::suspend_always initial_suspend() noexcept
 			{
 				return{};
 			}
@@ -211,7 +212,7 @@ namespace cppcoro
 
 			using promise_type = sync_wait_task_promise<RESULT>;
 
-			using coroutine_handle_t = std::coroutine_handle<promise_type>;
+			using coroutine_handle_t = cppcoro::coroutine_handle<promise_type>;
 
 			sync_wait_task(coroutine_handle_t coroutine) noexcept
 				: m_coroutine(coroutine)
@@ -245,6 +246,7 @@ namespace cppcoro
 
 		};
 
+//#if CPPCORO_COMPILER_MSVC && CPPCORO_COMPILER_MSVC < 19'20'00000
 #if CPPCORO_COMPILER_MSVC
 		// HACK: Work around bug in MSVC where passing a parameter by universal reference
 		// results in an error when passed a move-only type, complaining that the copy-constructor

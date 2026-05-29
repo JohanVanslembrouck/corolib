@@ -9,7 +9,7 @@
 # ifndef WIN32_LEAN_AND_MEAN
 #  define WIN32_LEAN_AND_MEAN
 # endif
-# include <Windows.h>
+# include <windows.h>
 
 bool cppcoro::file_read_operation_impl::try_start(
 	cppcoro::detail::win32_overlapped_operation_base& operation) noexcept
@@ -50,4 +50,28 @@ void cppcoro::file_read_operation_impl::cancel(
 	(void)::CancelIoEx(m_fileHandle, operation.get_overlapped());
 }
 
-#endif // CPPCORO_OS_WINNT
+#elif CPPCORO_OS_LINUX
+
+bool cppcoro::file_read_operation_impl::try_start(
+	cppcoro::detail::linux_async_operation_base& operation) noexcept
+{
+	auto seek_res = lseek(m_fd, m_offset, SEEK_SET);
+	if (seek_res < 0) {
+		operation.m_res = -errno;
+		return false;
+	}
+	operation.m_completeFunc = [operation, this]() {
+		int res = read(m_fd, m_buffer, m_byteCount);
+		operation.m_mq->remove_fd_watch(m_fd);
+		return res;
+	};
+	operation.m_mq->add_fd_watch(m_fd, reinterpret_cast<void*>(&operation), EPOLLIN);
+	return true;
+}
+
+void cppcoro::file_read_operation_impl::cancel(
+	cppcoro::detail::linux_async_operation_base& operation) noexcept
+{
+	operation.m_mq->remove_fd_watch(m_fd);
+}
+#endif

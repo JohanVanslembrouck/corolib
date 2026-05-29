@@ -14,10 +14,10 @@
 #include <system_error>
 
 #if CPPCORO_OS_WINNT
-# include <WinSock2.h>
-# include <WS2tcpip.h>
-# include <MSWSock.h>
-# include <Windows.h>
+# include <winsock2.h>
+# include <ws2tcpip.h>
+# include <mswsock.h>
+# include <windows.h>
 
 bool cppcoro::net::socket_connect_operation_impl::try_start(
 	cppcoro::detail::win32_overlapped_operation_base& operation) noexcept
@@ -174,5 +174,99 @@ void cppcoro::net::socket_connect_operation_impl::get_result(
 		}
 	}
 }
+#elif CPPCORO_OS_LINUX
+# include <sys/socket.h>
+# include <netinet/in.h>
+# include <netinet/tcp.h>
+# include <netinet/udp.h>
 
+bool cppcoro::net::socket_connect_operation_impl::try_start(
+	cppcoro::detail::linux_async_operation_base& operation) noexcept
+{
+
+	sockaddr_storage remoteSockaddrStorage {0};
+	const socklen_t sockaddrNameLength = cppcoro::net::detail::ip_endpoint_to_sockaddr(
+		m_remoteEndPoint,
+		std::ref(remoteSockaddrStorage));
+
+	int res = connect(m_socket.native_handle(), reinterpret_cast<const sockaddr*>(&remoteSockaddrStorage), sockaddrNameLength);
+	if (res < 0 && errno != EINPROGRESS){
+		operation.m_res = -errno;
+		return false;
+	}
+	operation.m_completeFunc = [operation, remoteSockaddrStorage, sockaddrNameLength, this]() {
+		int res = connect(m_socket.native_handle(), reinterpret_cast<const sockaddr*>(&remoteSockaddrStorage), sockaddrNameLength);
+		operation.m_mq->remove_fd_watch(m_socket.native_handle());
+		return res;
+	};
+	operation.m_mq->add_fd_watch(m_socket.native_handle(), reinterpret_cast<void*>(&operation), EPOLLOUT);
+	return true;
+}
+
+void cppcoro::net::socket_connect_operation_impl::cancel(
+	cppcoro::detail::linux_async_operation_base& operation) noexcept
+{
+	operation.m_mq->remove_fd_watch(m_socket.native_handle());
+}
+
+void cppcoro::net::socket_connect_operation_impl::get_result(
+	cppcoro::detail::linux_async_operation_base& operation)
+{
+	if (operation.m_res < 0)
+	{
+		if (operation.m_res == -cppcoro::detail::error_operation_cancelled)
+		{
+			throw operation_cancelled{};
+		}
+
+		throw std::system_error{
+			static_cast<int>(-operation.m_res),
+			std::system_category(),
+			"Connect operation failed: connect"
+		};
+	}
+
+	{
+		sockaddr_storage localSockaddr;
+		socklen_t nameLength = sizeof(localSockaddr);
+		const int result = ::getsockname(
+			m_socket.native_handle(),
+			reinterpret_cast<sockaddr*>(&localSockaddr),
+			&nameLength);
+		if (result == 0)
+		{
+			m_socket.m_localEndPoint = cppcoro::net::detail::sockaddr_to_ip_endpoint(
+				*reinterpret_cast<const sockaddr*>(&localSockaddr));
+		}
+		else
+		{
+			// Failed to get the updated local-end-point
+			// Just leave m_localEndPoint set to whatever bind() left it as.
+			//
+			// TODO: Should we be throwing an exception here instead?
+		}
+	}
+
+	{
+		sockaddr_storage remoteSockaddr;
+		socklen_t nameLength = sizeof(remoteSockaddr);
+		const int result = ::getpeername(
+			m_socket.native_handle(),
+			reinterpret_cast<sockaddr*>(&remoteSockaddr),
+			&nameLength);
+		if (result == 0)
+		{
+			m_socket.m_remoteEndPoint = cppcoro::net::detail::sockaddr_to_ip_endpoint(
+				*reinterpret_cast<const sockaddr*>(&remoteSockaddr));
+		}
+		else
+		{
+			// Failed to get the actual remote end-point so just fall back to
+			// remembering the actual end-point that was passed to connect().
+			//
+			// TODO: Should we be throwing an exception here instead?
+			m_socket.m_remoteEndPoint = m_remoteEndPoint;
+		}
+	}
+}
 #endif

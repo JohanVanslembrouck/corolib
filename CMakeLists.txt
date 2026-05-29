@@ -62,9 +62,7 @@ if (GRPC_INSTALLED)
 endif()
 
 if (CPPCORO_INSTALLED)
-    if (WIN32)
-        add_subdirectory(examples/cppcoro)
-    endif()
+    add_subdirectory(examples/cppcoro)
 endif()
 
 if (TAO_INSTALLED)

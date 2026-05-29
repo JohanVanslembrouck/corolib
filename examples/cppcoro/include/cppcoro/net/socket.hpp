@@ -20,6 +20,8 @@
 
 #if CPPCORO_OS_WINNT
 # include <cppcoro/detail/win32.hpp>
+#elif CPPCORO_OS_LINUX
+# include <cppcoro/detail/linux.hpp>
 #endif
 
 namespace cppcoro
@@ -81,6 +83,9 @@ namespace cppcoro
 			static socket create_udpv6(io_service& ioSvc);
 
 			socket(socket&& other) noexcept;
+			socket& operator=(socket&& other) noexcept;
+			socket(const socket& other) noexcept;
+			socket& operator=(const socket& other) noexcept;
 
 			/// Closes the socket, releasing any associated resources.
 			///
@@ -90,7 +95,8 @@ namespace cppcoro
 			/// disconnect() and wait until the disconnect operation completes.
 			~socket();
 
-			socket& operator=(socket&& other) noexcept;
+			int close();
+
 
 #if CPPCORO_OS_WINNT
 			/// Get the Win32 socket handle assocaited with this socket.
@@ -104,6 +110,9 @@ namespace cppcoro
 			/// operation completing synchronously or whether it should suspend the coroutine
 			/// and wait until the I/O completion event is dispatched to an I/O thread.
 			bool skip_completion_on_success() noexcept { return m_skipCompletionOnSuccess; }
+#elif CPPCORO_OS_LINUX
+			/// Get the linux fd assocaited with this socket.
+			cppcoro::detail::linux::fd_t native_handle() noexcept { return m_handle; }
 #endif
 
 			/// Get the address and port of the local end-point.
@@ -242,20 +251,27 @@ namespace cppcoro
 			void close_send();
 			void close_recv();
 
+
+#if CPPCORO_OS_WINNT
+			explicit socket(
+				cppcoro::detail::win32::socket_t handle,
+				bool skipCompletionOnSuccess) noexcept;
+#elif CPPCORO_OS_LINUX
+			explicit socket(
+				cppcoro::detail::linux::fd_t handle,
+				cppcoro::detail::linux::message_queue* mq) noexcept;
+#endif
 		private:
 
 			friend class socket_accept_operation_impl;
 			friend class socket_connect_operation_impl;
 
 #if CPPCORO_OS_WINNT
-			explicit socket(
-				cppcoro::detail::win32::socket_t handle,
-				bool skipCompletionOnSuccess) noexcept;
-#endif
-
-#if CPPCORO_OS_WINNT
 			cppcoro::detail::win32::socket_t m_handle;
 			bool m_skipCompletionOnSuccess;
+#elif CPPCORO_OS_LINUX
+			cppcoro::detail::linux::fd_t m_handle;
+			cppcoro::detail::linux::message_queue* m_mq;
 #endif
 
 			ip_endpoint m_localEndPoint;

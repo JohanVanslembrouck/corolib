@@ -2,14 +2,14 @@
 // Copyright (c) Lewis Baker
 // Licenced under MIT license. See LICENSE.txt for details.
 ///////////////////////////////////////////////////////////////////////////////
-#ifndef CPPCORO_DETAIL_WIN32_OVERLAPPED_OPERATION_HPP_INCLUDED
-#define CPPCORO_DETAIL_WIN32_OVERLAPPED_OPERATION_HPP_INCLUDED
+#ifndef CPPCORO_DETAIL_LINUX_ASYNC_OPERATION_HPP_INCLUDED
+#define CPPCORO_DETAIL_LINUX_ASYNC_OPERATION_HPP_INCLUDED
 
 #include <cppcoro/cancellation_registration.hpp>
 #include <cppcoro/cancellation_token.hpp>
 #include <cppcoro/operation_cancelled.hpp>
 
-#include <cppcoro/detail/win32.hpp>
+#include <cppcoro/detail/linux.hpp>
 
 #include <optional>
 #include <system_error>
@@ -20,57 +20,37 @@ namespace cppcoro
 {
 	namespace detail
 	{
-		class win32_overlapped_operation_base
-			: protected detail::win32::io_state
+		class linux_async_operation_base
+			: protected detail::linux::io_state
 		{
 		public:
             // Addition for corolib
-            using corolib_functor_t = std::function<void(detail::win32::dword_t, detail::win32::dword_t)>;
+            using corolib_functor_t = std::function<void(std::int32_t, std::int32_t)>;
 
-			win32_overlapped_operation_base(
-				detail::win32::io_state::callback_type* callback) noexcept
-				: detail::win32::io_state(callback)
-				, m_errorCode(0)
-				, m_numberOfBytesTransferred(0)
+			linux_async_operation_base(
+				detail::linux::io_state::callback_type* callback,
+				detail::linux::message_queue* mq) noexcept
+				: detail::linux::io_state(callback)
+				, m_mq(mq)
 			{}
-
-			win32_overlapped_operation_base(
-				void* pointer,
-				detail::win32::io_state::callback_type* callback) noexcept
-				: detail::win32::io_state(pointer, callback)
-				, m_errorCode(0)
-				, m_numberOfBytesTransferred(0)
-			{}
-
-			win32_overlapped_operation_base(
-				std::uint64_t offset,
-				detail::win32::io_state::callback_type* callback) noexcept
-				: detail::win32::io_state(offset, callback)
-				, m_errorCode(0)
-				, m_numberOfBytesTransferred(0)
-			{}
-
-			_OVERLAPPED* get_overlapped() noexcept
-			{
-				return reinterpret_cast<_OVERLAPPED*>(
-					static_cast<detail::win32::overlapped*>(this));
-			}
 
 			std::size_t get_result()
 			{
-				if (m_errorCode != 0)
+				if (m_res < 0)
 				{
 					throw std::system_error{
-						static_cast<int>(m_errorCode),
+						-m_res,
 						std::system_category()
 					};
 				}
 
-				return m_numberOfBytesTransferred;
+				return m_res;
 			}
 
-			detail::win32::dword_t m_errorCode;
-			detail::win32::dword_t m_numberOfBytesTransferred;
+			std::int32_t m_res;
+            std::int32_t m_err;                     // Addition for corolib
+			std::function<int()> m_completeFunc;
+ 			detail::linux::message_queue* m_mq;
 
             // Addition for corolib (begin)
             corolib_functor_t m_corolib_cb{};
@@ -79,26 +59,14 @@ namespace cppcoro
 		};
 
 		template<typename OPERATION>
-		class win32_overlapped_operation
-			: protected win32_overlapped_operation_base
+		class linux_async_operation
+			: protected linux_async_operation_base
 		{
 		protected:
 
-			win32_overlapped_operation() noexcept
-				: win32_overlapped_operation_base(
-					&win32_overlapped_operation::on_operation_completed)
-			{}
-
-			win32_overlapped_operation(void* pointer) noexcept
-				: win32_overlapped_operation_base(
-					pointer,
-					&win32_overlapped_operation::on_operation_completed)
-			{}
-
-			win32_overlapped_operation(std::uint64_t offset) noexcept
-				: win32_overlapped_operation_base(
-					offset,
-					&win32_overlapped_operation::on_operation_completed)
+			linux_async_operation(detail::linux::message_queue* mq) noexcept
+				: linux_async_operation_base(
+					&linux_async_operation::on_operation_completed, mq)
 			{}
 
 		public:
@@ -108,7 +76,7 @@ namespace cppcoro
 			CPPCORO_NOINLINE
 			bool await_suspend(cppcoro::coroutine_handle<> awaitingCoroutine)
 			{
-				static_assert(std::is_base_of_v<win32_overlapped_operation, OPERATION>);
+				static_assert(std::is_base_of_v<linux_async_operation, OPERATION>);
 
 				m_awaitingCoroutine = awaitingCoroutine;
 				return static_cast<OPERATION*>(this)->try_start();
@@ -120,10 +88,10 @@ namespace cppcoro
 			}
 
             // Addition for corolib(begin)
-            void get_results(detail::win32::dword_t& errorCode, detail::win32::dword_t& numberOfBytesTransferred)
+            void get_results(std::int32_t& errorCode, std::int32_t& numberOfBytesTransferred)
             {
-                errorCode = m_errorCode;
-                numberOfBytesTransferred = m_numberOfBytesTransferred;
+                errorCode = m_err;
+                numberOfBytesTransferred = m_res;
             }
 
             void register_corolib_cb(corolib_functor_t&& corolib_cb)
@@ -136,22 +104,22 @@ namespace cppcoro
 		private:
 
 			static void on_operation_completed(
-				detail::win32::io_state* ioState,
-				detail::win32::dword_t errorCode,
-				detail::win32::dword_t numberOfBytesTransferred,
-				[[maybe_unused]] detail::win32::ulongptr_t completionKey) noexcept
+				detail::linux::io_state* ioState) noexcept
 			{
-				auto* operation = static_cast<win32_overlapped_operation*>(ioState);
-				operation->m_errorCode = errorCode;
-				operation->m_numberOfBytesTransferred = numberOfBytesTransferred;
+				auto* operation = static_cast<linux_async_operation*>(ioState);
+				operation->m_res = operation->m_completeFunc();
+
+				if (operation->m_res < 0) {
+					operation->m_res = -errno;
+                    operation->m_err = -errno;      // Addition for corolib
+				}
 
                 // Addition for corolib (begin)
                 if (operation->m_use_corolib)
                 {
                     if (operation->m_corolib_cb)
                     {
-
-                        operation->m_corolib_cb(errorCode, numberOfBytesTransferred);
+                        operation->m_corolib_cb(operation->m_err, operation->m_res);
                     }
                 }
                 else
@@ -161,55 +129,36 @@ namespace cppcoro
                 // Addition for corolib (end)
 			}
 
-            cppcoro::coroutine_handle<> m_awaitingCoroutine;
+			cppcoro::coroutine_handle<> m_awaitingCoroutine;
 
 		};
 
+		static constexpr int error_operation_cancelled = ECANCELED;
 		template<typename OPERATION>
-		class win32_overlapped_operation_cancellable
-			: protected win32_overlapped_operation_base
+		class linux_async_operation_cancellable
+			: protected linux_async_operation_base
 		{
-			// ERROR_OPERATION_ABORTED value from <windows.h>
-			static constexpr detail::win32::dword_t error_operation_aborted = 995L;
 
 		protected:
 
-			win32_overlapped_operation_cancellable(cancellation_token&& ct) noexcept
-				: win32_overlapped_operation_base(&win32_overlapped_operation_cancellable::on_operation_completed)
-				, m_state(ct.is_cancellation_requested() ? state::completed : state::not_started)
-				, m_cancellationToken(std::move(ct))
-			{
-				m_errorCode = error_operation_aborted;
-			}
-
-			win32_overlapped_operation_cancellable(
-				void* pointer,
+			linux_async_operation_cancellable(
+				detail::linux::message_queue* mq,
 				cancellation_token&& ct) noexcept
-				: win32_overlapped_operation_base(pointer, &win32_overlapped_operation_cancellable::on_operation_completed)
+				: linux_async_operation_base(
+					  &linux_async_operation_cancellable::on_operation_completed, mq)
 				, m_state(ct.is_cancellation_requested() ? state::completed : state::not_started)
 				, m_cancellationToken(std::move(ct))
 			{
-				m_errorCode = error_operation_aborted;
+				m_res = -error_operation_cancelled;
 			}
 
-			win32_overlapped_operation_cancellable(
-				std::uint64_t offset,
-				cancellation_token&& ct) noexcept
-				: win32_overlapped_operation_base(offset, &win32_overlapped_operation_cancellable::on_operation_completed)
-				, m_state(ct.is_cancellation_requested() ? state::completed : state::not_started)
-				, m_cancellationToken(std::move(ct))
-			{
-				m_errorCode = error_operation_aborted;
-			}
-
-			win32_overlapped_operation_cancellable(
-				win32_overlapped_operation_cancellable&& other) noexcept
-				: win32_overlapped_operation_base(std::move(other))
+			linux_async_operation_cancellable(
+				linux_async_operation_cancellable&& other) noexcept
+				: linux_async_operation_base(std::move(other))
 				, m_state(other.m_state.load(std::memory_order_relaxed))
 				, m_cancellationToken(std::move(other.m_cancellationToken))
 			{
-				assert(m_errorCode == other.m_errorCode);
-				assert(m_numberOfBytesTransferred == other.m_numberOfBytesTransferred);
+				assert(m_res == other.m_res);
 			}
 
 		public:
@@ -222,7 +171,7 @@ namespace cppcoro
 			CPPCORO_NOINLINE
 			bool await_suspend(cppcoro::coroutine_handle<> awaitingCoroutine)
 			{
-				static_assert(std::is_base_of_v<win32_overlapped_operation_cancellable, OPERATION>);
+				static_assert(std::is_base_of_v<linux_async_operation_cancellable, OPERATION>);
 
 				m_awaitingCoroutine = awaitingCoroutine;
 
@@ -312,7 +261,7 @@ namespace cppcoro
 				// may not be destructed until all of the operations complete.
 				m_cancellationCallback.reset();
 
-				if (m_errorCode == error_operation_aborted)
+				if (m_res == -error_operation_cancelled)
 				{
 					throw operation_cancelled{};
 				}
@@ -359,18 +308,19 @@ namespace cppcoro
 				{
 					static_cast<OPERATION*>(this)->cancel();
 				}
+				m_mq->enqueue_message(reinterpret_cast<void*>(m_awaitingCoroutine.address()),
+					detail::linux::RESUME_TYPE);
 			}
 
 			static void on_operation_completed(
-				detail::win32::io_state* ioState,
-				detail::win32::dword_t errorCode,
-				detail::win32::dword_t numberOfBytesTransferred,
-				[[maybe_unused]] detail::win32::ulongptr_t completionKey) noexcept
+				detail::linux::io_state* ioState) noexcept
 			{
-				auto* operation = static_cast<win32_overlapped_operation_cancellable*>(ioState);
+				auto* operation = static_cast<linux_async_operation_cancellable*>(ioState);
 
-				operation->m_errorCode = errorCode;
-				operation->m_numberOfBytesTransferred = numberOfBytesTransferred;
+				operation->m_res = operation->m_completeFunc();
+				if (operation->m_res < 0) {
+					operation->m_res = -errno;
+				}
 
 				auto state = operation->m_state.load(std::memory_order_acquire);
 				if (state == state::started)
@@ -401,7 +351,7 @@ namespace cppcoro
 			std::atomic<state> m_state;
 			cppcoro::cancellation_token m_cancellationToken;
 			std::optional<cppcoro::cancellation_registration> m_cancellationCallback;
-            cppcoro::coroutine_handle<> m_awaitingCoroutine;
+			cppcoro::coroutine_handle<> m_awaitingCoroutine;
 
 		};
 	}

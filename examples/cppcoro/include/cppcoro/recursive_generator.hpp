@@ -7,7 +7,7 @@
 
 #include <cppcoro/generator.hpp>
 
-#include <coroutine>
+#include <cppcoro/coroutine.hpp>
 #include <type_traits>
 #include <utility>
 #include <cassert>
@@ -39,12 +39,12 @@ namespace cppcoro
 				return recursive_generator<T>{ *this };
 			}
 
-			std::suspend_always initial_suspend() noexcept
+			cppcoro::suspend_always initial_suspend() noexcept
 			{
 				return {};
 			}
 
-			std::suspend_always final_suspend() noexcept
+			cppcoro::suspend_always final_suspend() noexcept
 			{
 				return {};
 			}
@@ -56,13 +56,13 @@ namespace cppcoro
 
 			void return_void() noexcept {}
 
-			std::suspend_always yield_value(T& value) noexcept
+			cppcoro::suspend_always yield_value(T& value) noexcept
 			{
 				m_value = std::addressof(value);
 				return {};
 			}
 
-			std::suspend_always yield_value(T&& value) noexcept
+			cppcoro::suspend_always yield_value(T&& value) noexcept
 			{
 				m_value = std::addressof(value);
 				return {};
@@ -87,7 +87,7 @@ namespace cppcoro
 						return this->m_childPromise == nullptr;
 					}
 
-					void await_suspend(std::coroutine_handle<promise_type>) noexcept
+					void await_suspend(cppcoro::coroutine_handle<promise_type>) noexcept
 					{}
 
 					void await_resume()
@@ -122,11 +122,11 @@ namespace cppcoro
 
 			// Don't allow any use of 'co_await' inside the recursive_generator coroutine.
 			template<typename U>
-			std::suspend_never await_transform(U&& value) = delete;
+			cppcoro::suspend_never await_transform(U&& value) = delete;
 
 			void destroy() noexcept
 			{
-				std::coroutine_handle<promise_type>::from_promise(*this).destroy();
+				cppcoro::coroutine_handle<promise_type>::from_promise(*this).destroy();
 			}
 
 			void throw_if_exception()
@@ -139,7 +139,7 @@ namespace cppcoro
 
 			bool is_complete() noexcept
 			{
-				return std::coroutine_handle<promise_type>::from_promise(*this).done();
+				return cppcoro::coroutine_handle<promise_type>::from_promise(*this).done();
 			}
 
 			T& value() noexcept
@@ -167,7 +167,7 @@ namespace cppcoro
 
 			void resume() noexcept
 			{
-				std::coroutine_handle<promise_type>::from_promise(*this).resume();
+				cppcoro::coroutine_handle<promise_type>::from_promise(*this).resume();
 			}
 
 			std::add_pointer_t<T> m_value;

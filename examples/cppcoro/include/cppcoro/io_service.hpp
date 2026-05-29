@@ -11,6 +11,8 @@
 
 #if CPPCORO_OS_WINNT
 # include <cppcoro/detail/win32.hpp>
+#elif CPPCORO_OS_LINUX
+# include <cppcoro/detail/linux.hpp>
 #endif
 
 #include <optional>
@@ -19,7 +21,7 @@
 #include <atomic>
 #include <utility>
 #include <mutex>
-#include <coroutine>
+#include <cppcoro/coroutine.hpp>
 
 namespace cppcoro
 {
@@ -135,6 +137,8 @@ namespace cppcoro
 #if CPPCORO_OS_WINNT
 		detail::win32::handle_t native_iocp_handle() noexcept;
 		void ensure_winsock_initialised();
+#elif CPPCORO_OS_LINUX
+		detail::linux::message_queue* get_mq() noexcept;
 #endif
 
 	private:
@@ -172,6 +176,9 @@ namespace cppcoro
 
 		std::atomic<bool> m_winsockInitialised;
 		std::mutex m_winsockInitialisationMutex;
+
+#elif CPPCORO_OS_LINUX
+ 		detail::linux::message_queue m_mq;
 #endif
 
 		// Head of a linked-list of schedule operations that are
@@ -192,7 +199,7 @@ namespace cppcoro
 		{}
 
 		bool await_ready() const noexcept { return false; }
-		void await_suspend(std::coroutine_handle<> awaiter) noexcept;
+		void await_suspend(cppcoro::coroutine_handle<> awaiter) noexcept;
 		void await_resume() const noexcept {}
 
 	private:
@@ -201,7 +208,7 @@ namespace cppcoro
 		friend class io_service::timed_schedule_operation;
 
 		io_service& m_service;
-		std::coroutine_handle<> m_awaiter;
+		cppcoro::coroutine_handle<> m_awaiter;
 		schedule_operation* m_next;
 
 	};
@@ -224,7 +231,7 @@ namespace cppcoro
 		timed_schedule_operation& operator=(const timed_schedule_operation& other) = delete;
 
 		bool await_ready() const noexcept;
-		void await_suspend(std::coroutine_handle<> awaiter);
+		void await_suspend(cppcoro::coroutine_handle<> awaiter);
 		void await_resume();
 
 	private:
