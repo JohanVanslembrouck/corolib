@@ -18,6 +18,17 @@ else
     echo "set(BOOST_INSTALLED TRUE) in CMakeList.txt and rebuild."
 fi
 
+if [ -d "../../corolib-build/examples/cppcoro/" ]; then
+    echo "copying files to ../../corolib-build/examples/cppcoro/ subdirectories."
+    cp ../examples/cppcoro/examples-cc/run.sh ../../corolib-build/examples/cppcoro/examples-cc/.
+    chmod ug+x ../../corolib-build/examples/cppcoro/examples-cc/run.sh
+    cp ../examples/cppcoro/examples-cl/run.sh ../../corolib-build/examples/cppcoro/examples-cl/.
+    chmod ug+x ../../corolib-build/examples/cppcoro/examples-cl/run.sh
+else
+    echo "../../corolib-build/examples/cppcoro/ does not exist."
+    echo "set(CPPCORO_INSTALLED TRUE) in CMakeList.txt and rebuild."
+fi
+
 if [ -d "../../corolib-build/examples/qt5/" ]; then
     echo "copying files to ../../corolib-build/examples/qt5/ subdirectories."
     cp ../examples/qt5/clientserver11/*.cfg ../../corolib-build/examples/qt5/clientserver11/.
