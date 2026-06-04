@@ -1,9 +1,9 @@
 /**
 * @file file_write_read2.cpp
 * @brief
-* Based upon TEST_CASE_FIXTURE(temp_dir_with_io_service_fixture, "read write file")
-* in https://github.com/lewissbaker/cppcoro/blob/master/test/file_tests.cpp
-* Lambdas have been replaced by normal functions.
+* Based upon TEST_CASE_FIXTURE(temp_dir_fixture, "write a file")
+* in https://github.com/andreasbuhr/cppcoro/blob/main/test/file_tests.cpp
+* Lambdas have been replaced with normal functions.
 * 
 * @author Johan Vanslembrouck
 */
@@ -27,11 +27,7 @@
 
 #include <ostream>
 
-#include <iostream>
-void CHECK(bool x)
-{
-    if (!x) std::cout << "error\n";
-}
+#include "check.hpp"
 
 cppcoro::task<> write(cppcoro::io_service& ioService, std::filesystem::path& filePath)
 {
@@ -108,8 +104,6 @@ void mainflow()
 
 int main()
 {
-    std::cout << "main: entering\n";
     mainflow();
-    std::cout << "main: leaving\n";
 	return 0;
 }

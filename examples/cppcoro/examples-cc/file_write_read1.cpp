@@ -1,8 +1,8 @@
 /**
 * @file file_write_read1.cpp
 * @brief
-* Based upon TEST_CASE_FIXTURE(temp_dir_with_io_service_fixture, "read write file")
-* in https://github.com/lewissbaker/cppcoro/blob/master/test/file_tests.cpp
+* Based upon TEST_CASE_FIXTURE(temp_dir_fixture, "write a file")
+* in https://github.com/andreasbuhr/cppcoro/blob/main/test/file_tests.cpp
 * 
 * @author Johan Vanslembrouck
 */
@@ -26,12 +26,9 @@
 
 #include <ostream>
 
-#include <iostream>
-void CHECK(bool x)
-{
-    if (!x) std::cout << "error\n";
-}
+#include "check.hpp"
 
+// TEST_CASE_FIXTURE(temp_dir_fixture, "write a file")
 void mainflow()
 {
     temp_dir_fixture temp_dir_fixture_;

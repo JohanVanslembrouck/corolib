@@ -2,7 +2,7 @@
 * @file cd_server1.cpp
 * @brief
 * Based upon TEST_CASE("TCP/IPv4 connect/disconnect")
-* in https://github.com/lewissbaker/cppcoro/blob/master/test/socket_tests.cpp
+* in https://github.com/andreasbuhr/cppcoro/blob/main/test/socket_tests.cpp
 * Client and server part have been placed in separate files.
 * cd stands for connect-disconnect.
 * 
@@ -17,8 +17,6 @@
 #include <cppcoro/sync_wait.hpp>
 #include <cppcoro/task.hpp>
 #include <cppcoro/when_all.hpp>
-
-#include <iostream>
 
 #include "addressfile.hpp"
 
@@ -40,14 +38,14 @@ void mainflow()
 		co_return 0;
 	};
 
-	auto serverSocket = socket::create_tcpv4(ioSvc);
-	serverSocket.bind(ipv4_endpoint{ ipv4_address::loopback(), 8080 });
-	serverSocket.listen(3);
-	serverAddress = serverSocket.local_endpoint();
-
-    saveServerAddress(serverAddress);
-
-	serverTask = server(std::move(serverSocket));
+    {
+        auto serverSocket = socket::create_tcpv4(ioSvc);
+        serverSocket.bind(ipv4_endpoint{ ipv4_address::loopback(), 8080 });
+        serverSocket.listen(3);
+        serverAddress = serverSocket.local_endpoint();
+        saveServerAddress(serverAddress);
+        serverTask = server(std::move(serverSocket));
+    }
 
 	(void)sync_wait(
         when_all(

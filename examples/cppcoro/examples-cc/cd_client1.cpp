@@ -2,7 +2,7 @@
 * @file cd_client1.cpp
 * @brief
 * Based upon TEST_CASE("TCP/IPv4 connect/disconnect")
-* in https://github.com/lewissbaker/cppcoro/blob/master/test/socket_tests.cpp
+* in https://github.com/andreasbuhr/cppcoro/blob/main/test/socket_tests.cpp
 * Client and server part have been placed in separate files.
 * cd stands for connect-disconnect.
 * 
@@ -18,8 +18,6 @@
 #include <cppcoro/task.hpp>
 #include <cppcoro/when_all.hpp>
 
-#include <iostream>
-
 #include "addressfile.hpp"
 
 using namespace cppcoro;
@@ -30,14 +28,13 @@ void mainflow()
 	io_service ioSvc;
 
     std::string serverAddressStr = readServerAddress();
-
-    auto serverAddress = cppcoro::net::ipv4_endpoint::from_string(serverAddressStr);
+    std::optional<ipv4_endpoint> serverAddressAux = cppcoro::net::ipv4_endpoint::from_string(serverAddressStr);
+    ipv4_endpoint serverAddress = *serverAddressAux;
 
 	auto client = [&]() -> task<int> {
 		auto s = socket::create_tcpv4(ioSvc);
 		s.bind(ipv4_endpoint{ ipv4_address::loopback(), 0 });
-
-		co_await s.connect(*serverAddress);
+		co_await s.connect(serverAddress);
 		co_await s.disconnect();
 		co_return 0;
 	};

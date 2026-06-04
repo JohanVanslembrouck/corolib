@@ -107,7 +107,7 @@ public:
     {
     }
 
-    corolib::async_task<void> accept(cppcoro::net::socket& listeningSocket) noexcept
+    corolib::async_task<void> acceptOn(cppcoro::net::socket& listeningSocket) noexcept
     {
         cppcoro::net::socket_accept_operation sao = listeningSocket.accept(m_s);
         co_await start(sao);
@@ -181,6 +181,11 @@ public:
             corolib::print(corolib::PRI1, "cppcoro_wrapper::send_to caught exception\n");
         }
         co_return 0;
+    }
+
+    void close_send()
+    {
+
     }
 };
 

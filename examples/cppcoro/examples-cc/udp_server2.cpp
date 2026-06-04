@@ -2,9 +2,9 @@
 * @file udp_server2.cpp
 * @brief
 * Based upon TEST_CASE("udp send_to/recv_from")
-* in https://github.com/lewissbaker/cppcoro/blob/master/test/socket_tests.cpp
+* in https://github.com/andreasbuhr/cppcoro/blob/main/test/socket_tests.cpp
 * Client and server part have been placed in separate files.
-* Lambdas have been replaced by normal functions.
+* Lambdas have been replaced with normal functions.
 * 
 * @author Johan Vanslembrouck
 */
@@ -17,20 +17,10 @@
 #include <cppcoro/on_scope_exit.hpp>
 
 #include "addressfile.hpp"
+#include "check.hpp"
 
 using namespace cppcoro;
 using namespace cppcoro::net;
-
-#include <iostream>
-void CHECK(bool x)
-{
-    if (!x) std::cout << "CHECK: error\n";
-}
-
-void FAIL(const char* str)
-{
-    std::cout << "FAIL: " << str << "\n";
-}
 
 task<int> server(socket serverSocket)
 {
@@ -96,7 +86,6 @@ void mainflow()
     auto serverSocket = socket::create_udpv4(ioSvc);
     serverSocket.bind(ipv4_endpoint{ ipv4_address::loopback(), 0 });
     serverAddress = serverSocket.local_endpoint();
-
     saveServerAddress(serverAddress);
 
     serverTask = server(std::move(serverSocket));
@@ -110,8 +99,6 @@ void mainflow()
 
 int main()
 {
-    std::cout << "main: entering\n";
     mainflow();
-    std::cout << "main: leaving\n";
     return 0;
 }

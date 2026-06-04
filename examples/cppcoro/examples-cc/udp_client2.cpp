@@ -2,7 +2,7 @@
 * @file udp_client2.cpp
 * @brief
 * Based upon TEST_CASE("udp send_to/recv_from")
-* in https://github.com/lewissbaker/cppcoro/blob/master/test/socket_tests.cpp
+* in https://github.com/andreasbuhr/cppcoro/blob/main/test/socket_tests.cpp
 * Client and server part have been placed in separate files.
 * Lambdas have been replaced by normal functions.
 * 
@@ -21,16 +21,7 @@
 using namespace cppcoro;
 using namespace cppcoro::net;
 
-#include <iostream>
-void CHECK(bool x)
-{ 
-    if (!x) std::cout << "CHECK: error\n"; 
-}
-
-void FAIL(const char* str)
-{
-    std::cout << "FAIL: " << str << "\n";
-}
+#include "check.hpp"
 
 task<int> client(io_service& ioSvc, const ip_endpoint& serverAddress)
 {
@@ -100,8 +91,6 @@ void mainflow()
 
 int main()
 {
-    std::cout << "main: entering\n";
     mainflow();
-    std::cout << "main: leaving\n";
     return 0;
 }

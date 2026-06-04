@@ -2,7 +2,7 @@
 * @file echo_client1.cpp
 * @brief
 * Based upon TEST_CASE("send/recv TCP/IPv4")
-* in https://github.com/lewissbaker/cppcoro/blob/master/test/socket_tests.cpp
+* in https://github.com/andreasbuhr/cppcoro/blob/main/test/socket_tests.cpp
 * Client and server part have been placed in separate files.
 * 
 * @author Johan Vanslembrouck
@@ -17,9 +17,8 @@
 #include <cppcoro/task.hpp>
 #include <cppcoro/when_all.hpp>
 
-#include <iostream>
-
 #include "addressfile.hpp"
+#include "check.hpp"
 
 using namespace cppcoro;
 using namespace cppcoro::net;
@@ -29,67 +28,69 @@ void mainflow()
 	io_service ioSvc;
 
     std::string serverAddressStr = readServerAddress();
+    std::optional<ipv4_endpoint> serverAddressAux = cppcoro::net::ipv4_endpoint::from_string(serverAddressStr);
+    ipv4_endpoint serverAddress = *serverAddressAux;
 
-    auto serverAddress = cppcoro::net::ipv4_endpoint::from_string(serverAddressStr);
+    auto echoClient = [&]() -> task<int>
+    {
+        auto connectingSocket = socket::create_tcpv4(ioSvc);
 
-	auto echoClient = [&]() -> task<int> {
-		auto connectingSocket = socket::create_tcpv4(ioSvc);
+        connectingSocket.bind(ipv4_endpoint{});
 
-		connectingSocket.bind(ipv4_endpoint{});
+        //co_await connectingSocket.connect(listeningSocket.local_endpoint());
+        co_await connectingSocket.connect(serverAddress);
 
-		co_await connectingSocket.connect(*serverAddress);
+        auto receive = [](socket sock) -> task<int>
+            {
+                std::uint8_t buffer[100];
+                std::uint64_t totalBytesReceived = 0;
+                std::size_t bytesReceived;
+                do
+                {
+                    bytesReceived = co_await sock.recv(buffer, sizeof(buffer));
+                    for (std::size_t i = 0; i < bytesReceived; ++i)
+                    {
+                        std::uint64_t byteIndex = totalBytesReceived + i;
+                        std::uint8_t expectedByte = 'a' + (byteIndex % 26);
+                        CHECK(buffer[i] == expectedByte);
+                    }
 
-		auto receive = [&]() -> task<int> {
-			std::uint8_t buffer[100];
-			std::uint64_t totalBytesReceived = 0;
-			std::size_t bytesReceived;
-			do
-			{
-				bytesReceived = co_await connectingSocket.recv(buffer, sizeof(buffer));
-				for (std::size_t i = 0; i < bytesReceived; ++i)
-				{
-					std::uint64_t byteIndex = totalBytesReceived + i;
-					std::uint8_t expectedByte = 'a' + (byteIndex % 26);
-					if (buffer[i] != expectedByte)
-						printf("buffer[i] != expectedByte\n");
-				}
-				totalBytesReceived += bytesReceived;
-			} while (bytesReceived > 0);
+                    totalBytesReceived += bytesReceived;
+                } while (bytesReceived > 0);
 
-			if (totalBytesReceived != 1000)
-				printf("totalBytesReceived = %llu != 1000\n", totalBytesReceived);
+                CHECK(totalBytesReceived == 1000);
 
-			co_return 0;
-		};
+                co_return 0;
+            };
 
-		auto send = [&]() -> task<int> {
-			std::uint8_t buffer[100];
-			for (std::uint64_t i = 0; i < 1000; i += sizeof(buffer))
-			{
-				for (std::size_t j = 0; j < sizeof(buffer); ++j)
-				{
-					buffer[j] = 'a' + ((i + j) % 26);
-				}
+        auto send = [](socket sock) -> task<int>
+            {
+                std::uint8_t buffer[100];
+                for (std::uint64_t i = 0; i < 1000; i += sizeof(buffer))
+                {
+                    for (std::size_t j = 0; j < sizeof(buffer); ++j)
+                    {
+                        buffer[j] = 'a' + ((i + j) % 26);
+                    }
 
-				std::size_t bytesSent = 0;
-				do
-				{
-					bytesSent += co_await connectingSocket.send(
-						buffer + bytesSent, sizeof(buffer) - bytesSent);
-				} while (bytesSent < sizeof(buffer));
-			}
+                    std::size_t bytesSent = 0;
+                    do
+                    {
+                        bytesSent += co_await sock.send(buffer + bytesSent, sizeof(buffer) - bytesSent);
+                    } while (bytesSent < sizeof(buffer));
+                }
 
-			connectingSocket.close_send();
+                sock.close_send();
 
-			co_return 0;
-		};
+                co_return 0;
+            };
 
-		co_await when_all(send(), receive());
+        co_await when_all(send(connectingSocket), receive(connectingSocket));
 
-		co_await connectingSocket.disconnect();
+        co_await connectingSocket.disconnect();
 
-		co_return 0;
-	};
+        co_return 0;
+    };
 
 	(void)sync_wait(
         when_all(

@@ -1,8 +1,8 @@
 /**
-* @file cd_server2.cpp
+* @file cd_server2_client2.cpp
 * @brief
-* Based upon ../examples-cc/cd_server2.cpp
-* 
+* Based upon ../examples-cc/cd_server2_client2.cpp
+*
 * @author Johan Vanslembrouck
 */
 
@@ -11,7 +11,7 @@
 #include <cppcoro/net/socket.hpp>
 
 #include <corolib/async_task.h>
-#include <corolib/print.h>
+#include <corolib/when_all.h>
 
 #include "addressfile.hpp"
 #include "cppcoro_wrapper.hpp"
@@ -41,19 +41,37 @@ async_task<int> server(io_service& ioSvc, socket& listeningSocket)
     co_return 0;
 }
 
+async_task<int> client(io_service& ioSvc, ip_endpoint& serverAddress)
+{
+#if USE_CPPCORO
+    auto s = socket::create_tcpv4(ioSvc);
+    s.bind(ipv4_endpoint{ ipv4_address::loopback(), 0 });
+#else
+    auto s_ = socket::create_tcpv4(ioSvc);
+    s_.bind(ipv4_endpoint{ ipv4_address::loopback(), 0 });
+    socket_wrapper s(s_);
+#endif
+
+    co_await s.connect(serverAddress);
+    co_await s.disconnect();
+    co_return 0;
+}
+
 async_task<void> mainflow(io_service& ioSvc)
 {
     ip_endpoint serverAddress;
- 
+
     auto serverSocket = socket::create_tcpv4(ioSvc);
     serverSocket.bind(ipv4_endpoint{ ipv4_address::loopback(), 8080 });
     serverSocket.listen(3);
     serverAddress = serverSocket.local_endpoint();
-    saveServerAddress(serverAddress);
 
-    co_await server(ioSvc, serverSocket);
+    async_task<int> ts = server(ioSvc, serverSocket);
+    async_task<int> tc = client(ioSvc, serverAddress);
+    co_await when_all(ts, tc);
 
     ioSvc.stop();
+
     co_return;
 }
 

@@ -2,10 +2,10 @@
 * @file cd_client2.cpp
 * @brief
 * Based upon TEST_CASE("TCP/IPv4 connect/disconnect")
-* in https://github.com/lewissbaker/cppcoro/blob/master/test/socket_tests.cpp
+* in https://github.com/andreasbuhr/cppcoro/blob/main/test/socket_tests.cpp
 * Client and server part have been placed in separate files.
 * cd stands for connect-disconnect.
-* Lambdas have been replaced by normal functions.
+* Lambdas have been replaced with normal functions.
 * 
 * @author Johan Vanslembrouck
 */
@@ -18,8 +18,6 @@
 #include <cppcoro/sync_wait.hpp>
 #include <cppcoro/task.hpp>
 #include <cppcoro/when_all.hpp>
-
-#include <iostream>
 
 #include "addressfile.hpp"
 
@@ -64,12 +62,25 @@ void mainflow()
             task1(ioSvc, clientTask),
             task2(ioSvc)
         ));
+
+#if 0
+    (void)sync_wait(
+        when_all(
+            [&]() -> task<int> {
+                auto stopOnExit = on_scope_exit([&] { ioSvc.stop(); });
+                (void) co_await clientTask;
+                co_return 0;
+            }(),
+            [&]() -> task<int> {
+                ioSvc.process_events();
+                co_return 0;
+            }()
+        ));
+#endif
 }
 
 int main()
 {
-    std::cout << "main: entering\n";
 	mainflow();
-    std::cout << "main: leaving\n";
 	return 0;
 }

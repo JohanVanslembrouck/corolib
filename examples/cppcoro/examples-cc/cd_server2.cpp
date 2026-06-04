@@ -2,10 +2,10 @@
 * @file cd_server2.cpp
 * @brief
 * Based upon TEST_CASE("TCP/IPv4 connect/disconnect")
-* in https://github.com/lewissbaker/cppcoro/blob/master/test/socket_tests.cpp
+* in https://github.com/andreasbuhr/cppcoro/blob/main/test/socket_tests.cpp
 * Client and server part have been placed in separate files.
 * cd stands for connect-disconnect.
-* Lambdas have been replaced by normal functions.
+* Lambdas have been replaced with normal functions.
 * 
 * @author Johan Vanslembrouck
 */
@@ -19,14 +19,12 @@
 #include <cppcoro/task.hpp>
 #include <cppcoro/when_all.hpp>
 
-#include <iostream>
-
 #include "addressfile.hpp"
 
 using namespace cppcoro;
 using namespace cppcoro::net;
 
-task<int> server(io_service& ioSvc, socket& listeningSocket)
+task<int> server(io_service& ioSvc, socket listeningSocket)
 {
     auto s = socket::create_tcpv4(ioSvc);
     co_await listeningSocket.accept(s);
@@ -55,26 +53,39 @@ void mainflow()
 
 	task<int> serverTask;
 
-	auto serverSocket = socket::create_tcpv4(ioSvc);
-	serverSocket.bind(ipv4_endpoint{ ipv4_address::loopback(), 8080 });
-	serverSocket.listen(3);
-	serverAddress = serverSocket.local_endpoint();
-
-    saveServerAddress(serverAddress);
-
-	serverTask = server(ioSvc, serverSocket);
+    {
+        auto serverSocket = socket::create_tcpv4(ioSvc);
+        serverSocket.bind(ipv4_endpoint{ ipv4_address::loopback(), 8080 });
+        serverSocket.listen(3);
+        serverAddress = serverSocket.local_endpoint();
+        saveServerAddress(serverAddress);
+        serverTask = server(ioSvc, std::move(serverSocket));
+    }
 
 	(void)sync_wait(
         when_all(
             task1(ioSvc, serverTask),
             task2(ioSvc)
 	    ));
+
+#if 0
+    (void)sync_wait(
+        when_all(
+            [&]() -> task<int> {
+                auto stopOnExit = on_scope_exit([&] { ioSvc.stop(); });
+                (void)co_await serverTask;
+                co_return 0;
+            }(),
+            [&]() -> task<int> {
+                ioSvc.process_events();
+                co_return 0;
+            }()
+        ));
+#endif
 }
 
 int main()
 {
-    std::cout << "main: entering\n";
 	mainflow();
-    std::cout << "main: leaving\n";
 	return 0;
 }

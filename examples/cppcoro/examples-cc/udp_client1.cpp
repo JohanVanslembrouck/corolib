@@ -2,7 +2,7 @@
 * @file udp_client1.cpp
 * @brief
 * Based upon TEST_CASE("udp send_to/recv_from")
-* in https://github.com/lewissbaker/cppcoro/blob/master/test/socket_tests.cpp
+* in https://github.com/andreasbuhr/cppcoro/blob/main/test/socket_tests.cpp
 * Client and server part have been placed in separate files.
 * 
 * @author Johan Vanslembrouck
@@ -20,23 +20,15 @@
 using namespace cppcoro;
 using namespace cppcoro::net;
 
-#include <iostream>
-void CHECK(bool x)
-{ 
-    if (!x) std::cout << "CHECK: error\n"; 
-}
-
-void FAIL(const char* str)
-{
-    std::cout << "FAIL: " << str << "\n";
-}
+#include "check.hpp"
 
 void mainflow()
 {
     io_service ioSvc;
 
     std::string serverAddressStr = readServerAddress();
-    auto serverAddress = cppcoro::net::ipv4_endpoint::from_string(serverAddressStr);
+    std::optional<ipv4_endpoint> serverAddressAux = cppcoro::net::ipv4_endpoint::from_string(serverAddressStr);
+    ipv4_endpoint serverAddress = *serverAddressAux;
 
     auto client = [&]() -> task<int>
         {
@@ -47,7 +39,7 @@ void mainflow()
             // Send first message of 50 bytes
             {
                 std::uint8_t buffer[50] = { 0 };
-                co_await socket.send_to(*serverAddress, buffer, 50);
+                co_await socket.send_to(serverAddress, buffer, 50);
             }
 
             // Receive ACK message
@@ -56,13 +48,13 @@ void mainflow()
                 auto [bytesReceived, ackAddress] = co_await socket.recv_from(buffer, 1);
                 CHECK(bytesReceived == 1);
                 CHECK(buffer[0] == 0);
-                CHECK(ackAddress == *serverAddress);
+                CHECK(ackAddress == serverAddress);
             }
 
             // Send second message of 128 bytes
             {
                 std::uint8_t buffer[128] = { 0 };
-                co_await socket.send_to(*serverAddress, buffer, 128);
+                co_await socket.send_to(serverAddress, buffer, 128);
             }
 
             // Receive NACK message
@@ -71,7 +63,7 @@ void mainflow()
                 auto [bytesReceived, ackAddress] = co_await socket.recv_from(buffer, 1);
                 CHECK(bytesReceived == 1);
                 CHECK(buffer[0] == 1);
-                CHECK(ackAddress == *serverAddress);
+                CHECK(ackAddress == serverAddress);
             }
 
             co_return 0;
