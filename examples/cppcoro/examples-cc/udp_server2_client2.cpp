@@ -28,7 +28,7 @@ task<int> server(socket serverSocket)
 
     auto [bytesReceived, remoteEndPoint] = co_await serverSocket.recv_from(buffer, 100);
     CHECK(bytesReceived == 50);
-
+    
     // Send an ACK response.
     {
         const std::uint8_t response[1] = { 0 };
@@ -43,7 +43,6 @@ task<int> server(socket serverSocket)
     }
     catch (const std::system_error&)
     {
-        std::cout << "co_await serverSocket.recv_from(buffer, 100) threw exception\n";
         // TODO: Map this situation to some kind of error_condition value.
         // The win32 ERROR_MORE_DATA error code doesn't seem to map to any of the standard std::errc values.
         //
@@ -67,13 +66,13 @@ task<int> client(io_service& ioSvc, ip_endpoint& serverAddress)
     auto socket = socket::create_udpv4(ioSvc);
 
     // don't need to bind(), should be implicitly bound on first send_to().
-
+ 
     // Send first message of 50 bytes
     {
         std::uint8_t buffer[50] = { 0 };
         co_await socket.send_to(serverAddress, buffer, 50);
     }
-
+    
     // Receive ACK message
     {
         std::uint8_t buffer[1];
@@ -82,7 +81,7 @@ task<int> client(io_service& ioSvc, ip_endpoint& serverAddress)
         CHECK(buffer[0] == 0);
         CHECK(ackAddress == serverAddress);
     }
-
+    
     // Send second message of 128 bytes
     {
         std::uint8_t buffer[128] = { 0 };

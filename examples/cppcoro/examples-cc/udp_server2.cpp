@@ -43,7 +43,6 @@ task<int> server(socket serverSocket)
     }
     catch (const std::system_error&)
     {
-        std::cout << "co_await serverSocket.recv_from(buffer, 100) threw exception\n";
         // TODO: Map this situation to some kind of error_condition value.
         // The win32 ERROR_MORE_DATA error code doesn't seem to map to any of the standard std::errc values.
         //

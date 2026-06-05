@@ -29,15 +29,15 @@ async_task<int> echoServer(io_service& ioSvc, socket& listeningSocket)
 {
 #if USE_CPPCORO
     auto acceptingSocket = socket::create_tcpv4(ioSvc);
-#else
-    auto acceptingSocket_ = socket::create_tcpv4(ioSvc);
-    socket_wrapper acceptingSocket(acceptingSocket_);
-#endif
 
-#if USE_CPPCORO
     co_await listeningSocket.accept(acceptingSocket);
 #else
-    co_await acceptingSocket.acceptOn(listeningSocket);
+    auto acceptingSocket_ = socket::create_tcpv4(ioSvc);
+    
+    socket_wrapper listeningSocketWr(listeningSocket);
+    co_await listeningSocketWr.accept(acceptingSocket_);
+
+    socket_wrapper acceptingSocket(acceptingSocket_);
 #endif
 
     std::uint8_t buffer[64];

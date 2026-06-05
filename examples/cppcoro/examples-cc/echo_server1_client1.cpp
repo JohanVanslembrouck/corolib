@@ -126,8 +126,8 @@ void mainflow()
         [&]() -> task<int>
         {
             auto stopOnExit = on_scope_exit([&] { ioSvc.stop(); });
-            (void)co_await when_all(echoClient(),
-                                    echoServer());
+            (void)co_await when_all(echoServer(),
+                                    echoClient());
             co_return 0;
         }(),
         [&]() -> task<int>

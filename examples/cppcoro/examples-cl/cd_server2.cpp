@@ -27,16 +27,16 @@ async_task<int> server(io_service& ioSvc, socket& listeningSocket)
 {
 #if USE_CPPCORO
     auto s = socket::create_tcpv4(ioSvc);
+
+    co_await listeningSocket.accept(s);
 #else
     auto s_ = socket::create_tcpv4(ioSvc);
+    
+    socket_wrapper listeningSocketWr(listeningSocket);
+    co_await listeningSocketWr.accept(s_);
     socket_wrapper s(s_);
 #endif
 
-#if USE_CPPCORO
-    co_await listeningSocket.accept(s);
-#else
-    co_await s.acceptOn(listeningSocket);
-#endif
     co_await s.disconnect();
     co_return 0;
 }

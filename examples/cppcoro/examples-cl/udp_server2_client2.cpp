@@ -30,8 +30,6 @@ async_task<int> server(socket_wrapper& serverSocket)
 
     auto [bytesReceived, remoteEndPoint] = co_await serverSocket.recv_from(buffer, 100);
     CHECK(bytesReceived == 50);
-
-    auto remoteEndpointSave = remoteEndPoint;   // Save for later use
     
     // Send an ACK response.
     {
@@ -44,14 +42,9 @@ async_task<int> server(socket_wrapper& serverSocket)
     {
         std::tie(bytesReceived, remoteEndPoint) = co_await serverSocket.recv_from(buffer, 100);
         FAIL("Should have thrown");
-        // The previous statement does not throw because the exception is caught in the cppcoro_wrapper.
-        // 
-        if (bytesReceived == 0)                     // This indicates an error (exception) in the previous call.
-            remoteEndPoint = remoteEndpointSave;    // Restore the original value of remoteEndPoint
     }
     catch (const std::system_error&)
     {
-        std::cout << "co_await serverSocket.recv_from(buffer, 100) threw exception\n";
         // TODO: Map this situation to some kind of error_condition value.
         // The win32 ERROR_MORE_DATA error code doesn't seem to map to any of the standard std::errc values.
         //

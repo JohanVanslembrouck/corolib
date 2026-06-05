@@ -11,6 +11,7 @@
 
 #include <iostream>
 #include <functional>
+#include <stdexcept>
 #include <system_error>
 
 #include <cppcoro/net/socket.hpp>
@@ -31,7 +32,7 @@ struct cppcoro_result
     cppcoro::detail::win32::dword_t m_errorCode{};
     cppcoro::detail::win32::dword_t m_numberOfBytesTransferred{};
 #elif CPPCORO_OS_LINUX
-    std::int32_t  m_errorCode{};
+    std::int32_t m_errorCode{};
     std::int32_t m_numberOfBytesTransferred{};
 #endif
     std::size_t get_result()
@@ -98,21 +99,27 @@ protected:
 
 class socket_wrapper : protected cppcoro_wrapper
 {
-private:
-    cppcoro::net::socket m_s;
-
 public:
-    socket_wrapper(cppcoro::net::socket& s) :
+    socket_wrapper(cppcoro::net::socket s) :
         m_s(std::move(s))
     {
     }
 
+    corolib::async_task<void> accept(cppcoro::net::socket& acceptingSocket) noexcept
+    {
+        cppcoro::net::socket_accept_operation sao = m_s.accept(acceptingSocket);
+        co_await start(sao);
+        co_return;
+    }
+
+#if 0
     corolib::async_task<void> acceptOn(cppcoro::net::socket& listeningSocket) noexcept
     {
         cppcoro::net::socket_accept_operation sao = listeningSocket.accept(m_s);
         co_await start(sao);
         co_return;
     }
+#endif
 
     corolib::async_task<void> connect(const cppcoro::net::ip_endpoint& remoteEndPoint) noexcept
     {
@@ -152,15 +159,17 @@ public:
             std::size_t bytesReceived = res1.get_result();
             (void)bytesReceived;
         }
-        catch (...) {
-            corolib::print(corolib::PRI1, "cppcoro_wrapper::recv_from caught exception 1\n");
+        catch (const std::exception& e) {
+            corolib::print(corolib::PRI1, "cppcoro_wrapper::recv_from caught exception 1: %s\n", e.what());
+            throw;
         }
         try {
             recv_from_result_t res = srfo.get_result();
             co_return res;
         }
-        catch (...) {
-            corolib::print(corolib::PRI1, "cppcoro_wrapper::recv_from caught exception 2\n");
+        catch (const std::exception& e) {
+            corolib::print(corolib::PRI1, "cppcoro_wrapper::recv_from caught exception 2: %s\n", e.what());
+            throw;
         }
         recv_from_result_t res{};
         co_return res;
@@ -177,16 +186,22 @@ public:
             std::size_t bytesSent = res.get_result();
             co_return bytesSent;
         }
-        catch (...) {
-            corolib::print(corolib::PRI1, "cppcoro_wrapper::send_to caught exception\n");
+        catch (const std::exception& e) {
+            corolib::print(corolib::PRI1, "cppcoro_wrapper::send_to caught exception: %s\n", e.what());
+            throw;
         }
         co_return 0;
     }
 
     void close_send()
     {
-
+        // If following call is present: 00: 0000021DCB6624A0: async_task_base::promise_type::unhandled_exception()
+        //m_s.close_send();
     }
+
+private:
+    cppcoro::net::socket m_s;
+
 };
 
 class read_only_file_wrapper : protected cppcoro_wrapper
