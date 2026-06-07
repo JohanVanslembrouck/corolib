@@ -77,6 +77,7 @@ protected:
                     completionHandler(idx, res);
                 });
 #elif CPPCORO_OS_LINUX
+            // register_corolib_cb is defined in cppcoro/detail/linux_async_operation.hpp
             op.register_corolib_cb(
                 [this, idx](std::int32_t errorCode,
                             std::int32_t numberOfBytesTransferred)
@@ -91,6 +92,7 @@ protected:
             // synchronous completion
             cppcoro_result res{};
             // get_results is defined in cppcoro/detail/win32_overlapped_operation.hpp
+            //                    and in cppcoro/detail/linux_async_operation.hpp
             op.get_results(res.m_errorCode, res.m_numberOfBytesTransferred);
             completionHandler(idx, res);
         }
@@ -108,7 +110,11 @@ public:
     corolib::async_task<void> accept(cppcoro::net::socket& acceptingSocket) noexcept
     {
         cppcoro::net::socket_accept_operation sao = m_s.accept(acceptingSocket);
-        co_await start(sao);
+        cppcoro_result res = co_await start(sao);
+#if CPPCORO_OS_LINUX
+        cppcoro::detail::linux::fd_t handle = res.get_result();
+        acceptingSocket.set_native_handle(handle);
+#endif
         co_return;
     }
 
@@ -116,7 +122,11 @@ public:
     corolib::async_task<void> acceptOn(cppcoro::net::socket& listeningSocket) noexcept
     {
         cppcoro::net::socket_accept_operation sao = listeningSocket.accept(m_s);
-        co_await start(sao);
+        cppcoro_result res = co_await start(sao);
+#if CPPCORO_OS_LINUX
+        cppcoro::detail::linux::fd_t handle = res.get_result();
+        m_s.set_native_handle(handle);
+#endif
         co_return;
     }
 #endif
@@ -124,14 +134,16 @@ public:
     corolib::async_task<void> connect(const cppcoro::net::ip_endpoint& remoteEndPoint) noexcept
     {
         cppcoro::net::socket_connect_operation sco = m_s.connect(remoteEndPoint);
-        co_await start(sco);
+        cppcoro_result res = co_await start(sco);
+        (void)res;
         co_return;
     }
 
     corolib::async_task<void> disconnect() noexcept
     {
         cppcoro::net::socket_disconnect_operation sdo = m_s.disconnect();
-        co_await start(sdo);
+        cppcoro_result res = co_await start(sdo);
+        (void)res;
         co_return;
     }
 

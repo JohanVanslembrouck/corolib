@@ -113,6 +113,12 @@ namespace cppcoro
 #elif CPPCORO_OS_LINUX
 			/// Get the linux fd assocaited with this socket.
 			cppcoro::detail::linux::fd_t native_handle() noexcept { return m_handle; }
+
+            // Addition for corolib
+            void set_native_handle(cppcoro::detail::linux::fd_t handle) noexcept
+            {
+                m_handle = handle;
+            }
 #endif
 
 			/// Get the address and port of the local end-point.

@@ -48,7 +48,7 @@ namespace cppcoro
 			}
 
 			std::int32_t m_res;
-            std::int32_t m_err;                     // Addition for corolib
+            std::int32_t m_err{};                       // Addition for corolib
 			std::function<int()> m_completeFunc;
  			detail::linux::message_queue* m_mq;
 
