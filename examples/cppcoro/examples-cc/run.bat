@@ -42,6 +42,26 @@ timeout /t 1 /nobreak >nul
 cc-udp_server1_client1.exe
 timeout /t 1 /nobreak >nul
 
+cc-multiple_echo_server1_client1.exe
+timeout /t 1 /nobreak >nul
+
+START /B cc-multiple_echo_server1.exe > cc-multiple_echo_server1.txt 2>&1
+timeout /t 1 /nobreak >nul
+cc-multiple_echo_client1.exe
+timeout /t 1 /nobreak >nul
+type cc-multiple_echo_server1.txt
+timeout /t 1 /nobreak >nul
+
+cc-multiple_echo_server2_client2.exe
+timeout /t 1 /nobreak >nul
+
+START /B cc-multiple_echo_server2.exe > cc-multiple_echo_server2.txt 2>&1
+timeout /t 1 /nobreak >nul
+cc-multiple_echo_client2.exe
+timeout /t 1 /nobreak >nul
+type cc-multiple_echo_server2.txt
+timeout /t 1 /nobreak >nul
+
 START /B cc-udp_server1.exe > cc-udp_server1.txt 2>&1
 timeout /t 1 /nobreak >nul
 cc-udp_client1.exe

@@ -320,6 +320,25 @@ namespace cppcoro
 				return static_cast<OPERATION*>(this)->get_result();
 			}
 
+            // Addition for corolib (begin)
+            void initialize()
+            {
+                // see linux_async_operation.hpp
+            }
+
+            void get_results(detail::win32::dword_t& errorCode, detail::win32::dword_t& numberOfBytesTransferred)
+            {
+                errorCode = m_errorCode;
+                numberOfBytesTransferred = m_numberOfBytesTransferred;
+            }
+
+            void register_corolib_cb(corolib_functor_t&& corolib_cb)
+            {
+                m_use_corolib = true;
+                m_corolib_cb = std::move(corolib_cb);
+            }
+            // Addition for corolib (end)
+
 		private:
 
 			enum class state
@@ -391,9 +410,21 @@ namespace cppcoro
 						std::memory_order_acq_rel);
 					if (state == state::started)
 					{
-						// The await_suspend() method returned (or will return) 'true' and so
-						// we need to resume the coroutine.
-						operation->m_awaitingCoroutine.resume();
+                        // The await_suspend() method returned (or will return) 'true' and so
+                        // we need to resume the coroutine.
+                        // Addition for corolib (begin)
+                        if (operation->m_use_corolib)
+                        {
+                            if (operation->m_corolib_cb)
+                            {
+                                operation->m_corolib_cb(errorCode, numberOfBytesTransferred);
+                            }
+                        }
+                        else
+                        {
+                            operation->m_awaitingCoroutine.resume();
+                        }
+                        // Addition for corolib (end)
 					}
 				}
 			}

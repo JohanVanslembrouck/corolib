@@ -5,6 +5,7 @@ include_directories(../include ../../../include)
 foreach(_target
     cd_server2_client2
     echo_server2_client2
+    multiple_echo_server2_client2
     udp_server2_client2
   )
 if(WIN32)
@@ -19,6 +20,7 @@ endforeach()
 foreach(_target
     cd_server2 cd_client2
     echo_server2 echo_client2
+    multiple_echo_server2 multiple_echo_client2
     udp_server2 udp_client2
   )
 if(WIN32)

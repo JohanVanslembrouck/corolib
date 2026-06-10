@@ -4,7 +4,7 @@
 * Based upon TEST_CASE("send/recv TCP/IPv4")
 * in https://github.com/andreasbuhr/cppcoro/blob/main/test/socket_tests.cpp
 * 
-* @author lewis Baker | Johan Vanslembrouck
+* @author Lewis Baker | Johan Vanslembrouck
 */
 
 #include <cppcoro/io_service.hpp>
@@ -89,6 +89,7 @@ void mainflow()
             } while (bytesReceived > 0);
 
             CHECK(totalBytesReceived == 1000);
+            std::cout << "Received " << totalBytesReceived << " bytes\n";
 
             co_return 0;
         };

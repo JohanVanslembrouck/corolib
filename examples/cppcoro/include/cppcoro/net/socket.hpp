@@ -110,6 +110,12 @@ namespace cppcoro
 			/// operation completing synchronously or whether it should suspend the coroutine
 			/// and wait until the I/O completion event is dispatched to an I/O thread.
 			bool skip_completion_on_success() noexcept { return m_skipCompletionOnSuccess; }
+
+            // Addition for corolib
+            void set_native_handle(cppcoro::detail::win32::socket_t handle) noexcept
+            {
+                //m_handle = handle;
+            }
 #elif CPPCORO_OS_LINUX
 			/// Get the linux fd assocaited with this socket.
 			cppcoro::detail::linux::fd_t native_handle() noexcept { return m_handle; }

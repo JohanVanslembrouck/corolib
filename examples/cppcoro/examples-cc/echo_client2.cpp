@@ -42,6 +42,8 @@ task<int> receive(socket sock)
 	} while (bytesReceived > 0);
 
     CHECK(totalBytesReceived == 1000);
+    std::cout << "Received " << totalBytesReceived << " bytes\n";
+
 	co_return 0;
 }
 

@@ -87,7 +87,7 @@ namespace cppcoro
 				return static_cast<OPERATION*>(this)->get_result();
 			}
 
-            // Addition for corolib(begin)
+            // Addition for corolib (begin)
             void get_results(std::int32_t& errorCode, std::int32_t& numberOfBytesTransferred)
             {
                 errorCode = m_err;
@@ -108,7 +108,6 @@ namespace cppcoro
 			{
 				auto* operation = static_cast<linux_async_operation*>(ioState);
 				operation->m_res = operation->m_completeFunc();
-
 				if (operation->m_res < 0) {
 					operation->m_res = -errno;
                     operation->m_err = -errno;      // Addition for corolib
@@ -269,6 +268,39 @@ namespace cppcoro
 				return static_cast<OPERATION*>(this)->get_result();
 			}
 
+            // Addition for corolib (begin)
+            // TRICKY
+            // When using corolib, co_await is applied on an async_operation object,
+            // not on an object of a class that is derived from linux_async_operation_cancellable,
+            // such as socket_accept_operation_cancellable.
+            // This means that the 3 functions above, i.e. async_ready(), async_suspend() and async_resume()
+            // will not be called.
+            // On compledtion, function on_operation_completed() will be called.
+            // However, this function will only resume a coroutine if state == state::started.
+            // Initially, state == state::not_started.
+            // The state is changed to state::started in async_suspend(), but because
+            // this function is not called when using corolib, the coroutine will not be resumed.
+            // For this reason, the function initialize() has been introduced to change
+            // the state to state::started.
+            // This simple implementation is (currently) sufficient for running the examples.
+            void initialize()
+            {
+                m_state.store(state::started, std::memory_order_relaxed);
+            }
+
+            void get_results(std::int32_t& errorCode, std::int32_t& numberOfBytesTransferred)
+            {
+                errorCode = m_err;
+                numberOfBytesTransferred = m_res;
+            }
+
+            void register_corolib_cb(corolib_functor_t&& corolib_cb)
+            {
+                m_use_corolib = true;
+                m_corolib_cb = std::move(corolib_cb);
+            }
+            // Addition for corolib (end)
+
 		private:
 
 			enum class state
@@ -320,13 +352,27 @@ namespace cppcoro
 				operation->m_res = operation->m_completeFunc();
 				if (operation->m_res < 0) {
 					operation->m_res = -errno;
+                    operation->m_err = -errno;      // Addition for corolib
 				}
 
 				auto state = operation->m_state.load(std::memory_order_acquire);
+ 
 				if (state == state::started)
 				{
 					operation->m_state.store(state::completed, std::memory_order_relaxed);
-					operation->m_awaitingCoroutine.resume();
+                    // Addition for corolib (begin)
+                    if (operation->m_use_corolib)
+                    {
+                        if (operation->m_corolib_cb)
+                        {
+                            operation->m_corolib_cb(operation->m_err, operation->m_res);
+                        }
+                    }
+                    else
+                    {
+					    operation->m_awaitingCoroutine.resume();
+                    }
+                    // Addition for corolib (end)
 				}
 				else
 				{
@@ -343,7 +389,19 @@ namespace cppcoro
 					{
 						// The await_suspend() method returned (or will return) 'true' and so
 						// we need to resume the coroutine.
-						operation->m_awaitingCoroutine.resume();
+                        // Addition for corolib (begin)
+                        if (operation->m_use_corolib)
+                        {
+                            if (operation->m_corolib_cb)
+                            {
+                                operation->m_corolib_cb(operation->m_err, operation->m_res);
+                            }
+                        }
+                        else
+                        {
+                            operation->m_awaitingCoroutine.resume();
+                        }
+                        // Addition for corolib (end)
 					}
 				}
 			}

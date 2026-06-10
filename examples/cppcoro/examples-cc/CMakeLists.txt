@@ -12,6 +12,8 @@ foreach(_target
     cd_server2_client2
     echo_server1_client1
     echo_server2_client2
+    multiple_echo_server1_client1
+    multiple_echo_server2_client2
     udp_server1_client1
     udp_server2_client2
   )
@@ -29,6 +31,8 @@ foreach(_target
     cd_server2 cd_client2
     echo_server1 echo_client1
     echo_server2 echo_client2
+    multiple_echo_server1 multiple_echo_client1
+    multiple_echo_server2 multiple_echo_client2
     udp_server1 udp_client1
     udp_server2 udp_client2
   )

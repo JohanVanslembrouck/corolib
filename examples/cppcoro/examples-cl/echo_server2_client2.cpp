@@ -85,7 +85,8 @@ async_task<int> receive(socket_wrapper sock)
     } while (bytesReceived > 0 && totalBytesReceived < 1000);
 
     CHECK(totalBytesReceived == 1000);
-   
+    std::cout << "Received " << totalBytesReceived << " bytes\n";
+
     co_return 0;
 }
 

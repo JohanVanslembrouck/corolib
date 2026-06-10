@@ -22,6 +22,16 @@ sleep 1
 cat cl-echo_server2.txt
 sleep 1
 
+./cl-multiple_echo_server2_client2
+sleep 1
+
+./cl-multiple_echo_server2 &> cl-multiple_echo_server2.txt &
+sleep 1
+./cl-multiple_echo_client2
+sleep 1
+cat cl-multiple_echo_server2.txt
+sleep 1
+
 ./cl-udp_server2_client2
 sleep 1
 

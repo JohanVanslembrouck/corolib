@@ -41,6 +41,26 @@ sleep 1
 cat cc-echo_server2.txt
 sleep 1
 
+./cc-multiple_echo_server1_client1
+sleep 1
+
+./cc-multiple_echo_server1 &> cc-multiple_echo_server1.txt &
+sleep 1
+./cc-multiple_echo_client1
+sleep 1
+cat cc-multiple_echo_server1.txt
+sleep 1
+
+./cc-multiple_echo_server2_client2
+sleep 1
+
+./cc-multiple_echo_server2 &> cc-multiple_echo_server2.txt &
+sleep 1
+./cc-multiple_echo_client2
+sleep 1
+cat cc-multiple_echo_server2.txt
+sleep 1
+
 ./cc-udp_server1_client1
 sleep 1
 

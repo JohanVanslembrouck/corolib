@@ -66,6 +66,7 @@ protected:
     {
         if (op.try_start())
         {
+            corolib::print(corolib::PRI2, "cppcoro_wrapper::start_impl: asynchronous completion\n");
             // asynchronous completion
 #if CPPCORO_OS_WINNT
             // register_corolib_cb is defined in cppcoro/detail/win32_overlapped_operation.hpp
@@ -89,6 +90,7 @@ protected:
         }
         else
         {
+            corolib::print(corolib::PRI1, "cppcoro_wrapper::start_impl: synchronous completion\n");
             // synchronous completion
             cppcoro_result res{};
             // get_results is defined in cppcoro/detail/win32_overlapped_operation.hpp
@@ -111,14 +113,31 @@ public:
     {
         cppcoro::net::socket_accept_operation sao = m_s.accept(acceptingSocket);
         cppcoro_result res = co_await start(sao);
-#if CPPCORO_OS_LINUX
+#if CPPCORO_OS_WINNT
+        cppcoro::detail::win32::socket_t handle = res.get_result();
+        acceptingSocket.set_native_handle(handle);
+#elif CPPCORO_OS_LINUX
         cppcoro::detail::linux::fd_t handle = res.get_result();
         acceptingSocket.set_native_handle(handle);
 #endif
         co_return;
     }
 
-#if 0
+    corolib::async_task<void> accept(cppcoro::net::socket& acceptingSocket, cppcoro::cancellation_token ct) noexcept
+    {
+        cppcoro::net::socket_accept_operation_cancellable sao = m_s.accept(acceptingSocket, ct);
+        sao.initialize();
+        cppcoro_result res = co_await start(sao);
+#if CPPCORO_OS_WINNT
+        cppcoro::detail::win32::socket_t handle = res.get_result();
+        acceptingSocket.set_native_handle(handle);
+#elif CPPCORO_OS_LINUX
+        cppcoro::detail::linux::fd_t handle = res.get_result();
+        acceptingSocket.set_native_handle(handle);
+#endif
+        co_return;
+    }
+
     corolib::async_task<void> acceptOn(cppcoro::net::socket& listeningSocket) noexcept
     {
         cppcoro::net::socket_accept_operation sao = listeningSocket.accept(m_s);
@@ -129,11 +148,31 @@ public:
 #endif
         co_return;
     }
+
+    corolib::async_task<void> acceptOn(cppcoro::net::socket& listeningSocket, cppcoro::cancellation_token ct) noexcept
+    {
+        cppcoro::net::socket_accept_operation_cancellable sao = listeningSocket.accept(m_s, ct);
+        sao.initialize();
+        cppcoro_result res = co_await start(sao);
+#if CPPCORO_OS_LINUX
+        cppcoro::detail::linux::fd_t handle = res.get_result();
+        m_s.set_native_handle(handle);
 #endif
+        co_return;
+    }
 
     corolib::async_task<void> connect(const cppcoro::net::ip_endpoint& remoteEndPoint) noexcept
     {
         cppcoro::net::socket_connect_operation sco = m_s.connect(remoteEndPoint);
+        cppcoro_result res = co_await start(sco);
+        (void)res;
+        co_return;
+    }
+
+    corolib::async_task<void> connect(const cppcoro::net::ip_endpoint& remoteEndPoint, cppcoro::cancellation_token ct) noexcept
+    {
+        cppcoro::net::socket_connect_operation_cancellable sco = m_s.connect(remoteEndPoint, ct);
+        sco.initialize();
         cppcoro_result res = co_await start(sco);
         (void)res;
         co_return;
@@ -155,6 +194,15 @@ public:
         co_return bytesReceived;
     }
 
+    corolib::async_task<std::size_t> recv(void* buffer, std::size_t size, cppcoro::cancellation_token ct) noexcept
+    {
+        cppcoro::net::socket_recv_operation_cancellable sro = m_s.recv(buffer, size, ct);
+        sro.initialize();
+        cppcoro_result res = co_await start(sro);
+        std::size_t bytesReceived = res.get_result();
+        co_return bytesReceived;
+    }
+
     corolib::async_task<std::size_t> send(const void* buffer, std::size_t size) noexcept
     {
         cppcoro::net::socket_send_operation sso = m_s.send(buffer, size);
@@ -163,9 +211,43 @@ public:
         co_return bytesSent;
     }
 
+    corolib::async_task<std::size_t> send(const void* buffer, std::size_t size, cppcoro::cancellation_token ct) noexcept
+    {
+        cppcoro::net::socket_send_operation_cancellable sso = m_s.send(buffer, size, ct);
+        sso.initialize();
+        cppcoro_result res = co_await start(sso);
+        std::size_t bytesSent = res.get_result();
+        co_return bytesSent;
+    }
+
     corolib::async_task<recv_from_result_t> recv_from(void* buffer, std::size_t size)
     {
         cppcoro::net::socket_recv_from_operation srfo = m_s.recv_from(buffer, size);
+        cppcoro_result res1 = co_await start(srfo);
+        try {
+            std::size_t bytesReceived = res1.get_result();
+            (void)bytesReceived;
+        }
+        catch (const std::exception& e) {
+            corolib::print(corolib::PRI1, "cppcoro_wrapper::recv_from caught exception 1: %s\n", e.what());
+            throw;
+        }
+        try {
+            recv_from_result_t res = srfo.get_result();
+            co_return res;
+        }
+        catch (const std::exception& e) {
+            corolib::print(corolib::PRI1, "cppcoro_wrapper::recv_from caught exception 2: %s\n", e.what());
+            throw;
+        }
+        recv_from_result_t res{};
+        co_return res;
+    }
+
+    corolib::async_task<recv_from_result_t> recv_from(void* buffer, std::size_t size, cppcoro::cancellation_token ct)
+    {
+        cppcoro::net::socket_recv_from_operation_cancellable srfo = m_s.recv_from(buffer, size, ct);
+        srfo.initialize();
         cppcoro_result res1 = co_await start(srfo);
         try {
             std::size_t bytesReceived = res1.get_result();
@@ -205,10 +287,46 @@ public:
         co_return 0;
     }
 
+    corolib::async_task<std::size_t> send_to(
+        const cppcoro::net::ip_endpoint& remoteEndPoint,
+        const void* buffer,
+        std::size_t size,
+        cppcoro::cancellation_token ct)
+    {
+        cppcoro::net::socket_send_to_operation_cancellable ssto = m_s.send_to(remoteEndPoint, buffer, size, ct);
+        ssto.initialize();
+        cppcoro_result res = co_await start(ssto);
+        try {
+            std::size_t bytesSent = res.get_result();
+            co_return bytesSent;
+        }
+        catch (const std::exception& e) {
+            corolib::print(corolib::PRI1, "cppcoro_wrapper::send_to caught exception: %s\n", e.what());
+            throw;
+        }
+        co_return 0;
+    }
+
     void close_send()
     {
-        // If following call is present: 00: 0000021DCB6624A0: async_task_base::promise_type::unhandled_exception()
-        //m_s.close_send();
+        try {
+            m_s.close_send();
+        }
+        catch (const std::exception& e) {
+            corolib::print(corolib::PRI1, "cppcoro_wrapper::close_send caught exception: %s\n", e.what());
+            corolib::print(corolib::PRI1, "                 m_s.native_handle() = %d\n", m_s.native_handle());
+        }
+    }
+
+    void close_recv()
+    {
+        try {
+            m_s.close_recv();
+        }
+        catch (const std::exception& e) {
+            corolib::print(corolib::PRI1, "cppcoro_wrapper::close_recv caught exception: %s\n", e.what());
+            corolib::print(corolib::PRI1, "                 m_s.native_handle() = %d\n", m_s.native_handle());
+        }
     }
 
 private:
