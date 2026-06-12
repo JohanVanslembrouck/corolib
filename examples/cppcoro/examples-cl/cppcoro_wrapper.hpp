@@ -90,7 +90,7 @@ protected:
         }
         else
         {
-            corolib::print(corolib::PRI1, "cppcoro_wrapper::start_impl: synchronous completion\n");
+            corolib::print(corolib::PRI2, "cppcoro_wrapper::start_impl: synchronous completion\n");
             // synchronous completion
             cppcoro_result res{};
             // get_results is defined in cppcoro/detail/win32_overlapped_operation.hpp
@@ -104,8 +104,8 @@ protected:
 class socket_wrapper : protected cppcoro_wrapper
 {
 public:
-    socket_wrapper(cppcoro::net::socket s) :
-        m_s(std::move(s))
+    socket_wrapper(cppcoro::net::socket& s) :
+        m_s(s)
     {
     }
 
@@ -329,9 +329,12 @@ public:
         }
     }
 
+    auto native_handle()
+    {
+        return m_s.native_handle();
+    }
 private:
-    cppcoro::net::socket m_s;
-
+    cppcoro::net::socket& m_s;
 };
 
 class read_only_file_wrapper : protected cppcoro_wrapper

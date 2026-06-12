@@ -23,13 +23,13 @@ using namespace cppcoro::net;
 
 using namespace corolib;
 
-#define USE_CPPCORO 0
-
-async_task<int> receive(socket_wrapper sock)
+async_task<int> receive(socket sock_)
 {
     std::uint8_t buffer[100];
     std::uint64_t totalBytesReceived = 0;
     std::size_t bytesReceived;
+
+    socket_wrapper sock(sock_);
     do
     {
         bytesReceived = co_await sock.recv(buffer, sizeof(buffer));
@@ -40,8 +40,7 @@ async_task<int> receive(socket_wrapper sock)
             CHECK(buffer[i] == expectedByte);
         }
         totalBytesReceived += bytesReceived;
-    } 
-    while (bytesReceived > 0 && totalBytesReceived < 1000);
+    } while (bytesReceived > 0 && totalBytesReceived < 1000);
 
     CHECK(totalBytesReceived == 1000);
     std::cout << "Received " << totalBytesReceived << " bytes\n";
@@ -49,10 +48,12 @@ async_task<int> receive(socket_wrapper sock)
     co_return 0;
 }
 
-async_task<int> send(socket_wrapper sock)
+async_task<int> send(socket sock_)
 {
     std::uint8_t buffer[100];
     std::size_t totalBytesSent = 0;
+
+    socket_wrapper sock(sock_);
     for (std::uint64_t i = 0; i < 1000; i += sizeof(buffer))
     {
         for (std::size_t j = 0; j < sizeof(buffer); ++j)
@@ -69,30 +70,21 @@ async_task<int> send(socket_wrapper sock)
         } while (bytesSent < sizeof(buffer));
     }
 
-
-#if USE_CPPCORO
-    // The presence of the following statement gives problems: Connection closed before bytes are received.
     sock.close_send();
-#endif
 
     co_return 0;
 }
 
 async_task<int> echoClient(io_service& ioSvc, ipv4_endpoint& serverAddress)
 {
-#if USE_CPPCORO
-    socket connectingSocket = socket::create_tcpv4(ioSvc);
-    connectingSocket.bind(ipv4_endpoint{});
-#else
     socket connectingSocket_ = socket::create_tcpv4(ioSvc);
     connectingSocket_.bind(ipv4_endpoint{});
     socket_wrapper connectingSocket(connectingSocket_);
-#endif
 
     co_await connectingSocket.connect(serverAddress);
 
-    async_task<int> cl = send(connectingSocket);
-    async_task<int> rc = receive(connectingSocket);
+    async_task<int> cl = send(connectingSocket_);
+    async_task<int> rc = receive(connectingSocket_);
     co_await when_all(cl, rc);
  
     co_await connectingSocket.disconnect();

@@ -23,22 +23,14 @@ using namespace cppcoro::net;
 
 using namespace corolib;
 
-#define USE_CPPCORO 0
-
 async_task<int> echoServer(io_service& ioSvc, socket& listeningSocket)
 {
-#if USE_CPPCORO
-    auto acceptingSocket = socket::create_tcpv4(ioSvc);
-
-    co_await listeningSocket.accept(acceptingSocket);
-#else
     auto acceptingSocket_ = socket::create_tcpv4(ioSvc);
     
     socket_wrapper listeningSocketWr(listeningSocket);
     co_await listeningSocketWr.accept(acceptingSocket_);
 
     socket_wrapper acceptingSocket(acceptingSocket_);
-#endif
 
     std::uint8_t buffer[64];
     std::size_t bytesReceived;

@@ -20,18 +20,11 @@ using namespace cppcoro::net;
 
 using namespace corolib;
 
-#define USE_CPPCORO 0
-
 async_task<int> client(io_service& ioSvc, ipv4_endpoint& serverAddress)
 {
-#if USE_CPPCORO
-    auto s = socket::create_tcpv4(ioSvc);
-    s.bind(ipv4_endpoint{ ipv4_address::loopback(), 0 });
-#else
     auto s_ = socket::create_tcpv4(ioSvc);
     s_.bind(ipv4_endpoint{ ipv4_address::loopback(), 0 });
     socket_wrapper s(s_);
-#endif
 
     co_await s.connect(serverAddress);
     co_await s.disconnect();

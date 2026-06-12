@@ -22,8 +22,6 @@ using namespace cppcoro::net;
 
 using namespace corolib;
 
-#define USE_CPPCORO 0
-
 async_task<int> server(socket_wrapper& serverSocket)
 {
     std::uint8_t buffer[100];

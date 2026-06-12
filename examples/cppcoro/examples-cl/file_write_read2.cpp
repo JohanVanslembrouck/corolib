@@ -30,8 +30,6 @@
 
 using namespace corolib;
 
-#define USE_CPPCORO 0
-
 cppcoro_wrapper cc_wrapper;
 
 async_task<void> write(cppcoro::io_service& ioService, std::filesystem::path& filePath)
@@ -53,11 +51,7 @@ async_task<void> write(cppcoro::io_service& ioService, std::filesystem::path& fi
 
         for (int chunk = 0; chunk < 10; ++chunk)
         {
-#if USE_CPPCORO
-            co_await f.write(chunk * sizeof(buffer), buffer, sizeof(buffer));
-#else
             co_await wofw.write(chunk * sizeof(buffer), buffer, sizeof(buffer));
-#endif
         }
     }
 
@@ -80,11 +74,7 @@ async_task<void> read(cppcoro::io_service& ioService, std::filesystem::path& fil
 
         for (std::uint64_t i = 0; i < fileSize;)
         {
-#if USE_CPPCORO
-            auto bytesRead = co_await f.read(i, buffer, 20);
-#else
             auto bytesRead = co_await rofw.read(i, buffer, 20);
-#endif
             for (size_t j = 0; j < bytesRead; ++j, ++i)
             {
                 CHECK(buffer[j] == ('a' + ((i % 1024) % 26)));

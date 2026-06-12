@@ -28,13 +28,13 @@ using namespace cppcoro::net;
 
 using namespace corolib;
 
-#define USE_CPPCORO 0
-
-async_task<void> receive(socket_wrapper sock)
+async_task<void> receive(socket sock_)
 {
     std::uint8_t buffer[100];
     std::uint64_t totalBytesReceived = 0;
     std::size_t bytesReceived;
+
+    socket_wrapper sock(sock_);
     do
     {
         bytesReceived = co_await sock.recv(buffer, sizeof(buffer));
@@ -51,9 +51,11 @@ async_task<void> receive(socket_wrapper sock)
     std::cout << "Received " << totalBytesReceived << " bytes\n";
 }
 
-async_task<void> send(socket_wrapper sock)
+async_task<void> send(socket sock_)
 {
     std::uint8_t buffer[100];
+
+    socket_wrapper sock(sock_);
     for (std::uint64_t i = 0; i < 1000; i += sizeof(buffer))
     {
         for (std::size_t j = 0; j < sizeof(buffer); ++j)
@@ -73,21 +75,15 @@ async_task<void> send(socket_wrapper sock)
 
 async_task<void> echoClient(io_service& ioSvc, ipv4_endpoint& serverAddress)
 {
-#if USE_CPPCORO
-    auto connectingSocket = socket::create_tcpv4(ioSvc);
-
-    connectingSocket.bind(ipv4_endpoint{});
-#else
     auto connectingSocket_ = socket::create_tcpv4(ioSvc);
 
     connectingSocket_.bind(ipv4_endpoint{});
     socket_wrapper connectingSocket(connectingSocket_);
-#endif
 
     co_await connectingSocket.connect(serverAddress);
 
-    async_task<void> cl = send(connectingSocket);
-    async_task<void> rc = receive(connectingSocket);
+    async_task<void> cl = send(connectingSocket_);
+    async_task<void> rc = receive(connectingSocket_);
     co_await when_all(cl, rc);
 
     co_await connectingSocket.disconnect();

@@ -28,13 +28,12 @@ using namespace cppcoro::net;
 
 using namespace corolib;
 
-#define USE_CPPCORO 0
-
-async_task<void> handleConnection(socket_wrapper s)
+async_task<void> handleConnection(socket s_)
 {
     std::uint8_t buffer[64];
     std::size_t bytesReceived;
 
+    socket_wrapper s(s_);
     do
     {
         bytesReceived = co_await s.recv(buffer, sizeof(buffer));
@@ -53,7 +52,7 @@ async_task<void> handleConnection(socket_wrapper s)
     s.close_send();
 
     co_await s.disconnect();
- }
+}
 
 async_task<void> echoServer(io_service& ioSvc, cppcoro::net::socket& listeningSocket, cancellation_token ct, int count)
 {
@@ -64,17 +63,13 @@ async_task<void> echoServer(io_service& ioSvc, cppcoro::net::socket& listeningSo
     {
         //while (true) {
         for (int i = 0; i < count; ++i) {
-#if USE_CPPCORO
-            auto acceptingSocket = socket::create_tcpv4(ioSvc);
-            co_await listeningSocket.accept(acceptingSocket, ct);
-#else
             auto acceptingSocket_ = socket::create_tcpv4(ioSvc);
             socket_wrapper listeningSocketWr(listeningSocket);
             co_await listeningSocketWr.accept(acceptingSocket_, ct);  // blocks here in Linux
             socket_wrapper acceptingSocket(acceptingSocket_);
-#endif
+
             connectionScope.spawn(
-                handleConnection(std::move(acceptingSocket)));
+                handleConnection(std::move(acceptingSocket_)));
         }
     }
     catch (const cppcoro::operation_cancelled&)
