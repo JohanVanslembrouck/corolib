@@ -2,7 +2,7 @@
  * @file p3000_async_api_operl.h
  * @brief
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _P3000_ASYNC_API_OPERL_H_
@@ -47,6 +47,10 @@ private:
     int m_index = -1;
 };
 
+async_create_oper start_create() {
+    return async_create_oper{};
+}
+
 class async_open_oper : public async_oper_base {
 public:
     async_open_oper() {
@@ -81,9 +85,14 @@ private:
     int m_index = -1;
 };
 
+async_open_oper start_open() {
+    return async_open_oper{};
+}
+
 class async_write_oper : public async_oper_base {
 public:
-    async_write_oper() {
+    async_write_oper(char* buffer) {
+        // copy content of buffer to m_buffer
         m_index = get_free_index();
         print(PRI1, "async_write_oper::async_write_oper(): m_index = %d\n", m_index);
         async_oper_bases[m_index] = this;
@@ -117,6 +126,10 @@ private:
     char m_buffer[100];
     int m_index = -1;
 };
+
+async_write_oper start_write(char* buffer) {
+    return async_write_oper{ buffer };
+}
 
 class async_read_oper : public async_oper_base {
 public:
@@ -152,6 +165,10 @@ private:
     int m_index = -1;
 };
 
+async_read_oper start_read() {
+    return async_read_oper{};
+}
+
 class async_close_oper : public async_oper_base {
 public:
     async_close_oper() {
@@ -186,6 +203,10 @@ private:
     int m_index = -1;
 };
 
+async_close_oper start_close() {
+    return async_close_oper{};
+}
+
 class async_remove_oper : public async_oper_base {
 public:
     async_remove_oper() {
@@ -219,5 +240,9 @@ public:
 private:
     int m_index = -1;
 };
+
+async_remove_oper start_remove() {
+    return async_remove_oper{};
+}
 
 #endif

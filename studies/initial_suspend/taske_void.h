@@ -6,7 +6,7 @@
  * task::promise_type::final_awaiter::await_suspend() returns void.
  * task::awaiter::await_suspend() returns void.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _TASKE_VOID_H_
@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <coroutine>
 #include <utility>
+#include <exception>
 
 #include "tracker1.h"
 
@@ -76,6 +77,9 @@ public:
             }
         else
             printf("%p: task::~task(): coro_ == nullptr\n", this);
+    }
+
+    void start() {
     }
 
     class awaiter {

@@ -2,7 +2,7 @@
  * @file p3000_async_api.h
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _P3000_ASYNC_API_H_
@@ -20,7 +20,6 @@ using FunctionVoidVoid = std::function<void(void)>;
 void async_create(FunctionVoidVoid f)        { print(PRI1, "async_create()\n"); evqueuethr.push(f); }
 void async_open(FunctionVoidVoid f)          { print(PRI1, "async_open()\n");   evqueuethr.push(f); }
 void async_write(char* , FunctionVoidVoid f) { print(PRI1, "async_write()\n");  evqueuethr.push(f); }
-void async_write(FunctionVoidVoid f)         { print(PRI1, "async_write()\n");  evqueuethr.push(f); }
 void async_read(FunctionVoidVoid f)          { print(PRI1, "async_read()\n");   evqueuethr.push(f); }
 void async_close(FunctionVoidVoid f)         { print(PRI1, "async_close()\n");  evqueuethr.push(f); }
 void async_remove(FunctionVoidVoid f)        { print(PRI1, "async_remove()\n"); evqueuethr.push(f); }
@@ -30,12 +29,14 @@ void async_remove(FunctionVoidVoid f)        { print(PRI1, "async_remove()\n"); 
 class async_oper_base {
 public:
     void set_result_and_resume(int result = 0) {
-        print(PRI1, "async_oper::set_result_and_resume()\n");
+        print(PRI1, "async_oper::set_result_and_resume(%d)\n", result);
         m_result = result;
         m_ready = true;
         if (m_awaiting) {
             if (!m_awaiting.done()) {
+                print(PRI1, "async_oper::set_result_and_resume(%d): before resume\n", result);
                 m_awaiting.resume();
+                print(PRI1, "async_oper::set_result_and_resume(%d): after resume\n", result);
             }
         }
     }
@@ -57,6 +58,8 @@ void completionHandler(int index) {
     print(PRI1, "completionHandler(%d)\n", index);
     if (async_oper_bases[index])
         async_oper_bases[index]->set_result_and_resume();
+    else
+        print(PRI1, "completionHandler(%d): async_oper_bases[index] = %p\n", async_oper_bases[index]);
 }
 
 #endif

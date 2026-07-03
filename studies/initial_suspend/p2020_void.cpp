@@ -5,7 +5,7 @@
  * Source: https://godbolt.org/z/-Kw6Nf
  *         https://lewissbaker.github.io/2020/05/11/understanding_symmetric_transfer 
  * 
- * @author Lewis Baker
+ * @author Lewis Baker, Johan Vanslembrouck
  */
 
 #include <iostream>
@@ -32,6 +32,8 @@ task bar() {
 }
 
 int main() {
+    set_print_level(0x01);
+
     print(PRI1, "main(): task b = bar();\n");
     task b = bar();
     print(PRI1, "main(): ex.sync_wait(std::move(b))\n");

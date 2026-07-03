@@ -2,7 +2,7 @@
  * @file start_opertion1.h
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _START_OPERATION1_H_

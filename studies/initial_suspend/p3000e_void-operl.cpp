@@ -1,12 +1,12 @@
 /**
- * @file p3000l_void-operl.cpp
+ * @file p3000e_void-operl.cpp
  * @brief
- * Uses lazy start tasks and operations.
+ * Uses eager start tasks and lazy start operations.
  * 
  * @author Johan Vanslembrouck
  */
 
-#include "task_void_p.h"
+#include "taske_void_p.h"
 
 #include "p3000_async_api_operl.h"
 
@@ -56,7 +56,7 @@ task coroutine2()
     print(PRI1, "coroutine2: res = %d;\n", res);
 
     char buffer[100];
-    print(PRI1, "coroutine2: async_write_oper op3 = start_write();\n");
+    print(PRI1, "coroutine2: async_write_oper op3 = start_write(buffer);\n");
     async_write_oper op3 = start_write(buffer);
     print(PRI1, "coroutine2: int res = co_await op3;\n");
     res = co_await op3;

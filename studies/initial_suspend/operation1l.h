@@ -4,7 +4,7 @@
  * class operation1l starts an operation in a lazy way, in this class at the moment we co_await the operation1l object
  * This class does not have da
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _OPERATION1L_H_
@@ -22,6 +22,7 @@ public:
     operation1l(bool delayafterstart = false) :
         m_delayafterstart(delayafterstart)
     {
+        print(PRI1, "operation1l::operation1l(...)\n");
     }
 
     bool await_ready() {
@@ -42,6 +43,8 @@ public:
 
 protected:
     void start_operation1() {
+        print(PRI1, "operation1l::start_operation1()\n");
+
         // Launch the operation (not shown)
 
         // The completion of the operation runs on another thread, in this case after 1000 ms
@@ -64,5 +67,10 @@ private:
     bool m_delayafterstart = false;
     mini_awaiter ma;
 };
+
+operation1l start_operation1(bool delayafterstart = false)
+{
+    return operation1l{ delayafterstart };
+}
 
 #endif

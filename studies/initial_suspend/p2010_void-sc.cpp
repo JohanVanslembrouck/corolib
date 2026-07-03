@@ -5,7 +5,7 @@
  * Source: https://godbolt.org/z/-Kw6Nf
  *         https://lewissbaker.github.io/2020/05/11/understanding_symmetric_transfer 
  * 
- * @author Lewis Baker
+ * @author Lewis Baker, Johan Vanslembrouck
  */
 
 #include <iostream>
@@ -28,7 +28,8 @@ task bar() {
 }
 
 int main() {
-    set_print_level(0x07);
+    set_print_level(0x01);
+
     manual_executor ex;
     print(PRI1, "main(): task b = bar();\n");
     task b = bar();

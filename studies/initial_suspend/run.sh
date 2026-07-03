@@ -98,7 +98,21 @@ set -x
 ./stis-p2065l_void-op1l-thread
 
 ./stis-p2070e_void-op2e-thread
+./stis-p2070l_void-op2e-thread
 ./stis-p2075e_void-op2e-thread
+./stis-p2075l_void-op2e-thread
 
 ./stis-p2080e_void-op3e-thread
+./stis-p2080l_void-op3e-thread
 ./stis-p2085e_void-op3e-thread
+./stis-p2085l_void-op3e-thread
+
+./stis-p3000e_void-opere
+./stis-p3000e_void-operl
+./stis-p3000l_void-opere
+./stis-p3000l_void-operl
+
+./stis-p3010e_void-opere
+./stis-p3010e_void-operl
+./stis-p3010l_void-opere
+./stis-p3010l_void-operl

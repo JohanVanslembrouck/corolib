@@ -107,17 +107,28 @@ foreach(_target
     p2065l_void-op1l-thread
 
     p2080e_void-op3e-thread
+    p2080l_void-op3e-thread
     p2085e_void-op3e-thread
+    p2085l_void-op3e-thread
  )
  add_executable(stis-${_target} ${_target}.cpp print.cpp tracker1.cpp)
 endforeach()
 
 foreach(_target
     p2070e_void-op2e-thread
+    p2070l_void-op2e-thread
     p2075e_void-op2e-thread
+    p2075l_void-op2e-thread
     
+    p3000e_void-opere
+    p3000e_void-operl
     p3000l_void-opere
     p3000l_void-operl
+
+    p3010e_void-opere
+    p3010e_void-operl
+    p3010l_void-opere
+    p3010l_void-operl
  )
  add_executable(stis-${_target} ${_target}.cpp print.cpp eventqueuethr.cpp tracker1.cpp)
 endforeach()

@@ -8,7 +8,7 @@
  * at the moment the launching thread calls co_await (which translates to calls of await_ready(), await_suspend() and await_resume())
  * to check if the operation has already completed.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _OPERATION3E_H_
@@ -28,9 +28,12 @@ public:
         : m_awaker(awaker)
         ,  m_delayafterstart(delayafterstart)
     {
-        start_operation1();
+        print(PRI1, "operation3e::operation3e(...)\n");
+        start_operation3();         // started from constructor
     }
 
+    // The following 3 functions can be placed in a base class that is inherited by
+    // operation1e, operation2e and operation3e.
     bool await_ready() {
         print(PRI1, "operation3e::await_ready(): returns %d\n", ma.await_ready());
         return ma.await_ready();
@@ -47,27 +50,30 @@ public:
     }
 
 protected:
-    void start_operation1() {
+    void start_operation3() {
+        print(PRI1, "operation3e::start_operation3()\n");
+
         // Launch the operation (not shown)
+
         if (m_awaker)
             m_awaker->addThread();
 
         // The completion of the operation runs on another thread, in this case after 1000 ms
         std::thread thread1([this]() {
-            print(PRI1, "operation3e::start_operation1(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
+            print(PRI1, "operation3e::start_operation3(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
             if (m_awaker)
                 m_awaker->awaitRelease();
 
-            print(PRI1, "operation3e::start_operation1(): thread1: this->set_result_and_resume(10);\n");
+            print(PRI1, "operation3e::start_operation3(): thread1: this->set_result_and_resume(10);\n");
             this->ma.set_result_and_resume(10);
-            print(PRI1, "operation3e::start_operation1(): thread1: return;\n");
+            print(PRI1, "operation3e::start_operation3(): thread1: return;\n");
             });
         thread1.detach();
 
         if (m_delayafterstart) {
-            print(PRI1, "operation3e()::start_operation1(): std::this_thread::sleep_for(std::chrono::milliseconds(1500));\n");
+            print(PRI1, "operation3e()::start_operation3(): std::this_thread::sleep_for(std::chrono::milliseconds(1500));\n");
             std::this_thread::sleep_for(std::chrono::milliseconds(1500));
         }
     }
@@ -77,5 +83,10 @@ private:
     bool m_delayafterstart = false;
     mini_awaiter_ts ma;
 };
+
+operation3e start_operation3(ThreadAwaker* awaker, bool delayafterstart = false)
+{
+    return operation3e{ awaker, delayafterstart };
+}
 
 #endif

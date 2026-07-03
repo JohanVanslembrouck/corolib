@@ -8,7 +8,7 @@
  * at the moment the launching thread calls co_await (which translates to calls of await_ready(), await_suspend() and await_resume())
  * to check if the operation has already completed.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _OPERATION1E_H_
@@ -26,9 +26,12 @@ public:
     operation1e(bool delayafterstart = false) :
         m_delayafterstart(delayafterstart)
     {
-        start_operation1();     // called from constructor
+        print(PRI1, "operation1e::operation1e(...)\n");
+        start_operation1();         // started from constructor
     }
 
+    // The following 3 functions can be placed in a base class that is inherited by
+    // operation1e, operation2e and operation3e.
     bool await_ready() {
         print(PRI1, "operation1e::await_ready(): returns %d\n", ma.await_ready());
         return ma.await_ready();
@@ -46,6 +49,8 @@ public:
 
 protected:
     void start_operation1() {
+        print(PRI1, "operation1e::start_operation1()\n");
+
         // Launch the operation (not shown)
 
         // The completion of the operation runs on another thread, in this case after 1000 ms
@@ -68,5 +73,10 @@ private:
     bool m_delayafterstart = false;
     mini_awaiter_ts ma;
 };
+
+operation1e start_operation1(bool delayafterstart = false)
+{
+    return operation1e{ delayafterstart };
+}
 
 #endif

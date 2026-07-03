@@ -17,6 +17,7 @@ and the impact this choice has on the behavior of the application.
 This document has the following sections:
 
 * Lazy versus eager start: definitions
+* Awaiter types suspend_always and suspend_never
 * Task types
 * Introductory examples
 * Synchronous completion from a loop
@@ -28,6 +29,34 @@ This document has the following sections:
 * Exception in the pre co_await code
 
 ## Lazy versus eager start: definitions
+
+* An eager-start coroutine enters it user-authored body as soon as it is called.
+* A lazy-start coroutine enters it user-authored body only when it is co_await-ed.
+
+Consider the following code:
+
+```c++
+    task coroutine1(...) {
+        // user-authored body of coroutine1 (including the co_return statement)
+        co_return 0;
+    }
+
+    task t = coroutine1(...);       // An eager-start coroutine enters the user-authored body
+                                    // of coroutine1 here.
+    // Some other code
+    int i = co_await t;             // A lazy-start coroutine enters the user-authored body
+                                    // of coroutine1 here.
+```
+
+An eager-start coroutine may have run to completion at the moment its return object (t in this case) is co_awaited.
+
+When writing the code as follows, the difference in behavior between lazy-start and eager-start coroutines is less obvious:
+
+```c++
+    int i = co_await oroutine1(...);
+```
+
+## Awaiter types suspend_always and suspend_never
 
 Consider two standardized awaiter types, std::suspend_always and std::suspend_never.
 
@@ -57,9 +86,9 @@ In a coroutine with return type 'task' and *lazy* start, task::promise_type::ini
 
 illustrates the control flow at the initial suspend point.
 
-std::suspend_always::await_ready() unconditionally returns false, so the next function that is called is 
-std::suspend_always::await_suspend().
-Next, the coroutine suspends and returning control to its caller.
+std::suspend_always::await_ready() unconditionally returns false,
+so the next function that is called is std::suspend_always::await_suspend().
+Next, the coroutine suspends and returns control to its caller.
 Some time later, the caller will resume the coroutine, calling std::suspend_always::await_suspend().
 Then the coroutine starts executing the code in its body.
 
@@ -70,11 +99,11 @@ In a coroutine with return type 'task' and *eager* start, task::promise_type::in
 
 illustrates the control flow at the initial suspend point.
 
-std::suspend_never::await_ready() unconditionally returns true, so the next function that is called is 
-unconditionally returns true, so the next function that is called is std::suspend_never::await_resume().
+std::suspend_never::await_ready() unconditionally returns true,
+so the next function that is called is std::suspend_never::await_resume().
 Then the coroutine starts executing the code in its body.
 
-In an eager start coroutine, function await_suspend() is not called at the initial suspend point
+In an eager-start coroutine, function await_suspend() is not called at the initial suspend point
 and the coroutine immediately enters its user-authored body.
 
 ## Task types
@@ -162,6 +191,156 @@ In case of a std::coroutine_handle<> return type, await_suspend() has to return 
 
 Notice again that any variant of task::awaiter::await_suspend() can be combined with any variant of
 task::promise_type::final_awaiter::await_suspend(), leading to nine possible combinations.
+
+### Detailed comparison
+
+#### Function initial_suspend()
+
+Function initial_suspend() in the promise_type of a lazy-start coroutine is defined as follows:
+
+```c++
+class task {
+
+    class promise_type {
+    public:
+        // ...
+
+        suspend_always initial_suspend() noexcept {
+            return {};
+        }
+		
+        // ...
+    };
+};
+```
+
+Function initial_suspend() in the promise_type of an eager-start coroutine is defined as follows:
+
+```c++
+class task {
+
+    class promise_type {
+    public:
+        // ...
+
+        suspend_never initial_suspend() noexcept {
+            return {};
+        }
+
+        // ...
+    };
+};
+```
+	
+#### operator co_await
+
+operator co_await of a lazy-start coroutine is defined as follows:
+
+```c++
+class task {
+
+    class awaiter {
+    public:
+        bool await_ready() noexcept {
+            return false;
+        }
+
+        void await_suspend(coroutine_handle<> continuation) noexcept {
+            // Store the continuation in the task's promise so that the final_suspend()
+            // knows to resume this coroutine when the task completes.
+            coro_.promise().continuation = continuation;
+            // Then we resume the task's coroutine, which is currently suspended
+            // at the initial-suspend-point (ie. at the open curly brace).
+            coro_.resume();
+        }
+
+        int await_resume() noexcept {
+            return coro_.promise().value;
+        }
+    private:
+        friend task;
+        explicit awaiter(coroutine_handle<promise_type> h) noexcept
+            : coro_(h)
+        {}
+
+        coroutine_handle<promise_type> coro_;
+    };
+	
+     awaiter operator co_await() && noexcept {
+        return awaiter{ coro_ };
+    }
+};
+```
+
+operator co_await() of an eager-start coroutine is defined as follows:
+
+```c++
+class task {
+
+    class awaiter {
+    public:
+        bool await_ready() noexcept {
+            return coro_.done();
+        }
+        void await_suspend(coroutine_handle<> continuation) noexcept {
+            // Store the continuation in the task's promise so that the final_suspend()
+            // knows to resume this coroutine when the task completes.
+            coro_.promise().continuation = continuation;
+        }
+        int await_resume() noexcept {
+            return coro_.promise().value;
+        }
+    private:
+        friend task;
+        explicit awaiter(coroutine_handle<promise_type> h) noexcept
+            : coro_(h)
+        {}
+
+        coroutine_handle<promise_type> coro_;
+    };
+
+     awaiter operator co_await() && noexcept {
+        return awaiter{ coro_ };
+    }
+};
+```
+
+#### Function start()
+
+A lazy-start coroutine must be co_await-ed before it enters it user-authored body.
+However, we can call co_await only in a coroutine, not in an "ordinary" function, such as main().
+
+A solution is to start a lazy-start coroutine from an eager-start coroutine.
+
+Another solution is to start a lazy-start coroutine using a dedicated start() function.
+
+Function start() in a lazy-start coroutine is defined as follows:
+
+```c++
+class task {
+
+    void start() {
+        if (coro_) {
+            coro_.resume();
+        }
+    }
+	
+};
+```
+
+Function start() in a eager-start coroutine is defined as follows:
+
+```c++
+class task {
+
+	void start() {
+    }
+	
+};
+```
+
+It is an empty function. By providing it, we can keep the application code identical, irrespective if the application
+uses eager-start or lazy-start coroutines.
 
 ## Introductory examples
 
@@ -1084,11 +1263,28 @@ The following table gives an overview of all examples in this study:
 | p2065l_void-op1l-thread.cpp        | lazy       | async. | task, mini_awaiter, operation1l, foo, bar         |
 |                                    |            |        |                                                   |
 | p2070e_void-op2e-thread.cpp        | eager      | async. | task, mini_awaiter, operation2e, foo, bar         |
+| p2070l_void-op2e-thread.cpp        | lazy/eager | async. | task, mini_awaiter, operation2e, foo, bar         |
 | p2075e_void-op2e-thread.cpp        | eager      | async. | task, mini_awaiter, operation2e, foo, bar         |
+| p2075l_void-op2e-thread.cpp        | lazy/eager | async. | task, mini_awaiter, operation2e, foo, bar         |
 |                                    |            |        |                                                   |
 | p2080e_void-op3e-thread.cpp        | eager      | async. | task, mini_awaiter, operation3e, foo, bar         |
+| p2080l_void-op3e-thread.cpp        | lazy/eager | async. | task, mini_awaiter, operation3e, foo, bar         |
 | p2085e_void-op3e-thread.cpp        | eager      | async. | task, mini_awaiter, operation3e, foo, bar         |
-
+| p2085l_void-op3e-thread.cpp        | lazy/eager | async. | task, mini_awaiter, operation3e, foo, bar         |
+|                                    |            |        |                                                   |
+| p3000e_void-opere.cpp              | eager      | async. | task, async_oper                                            |
+| p2080e_void-operl.cpp              | eager/lazy | async. | task, async_create_oper, async_open_oper, async_write_oper, |
+|                                    |            |        | async_read_oper, async_close_oper, async_remove_oper        |
+| p3000l_void-opere.cpp              | lazy/eager | async. | task, async_oper                                            |
+| p3000l_void-operl.cpp              | lazy       | async. | task, async_create_oper, async_open_oper, async_write_oper, |
+|                                    |            |        | async_read_oper, async_close_oper, async_remove_oper        |
+|                                    |            |        |                                                             |
+| p3010e_void-opere.cpp              | eager      | async. | task, async_oper                                            |
+| p2010e_void-operl.cpp              | eager/lazy | async. | task, async_create_oper, async_open_oper, async_write_oper, |
+|                                    |            |        | async_read_oper, async_close_oper, async_remove_oper        |
+| p3010l_void-opere.cpp              | lazy/eager | async. | task, async_oper                                            |
+| p3010l_void-operl.cpp              | lazy       | async. | task, async_create_oper, async_open_oper, async_write_oper, |
+|                                    |            |        | async_read_oper, async_close_oper, async_remove_oper        |
 
 p0000_void.cpp, p0100_void.cpp, p0110_bool.cpp and p0120_coroutine_handle.cpp correspond to 
 https://godbolt.org/z/-Kw6Nf, https://godbolt.org/z/gy5Q8q, https://godbolt.org/z/7fm8Za 
