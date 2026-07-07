@@ -1,8 +1,10 @@
 /**
- * @file greeter_cb_coroutine_client.cc
+ * @file greeter_cb_coroutine_client2_lso.cc
  * @brief Added coroutine implementation.
- * Based on the implementation in greeter_callback_client.cc.
- *
+ * Based on the implementation in greeter_callback_client.cc and greeter_cb_coroutine_client.cc.
+ * 
+ * In contrast to greeter_cb_coroutine_client2.cc, this implementation uses a lso (lazy-start operation).
+ * 
  * @author Johan Vanslembrouck
  */
 
@@ -55,20 +57,59 @@ using namespace corolib;
 const int NR_ITERATIONS = 10;
 
 class GreeterClient : public CommService {
-private:
-    // eager-start operation definition - begin
-    async_operation<void> start_SayHello(ClientContext* pcontext, HelloRequest& request, HelloReply& reply, Status& status) {
-        int index = get_free_index();
-        async_operation<void> ret{ this, index };
-        stub_->async()->SayHello(pcontext, &request, &reply,
-            [&status, index, this](Status s) {
-                print(PRI1, "start_SayHello: handler\n");
-                status = std::move(s);
-                completionHandler_v(index);
-            });
-        return ret;
-    }
-    // eager-start operation definition - end
+ private: 
+     // lazy-start operation definition - begin
+     class SayHello_operation_impl
+     {
+     public:
+         SayHello_operation_impl(GreeterClient* greeterClient_, ClientContext* pcontext_, HelloRequest& request_, HelloReply& reply_)
+             : greeterClient(greeterClient_)
+             , pcontext(pcontext_)
+             , request(request_)
+             , reply(reply_) {
+         }
+
+         bool try_start(async_operation_ls_base& operation) noexcept {
+             greeterClient->stub_->async()->SayHello(pcontext, &request, &reply,
+                 [this, &operation](Status s) {
+                     print(PRI1, "SayHello_operation_impl::try_start: handler\n");
+                     status = std::move(s);
+                     operation.completed();
+                 });
+             return true;
+         }
+
+         Status get_result(async_operation_ls_base&) {
+             return status;
+         }
+
+     private:
+         GreeterClient* greeterClient;
+
+         ClientContext* pcontext;
+
+         HelloRequest& request;
+         HelloReply& reply;
+         Status status;
+     };
+
+     class SayHello_operation : public async_operation_ls<SayHello_operation>
+     {
+     public:
+         SayHello_operation(GreeterClient* greeterClient_, ClientContext* pcontext, HelloRequest& request, HelloReply& reply)
+             : m_impl(greeterClient_, pcontext, request, reply) {
+         }
+
+         bool try_start() noexcept { return m_impl.try_start(*this); }
+         Status get_result() { return m_impl.get_result(*this); }
+
+         SayHello_operation_impl m_impl;
+     };
+
+     SayHello_operation start_SayHello(ClientContext* pcontext, HelloRequest& request, HelloReply& reply) {
+         return SayHello_operation(this, pcontext, request, reply);
+     }
+     // lazy-start operation definition - end
 
  public:
   GreeterClient(std::shared_ptr<Channel> channel)
@@ -96,7 +137,6 @@ private:
     print(PRI1, "SayHello: pre\n");
     stub_->async()->SayHello(&context, &request, &reply,
                              [&mu, &cv, &done, &status](Status s) {
-                               print(PRI1, "SayHello: handler\n");
                                status = std::move(s);
                                std::lock_guard<std::mutex> lock(mu);
                                done = true;
@@ -135,7 +175,7 @@ private:
       Status status;
 
       print(PRI1, "SayHelloCo: pre\n");
-      co_await start_SayHello(&context, request, reply, status);
+      status = co_await start_SayHello(&context, request, reply);
       print(PRI1, "SayHelloCo: post\n");
 
       // Act upon the status of the actual RPC.
@@ -163,7 +203,7 @@ private:
       Status status;
 
       print(PRI1, "SayHelloCoL: pre\n");
-      co_await start_SayHello(&context, request, reply, status);
+      status = co_await start_SayHello(&context, request, reply);
       print(PRI1, "SayHelloCoL: post\n");
 
       // Act upon the status of the actual RPC.
@@ -231,7 +271,7 @@ async_ltask<void> runSayHelloCoL(GreeterClient& greeter) {
 async_ltask<void> runSayHelloCoL2(GreeterClient& greeter) {
     print(PRI1, "runSayHelloCoL2\n");
     for (int i = 0; i < NR_ITERATIONS; ++i) {
-        std::string user("coroutine world: lazy - get_result ");
+        std::string user("coroutine world: lazy - get_result() ");
         user += std::to_string(i);
         async_ltask<std::string> t = greeter.SayHelloCoL(user);
         t.start();

@@ -12,9 +12,14 @@ set -x
 ./greeter_callback_client
 
 ./greeter_cb_coroutine_client
+./greeter_cb_coroutine_client_lso
 ./greeter_cb_coroutine_client2
+./greeter_cb_coroutine_client2_lso
 ./greeter_cb_coroutine_client3
+./greeter_cb_coroutine_client3_lso
 
 ./greeter_coroutine_client
 ./greeter_coroutine_client2
+./greeter_coroutine_client2_lso
 ./greeter_coroutine_client2a
+./greeter_coroutine_client2a_lso

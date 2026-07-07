@@ -6,7 +6,7 @@
  * In this variant start_SayHello returns async_operation<Status> instead of async_operation<void>.
  * Consequently, there is no need to pass Status as reference argument to start_SayHello.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 /*
@@ -58,6 +58,21 @@ using namespace corolib;
 const int NR_ITERATIONS = 10;
 
 class GreeterClient : public CommService {
+ private:
+     // eager-start operation definition - begin
+     async_operation<Status> start_SayHello(ClientContext* pcontext, HelloRequest& request, HelloReply& reply) {
+         int index = get_free_index();
+         async_operation<Status> ret{ this, index };
+         stub_->async()->SayHello(pcontext, &request, &reply,
+             [index, this](Status s) {
+                 print(PRI1, "start_SayHello: handler\n");
+                 Status status = std::move(s);
+                 completionHandler<Status>(index, status);
+             });
+         return ret;
+     }
+     // eager-start operation definition - end
+
  public:
   GreeterClient(std::shared_ptr<Channel> channel)
       : stub_(Greeter::NewStub(channel)) {}
@@ -160,18 +175,6 @@ class GreeterClient : public CommService {
       else {
           co_return "RPC failed";
       }
-  }
-
-  async_operation<Status> start_SayHello(ClientContext* pcontext, HelloRequest& request, HelloReply& reply) {
-      int index = get_free_index();
-      async_operation<Status> ret{ this, index };
-      stub_->async()->SayHello(pcontext, &request, &reply,
-          [index, this](Status s) {
-              print(PRI1, "start_SayHello: handler\n");
-              Status status = std::move(s);
-              completionHandler<Status>(index, status);
-          });
-      return ret;
   }
 
  private:

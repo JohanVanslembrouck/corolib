@@ -1,8 +1,10 @@
 /**
- * @file greeter_coroutine_client2a.cc
+ * @file greeter_coroutine_client2a_lso.cc
  * @brief Added coroutine implementation.
  * Based on the implementation in greeter_async_client.cc and greeter_async_client2.cc.
- *
+ * 
+ * In contrast to greeter_coroutine_client2a.cc, this implementation uses a lso (lazy-start operation) and lazy-start coroutines.
+ * 
  * @author Johan Vanslembrouck
  */
 
@@ -60,29 +62,70 @@ const int NR_ITERATIONS = 100;
 class GreeterClient : public CommService
 {
 private:   
-    // eager-start operation definition - begin
-    async_operation<void> start_SayHello(ClientContext* pcontext, HelloRequest& request, HelloReply& reply, Status& status) {
-        int index = get_free_index();
-        async_operation<void> ret{ this, index };
-        start_SayHello_impl(index, pcontext, request, reply, status);
-        return ret;
+    struct GRPCEvent {
+        void* p;
+        std::function<void(void)> eventHandler;
+    };
+
+    // lazy-start operation definition - begin
+    class SayHello_operation_impl
+    {
+    public:
+        SayHello_operation_impl(GreeterClient* greeterClient_, ClientContext* pcontext_, HelloRequest& request_, HelloReply& reply_, Status& status_)
+            : greeterClient(greeterClient_)
+            , pcontext(pcontext_)
+            , request(request_)
+            , reply(reply_)
+            , status(status_) {
+        }
+
+        bool try_start(async_operation_ls_base& operation) noexcept {
+            std::unique_ptr<ClientAsyncResponseReader<HelloReply> > rpc(
+                greeterClient->stub_->AsyncSayHello(pcontext, request, &greeterClient->cq_));
+
+            std::cout << "SayHello_operation_impl::try_start: " << request.name() << std::endl;
+
+            uint64_t idx64 = 0;
+
+            rpc->Finish(&reply, &status, (void*)idx64);
+
+            GRPCEvent grpcEvent;                                                        // Difference with greeter_coroutine_client2.cc
+            grpcEvent.p = (void*)idx64;                                                 // Difference with greeter_coroutine_client2.cc
+            grpcEvent.eventHandler = [this, &operation]() { operation.completed(); };   // Difference with greeter_coroutine_client2.cc
+            greeterClient->eventQueue_.push_back(grpcEvent);                            // Difference with greeter_coroutine_client2.cc
+
+            return true;
+        }
+
+        void get_result(async_operation_ls_base&) {}
+
+    private:
+        GreeterClient* greeterClient;
+
+        ClientContext* pcontext;
+
+        HelloRequest& request;
+        HelloReply& reply;
+        Status& status;
+    };
+
+    class SayHello_operation : public async_operation_ls<SayHello_operation>
+    {
+    public:
+        SayHello_operation(GreeterClient* greeterClient_, ClientContext* pcontext, HelloRequest& request, HelloReply& reply, Status& status)
+            : m_impl(greeterClient_, pcontext, request, reply, status) {
+        }
+
+        bool try_start() noexcept { return m_impl.try_start(*this); }
+        void get_result() { m_impl.get_result(*this); }
+
+        SayHello_operation_impl m_impl;
+    };
+
+    SayHello_operation start_SayHello(ClientContext* pcontext, HelloRequest& request, HelloReply& reply, Status& status) {
+        return SayHello_operation(this, pcontext, request, reply, status);
     }
-
-    void start_SayHello_impl(int idx, ClientContext* pcontext, HelloRequest& request, HelloReply& reply, Status& status) {
-        std::unique_ptr<ClientAsyncResponseReader<HelloReply> > rpc(
-            stub_->AsyncSayHello(pcontext, request, &cq_));
-
-        std::cout << "start_SayHello_impl: " << request.name() << std::endl;
-        uint64_t idx64 = static_cast<uint64_t>(idx);
-
-        rpc->Finish(&reply, &status, (void*)idx64);
-
-        GRPCEvent grpcEvent;                                                    // Difference with greeter_coroutine_client2.cc
-        grpcEvent.p = (void*)idx64;                                             // Difference with greeter_coroutine_client2.cc
-        grpcEvent.eventHandler = [this, idx]() { completionHandler_v(idx); };   // Difference with greeter_coroutine_client2.cc
-        eventQueue_.push_back(grpcEvent);                                       // Difference with greeter_coroutine_client2.cc
-    }
-    // eager-start operation definition - end
+    // lazy-start operation definition - end
 
 public:
     explicit GreeterClient(std::shared_ptr<Channel> channel)
@@ -149,7 +192,7 @@ public:
         // >>> To be placed in SayHelloCo - end
     }
 
-    async_task<std::string> SayHelloCo(const std::string& user) {
+    async_ltask<std::string> SayHelloCoL(const std::string& user) {
         // Data we are sending to the server.
         HelloRequest request;
         request.set_name(user);
@@ -236,11 +279,6 @@ private:
     CompletionQueue cq_;
 
     // Added for the use of corolib - begin
-    struct GRPCEvent {
-        void* p;
-        std::function<void(void)> eventHandler;
-    };
-
     std::deque<GRPCEvent> eventQueue_;      // Replaces grpcEvent_ in greeter_coroutine_client.cc
                                             // and greeter_coroutine_client2.cc.
 
@@ -249,18 +287,18 @@ private:
 };
 
 // Top level coroutine. Added because main() cannot be a coroutine.
-// Compared with greeter_coroutine_client.cc, this example starts 4 SayHelloCo coroutines (instead of 1)
+// Compared with greeter_coroutine_client.cc, this example starts 4 SayHelloCoL coroutines (instead of 1)
 // and uses when_all to co_await the result.
-async_task<void> runSayHelloCo(GreeterClient& greeter) {
+async_ltask<void> runSayHelloCoL(GreeterClient& greeter) {
     for (int i = 0; i < NR_ITERATIONS; i = i + 4) {
         std::string user1("coroutine world " + std::to_string(i));
-        async_task<std::string> t1 = greeter.SayHelloCo(user1);
+        async_ltask<std::string> t1 = greeter.SayHelloCoL(user1);
         std::string user2("coroutine world " + std::to_string(i + 1));
-        async_task<std::string> t2 = greeter.SayHelloCo(user2);
+        async_ltask<std::string> t2 = greeter.SayHelloCoL(user2);
         std::string user3("coroutine world " + std::to_string(i + 2));
-        async_task<std::string> t3 = greeter.SayHelloCo(user3);
+        async_ltask<std::string> t3 = greeter.SayHelloCoL(user3);
         std::string user4("coroutine world " + std::to_string(i + 3));
-        async_task<std::string> t4 = greeter.SayHelloCo(user4);
+        async_ltask<std::string> t4 = greeter.SayHelloCoL(user4);
 
         when_all wa(t1, t2, t3, t4);
         co_await wa;
@@ -282,8 +320,10 @@ int main(int argc, char** argv)  {
   GreeterClient greeter(grpc::CreateChannel(
                                 "localhost:50051", grpc::InsecureChannelCredentials()));
 
-  print(PRI1, "main: async_task<void> t = runSayHelloCo(greeter);\n");
-  async_task<void> t = runSayHelloCo(greeter);
+  print(PRI1, "main: async_task<void> t = runSayHelloCoL(greeter);\n");
+  async_ltask<void> t = runSayHelloCoL(greeter);
+  print(PRI1, "main: t.start();\n");
+  t.start(),
   print(PRI1, "main: greeter.AsyncCompleteRpc();\n");
   greeter.AsyncCompleteRpc();
   print(PRI1, "main: t.wait();\n");

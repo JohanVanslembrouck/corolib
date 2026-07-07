@@ -9,9 +9,15 @@ REM greeter_async_client2.exe
 greeter_callback_client.exe
 
 greeter_cb_coroutine_client.exe
+greeter_cb_coroutine_client_lso.exe
 greeter_cb_coroutine_client2.exe
+greeter_cb_coroutine_client2_lso.exe
 greeter_cb_coroutine_client3.exe
+greeter_cb_coroutine_client3_lso.exe
 
 greeter_coroutine_client.exe
+greeter_coroutine_client_lso.exe
 greeter_coroutine_client2.exe
+greeter_coroutine_client2_lso.exe
 greeter_coroutine_client2a.exe
+greeter_coroutine_client2a_lso.exe

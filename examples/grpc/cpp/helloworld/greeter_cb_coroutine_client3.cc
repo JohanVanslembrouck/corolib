@@ -11,7 +11,7 @@
  * It will be popped from the event queue by the main thread.
  * This minimizes the (application) code that runs on the completion thread.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 /*
@@ -66,6 +66,25 @@ EventQueueFunctionVoidVoid eventQueueThr;
 const int NR_ITERATIONS = 10;
 
 class GreeterClient : public CommService {
+ private:
+    // eager-start async operation definition - begin
+    async_operation<Status> start_SayHello(ClientContext* pcontext, HelloRequest& request, HelloReply& reply) {
+        int index = get_free_index();
+        async_operation<Status> ret{ this, index };
+        stub_->async()->SayHello(pcontext, &request, &reply,
+            [index, this](Status s) {
+                print(PRI1, "start_SayHello: handler\n");
+                Status status = std::move(s);
+                // Difference with reeter_cb_coroutine_client3.cc
+                eventQueueThr.push(
+                    [this, index, status]() {
+                        this->completionHandler<Status>(index, status);
+                    });
+            });
+        return ret;
+    }
+    // eager-start async operation definition - end
+
  public:
   GreeterClient(std::shared_ptr<Channel> channel)
       : stub_(Greeter::NewStub(channel)) {}
@@ -168,22 +187,6 @@ class GreeterClient : public CommService {
       else {
           co_return "RPC failed";
       }
-  }
-
-  async_operation<Status> start_SayHello(ClientContext* pcontext, HelloRequest& request, HelloReply& reply) {
-      int index = get_free_index();
-      async_operation<Status> ret{ this, index };
-      stub_->async()->SayHello(pcontext, &request, &reply,
-          [index, this](Status s) {
-              print(PRI1, "start_SayHello: handler\n");
-              Status status = std::move(s);
-              // Difference with reeter_cb_coroutine_client3.cc
-              eventQueueThr.push(
-                  [this, index, status]() {
-                      this->completionHandler<Status>(index, status);
-                  });
-          });
-      return ret;
   }
 
  private:
