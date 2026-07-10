@@ -2,7 +2,7 @@
  * @file eventhandler.h
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <stdio.h>

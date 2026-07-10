@@ -5,9 +5,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_executable(rvo1a rvo1.cpp)
 add_executable(rvo2a rvo2.cpp)
+add_executable(rvo3a rvo3.cpp)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_executable(rvo1b rvo1.cpp)
 add_executable(rvo2b rvo2.cpp)
+add_executable(rvo3b rvo3.cpp)

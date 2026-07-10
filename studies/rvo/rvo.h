@@ -2,7 +2,7 @@
  * @file rvo.h
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _RVO_H_

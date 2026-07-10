@@ -2,7 +2,7 @@
  * @file rvo2.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <stdio.h>
@@ -62,45 +62,60 @@ class async_operation
 {
 public:
     async_operation(int idx)
-        : m_index(idx) {
-		printf("%p: async_operation::async_operation(%d)\n", this, idx);
+        : m_index(idx)
+        , m_value(-1) {
+        printf("%p: async_operation::async_operation(): m_value = %d\n", this, m_value);
         async_ops.add_entry(m_index, this);
 	}
 
 	virtual ~async_operation() {
-        printf("%p: async_operation::~async_operation(%d)\n", this, m_index);
         if (m_index >- 0)
             async_ops.release_entry(m_index);
-        m_value = -1;
+        printf("%p: async_operation::~async_operation(): m_value = %d\n", this, m_value);
         m_index = -1;
+        m_value = -2;
 	}
 	
 	async_operation(const async_operation&) = delete;
     async_operation(async_operation&& other) noexcept
-            : m_value(other.m_value)
-            , m_index(other.m_index)
+            : m_index(other.m_index)
+            , m_value(other.m_value)
         {
-        printf("%p: async_operation::async_operation(async_operation&&)\n", this );
+        printf("%p: async_operation::async_operation(async_operation&&): m_value = %d\n", this, m_value);
         async_ops.add_entry(m_index, this);
         other.m_value = -1;
         other.m_index = -1;
 	}
 	
     async_operation& operator = (const async_operation&) = delete;
-    async_operation& operator = (async_operation&& other) noexcept = delete;
+    async_operation& operator = (async_operation&& other) noexcept {
+        m_value = other.m_value;
+        printf("%p: async_operation::operator = (async_operation&&): m_value = %d\n", this, m_value);
+        other.m_index = -1;
+        other.m_value = -2;
+        return *this;
+    }
 
     void set_value(int value) {
-        printf("%p: async_operation::set_value(%d)\n", this, value);
+        // printf("%p: async_operation::set_value(%d): m_value = %d\n", this, value, m_value);
+        if (m_value != -1)
+            printf("%p: async_operation::set_value(%d): async_operation has gone out of scope: m_value = %d\n", this, value, m_value);
+        else
+            printf("%p: async_operation::set_value(%d)\n", this, value);
         m_value = value;
     }
 
     int get_value() {
-        printf("%p: async_operation::get_value()\n", this);
+        if (m_value == -2)
+            printf("%p: async_operation::get_value() async_operation has gone out of scope and returns %d\n", this, m_value);
+        else
+            printf("%p: async_operation::get_value() returns %d\n", this, m_value);
         return m_value;
     }
 
-    int m_value = -1;
-    int m_index = -1;
+private:
+    int m_index;
+    int m_value;
 };
 
 /**
@@ -126,6 +141,7 @@ async_operation start_operation(int i) {
 }
 
 void test00() {
+    // Not applicable
 }
 
 #include "rvo.cpp"

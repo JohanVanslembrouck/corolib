@@ -2,7 +2,7 @@
  * @file rvo.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include "rvo.h"
@@ -27,22 +27,25 @@ void async_op(int i, std::function<void(int)>&& op) {
 void test01() {
     printf("\n--- test01: test RVO ---\n");
     async_operation ao = start_operation(20);
-    printf("test01: &ao = %p\n", &ao);
     eventHandler.run();
-    printf("test01: res = %d\n", ao.get_value());
+    int res = ao.get_value();
+    printf("test01: res = %d\n", res);
+    if (res != 400)
+        printf("test01: Expected 400, received res = %d !!!\n", ao.get_value());
 }
 
 void test02() {
     printf("\n--- test02: test RVO: immediate completion ---\n");
     async_operation ao = start_operation(10);
-    printf("test02: &ao = %p\n", &ao);
     eventHandler.run();
-    printf("test02: res = %d\n", ao.get_value());
+    int res = ao.get_value();
+    printf("test02: res = %d\n", res);
+    if (res != 100)
+        printf("test02: Expected 400, received res = %d !!!\n", ao.get_value());
 }
 
 void test03a() {
     async_operation ao = start_operation(20);
-    printf("test03a: &ao = %p\n", &ao);
 }
 
 void test03() {
@@ -61,7 +64,10 @@ void test04() {
     printf("\n--- test04: auxiliary function returns async_operation ---\n");
     async_operation ao = test04a();
     eventHandler.run();
-    printf("test04: res = %d\n", ao.get_value());
+    int res = ao.get_value();
+    printf("test04: res = %d\n", res);
+    if (res != 400)
+        printf("test04: Expected 400, received res = %d !!!\n", ao.get_value());
 }
 
 int main() {
