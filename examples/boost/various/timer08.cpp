@@ -149,7 +149,7 @@ void Timer08::start_timer(async_operation_base& async_op, steady_timer& tmr, int
             
             if (!error)
             {
-                completionHandler_v(p_async_op);
+                async_operation_access::completionHandler_v(p_async_op);
             }
             else
             {

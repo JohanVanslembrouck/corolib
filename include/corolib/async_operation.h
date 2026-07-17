@@ -62,7 +62,7 @@
 
 namespace corolib
 {
-    class CommService;
+    class async_operation_register;
 
     // ---------------------------------------------------------
 
@@ -73,7 +73,7 @@ namespace corolib
 #endif
     {
     public:
-        async_operation_base(CommService* s = nullptr, int index = -1, bool timestamp = false);
+        async_operation_base(async_operation_register* s = nullptr, int index = -1, bool timestamp = false);
         virtual ~async_operation_base();
         
         async_operation_base(const async_operation_base&) = delete;
@@ -138,7 +138,7 @@ namespace corolib
         void cleanup();
 
     protected:
-        CommService* m_service;
+        async_operation_register* m_service;
         when_all_counter* m_ctr;
         when_any_one* m_waitany;
         int m_index;
@@ -162,7 +162,7 @@ namespace corolib
          * @param s
          * @param index
          */
-        async_operation(CommService* s = nullptr, int index = -1, bool timestamp = false)
+        async_operation(async_operation_register* s = nullptr, int index = -1, bool timestamp = false)
             : async_operation_base(s, index, timestamp)
             , m_awaiting(nullptr)
             , m_result{}
@@ -352,7 +352,7 @@ namespace corolib
     class async_operation<void> : public async_operation_base
     {
     public:
-        async_operation(CommService* s = nullptr, int index = -1, bool timestamp = false)
+        async_operation(async_operation_register* s = nullptr, int index = -1, bool timestamp = false)
             : async_operation_base(s, index, timestamp)
             , m_awaiting(nullptr)
         {
@@ -482,7 +482,7 @@ namespace corolib
          * @param s
          * @param index
          */
-        async_operation_rmc(CommService* s = nullptr, int index = -1, bool timestamp = false)
+        async_operation_rmc(async_operation_register* s = nullptr, int index = -1, bool timestamp = false)
             : async_operation_base(s, index, timestamp)
             , m_awaitings{}
             , m_result{}
@@ -679,7 +679,7 @@ namespace corolib
     class async_operation_rmc<void> : public async_operation_base
     {
     public:
-        async_operation_rmc(CommService* s = nullptr, int index = -1, bool timestamp = false)
+        async_operation_rmc(async_operation_register* s = nullptr, int index = -1, bool timestamp = false)
             : async_operation_base(s, index, timestamp)
         {
             clprint(PRI2, "%p: async_operation_rmc<void>::async_operation_rmc()\n", this);

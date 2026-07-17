@@ -46,7 +46,7 @@ void Timer03::start_timer(async_operation_base& async_op, steady_timer& tmr, int
             
             if (!error)
             {
-                completionHandler_v_rmc(p_async_op);
+                async_operation_access::completionHandler_v_rmc(p_async_op);
             }
             else
             {
