@@ -79,6 +79,9 @@ if [ -d "../../corolib-build/studies/" ]; then
     cp ../studies/initial_suspend/run.sh ../../corolib-build/studies/initial_suspend/.
     chmod ug+x ../../corolib-build/studies/initial_suspend/run.sh
 
+    cp ../studies/rvo/run.sh ../../corolib-build/studies/rvo/.
+    chmod ug+x ../../corolib-build/studies/rvo/run.sh
+
     cp ../studies/transform/run.sh ../../corolib-build/studies/transform/.
     chmod ug+x ../../corolib-build/studies/transform/run.sh
 

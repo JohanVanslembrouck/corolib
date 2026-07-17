@@ -56,6 +56,7 @@ if exist ..\out\build\x64-Debug\studies\ (
     copy ..\studies\corolab\run.bat ..\out\build\x64-Debug\studies\corolab\.
     copy ..\studies\final_suspend\run.bat ..\out\build\x64-Debug\studies\final_suspend\.
     copy ..\studies\initial_suspend\run.bat ..\out\build\x64-Debug\studies\initial_suspend\.
+    copy ..\studies\rvo\run.bat ..\out\build\x64-Debug\studies\rvo\.
     copy ..\studies\transform\run.bat ..\out\build\x64-Debug\studies\transform\.
     copy ..\studies\why-coroutines\run.bat ..\out\build\x64-Debug\studies\why-coroutines\.
     copy ..\studies\why-coroutines2\run.bat ..\out\build\x64-Debug\studies\why-coroutines2\.
