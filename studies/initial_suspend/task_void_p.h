@@ -72,6 +72,7 @@ public:
                 print(PRI3, "%p: promise_type::final_awaiter::await_suspend() -> void: enter\n", this);
                 if (h.promise().continuation) {
                     tracker1_obj.nr_resumptions++;
+                    print(PRI3, "%p: promise_type::final_awaiter::await_suspend() -> void: tracker1_obj.nr_resumptions = %d\n", this, tracker1_obj.nr_resumptions);
                     print(PRI3, "%p: promise_type::final_awaiter::await_suspend() -> void: before h.promise().continuation.resume();\n", this);
                     h.promise().continuation.resume();
                     print(PRI3, "%p: promise_type::final_awaiter::await_suspend() -> void: after h.promise().continuation.resume();\n", this);
@@ -119,6 +120,7 @@ public:
         print(PRI3, "%p: task::start() -> void: enter\n", this);
         if (coro_) {
             tracker1_obj.nr_resumptions++;
+            print(PRI3, "%p: task::start() -> void: tracker1_obj.nr_resumptions = %d\n", this, tracker1_obj.nr_resumptions);
             print(PRI3, "%p: task::start() -> void: before coro_.resume();\n", this);
             coro_.resume();
             print(PRI3, "%p: task::start() -> void: after coro_.resume();\n", this);
@@ -152,6 +154,7 @@ public:
             coro_.promise().continuation = continuation;
 
             tracker1_obj.nr_resumptions++;
+            print(PRI3, "%p: task::awaiter::await_suspend() -> void: tracker1_obj.nr_resumptions = %d\n", this, tracker1_obj.nr_resumptions);
             // Then we resume the task's coroutine, which is currently suspended
             // at the initial-suspend-point (ie. at the open curly brace).
             print(PRI3, "%p: task::awaiter::await_suspend() -> void: before coro_.resume();\n", this);

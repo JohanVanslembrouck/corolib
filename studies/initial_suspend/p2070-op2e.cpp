@@ -38,7 +38,7 @@ void completionflow()
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(0));
 
-    runEventQueue(eventQueueThr, 1);
+    runEventQueue(eventQueueThr);
 }
 
 int main() {

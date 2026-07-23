@@ -30,10 +30,22 @@ This document has the following sections:
 
 ## Lazy versus eager start: definitions
 
-* An eager-start coroutine enters it user-authored body as soon as it is called.
-* A lazy-start coroutine enters it user-authored body only when it is co_await-ed.
+Output from AI:
 
-Consider the following code:
+"Lazy coroutines defer execution until the result is explicitly needed, saving resources if the task is skipped.
+Eager coroutines start immediately upon creation, offering faster initial results but higher upfront resource usage.
+Eager is often default for immediate processing, while lazy is ideal for optimizing performance."
+
+"The fundamental difference lies in execution timing: eager coroutines begin running the moment they are created,
+while lazy coroutines sit idle in a suspended state and only execute their code when they are explicitly triggered by an external demand
+(like await(), start(), or co_await)."
+
+Background information:
+
+* [C++ coroutines: Cold-start coroutines](https://devblogs.microsoft.com/oldnewthing/20210421-00/?p=105135)
+* [C++ coroutines: Improving cold-start coroutines which complete synchronously](https://devblogs.microsoft.com/oldnewthing/20210422-00/?p=105139)
+
+Consider the following C++ coroutine code:
 
 ```c++
     task coroutine1(...) {
@@ -42,11 +54,17 @@ Consider the following code:
     }
 
     task t = coroutine1(...);       // An eager-start coroutine enters the user-authored body
-                                    // of coroutine1 here.
+                                    // of coroutine1 here and returns a task t object.
+                                    // A lazy-start coroutine just returns a task t object.
     // Some other code
     int i = co_await t;             // A lazy-start coroutine enters the user-authored body
                                     // of coroutine1 here.
 ```
+
+In short:
+
+* An eager-start coroutine enters it user-authored body as soon as it is called.
+* A lazy-start coroutine enters it user-authored body only when it is co_await-ed (or resumed in another way).
 
 An eager-start coroutine may have run to completion at the moment its return object (t in this case) is co_awaited.
 
@@ -567,7 +585,7 @@ Notice that we are still inside the call of ls.start() and all functions called 
     --------------------------> loop_synchronously (i == 1)
 ```
 
-With the împlementation of the task class in https://godbolt.org/z/-Kw6Nf, 
+With the ï¿½mplementation of the task class in https://godbolt.org/z/-Kw6Nf, 
 which is repeated here in [p1000_void.cpp](./p1000_void.cpp) and in [task_void.h](./task_void.h),
 the application crashes for "large" values of count.
 
@@ -1272,19 +1290,28 @@ The following table gives an overview of all examples in this study:
 | p2085e_void-op3e-thread.cpp        | eager      | async. | task, mini_awaiter, operation3e, foo, bar         |
 | p2085l_void-op3e-thread.cpp        | lazy/eager | async. | task, mini_awaiter, operation3e, foo, bar         |
 |                                    |            |        |                                                   |
-| p3000e_void-opere.cpp              | eager      | async. | task, async_oper                                            |
-| p2080e_void-operl.cpp              | eager/lazy | async. | task, async_create_oper, async_open_oper, async_write_oper, |
-|                                    |            |        | async_read_oper, async_close_oper, async_remove_oper        |
-| p3000l_void-opere.cpp              | lazy/eager | async. | task, async_oper                                            |
-| p3000l_void-operl.cpp              | lazy       | async. | task, async_create_oper, async_open_oper, async_write_oper, |
-|                                    |            |        | async_read_oper, async_close_oper, async_remove_oper        |
-|                                    |            |        |                                                             |
-| p3010e_void-opere.cpp              | eager      | async. | task, async_oper                                            |
-| p2010e_void-operl.cpp              | eager/lazy | async. | task, async_create_oper, async_open_oper, async_write_oper, |
-|                                    |            |        | async_read_oper, async_close_oper, async_remove_oper        |
-| p3010l_void-opere.cpp              | lazy/eager | async. | task, async_oper                                            |
-| p3010l_void-operl.cpp              | lazy       | async. | task, async_create_oper, async_open_oper, async_write_oper, |
-|                                    |            |        | async_read_oper, async_close_oper, async_remove_oper        |
+| p3000e_void-opere.cpp              | eager      | async. | task, async_oper                                  |
+| p3000e_void-operl.cpp              | eager/lazy | async. | task, async_create_oper, async_open_oper,         |
+|                                    |            |        | async_write_oper, async_read_oper,                |
+|                                    |            |        | async_close_oper, async_remove_oper               |
+| p3000l_void-opere.cpp              | lazy/eager | async. | task, async_oper                                  |
+| p3000l_void-operl.cpp              | lazy       | async. | task, async_create_oper, async_open_oper,         |
+|                                    |            |        | async_write_oper, async_read_oper,                |
+|                                    |            |        | async_close_oper, async_remove_oper               |
+|                                    |            |        |                                                   |
+| p3010e_void-opere.cpp              | eager      | async. | task, async_oper                                  |
+| p3010e_void-operl.cpp              | eager/lazy | async. | task, async_open_oper, async_write_oper,          |
+|                                    |            |        | async_read_oper, async_close_oper                 |
+| p3010l_void-opere.cpp              | lazy/eager | async. | task, async_oper                                  |
+| p3010l_void-operl.cpp              | lazy       | async. | task, async_open_oper, async_write_oper,          |
+|                                    |            |        | async_read_oper, async_close_oper                 |
+|                                    |            |        |                                                   |
+| p3020e_void-opere.cpp              | eager      | async. | task, async_oper                                  |
+| p3020e_void-operl.cpp              | eager/lazy | async. | task, async_open_oper, async_write_oper,          |
+|                                    |            |        | async_read_oper, async_close_oper                 |
+| p3020l_void-opere.cpp              | lazy/eager | async. | task, async_oper                                  |
+| p3020l_void-operl.cpp              | lazy       | async. | task, async_open_oper, async_write_oper,          |
+|                                    |            |        | async_read_oper, async_close_oper                 |
 
 p0000_void.cpp, p0100_void.cpp, p0110_bool.cpp and p0120_coroutine_handle.cpp correspond to 
 https://godbolt.org/z/-Kw6Nf, https://godbolt.org/z/gy5Q8q, https://godbolt.org/z/7fm8Za 

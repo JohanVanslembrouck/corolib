@@ -1,8 +1,8 @@
 /**
  * @file eventqueuethr.h
- * @brief
+ * @brief This file defines a thread-safe queue.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
  
 #ifndef _EVENTQUEUETHR_H_
@@ -50,6 +50,11 @@ public:
         return readValue;
     }
 
+    bool isEmpty()
+    {
+        return (m_occupiedCells == 0);
+    }
+
 private:
     std::condition_variable m_cv;
     std::mutex m_mutex;
@@ -59,13 +64,5 @@ private:
     int m_writeIndex{0};
     int m_readIndex{0};
 };
-
-#include <functional>
-
-constexpr int ARRAYSIZE = 16;   // Use 2^N
-
-using EventQueueThrFunctionVoidVoid = QueueThr<std::function<void(void)>, ARRAYSIZE>;
-
-void runEventQueue(EventQueueThrFunctionVoidVoid& queue, int size);
 
 #endif

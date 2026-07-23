@@ -72,6 +72,7 @@ public:
                 print(PRI3, "%p: promise_type::final_awaiter::await_suspend() -> void: enter\n", this);
                 if (h.promise().continuation) {
                     tracker1_obj.nr_resumptions++;
+                    print(PRI3, "%p: promise_type::final_awaiter::await_suspend() -> void: tracker1_obj.nr_resumptions = %d\n", tracker1_obj.nr_resumptions);
                     print(PRI3, "%p: promise_type::final_awaiter::await_suspend() -> void: before h.promise().continuation.resume();\n", this);
                     h.promise().continuation.resume();
                     print(PRI3, "%p: promise_type::final_awaiter::await_suspend() -> void: after h.promise().continuation.resume();\n", this);

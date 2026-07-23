@@ -12,64 +12,94 @@
 
 #include "p3000_async_api.h"
 
-class async_oper : public async_oper_base {
+template<typename TYPE>
+class async_oper : public async_oper_baseT<TYPE> {
 public:
     async_oper(int index) {
-        print(PRI1, "async_oper::async_oper(index = %d)\n", index);
+        print(PRI2, "async_oper::async_oper(index = %d)\n", index);
         async_oper_bases[index] = this;
         m_index = index;
     }
     ~async_oper() {
-        print(PRI1, "async_oper::~async_oper(): m_index = %d\n", m_index);
+        print(PRI2, "async_oper::~async_oper(): m_index = %d\n", m_index);
         async_oper_bases[m_index] = nullptr;
     }
 
     bool await_ready() {
-        print(PRI1, "async_oper::await_ready() => %d\n", m_ready);
-        return m_ready;
+        print(PRI2, "async_oper::await_ready() => %d\n", async_oper_baseT<TYPE>::m_ready);
+        return async_oper_baseT<TYPE>::m_ready;
     }
     void await_suspend(std::coroutine_handle<> awaiting) {
-        print(PRI1, "async_oper::await_suspend(...)\n");
-        m_awaiting = awaiting;
+        print(PRI2, "async_oper::await_suspend(...)\n");
+        async_oper_baseT<TYPE>::m_awaiting = awaiting;
     }
-    int await_resume() {
-        print(PRI1, "async_oper::await_resume()\n");
-        return m_result;
+    TYPE await_resume() {
+        print(PRI2, "async_oper::await_resume()\n");
+        return async_oper_baseT<TYPE>::m_result;
     }
 
 private:
     int m_index = -1;
 };
 
-async_oper start_create() {
+template<>
+class async_oper<void> : public async_oper_baseT<void> {
+public:
+    async_oper(int index) {
+        print(PRI2, "async_oper::async_oper(index = %d)\n", index);
+        async_oper_bases[index] = this;
+        m_index = index;
+    }
+    ~async_oper() {
+        print(PRI2, "async_oper::~async_oper(): m_index = %d\n", m_index);
+        async_oper_bases[m_index] = nullptr;
+    }
+
+    bool await_ready() {
+        print(PRI2, "async_oper::await_ready() => %d\n", async_oper_baseT<void>::m_ready);
+        return async_oper_baseT<void>::m_ready;
+    }
+    void await_suspend(std::coroutine_handle<> awaiting) {
+        print(PRI2, "async_oper::await_suspend(...)\n");
+        async_oper_baseT<void>::m_awaiting = awaiting;
+    }
+    void await_resume() {
+        print(PRI2, "async_oper::await_resume()\n");
+    }
+
+private:
+    int m_index = -1;
+};
+
+async_oper<bool> start_create() {
     int index = get_free_index();
-    print(PRI1, "start_create(): index = %d\n", index);
-    async_oper ret{ index };
+    print(PRI2, "start_create(): index = %d\n", index);
+    async_oper<bool> ret{ index };
     async_create(
-        [index]() {
-            completionHandler(index);
+        [index](bool val) {
+            completionHandler(index, val);
         });
     return ret;
 }
 
-async_oper start_open() {
+async_oper<int> start_open() {
     int index = get_free_index();
-    print(PRI1, "start_open(): index = %d\n", index);
-    async_oper ret{ index };
+    print(PRI2, "start_open(): index = %d\n", index);
+    async_oper<int> ret{ index };
     async_open(
-        [index]() {
-            completionHandler(index);
+        [index](int val) {
+            completionHandler(index, val);
         });
     return ret;
 }
 
-async_oper start_write(char* buffer) {
+async_oper<int> start_write(char* buffer) {
     int index = get_free_index();
-    print(PRI1, "start_write(): index = %d\n", index);
-    async_oper ret{ index };
+    print(PRI2, "start_write(): index = %d\n", index);
+    async_oper<int> ret{ index };
     async_write(buffer,
-        [index]() {    // Could run on a dedicated thread
-            completionHandler(index);
+        [index](int val) {    // Could run on a dedicated thread
+            completionHandler(index, val);
         });
     // In case of threads:
     // The completion handler may have run here and resumed the operation 
@@ -77,35 +107,35 @@ async_oper start_write(char* buffer) {
     return ret;
 }
 
-async_oper start_read() {
+async_oper<std::string> start_read() {
     int index = get_free_index();
-    print(PRI1, "start_read(): index = %d\n", index);
-    async_oper ret{ index };
+    print(PRI2, "start_read(): index = %d\n", index);
+    async_oper<std::string> ret{ index };
     async_read(
-        [index]() {
-            completionHandler(index);
+        [index](std::string val) {
+            completionHandler(index, val);
         });
     return ret;
 }
 
-async_oper start_close() {
+async_oper<bool> start_close() {
     int index = get_free_index();
-    print(PRI1, "start_close(): index = %d\n", index);
-    async_oper ret{ index };
+    print(PRI2, "start_close(): index = %d\n", index);
+    async_oper<bool> ret{ index };
     async_close(
-        [index]() {
-            completionHandler(index);
+        [index](bool val) {
+            completionHandler(index, val);
         });
     return ret;
 }
 
-async_oper start_remove() {
+async_oper<bool> start_remove() {
     int index = get_free_index();
-    print(PRI1, "start_remove(): index = %d\n", index);
-    async_oper ret{ index };
+    print(PRI2, "start_remove(): index = %d\n", index);
+    async_oper<bool> ret{ index };
     async_remove(
-        [index]() {
-            completionHandler(index);
+        [index](bool val) {
+            completionHandler(index, val);
         });
     return ret;
 }

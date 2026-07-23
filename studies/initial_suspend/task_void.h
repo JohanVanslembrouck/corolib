@@ -115,10 +115,21 @@ public:
 
         coroutine_handle<promise_type> coro_;
     };
+#if 0
+    /*
+     Consider:
+        task t = acoroutine();
+        int res = co_await t;       // does nnt compile with the following definition of operator co_await()
+     */
 
     awaiter operator co_await() && noexcept {
         return awaiter{ coro_ };
     }
+#else
+    awaiter operator co_await() noexcept {
+        return awaiter{ coro_ };
+    }
+#endif
 
 private:
     explicit task(coroutine_handle<promise_type> h) noexcept

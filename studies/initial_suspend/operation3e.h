@@ -73,7 +73,7 @@ protected:
         thread1.detach();
 
         if (m_delayafterstart) {
-            print(PRI1, "operation3e()::start_operation3(): std::this_thread::sleep_for(std::chrono::milliseconds(1500));\n");
+            print(PRI1, "operation3e::start_operation3(): std::this_thread::sleep_for(std::chrono::milliseconds(1500));\n");
             std::this_thread::sleep_for(std::chrono::milliseconds(1500));
         }
     }

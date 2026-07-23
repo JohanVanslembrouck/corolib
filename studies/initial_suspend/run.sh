@@ -116,3 +116,8 @@ set -x
 ./stis-p3010e_void-operl
 ./stis-p3010l_void-opere
 ./stis-p3010l_void-operl
+
+./stis-p3020e_void-opere
+./stis-p3020e_void-operl
+./stis-p3020l_void-opere
+./stis-p3020l_void-operl

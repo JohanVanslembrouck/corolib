@@ -50,7 +50,7 @@ public:
 
     task coroutine2()
     {
-        printf("coroutine2():  task t = coroutine3();\n");
+        printf("coroutine2(): task t = coroutine3();\n");
         task t = coroutine3();
         //int v = co_await coroutine3();
         printf("coroutine2(): co_return 0;\n");

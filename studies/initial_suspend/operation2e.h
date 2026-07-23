@@ -19,7 +19,7 @@
 #include "print.h"
 #include "tracker1.h"
 #include "mini_awaiter_ts.h"
-#include "eventqueuethr.h"
+#include "runeventqueue.h"
 
 int queueSize = 0;
 
@@ -67,7 +67,7 @@ protected:
             this->ma.set_result_and_resume(10);
 #else
             std::function<void(void)> completionHandler1 = [this]() { this->ma.set_result_and_resume(10); };
-            print(PRI1, "operation2e::start_operation1() : thread1: eventQueueThr.push(std::move(completionHandler1)); \n");
+            print(PRI1, "operation2e::start_operation1(): thread1: eventQueueThr.push(std::move(completionHandler1)); \n");
             eventQueueThr.push(std::move(completionHandler1));
 #endif
             print(PRI1, "operation2e::start_operation2(): thread1: return;\n");
@@ -75,7 +75,7 @@ protected:
         thread1.detach();
 
         if (m_delayafterstart) {
-            print(PRI1, "operation2e()::start_operation2(): std::this_thread::sleep_for(std::chrono::milliseconds(1500));\n");
+            print(PRI1, "operation2e::start_operation2(): std::this_thread::sleep_for(std::chrono::milliseconds(1500));\n");
             std::this_thread::sleep_for(std::chrono::milliseconds(1500));
         }
     }

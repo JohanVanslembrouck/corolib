@@ -129,8 +129,13 @@ foreach(_target
     p3010e_void-operl
     p3010l_void-opere
     p3010l_void-operl
+
+    p3020e_void-opere
+    p3020e_void-operl
+    p3020l_void-opere
+    p3020l_void-operl
  )
- add_executable(stis-${_target} ${_target}.cpp print.cpp eventqueuethr.cpp tracker1.cpp)
+ add_executable(stis-${_target} ${_target}.cpp print.cpp runeventqueue.cpp tracker1.cpp)
 endforeach()
 
 include_directories(../../include)
