@@ -61,6 +61,8 @@ using helloworld::HelloRequest;
 
 using namespace corolib;
 
+#include "runeventqueue.h"
+
 EventQueueFunctionVoidVoid eventQueueThr;
 
 const int NR_ITERATIONS = 10;

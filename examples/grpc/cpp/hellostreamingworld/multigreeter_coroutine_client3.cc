@@ -50,9 +50,48 @@ using hellostreamingworld::HelloRequest;
 // Added for using corolib
 using namespace corolib;
 
+#include "../helloworld/runeventqueue.h"
+
 EventQueueFunctionVoidVoid eventQueueThr;
 
 class GreeterClient : public CommService {      // Added CommService as base class
+private:
+    enum CallStatus { CREATE, PROCESS, PROCESSED, FINISH };
+
+    struct ReaderResult {
+        CallStatus status;
+        std::string str;
+    };
+
+private:
+    // eager-start operation definition - begin
+    async_operation<ReaderResult> start_SayHello(HelloRequest& request) {
+        int index = get_free_index();
+        async_operation<ReaderResult> ret{ this, index };
+        start_SayHello_impl(index, request);
+        return ret;
+    }
+
+    void start_SayHello_impl(int idx, HelloRequest& request) {
+        // Call object to store rpc data
+        AsyncClientCall* call = new AsyncClientCall(this);
+
+        // stub_->AsyncSayHello() performs the RPC call, returning an instance to
+        // store in "call". Because we are using the asynchronous API, we need to
+        // hold on to the "call" instance in order to get updates on the ongoing RPC.
+        call->response_reader = stub_->AsyncsayHello(&call->context, request, &cq_, (void*)call);
+
+#if USE_COROUTINES
+        call->completionHandler_ =
+            [this, idx](ReaderResult result) {
+            print(PRI1, "completionHandler\n");
+            // completionHandler is defined in commservice.h
+            this->completionHandler(idx, result);
+            };
+#endif
+    }
+    // eager-start operation definition - end
+
 public:
     explicit GreeterClient(std::shared_ptr<Channel> channel)
         : stub_(MultiGreeter::NewStub(channel)) {}
@@ -78,13 +117,6 @@ public:
         done_ = true;           // JVS: allow terminating the program automatically
         co_return;
     }
-
-    enum CallStatus { CREATE, PROCESS, PROCESSED, FINISH };
-
-    struct ReaderResult {
-        CallStatus status;
-        std::string str;
-    };
 
     async_task<void> SayHelloCo(const std::string& user) {
         print(PRI1, "SayHelloCo: begin\n");
@@ -118,32 +150,6 @@ public:
         } while (!done);
         print(PRI1, "SayHelloCo: end\n");
         co_return;
-    }
-
-    async_operation<ReaderResult> start_SayHello(HelloRequest& request) {
-        int index = get_free_index();
-        async_operation<ReaderResult> ret{ this, index };
-        start_SayHello_impl(index, request);
-        return ret;
-    }
-
-    void start_SayHello_impl(int idx, HelloRequest& request) {
-        // Call object to store rpc data
-        AsyncClientCall* call = new AsyncClientCall(this);
-
-        // stub_->AsyncSayHello() performs the RPC call, returning an instance to
-        // store in "call". Because we are using the asynchronous API, we need to
-        // hold on to the "call" instance in order to get updates on the ongoing RPC.
-        call->response_reader = stub_->AsyncsayHello(&call->context, request, &cq_, (void*)call);
-
-#if USE_COROUTINES
-        call->completionHandler_ =
-            [this, idx](ReaderResult result) {
-                print(PRI1, "completionHandler\n");
-                // completionHandler is defined in commservice.h
-                this->completionHandler(idx, result);
-            };
-#endif
     }
 
     // Used from main

@@ -17,6 +17,8 @@ using namespace corolib;
 
 const int NR_ITERATIONS = 10000;
 
+constexpr int ARRAYSIZE = 16;   // Use 2^N
+
 using EventQueueInt = QueueThreadSafe<int, ARRAYSIZE>;
 
 EventQueueInt queue;

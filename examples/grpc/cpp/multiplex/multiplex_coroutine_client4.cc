@@ -73,10 +73,39 @@ struct StatusCo
     Status status;
 };
 
+#include "../helloworld/runeventqueue.h"
+
 using EventQueueThrStatusCo = QueueThreadSafe<StatusCo, ARRAYSIZE>;
 
 class GreeterClient : public CommService
 {
+private:
+    // eager-start operation definition - begin
+    async_operation<Status> start_SayHello(ClientContext* pcontext, helloworld::HelloRequest& request, helloworld::HelloReply& reply) {
+        int index = get_free_index();
+        async_operation<Status> ret{ this, index };
+        helloworld::Greeter::NewStub(channel_)->async()->SayHello(pcontext, &request, &reply,
+            [index, this](Status s) {
+                print(PRI5, "start_SayHello - completion handler\n");
+                StatusCo statusCo{ index, std::move(s) };
+                m_eventQueueThrStatusCo.push(statusCo);
+            });
+        return ret;
+    }
+
+    async_operation<Status> start_GetFeature(ClientContext* pcontext, routeguide::Point& request, routeguide::Feature& reply) {
+        int index = get_free_index();
+        async_operation<Status> ret{ this, index };
+        routeguide::RouteGuide::NewStub(channel_)->async()->GetFeature(pcontext, &request, &reply,
+            [index, this](Status s) {
+                print(PRI5, "start_GetFeature - completion handler\n");
+                StatusCo statusCo{ index, std::move(s) };
+                m_eventQueueThrStatusCo.push(statusCo);
+            });
+        return ret;
+    }
+    // eager-start operation definition - end
+
 public:
     explicit GreeterClient(std::shared_ptr<Channel> channel)
         : channel_(channel)
@@ -151,18 +180,6 @@ public:
         co_return strstr.str();
     }
 
-    async_operation<Status> start_SayHello(ClientContext* pcontext, helloworld::HelloRequest& request, helloworld::HelloReply& reply) {
-        int index = get_free_index();
-        async_operation<Status> ret{ this, index };
-        helloworld::Greeter::NewStub(channel_)->async()->SayHello(pcontext, &request, &reply,
-            [index, this](Status s) {
-                print(PRI5, "start_SayHello - completion handler\n");
-                StatusCo statusCo{ index, std::move(s) };
-                m_eventQueueThrStatusCo.push(statusCo);
-            });
-        return ret;
-    }
-
     async_task<std::string> GetFeatureCo() {
         ClientContext feature_context;
         routeguide::Point feature_request;
@@ -183,18 +200,6 @@ public:
             strstr << "Getting feature failed: " << feature_status.error_message() << std::endl;
         }
         co_return strstr.str();
-    }
-
-    async_operation<Status> start_GetFeature(ClientContext* pcontext, routeguide::Point& request, routeguide::Feature& reply) {
-        int index = get_free_index();
-        async_operation<Status> ret{ this, index };
-        routeguide::RouteGuide::NewStub(channel_)->async()->GetFeature(pcontext, &request, &reply,
-            [index, this](Status s) {
-                print(PRI5, "start_GetFeature - completion handler\n");
-                StatusCo statusCo{ index, std::move(s) };
-                m_eventQueueThrStatusCo.push(statusCo);
-            });
-        return ret;
     }
 
     void runEventQueue(int size)

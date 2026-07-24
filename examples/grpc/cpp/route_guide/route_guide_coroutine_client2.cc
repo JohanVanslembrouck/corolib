@@ -86,6 +86,8 @@ using routeguide::RouteSummary;
 
 using namespace corolib;
 
+#include "../helloworld/runeventqueue.h"
+
 EventQueueFunctionVoidVoid eventQueueThr;
 
 const int NR_INTERACTIONS = 5;
@@ -483,6 +485,31 @@ private:
 // ---------------------------------------------------------------------
 
 class RouteGuideClient : public CommService {
+  private:
+    // eager-start operation definition - begin
+    async_operation<ReaderResult> start_ListFeatures(ReaderCo* pReaderCo) {
+        int index = get_free_index();
+        async_operation<ReaderResult> ret{ this, index };
+        pReaderCo->setCompletionHandler(
+            [this, index](ReaderResult result) {
+                print(PRI5, "completionHandler called\n");
+                this->completionHandler<ReaderResult>(index, result);
+            });
+        return ret;
+    }
+
+    async_operation<ChatterResult> start_Chatter(ChatterCo* pChatterCo) {
+        int index = get_free_index();
+        async_operation<ChatterResult> ret{ this, index };
+        pChatterCo->setCompletionHandler(
+            [this, index](ChatterResult result) {
+                print(PRI1, "completionHandler called\n");
+                this->completionHandler<ChatterResult>(index, result);
+            });
+        return ret;
+    }
+    // eager-start operation definition - end
+
  public:
   RouteGuideClient(std::shared_ptr<Channel> channel, const std::string& db)
       : stub_(RouteGuide::NewStub(channel)) {
@@ -568,17 +595,6 @@ class RouteGuideClient : public CommService {
       co_return;
   }
 
-  async_operation<ReaderResult> start_ListFeatures(ReaderCo* pReaderCo) {
-      int index = get_free_index();
-      async_operation<ReaderResult> ret{ this, index };
-      pReaderCo->setCompletionHandler(
-          [this, index](ReaderResult result) {
-                print(PRI5, "completionHandler called\n");
-                this->completionHandler<ReaderResult>(index, result);
-          });
-      return ret;
-  }
-
   // RecordRoute
   // -----------
   // original version
@@ -643,17 +659,6 @@ class RouteGuideClient : public CommService {
 
       print(PRI1, "RouteChatCo - end\n");
       co_return;
-  }
-
-  async_operation<ChatterResult> start_Chatter(ChatterCo* pChatterCo) {
-      int index = get_free_index();
-      async_operation<ChatterResult> ret{ this, index };
-      pChatterCo->setCompletionHandler(
-          [this, index](ChatterResult result) {
-              print(PRI1, "completionHandler called\n");
-              this->completionHandler<ChatterResult>(index, result);
-          });
-      return ret;
   }
 
  private:

@@ -6,3 +6,4 @@ set -x
 ./multigreeter_client
 ./multigreeter_coroutine_client
 ./multigreeter_coroutine_client2
+./multigreeter_coroutine_client3

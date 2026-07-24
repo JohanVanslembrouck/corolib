@@ -102,13 +102,6 @@ namespace corolib
         int m_readIndex{ 0 };
         bool m_stop{ false };
     };
-
-    constexpr int ARRAYSIZE = 16;   // Use 2^N
-
-    using EventQueueFunctionVoidVoid = QueueThreadSafe<std::function<void(void)>, ARRAYSIZE>;
-
-    // Use big size that supersedes the number of events in the applications
-    void runEventQueue(EventQueueFunctionVoidVoid& queue, int size = 100000);
 }
 
 #endif

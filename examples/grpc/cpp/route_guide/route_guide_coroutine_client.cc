@@ -83,6 +83,8 @@ using routeguide::RouteSummary;
 
 using namespace corolib;
 
+#include "../helloworld/runeventqueue.h"
+
 EventQueueFunctionVoidVoid eventQueueThr;
 
 const int NR_INTERACTIONS = 3;
@@ -498,6 +500,44 @@ private:
 // ---------------------------------------------------------------------
 
 class RouteGuideClient : public CommService {
+private:
+#if !USE_START_FROM_GRPC_OBJECT
+    // eager-start operation definition - begin
+    async_operation<Status> start_ListFeatures(ReaderCo* pReaderCo) {
+        int index = get_free_index();
+        async_operation<Status> ret{ this, index };
+        pReaderCo->setCompletionHandler(
+            [this, index](Status status) {
+                print(PRI1, "completionHandler called\n");
+                this->completionHandler<Status>(index, status);
+            });
+        return ret;
+    }
+
+    async_operation<Status> start_RecordRoute(RecorderCo* pRecorderCo) {
+        int index = get_free_index();
+        async_operation<Status> ret{ this, index };
+        pRecorderCo->setCompletionHandler(
+            [this, index](Status status) {
+                print(PRI1, "completionHandler called\n");
+                this->completionHandler<Status>(index, status);
+            });
+        return ret;
+    }
+
+    async_operation<Status> start_Chatter(ChatterCo* pChatterCo) {
+        int index = get_free_index();
+        async_operation<Status> ret{ this, index };
+        pChatterCo->setCompletionHandler(
+            [this, index](Status status) {
+                print(PRI1, "completionHandler called\n");
+                this->completionHandler<Status>(index, status);
+            });
+        return ret;
+    }
+    // eager-start operation definition - end
+#endif
+
  public:
   RouteGuideClient(std::shared_ptr<Channel> channel, const std::string& db)
       : stub_(RouteGuide::NewStub(channel)) {
@@ -573,19 +613,6 @@ class RouteGuideClient : public CommService {
       co_return;
   }
 
-  #if !USE_START_FROM_GRPC_OBJECT
-    async_operation<Status> start_ListFeatures(ReaderCo* pReaderCo) {
-      int index = get_free_index();
-      async_operation<Status> ret{ this, index };
-      pReaderCo->setCompletionHandler(
-          [this, index](Status status) {
-            print(PRI1, "completionHandler called\n");
-            this->completionHandler<Status>(index, status);
-          });
-      return ret;
-   }
-#endif
-
   // RecordRoute
   // -----------
   // original version
@@ -633,19 +660,6 @@ class RouteGuideClient : public CommService {
       co_return;
   }
 
-#if !USE_START_FROM_GRPC_OBJECT
-  async_operation<Status> start_RecordRoute(RecorderCo* pRecorderCo) {
-      int index = get_free_index();
-      async_operation<Status> ret{ this, index };
-      pRecorderCo->setCompletionHandler(
-          [this, index](Status status) {
-              print(PRI1, "completionHandler called\n");
-              this->completionHandler<Status>(index, status);
-          });
-      return ret;
-  }
-#endif
-
   // RouteChat
   // ---------
   // original version
@@ -674,19 +688,6 @@ class RouteGuideClient : public CommService {
           std::cout << "RouteChat rpc failed." << std::endl;
       }
   }
-
-#if !USE_START_FROM_GRPC_OBJECT
-  async_operation<Status> start_Chatter(ChatterCo* pChatterCo) {
-      int index = get_free_index();
-      async_operation<Status> ret{ this, index };
-      pChatterCo->setCompletionHandler(
-          [this, index](Status status) {
-              print(PRI1, "completionHandler called\n");
-              this->completionHandler<Status>(index, status);
-          });
-      return ret;
-  }
-#endif
 
  private:
   bool GetOneFeature(const Point& point, Feature* feature) {
