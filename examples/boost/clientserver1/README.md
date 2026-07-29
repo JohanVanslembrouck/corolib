@@ -96,15 +96,15 @@ client5thr.cpp starts 3 independent clients, each running in their own thread.
 After building, launch the applications in the following order:
 
 * 'cs1-server' and 'cs1-clientserver' (in any order)
-* 'cs1-client1' (or one of its variants cs1-client1a, cs1-client1b or cs1-client1c)(one or more instances) and/or 
+* 'cs1-client1' (or one of its variants cs1-client1a, cs1-client1b or cs1-client1c) (one or more instances) and/or 
 * 'cs1-client3' (one or more instances) and/or 
 * 'cs1-client3WA' (one or more instances) and/or
 * 'cs1-client3WAny' (one or more instances) and/or
-* 'cs1-client4obs' (one or more instances)
-* 'cs1-client4obs2' (one or more instances)
-* 'cs1-client4obs3' (one or more instances)
+* 'cs1-client4obs' (one or more instances) and/or
+* 'cs1-client4obs2' (one or more instances) and/or
+* 'cs1-client4obs3' (one or more instances) and/or
 * 'cs1-client5thr' (one or more instances)
 
 The applications client1.cpp, client1a.cpp, client3WA.cpp, client3WAny.cpp, clientserver.cpp and server.cpp
-can aslo be compiled to use async_ltask instead of async_task.
+can also be compiled to use async_ltask instead of async_task.
 The prefix for their executables is now cs1l- instead of cs1-.

@@ -30,3 +30,6 @@ add_subdirectory(various)
 add_subdirectory(commonlso)
 add_subdirectory(clientserver1lso)
 add_subdirectory(clientserver1x)
+
+add_subdirectory(commonsync)
+add_subdirectory(clientserver1sync)
