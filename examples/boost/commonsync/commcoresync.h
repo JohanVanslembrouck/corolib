@@ -24,11 +24,6 @@ namespace corolib
     using EventQueueFunctionVoidVoid = QueueThreadSafe<FunctionVoidVoid, ARRAYSIZE>;
     using CommQueue = EventQueueFunctionVoidVoid;
 
-    std::size_t completionCondition(
-        std::string& buffer,
-        const boost::system::error_code& /*error*/, /// let's ignore
-        std::size_t bytes_transferred);
-
     class CommCore : public CommService
     {
     public:
@@ -38,7 +33,8 @@ namespace corolib
 
         async_operation<void> start_writing(std::string& str);
         async_operation<std::string> start_reading();
-        async_operation<void> start_timer(int ms, bool stop = false);
+        async_operation<void> start_timer(int ms);
+        async_operation<void> start_dummy();
 
         void close()
         {

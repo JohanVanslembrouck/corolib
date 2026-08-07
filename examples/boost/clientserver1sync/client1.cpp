@@ -3,6 +3,7 @@
  * @brief
  * Example of a client application.
  * Simplified version of ../clientserver1/client1.cpp.
+ * Uses CommClient defined in commclientsync.h/.cpp instead of in commclient.h/.cpp.
  * 
  * @author Johan Vanslembrouck
  */
@@ -71,10 +72,10 @@ public:
             m_socket.close();
         }
 
-        print(PRI1, "mainflow: async_operation<void> st = start_timer(100, true);\n");
-        async_operation<void> st = start_timer(100, true);
-        co_await st;
-        print(PRI1, "mainflow: co_await st;\n");
+        print(PRI1, "mainflow: async_operation<void> sd = start_dummy();\n");
+        async_operation<void> sd = start_dummy();
+        co_await sd;
+        print(PRI1, "mainflow: co_await sd;\n");
 
         print(PRI1, "mainflow: end\n");
 

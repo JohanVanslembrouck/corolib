@@ -3,6 +3,7 @@ project (clientserver1sync)
 include_directories(../../../include ../commonsync)
 
 foreach(_target
+    client0
     client1
     client3WA
   )

@@ -23,11 +23,13 @@ all the application code runs on a single thread!
 After building, launch the applications in the following order:
 
 * 'cs1-server' and 'cs1-clientserver' (from ../clientserver1) (in any order) and
+* 'cs1s-client0' (one or more instances) and/or
 * 'cs1s-client1' (one or more instances) and/or
 * 'cs1s-client3WA' (one or more instances)
 
 Alternatively:
 
 * 'cs0-server' or 'cs0-server1' (from ../clientserver0) and
-* 'cs1s-client1' (one or more instances) and/or
-* 'cs1s-client3WA' (one or more instances)
+* 'cs1s-client0' or
+* 'cs1s-client1' or
+* 'cs1s-client3WA'

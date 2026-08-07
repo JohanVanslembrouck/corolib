@@ -3,6 +3,7 @@
  * @brief
  * Example of a client application.
  * Simplified version of ../clientserver1/client3WA.cpp.
+ * Uses CommClient defined in commclientsync.h/.cpp instead of in commclient.h/.cpp.
  * 
  * @author Johan Vanslembrouck
  */
@@ -21,54 +22,54 @@ using namespace corolib;
 
 CommQueue myeventqueue;
 
-async_task<int> mainflowOneClient(boost::asio::io_context &ioContext, CommClient& cl)
+async_task<int> mainflowOneClient(CommClient& cl, int instance)
 {
-    print(PRI1, "mainflowOneClient: begin\n");
+    print(PRI1, "mainflowOneClient %d:  begin\n", instance);
 
     for (int i = 0; i < 10; i++)
     {
-        print(PRI1, "mainflowOneClient: %d ------------------------------------------------------------------\n", i);
+        print(PRI1, "mainflowOneClient %d: %d ------------------------------------------------------------------\n", instance, i);
  
         // Connecting
-        print(PRI1, "mainflowOneClient: async_operation<void> sc = cl.start_connecting();\n");
+        print(PRI1, "mainflowOneClient %d: async_operation<void> sc = cl.start_connecting();\n", instance);
         async_operation<void> sc = cl.start_connecting();
-        print(PRI1, "mainflowOneClient: co_await sc;\n");
+        print(PRI1, "mainflowOneClient %d: co_await sc;\n", instance);
         co_await sc;
 
         std::string str1 = "This is string " + std::to_string(i) + " to echo\n";
-        print(PRI1, "mainflowOneClient: sending to server: %s", str1.c_str());
+        print(PRI1, "mainflowOneClient %d: sending to server: %s", instance, str1.c_str());
         
         // Writing
-        print(PRI1, "mainflowOneClient: async_operation<void> sw = cl.start_writing(...);\n");
+        print(PRI1, "mainflowOneClient %d: async_operation<void> sw = cl.start_writing(...);\n", instance);
         async_operation<void> sw = cl.start_writing(str1);
-        print(PRI1, "mainflowOneClient: co_await sw;\n");
+        print(PRI1, "mainflowOneClient %d: co_await sw;\n", instance);
         co_await sw;
 
         // Reading
-        print(PRI1, "mainflowOneClient: async_operation<std::string> sr = cl.start_reading();\n");
+        print(PRI1, "mainflowOneClient %d: async_operation<std::string> sr = cl.start_reading();\n", instance);
         async_operation <std::string> sr = cl.start_reading();
-        print(PRI1, "mainflowOneClient: std::string strout = co_await sr;\n");
+        print(PRI1, "mainflowOneClient %d: std::string strout = co_await sr;\n", instance);
         std::string strout = co_await sr;
-        print(PRI1, "mainflowOneClient: strout = %s", strout.c_str());
+        print(PRI1, "mainflowOneClient %d: strout = %s", instance, strout.c_str());
 
-        print(PRI1, "mainflowOneClient: async_operation<void> st = cl.start_timer(100);\n");
+        print(PRI1, "mainflowOneClient %d: async_operation<void> st = cl.start_timer(100);\n", instance);
         async_operation<void> st = cl.start_timer(100);
-        print(PRI1, "mainflowOneClient: co_await st;\n");
+        print(PRI1, "mainflowOneClient %d: co_await st;\n", instance);
         co_await st;
 
-        print(PRI1, "mainflowOneClient: close\n");
+        print(PRI1, "mainflowOneClient %d: close\n", instance);
         cl.close();
     }
 
-    print(PRI1, "mainflowOneClient: end\n");
+    print(PRI1, "mainflowOneClient %d: end\n", instance);
 
     co_return 0;
 }
 
-async_task<int> mainflow1(boost::asio::io_context& ioContext, CommClient& cl1)
+async_task<int> mainflow1(CommClient& cl1)
 {
-    print(PRI1, "mainflow1: async_task<int> t1 = mainflowOneClient(ioContext, cl1);\n");
-    async_task<int> t1 = mainflowOneClient(ioContext, cl1);
+    print(PRI1, "mainflow1: async_task<int> t1 = mainflowOneClient(cl1, 0);\n");
+    async_task<int> t1 = mainflowOneClient(cl1, 0);
     print(PRI1, "mainflow1: co_await t1;\n");
     co_await t1;
 
@@ -76,11 +77,11 @@ async_task<int> mainflow1(boost::asio::io_context& ioContext, CommClient& cl1)
     co_return 0;
 }
 
-async_task<int> mainflow3(boost::asio::io_context& ioContext, CommClient& cl1, CommClient& cl2, CommClient& cl3)
+async_task<int> mainflow3(CommClient& cl1, CommClient& cl2, CommClient& cl3)
 {
-    async_task<int> t1 = mainflowOneClient(ioContext, cl1);
-    async_task<int> t2 = mainflowOneClient(ioContext, cl2);
-    async_task<int> t3 = mainflowOneClient(ioContext, cl3);
+    async_task<int> t1 = mainflowOneClient(cl1, 0);
+    async_task<int> t2 = mainflowOneClient(cl2, 1);
+    async_task<int> t3 = mainflowOneClient(cl3, 2);
 
     print(PRI1, "mainflow3: when_all wac(t1, t2, t3);\n");
     when_all wac(t1, t2, t3);
@@ -91,22 +92,22 @@ async_task<int> mainflow3(boost::asio::io_context& ioContext, CommClient& cl1, C
     co_return 0;
 }
 
-async_task<int> mainflow(boost::asio::io_context& ioContext, CommClient& cl1, CommClient& cl2, CommClient& cl3)
+async_task<int> mainflow(CommClient& cl1, CommClient& cl2, CommClient& cl3)
 {
-    print(PRI1, "mainflow: async_task<int> t1 = mainflow1(ioContext, cl1);\n");
-    async_task<int> t1 = mainflow1(ioContext, cl1);
+    print(PRI1, "mainflow: async_task<int> t1 = mainflow1(cl1);\n");
+    async_task<int> t1 = mainflow1(cl1);
     print(PRI1, "mainflow: co_await t1;\n");
     co_await t1;
 
-    print(PRI1, "mainflow: async_task<int> t3 = mainflow3(ioContext, cl1, cl2, cl3);\n");
-    async_task<int> t3 = mainflow3(ioContext, cl1, cl2, cl3);
+    print(PRI1, "mainflow: async_task<int> t3 = mainflow3(cl1, cl2, cl3);\n");
+    async_task<int> t3 = mainflow3(cl1, cl2, cl3);
     print(PRI1, "mainflow: co_await t3;\n");
     co_await t3;
 
-    print(PRI1, "mainflow: async_operation<void> st = start_timer(100, true);\n");
-    async_operation<void> st = cl1.start_timer(100, true);
-    print(PRI1, "mainflow: co_await st;\n");
-    co_await st;
+    print(PRI1, "mainflow: async_operation<void> sd = cl1.start_dummy();\n");
+    async_operation<void> sd = cl1.start_dummy();
+    print(PRI1, "mainflow: co_await sd;\n");
+    co_await sd;
 
     co_return 0;
 }
@@ -126,8 +127,8 @@ int main()
     print(PRI1, "main: CommClient c1(ioContext, ep1);\n");
     CommClient c3(ioContext, myeventqueue, ep1);
 
-    print(PRI1, "main: task<int> si = c1.mainflow();\n");
-    async_task<int> si = mainflow(ioContext, c1, c2, c3);
+    print(PRI1, "main: task<int> si = mainflow(c1, c2, c3);\n");
+    async_task<int> si = mainflow(c1, c2, c3);
 
     print(PRI1, "main: si.start();\n");
     si.start();

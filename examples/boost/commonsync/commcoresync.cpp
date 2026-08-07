@@ -66,25 +66,37 @@ namespace corolib
         return ret;
     }
 
-    async_operation<void> CommCore::start_timer(int ms, bool stop)
+    async_operation<void> CommCore::start_timer(int ms)
     {
         int index = get_free_index_ts();
         async_operation<void> ret{ this, index, true };
 
         m_pool.enqueue(
-            [this, index, ms, stop]
+            [this, index, ms]
             {
                 print(PRI2, "start_timer: before this_thread::sleep_for(chrono::milliseconds(%d));\n", ms);
                 this_thread::sleep_for(chrono::milliseconds(ms));
                 print(PRI2, "start_timer: after this_thread::sleep_for(chrono::milliseconds(%d));\n", ms);
-                if (stop)
-                    m_eventqueue.pushFinal([this, index] { completionHandler_v(index); });
-                else
-                    m_eventqueue.push([this, index] { completionHandler_v(index); });
+                m_eventqueue.push([this, index] { completionHandler_v(index); });
             }
         );
 
         return ret;
     }
 
+    async_operation<void> CommCore::start_dummy()
+    {
+        int index = get_free_index_ts();
+        async_operation<void> ret{ this, index, true };
+
+        m_pool.enqueue(
+            [this, index]
+            {
+                this_thread::sleep_for(chrono::milliseconds(100));
+                m_eventqueue.pushFinal([this, index] { completionHandler_v(index); });
+            }
+        );
+
+        return ret;
+    }
 }
