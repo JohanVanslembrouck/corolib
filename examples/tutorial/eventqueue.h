@@ -28,32 +28,7 @@
 #ifndef _EVENTQUEUE_H_
 #define _EVENTQUEUE_H_
 
-#include <queue>
-
-template <typename TYPE>
-class Queue
-{
-public:
-    void push(TYPE&& op)
-    {
-        q.push(std::move(op));
-    }
-
-    bool empty()
-    {
-        return q.empty();
-    }
-
-    TYPE pop()
-    {
-        TYPE op = q.front();
-        q.pop();
-        return op;
-    }
-    
-protected:
-    std::queue<TYPE> q;
-};
+#include "queue.h"
 
 #include <functional>
 
