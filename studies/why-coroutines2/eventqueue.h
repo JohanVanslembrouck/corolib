@@ -10,16 +10,12 @@
 
 #include <stdio.h>
 
-#include <functional>
 #include <queue>
 #include <thread>
 
 #include "corolib/print.h"
 
 using namespace corolib;
-
-using FunctionVoidVoid = std::function<void(void)>;
-using FunctionVoidVoidPtr = std::function<void(void*)>;
 
 template<typename TYPE>
 class EventQueue
@@ -44,6 +40,11 @@ public:
 private:
     std::queue<TYPE> q;
 };
+
+#include <functional>
+
+using FunctionVoidVoid = std::function<void(void)>;
+using FunctionVoidVoidPtr = std::function<void(void*)>;
 
 template<typename TYPE1, typename TYPE2>
 class EventQueueX
