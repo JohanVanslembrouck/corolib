@@ -104,6 +104,24 @@ public:
         // The framework will call the lambda when it has received the response.
         startThread(lambda, in1, in2);
     }
+
+    /**
+  * @brief asynchronous operation; asynchronous variant of op1
+  * @param in1
+  * @param in2
+  * @param lambda
+  */
+    void startthreq_op1(int in1, int in2, lambda_3int_t lambda)
+    {
+        printf("RemoteObject1::startthreq_op1(in1 = %d, in2 = %d, lambda_3int_t)\n", in1, in2);
+        // Marshal in1 and in2 into a buffer to write to the remote object.
+        // Write the buffer to the remote object.
+        // (write code is not present.)
+
+        // Register the lambda with the "communication framework".
+        // The framework will call the lambda when it has received the response.
+        startThreadEQ(lambda, in1, in2);
+    }
 };
 
 #endif

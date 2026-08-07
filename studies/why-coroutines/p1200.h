@@ -104,6 +104,47 @@ public:
         printf("RemoteObject1::startthr_op1(in1 = %d, lambda_3int_t)\n", in1);
         startThread(lambda, in1);
     }
+
+    //
+
+    void startthr_op1(int in1, int in2, lambda_op1_ret_t lambda)
+    {
+        printf("RemoteObject1::startthr_op1(in1 = %d, in2 = %d, lambda_3int_t)\n", in1, in2);
+        startThread(lambda, in1, in2);
+    }
+
+    void startthr_op2(int in1, int in2, lambda_op2_ret_t lambda)
+    {
+        printf("RemoteObject1::startthr_op2(in1 = %d, in2 = %d, lambda_3int_t)\n", in1, in2);
+        startThread(lambda, in1, in2);
+    }
+
+    void startthr_op3(int in1, lambda_op1_ret_t lambda)
+    {
+        printf("RemoteObject1::startthr_op1(in1 = %d, lambda_3int_t)\n", in1);
+        startThread(lambda, in1, 0);
+    }
+
+    // Asynchronous functions with completion on thread and eventqueue
+    // ---------------------------------------------------------------
+
+    void startthreq_op1(int in1, int in2, lambda_op1_ret_t lambda)
+    {
+        printf("RemoteObject1::startthreq_op1(in1 = %d, in2 = %d, lambda_3int_t)\n", in1, in2);
+        startThreadEQ(lambda, in1, in2);
+    }
+
+    void startthreq_op2(int in1, int in2, lambda_op2_ret_t lambda)
+    {
+        printf("RemoteObject1::startthreq_op2(in1 = %d, in2 = %d, lambda_3int_t)\n", in1, in2);
+        startThreadEQ(lambda, in1, in2);
+    }
+
+    void startthreq_op3(int in1, lambda_op1_ret_t lambda)
+    {
+        printf("RemoteObject1::startthreq_op1(in1 = %d, lambda_3int_t)\n", in1);
+        startThreadEQ(lambda, in1, 0);
+    }
 };
 
 #endif

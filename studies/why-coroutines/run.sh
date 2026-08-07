@@ -9,6 +9,10 @@ set -x
 ./p1015-async+thread-1rmi
 ./p1020-coroutines-1rmi
 
+./p1025-coroutines-1rmi
+./p1026-coroutines-1rmi
+./p1027-coroutines-1rmi
+
 ./p1050-sync-1rmi
 ./p1060-async-1rmi
 ./p1070-coroutines-1rmi
@@ -35,6 +39,10 @@ set -x
 ./p1215-async+thread-3rmis
 ./p1220-coroutines-3rmis
 ./p1222-coroutines-3rmis-generichandler
+
+./p1225-coroutines-3rmis-generichandler
+./p1226-coroutines-3rmis-generichandler
+./p1227-coroutines-3rmis-generichandler
 
 ./p1500-sync-3-parallel-rmis
 ./p1510-async-3-parallel-rmis

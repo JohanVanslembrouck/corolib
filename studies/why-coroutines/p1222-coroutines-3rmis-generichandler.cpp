@@ -144,7 +144,7 @@ private:
 EventQueue eventQueue;
 
 int main() {
-    printf("main();\n");
+    printf("main(): begin\n");
     Class01 class01;
     Class01a class01a;
 #if 1

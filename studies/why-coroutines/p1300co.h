@@ -26,7 +26,7 @@ public:
     async_operation<int> start_op1(Msg msg)
     {
         int index = get_free_index();
-        print(PRI1, "%p: RemoteObject1Co::start_op1(): index = %d\n", this, index);
+        print(PRI1, "RemoteObject1Co::start_op1(): index = %d\n", index);
         start_op1_impl(index, msg);
         return { this, index };
     }

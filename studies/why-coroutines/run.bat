@@ -5,6 +5,10 @@ p1010-async-1rmi.exe
 p1015-async+thread-1rmi.exe
 p1020-coroutines-1rmi.exe
 
+p1025-coroutines-1rmi.exe
+p1026-coroutines-1rmi.exe
+p1027-coroutines-1rmi.exe
+
 p1050-sync-1rmi.exe
 p1060-async-1rmi.exe
 p1070-coroutines-1rmi.exe
@@ -31,6 +35,10 @@ p1212-async-3rmis-local-event-loop.exe
 p1215-async+thread-3rmis.exe
 p1220-coroutines-3rmis.exe
 p1222-coroutines-3rmis-generichandler.exe
+
+p1225-coroutines-3rmis-generichandler.exe
+p1226-coroutines-3rmis-generichandler.exe
+p1227-coroutines-3rmis-generichandler.exe
 
 p1500-sync-3-parallel-rmis.exe
 p1510-async-3-parallel-rmis.exe
