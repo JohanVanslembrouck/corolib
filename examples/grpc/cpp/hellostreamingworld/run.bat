@@ -1,6 +1,14 @@
 REM Assumption: multigreeter_server.exe is already running
 
 multigreeter_client.exe
+
+multigreeter_coroutine_client_nc.exe
+multigreeter_coroutine_client2_nc.exe
+multigreeter_coroutine_client3_nc.exe
+
 multigreeter_coroutine_client.exe
+multigreeter_coroutine_client_lso.exe
 multigreeter_coroutine_client2.exe
+multigreeter_coroutine_client2_lso.exe
 multigreeter_coroutine_client3.exe
+multigreeter_coroutine_client3_lso.exe

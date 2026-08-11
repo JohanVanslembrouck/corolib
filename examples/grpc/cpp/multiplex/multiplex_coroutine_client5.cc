@@ -9,7 +9,7 @@
  * These closures are then pushed onto a queus.
  * These lambdas are then popped frol the queue and are called on the original thread.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 /*
@@ -77,7 +77,7 @@ struct StatusCo
 
 EventQueueFunctionVoidVoid eventQueue;
 
-class GreeterClient : public CommService
+class MultiplexClient : public CommService
 {
 private:
     // eager-start operation definition - begin
@@ -111,7 +111,7 @@ private:
     // eager-start operation definition - end
 
 public:
-    explicit GreeterClient(std::shared_ptr<Channel> channel)
+    explicit MultiplexClient(std::shared_ptr<Channel> channel)
         : channel_(channel)
     {}
 
@@ -218,14 +218,14 @@ int main(int argc, char** argv) {
   std::string target_str = absl::GetFlag(FLAGS_target);
 
   set_print_level(0x01);        // Use 0x03 to follow the flow in corolib
-                                // Use 0x11 to follow the flow in GreeterClient
+                                // Use 0x11 to follow the flow in MultiplexClient
 
-  GreeterClient greeter(
+  MultiplexClient multiplexClient(
       grpc::CreateChannel(target_str, grpc::InsecureChannelCredentials()));
 
   print(PRI1); print(PRI1, "Using SayHello_GetFeatureCo\n");
   for (int i = 0; i < NR_ITERATIONS; ++i) {
-      async_task<void> t = greeter.SayHello_GetFeatureCo();
+      async_task<void> t = multiplexClient.SayHello_GetFeatureCo();
       runEventQueue(eventQueue, 2);     // Started 2 operations
       //t.wait();                       // No need to call t.wait()
 
@@ -235,7 +235,7 @@ int main(int argc, char** argv) {
 
   print(PRI1); print(PRI1, "Using SayHello_GetFeatureCo_when_all\n");
   for (int i = 0; i < NR_ITERATIONS; ++i) {
-      async_task<void> t = greeter.SayHello_GetFeatureCo_when_all();
+      async_task<void> t = multiplexClient.SayHello_GetFeatureCo_when_all();
       runEventQueue(eventQueue, 2);     // Started 2 operations
       //t.wait();                       // No need to call t.wait()
 
@@ -245,7 +245,7 @@ int main(int argc, char** argv) {
 
   print(PRI1); print(PRI1, "Using SayHello_GetFeatureCo_when_any\n");
   for (int i = 0; i < NR_ITERATIONS; ++i) {
-      async_task<void> t = greeter.SayHello_GetFeatureCo_when_any();
+      async_task<void> t = multiplexClient.SayHello_GetFeatureCo_when_any();
       runEventQueue(eventQueue, 2);     // Started 2 operations
       //t.wait();                       // No need to call t.wait()
 

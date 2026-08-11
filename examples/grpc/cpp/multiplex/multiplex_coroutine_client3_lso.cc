@@ -1,11 +1,13 @@
 /**
- * @file multiplex_coroutine_client3.cc
+ * @file multiplex_coroutine_client3_lso.cc
  * @brief Added coroutine implementation.
- * Based on the implementation in multiplex_coroutine_client2.cc.
+ * Based on the implementation in multiplex_coroutine_client3.cc.
  * 
  * In this variant start_SayHello and start_GetFeature return async_operation<Status> instead of async_operation<void>.
  * Consequently, there is no need to pass Status as reference argument to start_SayHello and start_GetFeature.
  * Notice that the real reply is still passed via a reference argument.
+ * 
+ * In contrast to multiplex_coroutine_client3.cc, this implementation ues lsos (lazy-start operation) and lazy-start coroutines.
  * 
  * @author Johan Vanslembrouck
  */
@@ -65,41 +67,118 @@ const int NR_ITERATIONS = 100;
 class MultiplexClient : public CommService
 {
 private:
-    // eager-start operation definition - begin
-    async_operation<Status> start_SayHello(ClientContext* pcontext, helloworld::HelloRequest& request, helloworld::HelloReply& reply) {
-        int index = get_free_index();
-        async_operation<Status> ret{ this, index };
-        helloworld::Greeter::NewStub(channel_)->async()->SayHello(pcontext, &request, &reply,
-            [index, this](Status s) {
-                print(PRI5, "start_SayHello - completion handler\n");
-                Status status = std::move(s);
-                completionHandler<Status>(index, status);
-            });
-        return ret;
+    // lazy-start operation definition - begin
+    class SayHello_operation_impl
+    {
+    public:
+        SayHello_operation_impl(MultiplexClient* greeterClient, ClientContext* context, helloworld::HelloRequest& request, helloworld::HelloReply& reply)
+            : greeterClient_(greeterClient)
+            , context_(context)
+            , request_(request)
+            , reply_(reply) {
+        }
+
+        bool try_start(async_operation_ls_base& operation) noexcept {
+            helloworld::Greeter::NewStub(greeterClient_->channel_)->async()->SayHello(context_, &request_, &reply_,
+                [this, &operation](Status s) {
+                    print(PRI5, "SayHello_operation_impl::try_start: handler\n");
+                    status_ = std::move(s);
+                    operation.completed();
+                });
+            return true;
+        }
+
+        Status get_result(async_operation_ls_base&) {
+            return status_;
+        }
+
+    private:
+        MultiplexClient* greeterClient_;
+        ClientContext* context_;
+        helloworld::HelloRequest& request_;
+        helloworld::HelloReply& reply_;
+        Status status_;
+    };
+
+    class SayHello_operation : public async_operation_ls<SayHello_operation>
+    {
+    public:
+        SayHello_operation(MultiplexClient* greeterClient, ClientContext* context, helloworld::HelloRequest& request, helloworld::HelloReply& reply)
+            : m_impl(greeterClient, context, request, reply) {
+        }
+
+        bool try_start() noexcept { return m_impl.try_start(*this); }
+        Status get_result() { return m_impl.get_result(*this); }
+
+        SayHello_operation_impl m_impl;
+    };
+
+    SayHello_operation start_SayHello(ClientContext* context, helloworld::HelloRequest& request, helloworld::HelloReply& reply) {
+        return SayHello_operation(this, context, request, reply);
     }
 
-    async_operation<Status> start_GetFeature(ClientContext* pcontext, routeguide::Point& request, routeguide::Feature& reply) {
-        int index = get_free_index();
-        async_operation<Status> ret{ this, index };
-        routeguide::RouteGuide::NewStub(channel_)->async()->GetFeature(pcontext, &request, &reply,
-            [index, this](Status s) {
-                print(PRI5, "start_GetFeature - completion handler\n");
-                Status status = std::move(s);
-                completionHandler<Status>(index, status);
-            });
-        return ret;
+    // -------------------------------------------------------------------------------------
+
+    class GetFeature_operation_impl
+    {
+    public:
+        GetFeature_operation_impl(MultiplexClient* greeterClient, ClientContext* context, routeguide::Point& request, routeguide::Feature& reply)
+            : greeterClient_(greeterClient)
+            , context_(context)
+            , request_(request)
+            , reply_(reply) {
+        }
+
+        bool try_start(async_operation_ls_base& operation) noexcept {
+            routeguide::RouteGuide::NewStub(greeterClient_->channel_)->async()->GetFeature(context_, &request_, &reply_,
+                [this, &operation](Status s) {
+                    print(PRI5, "GetFeature_operation_impl::trystart - handler\n");
+                    status_ = std::move(s);
+                    operation.completed();
+                });
+
+            return true;
+        }
+
+        Status get_result(async_operation_ls_base&) {
+            return status_;
+        }
+
+    private:
+        MultiplexClient* greeterClient_;
+        ClientContext* context_;
+        routeguide::Point& request_;
+        routeguide::Feature& reply_;
+        Status status_;
+    };
+
+    class GetFeature_operation : public async_operation_ls<GetFeature_operation>
+    {
+    public:
+        GetFeature_operation(MultiplexClient* greeterClient, ClientContext* context, routeguide::Point& request, routeguide::Feature& reply)
+            : m_impl(greeterClient, context, request, reply) {
+        }
+
+        bool try_start() noexcept { return m_impl.try_start(*this); }
+        Status get_result() { return m_impl.get_result(*this); }
+
+        GetFeature_operation_impl m_impl;
+    };
+
+    GetFeature_operation start_GetFeature(ClientContext* context, routeguide::Point& request, routeguide::Feature& reply) {
+        return GetFeature_operation(this, context, request, reply);
     }
-    // eager-start operation definition - end
+    // lazy-start operation definition - end
 
 public:
     explicit MultiplexClient(std::shared_ptr<Channel> channel)
         : channel_(channel)
     {}
 
-    async_task<void> SayHello_GetFeatureCo() {
+    async_ltask<void> SayHello_GetFeatureCo() {
         print(PRI5, "SayHello_GetFeatureCo - begin\n");    // runs on the original thread
-        async_task<std::string> t1 = SayHelloCo();
-        async_task<std::string> t2 = GetFeatureCo();
+        async_ltask<std::string> t1 = SayHelloCo();
+        async_ltask<std::string> t2 = GetFeatureCo();
         std::string helloReply = co_await t1;
         print(PRI5, "SayHello_GetFeatureCo - before co_await t2\n");   // runs on another thread 1
         std::string featureReply = co_await t2;
@@ -110,7 +189,7 @@ public:
         co_return;
     }
 
-    async_task <std::string> SayHelloCo() {
+    async_ltask <std::string> SayHelloCo() {
         ClientContext hello_context;
         helloworld::HelloRequest hello_request;
         helloworld::HelloReply hello_response;
@@ -132,7 +211,7 @@ public:
         co_return strstr.str();
     }
 
-    async_task<std::string> GetFeatureCo() {
+    async_ltask<std::string> GetFeatureCo() {
         ClientContext feature_context;
         routeguide::Point feature_request;
         routeguide::Feature feature_response;
@@ -173,7 +252,9 @@ int main(int argc, char** argv) {
 
   print(PRI1); print(PRI1, "Using SayHello_GetFeatureCo\n");
   for (int i = 0; i < NR_ITERATIONS; ++i) {
-      async_task<void> t = multiplexClient.SayHello_GetFeatureCo();
+      async_ltask<void> t = multiplexClient.SayHello_GetFeatureCo();
+      print(PRI2, "Before start\n");
+      t.start();    // An async_ltask object must be started explicitly.
       print(PRI2, "Before wait\n");
       t.wait();
       print(PRI2, "After wait\n");

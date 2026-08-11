@@ -3,6 +3,8 @@
  * @brief Added coroutine implementation.
  * Based on the implementation in greeter_async_client.cc and greeter_async_client2.cc.
  *
+ * 
+ * 
  * @author Johan Vanslembrouck
  */
 
@@ -215,7 +217,7 @@ private:
 // is called as a replacement for co_await t.
 // See greeter_coroutine_client2.cc for the correct solution.
 // Because we do not co_await t, it is not possible to use async_ltask instead of async_task.
-// That is why there is no greeter_coroutine_client_lso.cc present.
+// That is why greeter_coroutine_client_lso.cc uses async_task instead of async_ltask.
 async_task<void> runSayHelloCo(GreeterClient& greeter) {
     for (int i = 0; i < NR_ITERATIONS; ++i) {
         std::string user("coroutine world ");

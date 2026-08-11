@@ -3,14 +3,14 @@
   * @brief Added coroutine implementation. Based on the implementation in multigreeter_client.cc.
   * Original source https://groups.google.com/g/grpc-io/c/2wyoDZT5eao
   * 
-  * multigreeter_coroutine_client3.cc is a variant of multigreeter_coroutine_client3.cc.
-  * Install of calling the completionHandler from AsyncClientCall::HandleResponse(),
+  * multigreeter_coroutine_client3.cc is a variant of multigreeter_coroutine_client2.cc.
+  * Instead of calling the completionHandler from AsyncClientCall::HandleResponse(),
   * multigreeter_coroutine_client3.cc uses an eventqueue to push a lambda capture
   * of the completion handler.
   * The advantage of this approach is that all code of coroutine SayHelloCo
   * runs on the same thread.
   * 
-  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+  * @author Johan Vanslembrouck
   */
 
 #include <iostream>
@@ -45,8 +45,6 @@ using hellostreamingworld::MultiGreeter;
 using hellostreamingworld::HelloReply;
 using hellostreamingworld::HelloRequest;
 
-#define USE_COROUTINES 1
-
 // Added for using corolib
 using namespace corolib;
 
@@ -64,6 +62,7 @@ private:
     };
 
 private:
+#if USE_COROUTINES
     // eager-start operation definition - begin
     async_operation<ReaderResult> start_SayHello(HelloRequest& request) {
         int index = get_free_index();
@@ -81,16 +80,15 @@ private:
         // hold on to the "call" instance in order to get updates on the ongoing RPC.
         call->response_reader = stub_->AsyncsayHello(&call->context, request, &cq_, (void*)call);
 
-#if USE_COROUTINES
         call->completionHandler_ =
             [this, idx](ReaderResult result) {
             print(PRI1, "completionHandler\n");
             // completionHandler is defined in commservice.h
             this->completionHandler(idx, result);
             };
-#endif
     }
     // eager-start operation definition - end
+#endif
 
 public:
     explicit GreeterClient(std::shared_ptr<Channel> channel)
@@ -111,6 +109,7 @@ public:
         call->response_reader = stub_->AsyncsayHello(&call->context, request, &cq_, (void*)call);
     }
 
+#if USE_COROUTINES
     // Top level coroutine. Added because main() cannot be a coroutine.
     async_task<void> runSayHelloCo(const std::string& user) {
         co_await SayHelloCo(user);
@@ -146,11 +145,11 @@ public:
                 done = true;
                 break;
             }
-            
         } while (!done);
         print(PRI1, "SayHelloCo: end\n");
         co_return;
     }
+#endif
 
     // Used from main
     // Loop while listening for completed responses.
@@ -224,6 +223,9 @@ private:
                     if (responseStatus) {
                         std::stringstream strstr;
                         strstr << "Greeter received: " << this << " : " << reply.message();
+#if !USE_COROUTINES
+                        print(PRI1, "Greeter received: %p : %s\n", this, reply.message().c_str());
+#endif
                         str = strstr.str();
                         response_reader->Read(&reply, (void*)this);
                     }

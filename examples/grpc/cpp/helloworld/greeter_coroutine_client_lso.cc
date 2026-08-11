@@ -1,9 +1,11 @@
 /**
- * @file greeter_coroutine_client2a.cc
+ * @file greeter_coroutine_client_lso.cc
  * @brief Added coroutine implementation.
  * Based on the implementation in greeter_async_client.cc and greeter_async_client2.cc.
  *
- * The difference with greeter_coroutine_client2.cc is the use of a std::deque<GRPCEvent> and when_all.
+ * In contrast to greeter_coroutine_client.cc, this implementation uses a lso (lazy-start operation) and eager-start coroutines.
+ * Because we do not use co_await t in runSayHelloCo(), it is not possible to use async_ltask instead of async_task:
+ * co_await is necessary to start a lazy-start coroutine.
  * 
  * @author Johan Vanslembrouck
  */
@@ -29,7 +31,6 @@
 #include <iostream>
 #include <memory>
 #include <string>
-#include <deque>                        // Absent in greeter_coroutine_client2.cc
 
 #include <grpc/support/log.h>
 #include <grpcpp/grpcpp.h>
@@ -38,7 +39,6 @@
 #include <corolib/commservice.h>
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
-#include <corolib/when_all.h>           // Absent in greeter_coroutine_client2.cc
 
 #ifdef BAZEL_BUILD
 #include "examples/protos/helloworld.grpc.pb.h"
@@ -61,30 +61,67 @@ const int NR_ITERATIONS = 100;
 
 class GreeterClient : public CommService
 {
-private:   
-    // eager-start operation definition - begin
-    async_operation<void> start_SayHello(ClientContext* pcontext, HelloRequest& request, HelloReply& reply, Status& status) {
-        int index = get_free_index();
-        async_operation<void> ret{ this, index };
-        start_SayHello_impl(index, pcontext, request, reply, status);
-        return ret;
+private:
+
+    struct GRPCEvent {
+        void* p;
+        std::function<void(void)> eventHandler;
+    };
+
+    // lazy-start operation definition - begin
+    class SayHello_operation_impl
+    {
+    public:
+        SayHello_operation_impl(GreeterClient* greeterClient, ClientContext* context, HelloRequest& request, HelloReply& reply, Status& status)
+            : greeterClient_(greeterClient)
+            , context_(context)
+            , request_(request)
+            , reply_(reply)
+            , status_(status) {
+
+        }
+
+        bool try_start(async_operation_ls_base& operation) noexcept {
+            std::unique_ptr<ClientAsyncResponseReader<HelloReply> > rpc(
+                greeterClient_->stub_->AsyncSayHello(context_, request_, &greeterClient_->cq_));
+
+            uint64_t idx64 = 0;
+
+            rpc->Finish(&reply_, &status_, (void*)idx64);
+
+            greeterClient_->grpcEvent_.p = (void*)idx64;
+            greeterClient_->grpcEvent_.eventHandler = [this, &operation]() { operation.completed(); };
+
+            return true;
+        }
+
+        void get_result(async_operation_ls_base&) {}
+
+    private:
+        GreeterClient* greeterClient_;
+        ClientContext* context_;
+        HelloRequest& request_;
+        HelloReply& reply_;
+        Status& status_;
+    };
+
+    class SayHello_operation : public async_operation_ls<SayHello_operation>
+    {
+    public:
+        SayHello_operation(GreeterClient* greeterClient, ClientContext* context, HelloRequest& request, HelloReply& reply, Status& status)
+            : m_impl(greeterClient, context, request, reply, status) {
+        }
+
+        bool try_start() noexcept { return m_impl.try_start(*this); }
+        void get_result() { m_impl.get_result(*this); }
+
+        SayHello_operation_impl m_impl;
+    };
+
+    SayHello_operation start_SayHello(ClientContext* context, HelloRequest& request, HelloReply& reply, Status& status) {
+        return SayHello_operation(this, context, request, reply, status);
     }
-
-    void start_SayHello_impl(int idx, ClientContext* pcontext, HelloRequest& request, HelloReply& reply, Status& status) {
-        std::unique_ptr<ClientAsyncResponseReader<HelloReply> > rpc(
-            stub_->AsyncSayHello(pcontext, request, &cq_));
-
-        std::cout << "start_SayHello_impl: " << request.name() << std::endl;
-        uint64_t idx64 = static_cast<uint64_t>(idx);
-
-        rpc->Finish(&reply, &status, (void*)idx64);
-
-        GRPCEvent grpcEvent;                                                    // Difference with greeter_coroutine_client2.cc
-        grpcEvent.p = (void*)idx64;                                             // Difference with greeter_coroutine_client2.cc
-        grpcEvent.eventHandler = [this, idx]() { completionHandler_v(idx); };   // Difference with greeter_coroutine_client2.cc
-        eventQueue_.push_back(grpcEvent);                                       // Difference with greeter_coroutine_client2.cc
-    }
-    // eager-start operation definition - end
+    // lazy-start operation definition - end
 
 public:
     explicit GreeterClient(std::shared_ptr<Channel> channel)
@@ -110,7 +147,7 @@ public:
         // Storage for the status of the RPC upon completion.
         Status status;
         // >>> To be placed in SayHelloCo - end
-
+         
         // >>> To be used as data member
         // The producer-consumer queue we use to communicate asynchronously with the
         // gRPC runtime.
@@ -185,47 +222,16 @@ public:
         // Block until the next result is available in the completion queue "cq".
         // The return value of Next should always be checked. This return value
         // tells us whether there is any kind of event or the cq_ is shutting down.
-        while (!done_ && cq_.Next(&got_tag, &ok)) {
+        if (cq_.Next(&got_tag, &ok)) {                          // Difference with greeter_coroutine_client2.cc
             // Verify that the result from "cq" corresponds, by its tag, our previous
             // request and that the request was completed successfully. Note that "ok"
             // corresponds solely to the request for updates introduced by Finish().
-            std::cout << "AsyncCompleteRpc: ok = " << ok << ", got_tag = " << (uint64_t)got_tag << std::endl;
+            if (!(ok && got_tag == grpcEvent_.p))
+                std::cout << "EventHandler: ok = " << ok << ", got_tag = " << got_tag << std::endl;
+            //print(PRI1, "got_tag = %lu\n", (uint64_t)got_tag);
 
-            // Difference with greeter_coroutine_client2.cc - begin
-            // See: https://en.cppreference.com/w/cpp/container/deque/erase
-
-            GRPCEvent grpcEvent;
-            bool found = false;
-            std::deque<GRPCEvent>::iterator it;
-            for (it = eventQueue_.begin(); it != eventQueue_.end();) {
-                grpcEvent = *it;
-                if (grpcEvent.p == got_tag) {
-                    found = true;
-                    break;
-                }
-                ++it;
-            }
-            if (found) {
-                grpcEvent.eventHandler();
-            }
-            else {
-                std::cout << "Did not find match for " << (uint64_t)got_tag << std::endl;
-            }
-
-            for (it = eventQueue_.begin(); it != eventQueue_.end();) {
-                grpcEvent = *it;
-                if (grpcEvent.p == got_tag) {
-                    it = eventQueue_.erase(it);
-                    break;
-                }
-                ++it;
-            }
-            // Difference with greeter_coroutine_client2.cc - end
+            grpcEvent_.eventHandler();
         }
-    }
-
-    void setDone() {
-        done_ = true;
     }
 
 private:
@@ -238,41 +244,25 @@ private:
     CompletionQueue cq_;
 
     // Added for the use of corolib - begin
-    struct GRPCEvent {
-        void* p;
-        std::function<void(void)> eventHandler;
-    };
-
-    std::deque<GRPCEvent> eventQueue_;      // Replaces grpcEvent_ in greeter_coroutine_client.cc
-                                            // and greeter_coroutine_client2.cc.
-
-    bool done_ = false;
+    GRPCEvent grpcEvent_;
     // Added for the use of corolib - end
 };
 
 // Top level coroutine. Added because main() cannot be a coroutine.
-// Compared with greeter_coroutine_client.cc, this example starts 4 SayHelloCo coroutines (instead of 1)
-// and uses when_all to co_await the result.
+// This implementation uses an imperfect implementation:
+// notice that async_task<std::string> t is not co_await-ed upon; instead greeter.AsyncCompleteRpc()
+// is called as a replacement for co_await t.
+// See greeter_coroutine_client2.cc for the correct solution.
+// Because we do not co_await t, it is not possible to use async_ltask instead of async_task.
+// That is why there is no greeter_coroutine_client_lso.cc present.
 async_task<void> runSayHelloCo(GreeterClient& greeter) {
-    for (int i = 0; i < NR_ITERATIONS; i = i + 4) {
-        std::string user1("coroutine world " + std::to_string(i));
-        async_task<std::string> t1 = greeter.SayHelloCo(user1);
-        std::string user2("coroutine world " + std::to_string(i + 1));
-        async_task<std::string> t2 = greeter.SayHelloCo(user2);
-        std::string user3("coroutine world " + std::to_string(i + 2));
-        async_task<std::string> t3 = greeter.SayHelloCo(user3);
-        std::string user4("coroutine world " + std::to_string(i + 3));
-        async_task<std::string> t4 = greeter.SayHelloCo(user4);
-
-        when_all wa(t1, t2, t3, t4);
-        co_await wa;
-
-        std::cout << "Greeter received: " << t1.get_result() << std::endl;
-        std::cout << "Greeter received: " << t2.get_result() << std::endl;
-        std::cout << "Greeter received: " << t3.get_result() << std::endl;
-        std::cout << "Greeter received: " << t4.get_result() << std::endl;
+    for (int i = 0; i < NR_ITERATIONS; ++i) {
+        std::string user("coroutine world ");
+        user += std::to_string(i);
+        async_task<std::string> t = greeter.SayHelloCo(user);
+        greeter.AsyncCompleteRpc();         // Absent in greeter_coroutine_client2.cc, replaced with co_await t
+        std::cout << "Greeter received: " << t.get_result() << std::endl;
     }
-    greeter.setDone();
     co_return;
 }
 
@@ -286,8 +276,6 @@ int main(int argc, char** argv)  {
 
   print(PRI1, "main: async_task<void> t = runSayHelloCo(greeter);\n");
   async_task<void> t = runSayHelloCo(greeter);
-  print(PRI1, "main: greeter.AsyncCompleteRpc();\n");
-  greeter.AsyncCompleteRpc();
   print(PRI1, "main: t.wait();\n");
   t.wait();
 

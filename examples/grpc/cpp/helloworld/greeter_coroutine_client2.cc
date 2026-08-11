@@ -3,6 +3,8 @@
  * @brief Added coroutine implementation.
  * Based on the implementation in greeter_async_client.cc and greeter_async_client2.cc.
  *
+ * The difference with greeter_coroutine_client.cc is the use of a done_ variable.
+ * 
  * @author Johan Vanslembrouck
  */
 

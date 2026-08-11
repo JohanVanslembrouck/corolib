@@ -63,11 +63,29 @@ target_link_libraries(hsw_grpc_proto
 foreach(_target
   multigreeter_client
   multigreeter_coroutine_client
+  multigreeter_coroutine_client_lso
   multigreeter_coroutine_client2
+  multigreeter_coroutine_client2_lso
   multigreeter_coroutine_client3
+  multigreeter_coroutine_client3_lso
   multigreeter_server)
   add_executable(${_target} "${_target}.cc")
+  target_compile_definitions(${_target} PRIVATE USE_COROUTINES=1)
   target_link_libraries(${_target}
+    hsw_grpc_proto
+    ${_REFLECTION}
+    ${_GRPC_GRPCPP}
+    ${_PROTOBUF_LIBPROTOBUF})
+endforeach()
+
+# Targets greeter_[async_](client|server)
+foreach(_target
+  multigreeter_coroutine_client
+  multigreeter_coroutine_client2
+  multigreeter_coroutine_client3)
+  add_executable(${_target}_nc "${_target}.cc")
+  target_compile_definitions(${_target}_nc PRIVATE USE_COROUTINES=0)
+  target_link_libraries(${_target}_nc
     hsw_grpc_proto
     ${_REFLECTION}
     ${_GRPC_GRPCPP}

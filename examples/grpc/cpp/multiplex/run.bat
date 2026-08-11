@@ -4,8 +4,10 @@ multiplex_client.exe
 multiplex_client2.exe
 
 multiplex_coroutine_client2.exe
+multiplex_coroutine_client2_lso.exe
 
 multiplex_coroutine_client3.exe
+multiplex_coroutine_client3_lso.exe
 multiplex_coroutine_client3-when_all.exe
 multiplex_coroutine_client3-when_any.exe
 multiplex_coroutine_client3-all.exe

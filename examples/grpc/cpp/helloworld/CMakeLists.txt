@@ -68,6 +68,7 @@ foreach(_target
   greeter_callback_client
   greeter_callback_server
   greeter_coroutine_client
+  greeter_coroutine_client_lso
   greeter_coroutine_client2
   greeter_coroutine_client2_lso
   greeter_coroutine_client2a

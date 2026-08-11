@@ -9,7 +9,7 @@
  * The completionHandler runs on the original thread, and is applied
  * on the status information that is popped from the queue.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 /*
@@ -77,7 +77,7 @@ struct StatusCo
 
 using EventQueueThrStatusCo = QueueThreadSafe<StatusCo, ARRAYSIZE>;
 
-class GreeterClient : public CommService
+class MultiplexClient : public CommService
 {
 private:
     // eager-start operation definition - begin
@@ -107,7 +107,7 @@ private:
     // eager-start operation definition - end
 
 public:
-    explicit GreeterClient(std::shared_ptr<Channel> channel)
+    explicit MultiplexClient(std::shared_ptr<Channel> channel)
         : channel_(channel)
     {}
 
@@ -227,15 +227,15 @@ int main(int argc, char** argv) {
   std::string target_str = absl::GetFlag(FLAGS_target);
 
   set_print_level(0x01);        // Use 0x03 to follow the flow in corolib
-                                // Use 0x11 to follow the flow in GreeterClient
+                                // Use 0x11 to follow the flow in MultiplexClient
 
-  GreeterClient greeter(
+  MultiplexClient multiplexClient(
       grpc::CreateChannel(target_str, grpc::InsecureChannelCredentials()));
 
   print(PRI1); print(PRI1, "Using SayHello_GetFeatureCo\n");
   for (int i = 0; i < NR_ITERATIONS; ++i) {
-      async_task<void> t = greeter.SayHello_GetFeatureCo();
-      greeter.runEventQueue(2);     // Started 2 operations
+      async_task<void> t = multiplexClient.SayHello_GetFeatureCo();
+      multiplexClient.runEventQueue(2);     // Started 2 operations
       //t.wait();                   // No need to call t.wait()
 
       print(PRI2, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
@@ -244,8 +244,8 @@ int main(int argc, char** argv) {
 
   print(PRI1); print(PRI1, "Using SayHello_GetFeatureCo_when_all\n");
   for (int i = 0; i < NR_ITERATIONS; ++i) {
-      async_task<void> t = greeter.SayHello_GetFeatureCo_when_all();
-      greeter.runEventQueue(2);     // Started 2 operations
+      async_task<void> t = multiplexClient.SayHello_GetFeatureCo_when_all();
+      multiplexClient.runEventQueue(2);     // Started 2 operations
       //t.wait();                   // No need to call t.wait()
 
       print(PRI2, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
@@ -254,8 +254,8 @@ int main(int argc, char** argv) {
 
   print(PRI1); print(PRI1, "Using SayHello_GetFeatureCo_when_any\n");
   for (int i = 0; i < NR_ITERATIONS; ++i) {
-      async_task<void> t = greeter.SayHello_GetFeatureCo_when_any();
-      greeter.runEventQueue(2);     // Started 2 operations
+      async_task<void> t = multiplexClient.SayHello_GetFeatureCo_when_any();
+      multiplexClient.runEventQueue(2);     // Started 2 operations
       //t.wait();                   // No need to call t.wait()
 
       print(PRI2, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");

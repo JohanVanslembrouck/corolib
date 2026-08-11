@@ -41,8 +41,9 @@ public:
         request.set_name(user);
 
         // Call object to store rpc data
+        // AsyncClientCall* call = new AsyncClientCall;         // Original code
         AsyncClientCall* call = new AsyncClientCall(this);      // JVS: allow terminating the program automatically
-
+        
         // stub_->AsyncSayHello() performs the RPC call, returning an instance to
         // store in "call". Because we are using the asynchronous API, we need to
         // hold on to the "call" instance in order to get updates on the ongoing RPC.

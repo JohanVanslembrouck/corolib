@@ -1,14 +1,16 @@
  /**
-  * @file multigreeter_coroutine_client2.cc
+  * @file multigreeter_coroutine_client2_lso.cc
   * @brief Added coroutine implementation. Based on the implementation in multigreeter_client.cc.
   * Original source https://groups.google.com/g/grpc-io/c/2wyoDZT5eao
   * 
-  * multigreeter_coroutine_client2.cc is a variant of multigreeter_coroutine_client.cc.
+  * multigreeter_coroutine_client2_lso.cc is a variant of multigreeter_coroutine_client.cc.
   * Instead of printing the result in AsyncClientCall::HandleResponse(),
   * multigreeter_coroutine_client2.cc saves the result into a string,
   * which is printed in the coroutine SayHelloCo.
   * 
-  * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+  * In contrast to multigreeter_coroutine_client2.cc, this implementation uses a lso (lazy-start operation) and lazy-start coroutines.
+  * 
+  * @author Johan Vanslembrouck
   */
 
 #include <iostream>
@@ -56,31 +58,69 @@ private:
 
 private:
 #if USE_COROUTINES
-    // eager-start operation definition - begin
-    async_operation<ReaderResult> start_SayHello(HelloRequest& request) {
-        int index = get_free_index();
-        async_operation<ReaderResult> ret{ this, index };
-        start_SayHello_impl(index, request);
-        return ret;
+    // lazy-start operation definition - begin
+    class SayHello_operation_impl
+    {
+    public:
+        SayHello_operation_impl(GreeterClient* greeterClient, HelloRequest& request)
+            : greeterClient_(greeterClient)
+            , request_(request)
+            , started_(false)
+        {
+        }
+
+        bool try_start(async_operation_ls_base& operation) noexcept {
+            if (started_)       // Avoid starting a lazy start operation multiple times, e.g. when co_await-ed in a loop.
+                return true;
+
+            // Call object to store rpc data
+            AsyncClientCall* call = new AsyncClientCall(greeterClient_);
+
+            // stub_->AsyncSayHello() performs the RPC call, returning an instance to
+            // store in "call". Because we are using the asynchronous API, we need to
+            // hold on to the "call" instance in order to get updates on the ongoing RPC.
+            call->response_reader = greeterClient_->stub_->AsyncsayHello(&call->context, request_, &greeterClient_->cq_, (void*)call);
+
+            call->completionHandler_ =
+                [this, &operation](ReaderResult result) {
+                print(PRI1, "SayHello_operation_impl - completionHandler\n");
+                result_ = std::move(result);
+                operation.completed();
+                };
+
+            started_ = true;
+            return true;
+        }
+
+        ReaderResult get_result(async_operation_ls_base&) {
+            print(PRI1, "SayHello_operation_impl - get_result\n");
+            return result_;
+        }
+
+    private:
+        GreeterClient* greeterClient_;
+        HelloRequest& request_;
+        ReaderResult result_;
+        bool started_;
+    };
+
+    class SayHello_operation : public async_operation_ls<SayHello_operation>
+    {
+    public:
+        SayHello_operation(GreeterClient* greeterClient, HelloRequest& request)
+            : m_impl(greeterClient, request) {
+        }
+
+        bool try_start() noexcept { return m_impl.try_start(*this); }
+        ReaderResult get_result() { return m_impl.get_result(*this); }
+
+        SayHello_operation_impl m_impl;
+    };
+
+    SayHello_operation start_SayHello(GreeterClient* greeterClient, HelloRequest& request) {
+        return SayHello_operation(greeterClient, request);
     }
-
-    void start_SayHello_impl(int idx, HelloRequest& request) {
-        // Call object to store rpc data
-        AsyncClientCall* call = new AsyncClientCall(this);
-
-        // stub_->AsyncSayHello() performs the RPC call, returning an instance to
-        // store in "call". Because we are using the asynchronous API, we need to
-        // hold on to the "call" instance in order to get updates on the ongoing RPC.
-        call->response_reader = stub_->AsyncsayHello(&call->context, request, &cq_, (void*)call);
-
-        call->completionHandler_ =
-            [this, idx](ReaderResult result) {
-            print(PRI1, "completionHandler\n");
-            // completionHandler is defined in commservice.h
-            this->completionHandler(idx, result);
-            };
-    }
-    // eager-start operation definition - end
+    // lazy-start operation definition - end
 #endif
 
 public:
@@ -104,25 +144,25 @@ public:
 
 #if USE_COROUTINES
     // Top level coroutine. Added because main() cannot be a coroutine.
-    async_task<void> runSayHelloCo(const std::string& user) {
+    async_ltask<void> runSayHelloCo(const std::string& user) {
         co_await SayHelloCo(user);
         done_ = true;           // JVS: allow terminating the program automatically
         co_return;
     }
 
-    async_task<void> SayHelloCo(const std::string& user) {
+    async_ltask<void> SayHelloCo(const std::string& user) {
         print(PRI1, "SayHelloCo: begin\n");
         
         HelloRequest request;
         // Data we are sending to the server.
         request.set_name(user);
 
-        async_operation<ReaderResult> op = start_SayHello(request);
-        op.auto_reset(true);
+        SayHello_operation op = start_SayHello(this, request);
 
         bool done = false;
         do {
-            ReaderResult result = co_await op;
+            ReaderResult result = co_await op;      // A lazy-start operation is started only when it is co_await-ed.
+                                                    // However, it must only be started the first time in the loop.
             switch (result.status) {
             case CREATE:
                 print(PRI1, "result.status = CREATE, result.str = %s\n", result.str.c_str());
@@ -282,7 +322,8 @@ int main(int argc, char** argv) {
     greeter.SayHello(user);  // The actual RPC call!
 #else
     std::string user("coroutine world");
-    async_task<void> t = greeter.runSayHelloCo(user);
+    async_ltask<void> t = greeter.runSayHelloCo(user);
+    t.start();      // An async_ltask object must be started explicitly.
     t.wait();
 #endif
 

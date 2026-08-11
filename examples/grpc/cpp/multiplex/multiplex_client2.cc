@@ -1,10 +1,10 @@
 /**
  * @file multiplex_client2.cc
  * @brief 
- * Based on multiplex_client.cc, but with the implementation moved from main() to class GreeterClient.
+ * Based on multiplex_client.cc, but with the implementation moved from main() to class MultiplexClient.
  * This will make the implementation of coroutines easier, because main() cannot contain co_await and co_return.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 /*
@@ -50,10 +50,10 @@ using grpc::Channel;
 using grpc::ClientContext;
 using grpc::Status;
 
-class GreeterClient
+class MultiplexClient
 {
 public:
-    explicit GreeterClient(std::shared_ptr<Channel> channel)
+    explicit MultiplexClient(std::shared_ptr<Channel> channel)
         : channel_(channel)
     {}
 
@@ -126,11 +126,11 @@ int main(int argc, char** argv) {
   // the argument "--target=" which is the only expected argument.
   std::string target_str = absl::GetFlag(FLAGS_target);
 
-  GreeterClient greeter(
+  MultiplexClient multiplexClient(
       grpc::CreateChannel(target_str, grpc::InsecureChannelCredentials()));
 
   for (int i = 0; i < 100; ++i) {
-      greeter.SayHello_GetFeature();
+      multiplexClient.SayHello_GetFeature();
   }
 
   return 0;

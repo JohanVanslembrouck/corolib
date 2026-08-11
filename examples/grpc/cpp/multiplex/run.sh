@@ -7,8 +7,10 @@ set -x
 ./multiplex_client2
 
 ./multiplex_coroutine_client2
+./multiplex_coroutine_client2_lso
 
 ./multiplex_coroutine_client3
+./multiplex_coroutine_client3_lso
 ./multiplex_coroutine_client3-when_all
 ./multiplex_coroutine_client3-when_any
 ./multiplex_coroutine_client3-all

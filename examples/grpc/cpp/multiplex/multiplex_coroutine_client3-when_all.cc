@@ -6,7 +6,7 @@
  * In this variant start_SayHello and start_GetFeature return async_operation<Status> instead of async_operation<void>.
  * Consequently, there is no need to pass Status as reference argument to start_SayHello and start_GetFeature.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 /*
@@ -62,7 +62,7 @@ using namespace corolib;
 
 const int NR_ITERATIONS = 100;
 
-class GreeterClient : public CommService
+class MultiplexClient : public CommService
 {
 private:
     // eager-start operation definition - begin
@@ -92,7 +92,7 @@ private:
     // eager-start operation definition - end
 
 public:
-    explicit GreeterClient(std::shared_ptr<Channel> channel)
+    explicit MultiplexClient(std::shared_ptr<Channel> channel)
         : channel_(channel)
     {}
 
@@ -162,14 +162,14 @@ int main(int argc, char** argv) {
   std::string target_str = absl::GetFlag(FLAGS_target);
 
   set_print_level(0x01);        // Use 0x03 to follow the flow in corolib
-                                // Use 0x11 to follow the flow in GreeterClient
+                                // Use 0x11 to follow the flow in MultiplexClient
 
-  GreeterClient greeter(
+  MultiplexClient multiplexClient(
       grpc::CreateChannel(target_str, grpc::InsecureChannelCredentials()));
 
   print(PRI1); print(PRI1, "Using SayHello_GetFeatureCo_when_all\n");
   for (int i = 0; i < NR_ITERATIONS; ++i) {
-      async_task<void> t = greeter.SayHello_GetFeatureCo_when_all();
+      async_task<void> t = multiplexClient.SayHello_GetFeatureCo_when_all();
       print(PRI2, "Before wait\n");
       t.wait();
       print(PRI2, "After wait\n");
