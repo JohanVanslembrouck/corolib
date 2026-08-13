@@ -1,9 +1,11 @@
 /**
  * @file p1320-coroutines-nested-loop.cpp
- * @brief
+ * @brief Coroutine variant of p1300-sync-nested-loop.cpp.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
+
+#include <chrono>
 
 #include <corolib/print.h>
 #include <corolib/async_task.h>
@@ -35,6 +37,7 @@ public:
                 async_operation<int> op1 = remoteObj1co.start_op1(msg);
                 int ret1 = co_await op1;
                 (void)ret1;
+                // Do something with ret1
             }
         }
         std::chrono::high_resolution_clock::time_point end_time = std::chrono::high_resolution_clock::now();
@@ -51,7 +54,7 @@ EventQueue eventQueue;
 
 int main()
 {
-    printf("main();\n");
+    printf("main(): begin\n");
     Class01 class01a;
     Class01 class01b;
     async_task<void> t1 = class01a.coroutine1();
@@ -59,5 +62,6 @@ int main()
     eventQueue.run();
     t1.wait();
     t2.wait();
+    printf("main(): end\n");
     return 0;
 }

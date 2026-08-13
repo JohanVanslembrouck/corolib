@@ -7,7 +7,7 @@
  * The operationX_result functions also take a void* as parameter instead of
  * a operationContext* because the latter is an application-dependent type.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <stdio.h>
@@ -94,8 +94,10 @@ public:
 
 int main()
 {
+    printf("main(): begin\n");
     Class1 obj1;
     obj1.operationA(10);
     obj1.operationA(20);
+    printf("main(): end\n");
     return 0;
 }

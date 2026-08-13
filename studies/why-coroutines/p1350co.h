@@ -2,7 +2,7 @@
  * @file p1350co.h
  * @brief Coroutine "wrapper" class for RemoteObject1.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _P1350CO_H_

@@ -1,8 +1,8 @@
 /**
  * @file p1400co.h
- * @brief Coroutine "wrapper" class for RemoteObject1.
+ * @brief The file defines a coroutine "wrapper" class for RemoteObject1.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _P1400CO_H_

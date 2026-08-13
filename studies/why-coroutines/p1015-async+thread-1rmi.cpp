@@ -2,13 +2,19 @@
  * @file p1015-async+thread-1rmi.cpp
  * @brief
  * Note how this implementation is very close to the one in p1000-sync-1rmi.cpp.
+ * This application has synchronous (blocking) behavior!
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include "common.h"
 #include "p1000thr.h"
 
+/**
+ * @brief
+ * Class with a synchronous remote method invocation (RMI) in function1 and function1a.
+ *
+ */
 class Class01
 {
 public:
@@ -37,7 +43,7 @@ private:
 
 int main()
 {
-    printf("main();\n");
+    printf("main(): begin\n");
     Class01 class01;
     int ret1 = class01.function1(11, 12);
     int ret2 = class01.function1(21, 22);
@@ -59,6 +65,7 @@ int main()
     printf("main(): ret2a = %d\n", ret2a);
     printf("main(): ret3a = %d\n", ret3a);
     printf("main(): ret4a = %d\n", ret4a);
+    printf("main(): end\n");
     return 0;
 }
 

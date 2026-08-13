@@ -2,7 +2,7 @@
  * @file p1000thr.cpp
  * @brief 
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
  
 #include "p1000thr.h"

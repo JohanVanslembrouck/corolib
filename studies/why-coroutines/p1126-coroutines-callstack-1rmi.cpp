@@ -6,7 +6,7 @@
  * This allows going downwards the stack (higher layer objects call coroutines of lower layers)
  * and upwards the stack (lower layer objects call coroutines of higher layers).
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <corolib/print.h>
@@ -340,15 +340,20 @@ EventQueue eventQueue;
  */
 int main()
 {
-    printf("main();\n");
+    printf("main(): begin\n");
     // Downstream example
     async_task<int> t1 = layer03.coroutine1d(2);
     // Upstream example
     async_task<int> t2 = remoteObj1co.start_op1u(3, 4);
+
     eventQueue.run();
+
     int ret1 = t1.get_result();
-    printf("main(): ret1 = %d\n", ret1);
     int ret2 = t2.get_result();
+
+    printf("\n");
+    printf("main(): ret1 = %d\n", ret1);
     printf("main(): ret2 = %d\n", ret2);
+    printf("main(): end\n");
     return 0;
 }

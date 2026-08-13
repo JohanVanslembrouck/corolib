@@ -3,13 +3,13 @@
  * @brief
  * See the event queue description in tutorial/eventqueue.h
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _EVENTQUEUE_H_
 #define _EVENTQUEUE_H_
 
-#include <stdio.h>
+//#include <stdio.h>
 
 #include <functional>
 #include <queue>

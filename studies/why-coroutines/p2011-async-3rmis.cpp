@@ -6,7 +6,7 @@
  * The difference with p2010-async-3rmis.cpp is that the start_operationX and operationX_result
  * functions take operationContext* as sole parameter. They have the same signature.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <stdio.h>
@@ -84,8 +84,10 @@ public:
 
 int main()
 {
+    printf("main(): begin\n");
     Class1 obj1;
     obj1.operationA(10);
     obj1.operationA(20);
+    printf("main(): end\n");
     return 0;
 }

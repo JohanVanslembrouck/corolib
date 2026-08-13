@@ -1,8 +1,14 @@
 /**
  * @file p1000co.h
- * @brief Coroutine "wrapper" class for RemoteObject1.
- *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @brief This file defines a coroutine "wrapper" class, RemoteObject1Co, for RemoteObject1.
+ * 
+ * This header file is accompanied by 3 implementations of the function start_op1_impl.
+ * These implementations are in
+ +      p1000co.cpp
+ *      p1000cothr.cpp
+ *      p1000cothreq.cpp
+ * 
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _P1000CO_H_
@@ -13,8 +19,6 @@
 #include <corolib/commservice.h>
 
 #include "p1000.h"
-
-//extern RemoteObject1 remoteObj1;
 
 using namespace corolib;
 
@@ -27,8 +31,10 @@ public:
     
     // User API
     /**
-     * @brief op1 has same parameter list as op1 in class RemoteObject1
-     * but returns async_task<int> instead of int
+     * @brief op1 has the same parameter list as op1 in class RemoteObject1
+     * but returns async_task<int> instead of int.
+     * Notice that this coroutine has output parameters.
+     * The correct values of these parameters are only available after the co_await statement.
      * @param in1
      * @param in2
      * @param out2

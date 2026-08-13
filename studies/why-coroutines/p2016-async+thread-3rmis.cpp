@@ -5,7 +5,7 @@
  * The difference with p2015-async+thread-3rmis.cpp is that the 2 calls of operationA
  * run on a dedicated thread.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <stdio.h>
@@ -104,10 +104,12 @@ public:
 
 int main()
 {
+    printf("main(): begin\n");
     Class1 obj1;
 	std::thread th1(&Class1::operationA, &obj1, 10); 
     std::thread th2(&Class1::operationA, &obj1, 20);;
 	th1.join();
 	th2.join();
+    printf("main(): end\n");
     return 0;
 }

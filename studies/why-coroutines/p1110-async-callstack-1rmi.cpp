@@ -2,7 +2,7 @@
  * @file p1110-async-callstack-1rmi.cpp
  * @brief Asynchronous implementation of p1100-sync-callstack-1rmi.cpp.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <stdio.h>
@@ -186,7 +186,7 @@ private:
 EventQueue eventQueue;
 
 int main() {
-    printf("main()\n");
+    printf("main(): begin\n");
     Layer03 layer03;
     int ret1 = -1;
     layer03.function1(2, ret1);
@@ -198,9 +198,12 @@ int main() {
     layer03.function2(3, ret4);
 
     eventQueue.run();
+
+    printf("\n");
     printf("main(): ret1 = %d\n", ret1);
     printf("main(): ret2 = %d\n", ret2);
     printf("main(): ret3 = %d\n", ret3);
     printf("main(): ret4 = %d\n", ret4);
+    printf("main(): end\n");
     return 0;
 }

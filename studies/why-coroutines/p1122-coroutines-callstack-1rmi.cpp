@@ -4,7 +4,7 @@
  * Variant of p1120. References to lower layer objects are passed via the constructor.
  * All objects can be and are declared after all class definitions.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <corolib/print.h>
@@ -122,20 +122,24 @@ EventQueue eventQueue;
 
 int main()
 {
-    printf("main()\n");
+    printf("main(): begin\n");
     async_task<int> t1 = layer03.coroutine1(2);
     async_task<int> t2 = layer03.coroutine1(3);
     async_task<int> t3 = layer03.coroutine2(2);
     async_task<int> t4 = layer03.coroutine2(3);
 
     eventQueue.run();
+
     int ret1 = t1.get_result();
-    printf("main(): ret1 = %d\n", ret1);
     int ret2 = t2.get_result();
-    printf("main(): ret2 = %d\n", ret2);
     int ret3 = t3.get_result();
-    printf("main(): ret3 = %d\n", ret3);
     int ret4 = t4.get_result();
+
+    printf("\n");
+    printf("main(): ret1 = %d\n", ret1);
+    printf("main(): ret2 = %d\n", ret2);
+    printf("main(): ret3 = %d\n", ret3);
     printf("main(): ret4 = %d\n", ret4);
+    printf("main(): end\n");
     return 0;
 }

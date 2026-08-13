@@ -1,8 +1,10 @@
 /**
  * @file p1200cog.cpp
- * @brief
- *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @brief This file contains the first of three implementations of the functions 
+ * start_op1_impl, start_op2_impl and start_op3_impl.
+ * This implementation calls sendc_op1, sendc_op2 and sendc_op3.
+ * 
+ * @author Johan Vanslembrouck
  */
 
 #include "p1200cog.h"

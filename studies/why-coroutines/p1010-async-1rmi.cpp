@@ -1,8 +1,9 @@
 /**
  * @file p1010-async-1rmi.cpp
- * @brief
- *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @brief This file contains an asynchronous implementation of p1000-sync-1rmi.cpp.
+ * Notice how the code is very different from the synchronous implementation.
+ * 
+ * @author Johan Vanslembrouck
  */
 
 #include <stdio.h>
@@ -13,7 +14,8 @@
 #include "p1000.h"
 
 /**
- * @brief Asynchronous version of Class01 in p1000-sync-1rmi.cpp
+ * @brief
+ * Asynchronous version of Class01 in p1000-sync-1rmi.cpp.
  *
  */
 class Class01
@@ -157,7 +159,7 @@ EventQueue eventQueue;
 
 int main()
 {
-    printf("main();\n");
+    printf("main(): begin\n");
     Class01 class01;
 
 #if 0
@@ -261,5 +263,6 @@ int main()
     printf("main(): ret5c = %d\n", ret5c);
     printf("main(): ret5d = %d\n", ret5d);
 #endif
+    printf("main(): end\n");
     return 0;
 }

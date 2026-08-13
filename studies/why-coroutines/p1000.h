@@ -1,8 +1,8 @@
 /**
  * @file p1000.h
- * @brief Contains a RemoteObject1 class that is common to all p10XX-* and p11XX-* variants.
+ * @brief Contains a RemoteObject1 class that is common to all p10XX-* and p11XX-* application variants.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _P1000_H_
@@ -49,7 +49,7 @@ public:
     }
     
     /**
-     * @brief asynchronous operation; asynchronous variant of op1
+     * @brief asynchronous operation: asynchronous variant of op1 using registerCB
      * @param in1
      * @param in2
      * @param lambda
@@ -67,9 +67,7 @@ public:
     }
 
     /**
-    * @brief asynchronous operation; asynchronous variant of op1
-    * In this variant, the applicationn level function passes a context
-    * whose content is opaque to send_c
+    * @brief asynchronous operation: asynchronous variant of op1 using registerCB
     * @param context
     * @param in1
     * @param in2
@@ -88,7 +86,7 @@ public:
     }
 
     /**
-     * @brief asynchronous operation; asynchronous variant of op1
+     * @brief asynchronous operation: asynchronous variant of op1 using startThread
      * @param in1
      * @param in2
      * @param lambda
@@ -106,7 +104,7 @@ public:
     }
 
     /**
-  * @brief asynchronous operation; asynchronous variant of op1
+  * @brief asynchronous operation: asynchronous variant of op1 using startThreadEQ
   * @param in1
   * @param in2
   * @param lambda

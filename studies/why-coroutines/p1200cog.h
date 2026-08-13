@@ -1,8 +1,15 @@
 /**
  * @file p1200cog.h
- * @brief coroutine wrapper class for RemoteObject1 with generic completion handler
- *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @brief This file defines a coroutine "wrapper" class, RemoteObject1Co, for RemoteObject1. It uses with generic completion handler.
+ * This explains the 'g' in the name.
+ * 
+ * This header file is accompanied by 3 implementations of the functions start_op1_impl, start_op2_impl and start_op3_impl.
+ * These implementations are in
+ +      p1200cog.cpp
+ *      p1200cogthr.cpp
+ *      p1200cogthreq.cpp
+ * 
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _P1200COG_H_

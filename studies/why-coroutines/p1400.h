@@ -1,10 +1,11 @@
 /**
  * @file p1400.h
- * @brief Contains a RemoteObjectImpl(ementation) class that is common to all p1400-* variants.
+ * @brief The file ontains a RemoteObjectImpl(ementation) class that is common to all p1400-* application variants.
+ * 
  * RemoteObjectImpl contains functions to write and read a segment (synchronous version)
  * or to start writing and reading a segment (asynchronous version).
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _P1400_H_

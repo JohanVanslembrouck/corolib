@@ -1,8 +1,8 @@
 /**
  * @file p1200.h
- * @brief
+ * @brief Contains a RemoteObject1 class definition that is common to all p12XX-* and p15XX-* application variants.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _P1200_H_

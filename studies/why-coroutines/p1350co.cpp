@@ -2,7 +2,7 @@
  * @file p1350co.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include "p1350co.h"

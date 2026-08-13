@@ -1,8 +1,13 @@
 /**
  * @file p1000thr.h
- * @brief Coroutine "wrapper" class for RemoteObject1.
- *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @brief Thread "wrapper" class for RemoteObject1.
+ * This implementation has synchronous (blocking) behavior.
+ * 
+ * Although the completion handler runs on a separate thread,
+ * op1 and op1a await the acquisition of a semaphore that is released from the completion handler.
+ * This class shows how to implement a synchronous API using an asynchronous API at the lower level.
+ * 
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _P1000THR_H_
@@ -21,7 +26,7 @@ public:
     
     // User API
     /**
-     * @brief op1 has same parameter list as op1 in class RemoteObject1
+     * @brief op1 has the same parameter list as op1 in class RemoteObject1
      * @param in1
      * @param in2
      * @param out2

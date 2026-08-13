@@ -1,8 +1,8 @@
 /**
- * @file p1212-async-3rmis.cpp
- * @brief
+ * @file p1210-async-3rmis.cpp
+ * @brief This file contains an asynchronous implementation of p1200-sync-3rmis.cpp.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <stdio.h>
@@ -11,6 +11,11 @@
 #include "eventqueue.h"
 #include "p1200.h"
 
+/**
+ * @brief
+ * Asynchronous version of Class01 in p1200-sync-3rmis.cpp.
+ *
+ */
 class Class01
 {
 private:
@@ -119,7 +124,7 @@ EventQueue eventQueue;
 
 int main()
 {
-    printf("main();\n");
+    printf("main(): begin\n");
     Class01 class01;
     int ret1 = -1;
     int ret2 = -1;
@@ -139,12 +144,15 @@ int main()
     class01.function1(11, 12, 23, ret2);
     class01.function1alt(11, 12, 10, ret3);
     class01.function1alt(11, 12, 23, ret4);
+
     eventQueue.run();
 #endif
+
     printf("\n");
     printf("main(): ret1 = %d\n", ret1);
     printf("main(): ret2 = %d\n", ret2);
     printf("main(): ret3 = %d\n", ret3);
     printf("main(): ret4 = %d\n", ret4);
+    printf("main(): end\n");
     return 0;
 }

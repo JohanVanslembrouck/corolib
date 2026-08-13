@@ -1,8 +1,9 @@
 /**
  * @file p1020-coroutines-1rmi.cpp
- * @brief
- *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @brief Coroutine variant of p1000-sync-1rmi.cpp.
+ * This file defines 3 classes.
+ * 
+ * @author Johan Vanslembrouck
  */
 
 #include <corolib/print.h>
@@ -14,6 +15,19 @@ using namespace corolib;
 #include "common.h"
 #include "p1000co.h"
 
+/**
+ * @brief
+ * Class01a defines coroutine1 and coroutine1a.
+ * Both coroutines have in-parameters only.
+ * 
+ * Both coroutines call RemoteObject1Co::start_op1 that takes in-parameters only
+ * and that returns an op1_ret_t struct containing the out-parameters and return value
+ * of the original RemoteObject1 function.
+ * 
+ * coroutine1a uses an intermediate async_operation<op1_ret_t> op1 object.
+ * This shows that RemoteObject1Co::start_op1 is a "normal" function, not a coroutine.
+ * 
+ */
 class Class01a
 {
 public:
@@ -39,6 +53,18 @@ private:
     RemoteObject1Co remoteObj1co{ remoteObj1 };
 };
 
+/**
+ * @brief
+ * Class01 also defines coroutine1 and coroutine1a.
+ * Both coroutines have in-parameters only.
+ * 
+ * Both coroutines call RemoteObject1Co::op1 that has the same signature
+ * as the original RemoteObject1 function (see p1000-sync-1rmi.cpp).
+ *
+ * coroutine1a uses an intermediate async_task<int> op1 object.
+ * This shows that RemoteObject1Co::op1 is a coroutine, not a "normal" function.
+ * 
+ */
 class Class01
 {
 public:
@@ -67,6 +93,19 @@ private:
     RemoteObject1Co remoteObj1co{ remoteObj1 };
 };
 
+/**
+ * @brief
+ * Class01b again defines coroutine1 and coroutine1a.
+ * Both coroutines have two in-parameters and two out-parameters,
+ * making the out-parameters available to the caller of both coroutines.
+ * 
+ * As in Class01, both coroutines call RemoteObject1Co::op1 that has the same signature
+ * as the original RemoteObject1 function.
+ *
+ * coroutine1a uses an intermediate async_task<int> op1 object.
+ * This shows that RemoteObject1Co::op1 is a coroutine, not a "normal" function.
+ * 
+ */
 class Class01b
 {
 public:
@@ -97,10 +136,11 @@ EventQueue eventQueue;
 
 int main()
 {
-    printf("main();\n");
+    printf("main(): begin\n");
     Class01a class01a;
     Class01 class01;
     Class01b class01b;
+
     async_task<int> t1 = class01a.coroutine1(11, 12);
     async_task<int> t2 = class01a.coroutine1a(21, 22);
     async_task<int> t3 = class01.coroutine1(31, 32);
@@ -108,20 +148,24 @@ int main()
     int out11 = -1, out12 = -1, out21 = -1, out22 = -1;
     async_task<int> t5 = class01b.coroutine1(31, 32, out11, out12);
     async_task<int> t6 = class01b.coroutine1a(41, 42, out21, out22);
+
     eventQueue.run();
     printf("\n");
 
     int ret1 = t1.get_result();
-    printf("main(): ret1 = %d\n", ret1);
     int ret2 = t2.get_result();
-    printf("main(): ret2 = %d\n", ret2);
     int ret3 = t3.get_result();
-    printf("main(): ret3 = %d\n", ret3);
     int ret4 = t4.get_result();
-    printf("main(): ret4 = %d\n", ret4);
     int ret5 = t5.get_result();
-    printf("main(): ret5 = %d\n", ret5);
     int ret6 = t6.get_result();
+
+    printf("\n");
+    printf("main(): ret1 = %d\n", ret1);
+    printf("main(): ret2 = %d\n", ret2);
+    printf("main(): ret3 = %d\n", ret3);
+    printf("main(): ret4 = %d\n", ret4);
+    printf("main(): ret5 = %d\n", ret5);
     printf("main(): ret6 = %d\n", ret6);
+    printf("main(): end\n");
     return 0;
 }

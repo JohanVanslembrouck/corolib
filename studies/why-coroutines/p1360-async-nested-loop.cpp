@@ -1,8 +1,9 @@
 /**
  * @file p1360-async-nested-loop.cpp
- * @brief
+ * @brief This file contains a variant of the implementation in p1310-async-nested-loop.cpp.
+ * All differences have been marked with a comment.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <stdio.h>
@@ -85,10 +86,11 @@ EventQueue eventQueue;
 
 int main()
 {
-    printf("main();\n");
+    printf("main(): begin\n");
     Class01 class01;
     class01.function1();
     class01.function1();
     eventQueue.run();
+    printf("main(): end\n");
     return 0;
 }

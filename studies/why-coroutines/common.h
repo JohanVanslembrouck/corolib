@@ -1,6 +1,6 @@
 /**
  * @file common.h
- * @brief
+ * @brief See below for explanation.
  *
  * @author Johan Vanslembrouck
  */
@@ -30,6 +30,26 @@ struct op2_ret_t
     int ret;
 };
 
+/**
+ * @brief An asynchronous communication framework (ACF) starts a non-blocking operation,
+ * typically passing the in-parameters of the operation and a callback function (CB)
+ * that the ACF will call when then operation commplets.
+ * The CB will fill in the out parameters and return value of the equivalent synchronous operation.
+ * Also, the CB will start a new operation, or if called on a dedicated thread,
+ * unblock the thread that launched the operation and waits for it completion.
+ * In the case of coroutines, the CB will resume the coroutine that co_awaits the operation.
+ * 
+ * We will use function objects as callback functions.
+ * This file first defines all function objects that will be used by the examples in this folder.
+ * These function ohjects are called lambdas.
+ * Then, we will define 3 mechanisms to use these lambdas and the arguments they need,
+ * identified by 3 overloaded functions:
+ * 1. registerCB
+ * 2. startThread
+ * 3. startThreadEQ
+ * See the description of each function for further explanation.
+ */
+
 // lambda definitions
 // ------------------
 
@@ -55,11 +75,13 @@ using lambda_op2_ret_t = typename std::function<void(op2_ret_t)>;
 using lambda_vp_op1_ret_t = typename std::function<void(void*, op1_ret_t)>;
 using lambda_vp_op2_ret_t = typename std::function<void(void*, op2_ret_t)>;
 
-// event queues
-// ------------
-
 /**
  * @brief
+ * registerCB functions (where CB stands for callback) construct an function object of type std::function<void(void)>
+ * and place this function object onto a queue.
+ * The first parameter of aa registerCB function is a lambda.
+ * The next parameters (if any) are the arguments of the lambda.
+ * 
  * Normally, we can push instances of any of the lambdas defined above onto an I/O event queue.
  * Each lambda is associated with an I/O event, which carries the arguments of the lambda.
  * When an I/O event arrives, we call the lambda with the arguments from the I/O event.
@@ -70,6 +92,8 @@ using lambda_vp_op2_ret_t = typename std::function<void(void*, op2_ret_t)>;
  * This outer lambda has type lambda_void_t = std::function<void(void)>.
  * 
  * At the "popping" side, the outer lambda is called, applying the inner lambda to the content of the I/O event.
+ * It is important to do this on the popping side, because (in the context of coroutines),
+ * this will typically resume a suspended coroutine.
  * 
  * The following is an illustration of what has just been explained.
  * 
@@ -87,15 +111,18 @@ using lambda_vp_op2_ret_t = typename std::function<void(void*, op2_ret_t)>;
 
  * An alternative implementation in the absence of a I/O system, is to place the lambda with a corresponding I/O event
  * as one item (struct) onto an event queue and then, on the popping side, to apply the lambda to the content of the I/O event.
+ * In the example above { 1, 2, in1 + in2 } is passed as the content of the I/O event, together with lambda_3int_t lambda1.
+ * At the popping side, we apply lambda1 to the event: lambda1(1, 2, in1 + in2);
+ * 
  * Such an implementation would require the use of e.g. a variant type.
  * The current solution uses overloaded function definitions instead.
+ * 
+ * registerCB functions are used to simulate communication frameworks
+ * that (must) enter an event loop to process the completion of asynchronous operations.
+ * Such communication frameworks are often single-threaded.
  */
 
 extern EventQueue eventQueue;
-extern EventQueueThr<lambda_void_t, 32>  eventQueueThr;
-
-// registerCB functions
-// --------------------
 
 inline void registerCB(lambda_3int_t lambda, int in1, int in2)
 {
@@ -141,8 +168,15 @@ inline void registerCB(lambda_op2_ret_t lambda, int in1, int in2)
     eventQueue.push([lambda, in1, in2]() { lambda({ 1, in1 + in2 }); });
 }
 
-// startThread functions
-// ---------------------
+/**
+ * @brief
+ * startThread functions start a thread and apply the lambda to its arguments in this thread.
+ * Because the lambdas typically resume a suspended coroutine, the coroutine will be resumed
+ * on the thread launched in the startThread function.
+ * 
+ * startThread functions are used to simulate communication frameworks 
+ * where an asynchronous operation completes on a dedicated thread.
+ */
 
 inline void startThread(lambda_3int_t lambda, int in1, int in2)
 {
@@ -206,8 +240,22 @@ inline void startThread(lambda_op2_ret_t lambda, int in1, int in2)
     thread1.detach();
 }
 
-// startThreadEQ functions
-// -----------------------
+/**
+ * @brief
+ * startThreadEQ functions (where EQ stands for event queue) combine functionality of startThread and registerCB.
+ * 
+ * startThreadEQ functions are used to simulate communication frameworks 
+ * where an asynchronous operation completes on a dedicated thread,
+ * however, we want all application code to run a single thread.
+ * 
+ * However, instead of calling the completion function directly on the thread as in startThread,
+ * we construct an outer lambda and place this one on an event queue as in registerCB.
+ * This approach allows running all application code on a single thread.
+ * 
+ * Notice that this event queue has to be thread-safe because pushing and popping is done on a different thread.
+ */
+
+extern EventQueueThr<lambda_void_t, 32>  eventQueueThr;
 
 inline void startThreadEQ(lambda_3int_t lambda, int in1, int in2)
 {

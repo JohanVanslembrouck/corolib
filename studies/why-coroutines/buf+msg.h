@@ -3,7 +3,7 @@
  * @brief Contains a very simplified buffer and message implementation.
  * Suffices for use in the synchronous / asynchronous / coroutine examples.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _BUF_MSG_H_

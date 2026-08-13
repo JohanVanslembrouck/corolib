@@ -8,7 +8,7 @@
  * This approach can be useful in case it is not possible or desirable to make modifications
  * to an existing asynchronous callstack, yet the application should be able to use coroutines.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <stdio.h>
@@ -384,7 +384,7 @@ Layer03Co layer03co;
 EventQueue eventQueue;
 
 int main() {
-    printf("main()\n");
+    printf("main(): begin\n");
     int ret0 = -1;
     layer03.function1(2, ret0);
     async_task<int> t1 = layer03co.coroutine1(2);
@@ -393,14 +393,18 @@ int main() {
     async_task<int> t4 = layer03co.coroutine2(3);
 
     eventQueue.run();
-    printf("main(): ret0 = %d\n", ret0);
+
     int ret1 = t1.get_result();
-    printf("main(): ret1 = %d\n", ret1);
     int ret2 = t2.get_result();
-    printf("main(): ret2 = %d\n", ret2);
     int ret3 = t3.get_result();
-    printf("main(): ret3 = %d\n", ret3);
     int ret4 = t4.get_result();
+
+    printf("\n");
+    printf("main(): ret0 = %d\n", ret0);
+    printf("main(): ret1 = %d\n", ret1);
+    printf("main(): ret2 = %d\n", ret2);
+    printf("main(): ret3 = %d\n", ret3);
     printf("main(): ret4 = %d\n", ret4);
+    printf("main(): end\n");
     return 0;
 }

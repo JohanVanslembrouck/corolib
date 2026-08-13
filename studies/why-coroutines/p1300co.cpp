@@ -2,7 +2,7 @@
  * @file p1300co.cpp
  * @brief Coroutine "wrapper" class for RemoteObject1.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include "p1300co.h"

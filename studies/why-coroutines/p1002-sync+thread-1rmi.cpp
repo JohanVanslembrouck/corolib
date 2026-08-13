@@ -1,8 +1,10 @@
 /**
  * @file p1002-sync+thread-1rmi.cpp
- * @brief
+ * @brief Based upon p1000-sync-1rmi.cpp.
+ * This program is reactive: a blocking function now runs on its own thread.
+ * The implementation of function1 does not have to be changed.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <stdio.h>
@@ -12,7 +14,8 @@
 #include "p1000.h"
 
 /**
- * @brief Class with a simple remote method invocation (RMI) in function1.
+ * @brief
+ * Class with a synchronous remote method invocation (RMI) in function1.
  *
  */
 class Class01
@@ -34,7 +37,7 @@ private:
 
 int main()
 {
-    printf("main();\n");
+    printf("main(): begin\n");
     Class01 class01;
     std::future<int> t1 = std::async(std::launch::async, [&class01]() { return class01.function1(11, 12); });
     int ret1 = t1.get();
@@ -44,5 +47,6 @@ int main()
     printf("\n");
     printf("main(): ret1 = %d\n", ret1);
     printf("main(): ret2 = %d\n", ret2);
+    printf("main(): end\n");
     return 0;
 }

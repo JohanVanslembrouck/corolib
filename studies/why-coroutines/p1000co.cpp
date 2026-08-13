@@ -1,8 +1,9 @@
 /**
  * @file p1000co.cpp
- * @brief 
+ * @brief This file contains the first of three implementations of the function start_op1_impl.
+ * This implementation calls RemoteObject1::sendc_op1.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
  
 #include "p1000co.h"

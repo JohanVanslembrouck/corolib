@@ -4,7 +4,7 @@
  * The application calls layer03.function1, which calls layer2.function2, which calls layer1.function1,
  * which calls remoteOb1.op.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <stdio.h>
@@ -79,12 +79,14 @@ private:
 };
 
 int main() {
-    printf("main();\n");
+    printf("main(): begin\n");
     Layer03 layer03;
     int ret1 = layer03.function1(2);
     int ret2 = layer03.function1(3);
 
+    printf("\n");
     printf("main(): ret1 = %d\n", ret1);
     printf("main(): ret2 = %d\n", ret2);
+    printf("main(): end\n");
     return 0;
 }

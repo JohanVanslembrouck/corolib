@@ -1,9 +1,15 @@
 /**
  * @file p1225-coroutines-3rmis-generichandler.cpp
- * @brief Variant of p1220 using a generic version of the completion handler.
+ * @brief Variant of p1220-coroutines-3rmis.cpp using a generic version of the completion handler.
+ * This application file will be linked with 3 implementations of RemoteObject1Co defined in p1200cog.h,
+ * producing 3 different applications:
+ *      application                                     implementation
+ *      --------------------------------------------------------------
+ *      p1225-coroutines-3rmis-generichandler(.exe)     p1200cog.cpp
+ *      p1226-coroutines-3rmis-generichandler(.exe)     p1200cogthr.cpp
+ *      p1227-coroutines-3rmis-generichandler(.exe)     p1200cogthreq.cpp
  *
- *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <corolib/print.h>
@@ -18,6 +24,11 @@
 
 using namespace corolib;
 
+/**
+ * @brief
+ * See description in p1220-coroutines-3rmis.cpp.
+ *
+ */
 class Class01a
 {
 public:
@@ -80,6 +91,11 @@ private:
     RemoteObject1Co remoteObj3co{ remoteObj3 };
 };
 
+/**
+ * @brief
+ * See description in p1220-coroutines-3rmis.cpp.
+ *
+ */
 struct Class01
 {
     async_task<int> coroutine1(int in1, int in2, int testval)
@@ -228,6 +244,7 @@ int main() {
         print(PRI1, "main(): ret3 = %d\n", ret3);
         print(PRI1, "main(): ret4 = %d\n", ret4);
     }
+    print(PRI1, "main(): end\n");
 
     return 0;
 }

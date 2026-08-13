@@ -1,8 +1,9 @@
 /**
  * @file p1310-async-nested-loop.cpp
- * @brief
+ * @brief This file contains an asynchronous implementation of p1300-sync-nested-loop.cpp.
+ * Notice how the code is very different from the synchronous implementation.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <stdio.h>
@@ -56,6 +57,7 @@ protected:
             ctxt->counter++;
         }
         else {
+            // End of inner loop
             ctxt->j = 0;
             ctxt->i++;
             if (ctxt->i < MAX_MSG_LENGTH) {
@@ -87,10 +89,11 @@ EventQueue eventQueue;
 
 int main()
 {
-    printf("main();\n");
+    printf("main(): begin\n");
     Class01 class01;
     class01.function1();
     class01.function1();
     eventQueue.run();
+    printf("main(): end\n");
     return 0;
 }

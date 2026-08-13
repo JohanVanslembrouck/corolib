@@ -1,8 +1,10 @@
 /**
  * @file p1300-sync-nested-loop.cpp
- * @brief
- *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @brief Example with 1 synchronous RMI called in a nested loop (a loop in a loop).
+ * This program is not reactive (responsive) because the RMI blocks the program
+ * for the duration of the RMI.
+ * 
+ * @author Johan Vanslembrouck
  */
 
 #include <stdio.h>
@@ -31,6 +33,7 @@ public:
                 printf("Class04::function1(): i = %d, j = %d, counter = %d\n", i, j, counter++);
                 int ret1 = remoteObj1.op1(msg);
                 (void)ret1;
+                // Do something with msg
             }
         }
         std::chrono::high_resolution_clock::time_point end_time = std::chrono::high_resolution_clock::now();
@@ -44,9 +47,10 @@ private:
 
 int main()
 {
-    printf("main();\n");
+    printf("main(): begin\n");
     Class01 class01;
     class01.function1();
     class01.function1();
+    printf("main(): end\n");
     return 0;
 }

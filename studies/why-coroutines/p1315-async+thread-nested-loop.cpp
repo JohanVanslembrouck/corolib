@@ -1,8 +1,10 @@
 /**
  * @file p1315-async+thread-nested-loop.cpp
  * @brief
- *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * Note how this implementation is very close to the one in p1300-sync-nested-loop.cpp.
+ * This application has synchronous (blocking) behavior!
+ * 
+ * @author Johan Vanslembrouck
  */
 
 #include <stdio.h>
@@ -45,9 +47,10 @@ private:
 
 int main()
 {
-    printf("main();\n");
+    printf("main(): begin\n");
     Class01 class01;
     class01.function1();
     class01.function1();
+    printf("main(): end\n");
     return 0;
 }

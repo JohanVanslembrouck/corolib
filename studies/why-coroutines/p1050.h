@@ -1,8 +1,11 @@
 /**
  * @file p1050.h
- * @brief Contains a RemoteObject1 class that is common to all p10XX-* and p11XX-* variants.
- *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @brief This file defines a RemoteObject1 class that is common to all p10XX-* and p11XX-* application variants.
+ * 
+ * This RemoteObject1 class is an extension of RemoteObject1 in p1000.h:
+ * it uses a RemoteObjectImpl object to simulate read and write operations.
+ * 
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _P1050_H_
@@ -99,7 +102,7 @@ public:
     };
 
     /**
-     * @brief asynchronous operation; asynchronous variant of op1
+     * @brief asynchronous operation: asynchronous variant of op1
      * This synchronous function has been split into sendc_op1, handle_write_op1 and handle_read_op1.
      * 
      * @param context
@@ -153,7 +156,7 @@ public:
     
 
     /**
-     * @brief asynchronous operation; asynchronous variant of op1
+     * @brief asynchronous operation: asynchronous variant of op1
      * This synchronous function has been split into sendc_op1, handle_write_op1 and handle_read_op1.
      * Notice that this variant does not have void* context as first parameter.
      * 

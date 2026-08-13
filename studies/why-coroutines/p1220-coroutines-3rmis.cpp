@@ -1,9 +1,8 @@
 /**
  * @file p1220-coroutines-3rmis.cpp
- * @brief
- *
- *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @brief Coroutine variant of p1200-sync-3rmis.cpp.
+ * 
+ * @author Johan Vanslembrouck
  */
 
 #include <corolib/print.h>
@@ -17,6 +16,18 @@
 
 using namespace corolib;
 
+/**
+ * @brief
+ * Class01a defines coroutine1 and coroutine1a.
+ * Both coroutines have in-parameters only.
+ *
+ * Both coroutines call 3 RemoteObject1Co functions that take in-parameters only and that return a struct
+ * containing the out-parameters and return value of the original RemoteObject1 functions.
+ *
+ * coroutine1a uses intermediate async_operation<TYPE> objects.
+ * This shows that the RemoteObject1Co functions are "normal" functions, not coroutines.
+ * 
+ */
 class Class01a
 {
 public:
@@ -46,13 +57,13 @@ public:
         async_operation<op1_ret_t> op1 = remoteObj1co.start_op1(in1, in2);
         // 1a Do some stuff that doesn't need the result of the RMI
         op1_ret_t res1 = co_await op1;
-        printf("Class01a::coroutine1a: 1b: out1 = %d, out2 = %d, ret1 = %d\n", res1.out1, res1.out2, res1.ret);
+        printf("Class01a::coroutine1a: 1: out1 = %d, out2 = %d, ret1 = %d\n", res1.out1, res1.out2, res1.ret);
         // 1b Do stuff that needs the result of the RMI
         if (res1.ret == testval) {
             async_operation<op2_ret_t> op2 = remoteObj2co.start_op2(in1, in2);
             // 2a Do some stuff that doesn't need the result of the RMI
             op2_ret_t res2 = co_await op2;
-            printf("Class01a::coroutine1a: 2b: out3 = %d, ret2 = %d\n", res2.out1, res2.ret);
+            printf("Class01a::coroutine1a: 2: out3 = %d, ret2 = %d\n", res2.out1, res2.ret);
             // 2b Do stuff that needs the result of the RMI
             co_return res2.ret;
         }
@@ -60,7 +71,7 @@ public:
             async_operation<op1_ret_t> op3 = remoteObj3co.start_op3(in1);
             // 3a Do some stuff that doesn't need the result of the RMI
             op1_ret_t res3 = co_await op3;
-            printf("Class01a::coroutine1a: 3b: out4 = %d, out5 = %d, ret3 = %d\n", res3.out1, res3.out2, res3.ret);
+            printf("Class01a::coroutine1a: 3: out4 = %d, out5 = %d, ret3 = %d\n", res3.out1, res3.out2, res3.ret);
             // 3b Do stuff that needs the result of the RMI
             co_return res3.ret;
         }
@@ -76,6 +87,18 @@ private:
     RemoteObject1Co remoteObj3co{ remoteObj3 };
 };
 
+/**
+ * @brief
+ * Class01 also defines coroutine1 and coroutine1a.
+ * Both coroutines have in-parameters only.
+ *
+ * Both coroutines call 3 RemoteObject1Co functions that have the same signature
+ * as the original RemoteObject1 functions (see p1200-sync-3rmis.cpp).
+ *
+ * coroutine1a uses an intermediate async_task<int> op1 object.
+ * This shows that 3 RemoteObject1Co functions are coroutines, not "normal" functions.
+ *
+ */
 struct Class01
 {
     async_task<int> coroutine1(int in1, int in2, int testval)
@@ -188,5 +211,6 @@ int main()
     printf("main(): ret2 = %d\n", ret2);
     printf("main(): ret3 = %d\n", ret3);
     printf("main(): ret4 = %d\n", ret4);
+    printf("main(): end\n");
     return 0;
 }

@@ -1,8 +1,9 @@
 /**
  * @file p1370-coroutines-nested-loop.cpp
- * @brief
+ * @brief This file contains a variant of the implementation in p1320-coroutines-nested-loop.cpp.
+ * All differences have been marked with a comment.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <corolib/print.h>
@@ -52,7 +53,7 @@ EventQueue eventQueue;
 
 int main()
 {
-    printf("main();\n");
+    printf("main(): begin\n");
     Class01 class01a;
     Class01 class01b;
     async_task<void> t1 = class01a.coroutine1();
@@ -60,5 +61,6 @@ int main()
     eventQueue.run();
     t1.wait();
     t2.wait();
+    printf("main(): end\n");
     return 0;
 }

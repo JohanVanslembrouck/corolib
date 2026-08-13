@@ -9,7 +9,7 @@
  * However, because all parameters and return values are stored in an operationContext object,
  * these parameters are not used and will be removed in the next example (p2011-async-3rmis.cpp).
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <stdio.h>
@@ -101,8 +101,10 @@ public:
 
 int main()
 {
+    printf("main(): begin\n");
     Class1 obj1;
     obj1.operationA(10);
     obj1.operationA(20);
+    printf("main(): end\n");
     return 0;
 }

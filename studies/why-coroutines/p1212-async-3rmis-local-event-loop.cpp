@@ -1,8 +1,9 @@
 /**
  * @file p1212-async-3rmis-local-event-loop.cpp
- * @brief
+ * @brief Variant of p1210-async-3rmis.cpp.
+ * Notice the calls of eventQueue.run(); in Class01::function1.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <stdio.h>
@@ -11,6 +12,11 @@
 #include "eventqueue.h"
 #include "p1200.h"
 
+/**
+ * @brief
+ * Asynchronous version of Class01 in p1200-sync-3rmis.cpp.
+ *
+ */
 class Class01
 {
 public:
@@ -73,16 +79,18 @@ private:
 EventQueue eventQueue;
 
 int main() {
-    printf("main2();\n");
+    printf("main(): begin\n");
     Class01 class01;
     int ret1 = -1;
     int ret2 = -1;
     class01.function1(11, 12, 10, ret1);
     class01.function1(11, 12, 23, ret2);
+
     eventQueue.run();
 
     printf("\n");
     printf("main(): ret1 = %d\n", ret1);
     printf("main(): ret2 = %d\n", ret2);
+    printf("main(): end\n");
     return 0;
 }

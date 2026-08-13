@@ -1,9 +1,8 @@
 /**
  * @file p1222-coroutines-3rmis-generichandler.cpp
- * @brief Variant of p1220 using a generic version of the completion handler.
+ * @brief Variant of p1220-coroutines-3rmis.cpp using a generic version of the completion handler.
  *
- *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <corolib/print.h>
@@ -14,10 +13,15 @@
 #include "eventqueue.h"
 #include "buf+msg.h"
 #include "p1200.h"
-#include "p1200cog.h"
+#include "p1200cog.h"           // difference with p1220-coroutines-3rmis.cpp
 
 using namespace corolib;
 
+/**
+ * @brief
+ * See description in p1220-coroutines-3rmis.cpp.
+ *
+ */
 class Class01a
 {
 public:
@@ -77,6 +81,11 @@ private:
     RemoteObject1Co remoteObj3co{ remoteObj3 };
 };
 
+/**
+ * @brief
+ * See description in p1220-coroutines-3rmis.cpp.
+ *
+ */
 struct Class01
 {
     async_task<int> coroutine1(int in1, int in2, int testval)
@@ -107,16 +116,18 @@ struct Class01
         printf("Class01::coroutine1a(in1 = %d, in2 = %d, testval = %d)\n", in1, in2, testval);
         int out1 = -1, out2 = -1;
         async_task<int> op1 = remoteObj1co.op1(in1, in2, out1, out2);
+        printf("Class01::coroutine1a: 1a: out1 = %d, out2 = %d\n", out1, out2);
         // 1a Do some stuff that doesn't need the result of the RMI
         int ret1 = co_await op1;
-        printf("Class01::coroutine1a: 1: out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
+        printf("Class01::coroutine1a: 1b: out1 = %d, out2 = %d, ret1 = %d\n", out1, out2, ret1);
         // 1b Do stuff that needs the result of the RMI
         if (ret1 == testval) {
             int out3 = -1;
             async_task<int> op2 = remoteObj2co.op2(in1, in2, out3);
+            printf("Class01::coroutine1a: 2a: out3 = %d\n", out3);
             // 2a Do some stuff that doesn't need the result of the RMI
             int ret2 = co_await op2;
-            printf("Class01::coroutine1a: 2: out3 = %d, ret2 = %d\n", out3, ret2);
+            printf("Class01::coroutine1a: 2b: out3 = %d, ret2 = %d\n", out3, ret2);
             // 2b Do stuff that needs the result of the RMI
             co_return ret2;
         }
@@ -124,8 +135,9 @@ struct Class01
             int out4 = -1, out5 = -1;
             async_task<int> op3 = remoteObj3co.op3(in1, out4, out5);
             // 3a Do some stuff that doesn't need the result of the RMI
+            printf("Class01::coroutine1a: 3a: out4 = %d, out5 = %d\n", out4, out5);
             int ret3 = co_await op3;
-            printf("Class01::coroutine1a: 3: out4 = %d, out5 = %d, ret3 = %d\n", out4, out5, ret3);
+            printf("Class01::coroutine1a: 3b: out4 = %d, out5 = %d, ret3 = %d\n", out4, out5, ret3);
             // 3b Do stuff that needs the result of the RMI
             co_return ret3;
         }
@@ -185,5 +197,6 @@ int main() {
     printf("main(): ret2 = %d\n", ret2);
     printf("main(): ret3 = %d\n", ret3);
     printf("main(): ret4 = %d\n", ret4);
+    printf("main(): end\n");
     return 0;
 }

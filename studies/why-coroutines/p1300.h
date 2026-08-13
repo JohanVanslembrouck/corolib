@@ -1,8 +1,8 @@
 /**
  * @file p1300.h
- * @brief
+ * @brief Contains a RemoteObject1 class definition that is common to all p13XX-* application variants.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _P1300_H_

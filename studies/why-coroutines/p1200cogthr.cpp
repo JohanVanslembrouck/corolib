@@ -1,8 +1,10 @@
 /**
  * @file p1200cogthr.cpp
- * @brief
- *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @brief This file contains the secondd of three implementations of the functions 
+ * start_op1_impl, start_op2_impl and start_op3_impl.
+ * This implementation calls startthr_op1, startthr_op2 and startthr_op3.
+ * 
+ * @author Johan Vanslembrouck
  */
 
 #include "p1200cog.h"

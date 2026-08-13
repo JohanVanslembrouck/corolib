@@ -1,8 +1,8 @@
 /**
  * @file p1050co.h
- * @brief Coroutine "wrapper" class for RemoteObject1.
+ * @brief This file defines a coroutine "wrapper" class for RemoteObject1 and RemoteObjectImpl.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _P1050CO_H_

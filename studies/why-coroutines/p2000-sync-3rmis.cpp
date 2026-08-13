@@ -3,7 +3,7 @@
  * @brief
  * This example simulates 3 synchronous remote method invocations (RMIs). 
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <stdio.h>
@@ -69,11 +69,16 @@ public:
 
 int main()
 {
+    printf("main(): begin\n");
     int out1 = 0;
+    int out2 = 0;
     Class1 obj1;
     int ret1 = obj1.operationA(10, out1);
-    printf("out1 = %d, ret = %d\n", out1, ret1);
-    int ret2 = obj1.operationA(20, out1);
-    printf("out1 = %d, ret = %d\n", out1, ret2);
+    int ret2 = obj1.operationA(20, out2);
+
+    printf("\n");
+    printf("main(): out1 = %d, ret = %d\n", out1, ret1);
+    printf("main(): out2 = %d, ret = %d\n", out2, ret2);
+    printf("main(): end\n");
     return 0;
 }

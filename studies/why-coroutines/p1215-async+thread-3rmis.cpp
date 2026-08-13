@@ -3,7 +3,7 @@
  * @brief
  * Note how this implementation is very close to the one in p1200-sync-3rmis.cpp.
  * 
- * @author Johan Vanslembrouck (ohan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <stdio.h>
@@ -11,6 +11,11 @@
 #include "common.h"
 #include "p1200thr.h"
 
+/**
+ * @brief
+ * Class with 3 synchronous remote method invocations (RMIs) in function1.
+ *
+ */
 class Class01
 {
 public:
@@ -48,7 +53,7 @@ private:
 
 int main()
 {
-    printf("main();\n");
+    printf("main(): begin\n");
     Class01 class01;
     int ret1 = class01.function1(11, 12, 10);
     int ret2 = class01.function1(11, 12, 23);
@@ -56,5 +61,6 @@ int main()
     printf("\n");
     printf("main(): ret1 = %d\n", ret1);
     printf("main(): ret2 = %d\n", ret2);
+    printf("main(): end\n");
     return 0;
 }

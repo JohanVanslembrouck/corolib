@@ -5,7 +5,7 @@
  * which calls remoteOb1.op.
  * Note how this implementation is very close to the one in p1100-sync-callstack-1rmi.cpp.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <stdio.h>
@@ -81,12 +81,14 @@ private:
 };
 
 int main() {
-    printf("main();\n");
+    printf("main(): begin\n");
     Layer03 layer03;
     int ret1 = layer03.function1(2);
     int ret2 = layer03.function1(3);
 
+    printf("\n");
     printf("main(): ret1 = %d\n", ret1);
     printf("main(): ret2 = %d\n", ret2);
+    printf("main(): end\n");
     return 0;
 }

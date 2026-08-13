@@ -1,8 +1,10 @@
 /**
  * @file p1515-async+thread-3-parallel-rmis.cpp
  * @brief
- *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * Note how this implementation is close to the one in p1500-sync-3-parallel-rmis.cpp.
+ * In contrast to p1500-sync-3-parallel-rmis.cpp, the 3 operations run in parallel.
+ * 
+ * @author Johan Vanslembrouck
  */
 
 #include <stdio.h>
@@ -46,7 +48,7 @@ private:
 
 int main()
 {
-    printf("main();\n");
+    printf("main(): begin\n");
     Class01 class01;
     int ret1 = class01.function1(11, 12);
     int ret2 = class01.function1(21, 22);
@@ -58,5 +60,6 @@ int main()
     printf("main(): ret2 = %d\n", ret2);
     printf("main(): ret3 = %d\n", ret3);
     printf("main(): ret4 = %d\n", ret4);
+    printf("main(): end\n");
     return 0;
 }

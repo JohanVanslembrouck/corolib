@@ -1,8 +1,12 @@
 /**
  * @file p1410-async-segmentation.cpp
- * @brief
+ * @brief This file contains an asynchronous implementation of p1400-sync-segmentation.cpp.
+ * Notice how the code is very different from the synchronous implementation.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * Notice how this implementation is very similar to that in p1310-async-nested-loop.cpp.
+ * Differences have been marked in the code.
+ * 
+ * @author Johan Vanslembrouck
  */
 
 #include <stdio.h>
@@ -12,7 +16,7 @@
 #include "eventqueue.h"
 #include "buf+msg.h"
 
-#include "p1400.h"
+#include "p1400.h"              // difference with p1310-async-nested-loop.cpp
 
 class Class01
 {
@@ -33,24 +37,25 @@ public:
     {
         function1_ctxt_t* ctxt = new function1_ctxt_t;
 
+        printf("Class01::function1(): counter = %d\n", ctxt->counter);
         ctxt->start_time = std::chrono::high_resolution_clock::now();
         ctxt->msg = Msg(0);
         remoteObj1.sendc_op1(ctxt->msg,
-            [this, ctxt](Msg msg) {
-                this->function1a(ctxt, msg);
+            [this, ctxt](Msg msg) {                     // difference with p1310-async-nested-loop.cpp
+                this->function1a(ctxt, msg);            // difference with p1310-async-nested-loop.cpp
             });
     }
 
 protected:
-    void function1a(function1_ctxt_t* ctxt, Msg /*msgout*/)
+    void function1a(function1_ctxt_t* ctxt, Msg /*msgout*/)         // difference with p1310-async-nested-loop.cpp
     {
-        // Do something with msgout
+        // Do something with msgout                                 // difference with p1310-async-nested-loop.cpp
         printf("Class01::function1a(Msg): counter = %d\n", ctxt->counter);
         if (ctxt->j < NR_MSGS_TO_SEND) {
             printf("Class01::function1a(): i = %d, j = %d, counter = %d\n", ctxt->i, ctxt->j, ctxt->counter);
             remoteObj1.sendc_op1(ctxt->msg,
-                        [this, ctxt](Msg msg) {
-                            this->function1a(ctxt, msg);
+                        [this, ctxt](Msg msg) {                 // difference with p1310-async-nested-loop.cpp
+                            this->function1a(ctxt, msg);        // difference with p1310-async-nested-loop.cpp
                         });
             ctxt->j++;
             ctxt->counter++;
@@ -60,12 +65,12 @@ protected:
             ctxt->j = 0;
             ctxt->i++;
             if (ctxt->i < MAX_MSG_LENGTH) {
-                ctxt->msg = Msg(ctxt->i);
+                ctxt->msg = Msg(ctxt->i);               // difference with p1310-async-nested-loop.cpp
                 printf("Class01::function1a(): i = %d, j = %d, counter = %d\n", ctxt->i, ctxt->j, ctxt->counter);
                 remoteObj1.sendc_op1(ctxt->msg,
-                                [this, ctxt](Msg msg) {
-                                    this->function1a(ctxt, msg);
-                                });
+                            [this, ctxt](Msg msg) {                 // difference with p1310-async-nested-loop.cpp
+                                this->function1a(ctxt, msg);        // difference with p1310-async-nested-loop.cpp
+                            });
                 ctxt->j++;
                 ctxt->counter++;
             }
@@ -81,18 +86,19 @@ protected:
     }
 
 private:
-    RemoteObjectImpl remoteObjImpl;
-    RemoteObject1 remoteObj1{ remoteObjImpl };
+    RemoteObjectImpl remoteObjImpl;                 // difference with p1310-async-nested-loop.cpp
+    RemoteObject1 remoteObj1{ remoteObjImpl };      // difference with p1310-async-nested-loop.cpp
 };
 
 EventQueue eventQueue;
 
 int main()
 {
-    printf("main();\n");
+    printf("main(): begin\n");
     Class01 class01;
     class01.function1();
     class01.function1();
     eventQueue.run();
+    printf("main(): end\n");
     return 0;
 }

@@ -1,8 +1,11 @@
 /**
  * @file p1500-sync-3-parallel-rmis.cpp
- * @brief
+ * @brief Example with 3 consecutive synchronous RMIs.
+ * This program is not reactive (responsive) because the RMI blocks the program
+ * for the duration of the RMI.
+ * Also, there is no parallelism.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <stdio.h>
@@ -36,7 +39,7 @@ private:
 
 int main()
 {
-    printf("main();\n");
+    printf("main(): begin\n");
     Class01 class01;
     int ret1 = class01.function1(11, 12);
     int ret2 = class01.function1(21, 22);
@@ -48,5 +51,6 @@ int main()
     printf("main(): ret2 = %d\n", ret2);
     printf("main(): ret3 = %d\n", ret3);
     printf("main(): ret4 = %d\n", ret4);
+    printf("main(): end\n");
     return 0;
 }

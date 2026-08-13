@@ -1,8 +1,10 @@
 /**
  * @file p1202-sync+thread-3rmis.cpp
- * @brief
- *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @brief Example with 3 synchronous RMIs.
+ * Variant of p1200-sync+thread-3rmis.cpp.
+ * In this implementation, main() starts Class01::function1 on a dedicated thread.
+ * 
+ * @author Johan Vanslembrouck
  */
 
 #include <stdio.h>
@@ -13,6 +15,11 @@
 
 #include "p1200.h"
 
+/**
+ * @brief
+ * Class with 3 synchronous remote method invocations (RMIs) in function1.
+ *
+ */
 class Class01
 {
 public:
@@ -48,7 +55,7 @@ private:
 
 int main()
 {
-    printf("main();\n");
+    printf("main(): begin\n");
     Class01 class01;
     std::thread th1(&Class01::function1, &class01, 11, 12, 10); th1.join();
     std::thread th2(&Class01::function1, &class01, 11, 12, 23); th2.join();
@@ -61,5 +68,6 @@ int main()
     printf("\n");
     printf("main(): ret1 = %d\n", ret1);
     printf("main(): ret2 = %d\n", ret2);
+    printf("main(): end\n");
     return 0;
 }

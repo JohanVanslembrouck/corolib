@@ -1,7 +1,16 @@
 /**
  * @file p1025-coroutines-1rmi.cpp
- * @brief
+ * @brief This application file will be linked with 3 implementations of RemoteObject1Co defined in p1000co.h,
+ * producing 3 different applications:
+ *      application                     implementation
+ *      ------------------------------------------------
+ *      p1025-coroutines-1rmi(.exe)     p1000co.cpp
+ *      p1026-coroutines-1rmi(.exe)     p1000cothr.cpp
+ *      p1027-coroutines-1rmi(.exe)     p1000cothreq.cpp
  *
+ * p1025-coroutines-1rmi.cpp is very close to p1020-coroutines-1rmi.cpp.
+ * Major differences: using corolib::print instead of printf, different implementation of main.
+ * 
  * @author Johan Vanslembrouck
  */
 
@@ -14,6 +23,11 @@ using namespace corolib;
 #include "common.h"
 #include "p1000co.h"
 
+/**
+ * @brief
+ * See description in p1020-coroutines-1rmi.cpp.
+ * 
+ */
 class Class01a
 {
 public:
@@ -39,6 +53,11 @@ private:
     RemoteObject1Co remoteObj1co{ remoteObj1 };
 };
 
+/**
+ * @brief
+ * See description in p1020-coroutines-1rmi.cpp.
+ * 
+ */
 class Class01
 {
 public:
@@ -67,6 +86,11 @@ private:
     RemoteObject1Co remoteObj1co{ remoteObj1 };
 };
 
+/**
+ * @brief
+ * See description in p1020-coroutines-1rmi.cpp.
+ * 
+ */
 class Class01b
 {
 public:
@@ -94,6 +118,7 @@ private:
 };
 
 // ---------------------------------------------------------
+// USE_EVENTQUEUETHR is set in CMakeLists.txt
 
 #if USE_EVENTQUEUETHR
 
@@ -159,13 +184,13 @@ int main()
     int ret6 = t6.get_result();
     print(PRI1);
 
-    print(PRI1, "main(): results:\n");
+    print(PRI1);
     print(PRI1, "main(): ret1 = %d\n", ret1);
     print(PRI1, "main(): ret2 = %d\n", ret2);
     print(PRI1, "main(): ret3 = %d\n", ret3);
     print(PRI1, "main(): ret4 = %d\n", ret4);
     print(PRI1, "main(): ret5 = %d\n", ret5);
     print(PRI1, "main(): ret6 = %d\n", ret6);
-
+    print(PRI1, "main(): end\n");
     return 0;
 }

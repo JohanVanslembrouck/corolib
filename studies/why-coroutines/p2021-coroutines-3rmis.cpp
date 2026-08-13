@@ -5,7 +5,7 @@
  * This example uses synchronoous completion.
  * This variant of p2020-coroutines-3rmis.cpp does not use reference (out) variables as coroutine parameters.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
  
 #include <stdio.h>
@@ -101,6 +101,7 @@ public:
 
 int main()
 {
+    printf("main(): begin\n");
     Class1 obj1;
     int out1 = 0;
     int out2 = 0;
@@ -108,7 +109,10 @@ int main()
     async_task<int> t2 = obj1.operationA(20, out2);
     int ret1 = t1.get_result();
     int ret2 = t2.get_result();
-    printf("out1 = %d, ret1 = %d\n", out1, ret1);
-    printf("out2 = %d, ret2 = %d\n", out2, ret2);
+
+    printf("\n");
+    printf("main(): out1 = %d, ret1 = %d\n", out1, ret1);
+    printf("main(): out2 = %d, ret2 = %d\n", out2, ret2);
+    printf("main(): end\n");
     return 0;
 }

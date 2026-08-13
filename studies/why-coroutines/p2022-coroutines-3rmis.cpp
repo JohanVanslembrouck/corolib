@@ -5,7 +5,7 @@
  * The operationX coroutines use in and reference (out) variables as coroutine parameters.
  * This example uses asynchronous API sendc_operationX functions that place a completion handler in the event queue.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
  
 #include <stdio.h>
@@ -163,17 +163,23 @@ EventQueue eventQueue;
 
 int main()
 {
+    printf("main(): begin\n");
     Class1 obj1;
     int out1 = 0;
     int out2 = 0;
     async_task<int> t1 = obj1.operationA(10, out1);
     async_task<int> t2 = obj1.operationA(20, out2);
+
     printf("-- before eventQueue.run();\n");
     eventQueue.run();
     printf("-- after eventQueue.run();\n");
+
     int ret1 = t1.get_result();
     int ret2 = t2.get_result();
-    printf("out1 = %d, ret1 = %d\n", out1, ret1);
-    printf("out2 = %d, ret2 = %d\n", out2, ret2);
+
+    printf("\n");
+    printf("main(): out1 = %d, ret1 = %d\n", out1, ret1);
+    printf("main(): out2 = %d, ret2 = %d\n", out2, ret2);
+    printf("main(): end\n");
     return 0;
 }

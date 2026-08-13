@@ -1,8 +1,8 @@
 /**
  * @file p1510-async-3-parallel-rmis.cpp
- * @brief
+ * @brief This file contains an asynchronous implementation of p1500-sync-3-parallel-rmis.cpp.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <stdio.h>
@@ -58,7 +58,7 @@ EventQueue eventQueue;
 
 int main()
 {
-    printf("main();\n");
+    printf("main(): begin\n");
     int ret1 = -1;
     int ret2 = -1;
     int ret3 = -1;
@@ -76,5 +76,6 @@ int main()
     printf("main(): ret2 = %d\n", ret2);
     printf("main(): ret3 = %d\n", ret3);
     printf("main(): ret4 = %d\n", ret4);
+    printf("main(): end\n");
     return 0;
 }

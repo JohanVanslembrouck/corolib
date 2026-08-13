@@ -1,8 +1,9 @@
 /**
  * @file p1050-sync-1rmi.cpp
- * @brief
+ * @brief This file contains a variant of the implementation in p1000-sync-1rmi.cpp.
+ * All differences have been marked with a comment.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <stdio.h>
@@ -10,6 +11,11 @@
 #include "common.h"
 #include "p1050.h"                              // difference with p1000-sync-1rmi.cpp
 
+/**
+ * @brief
+ * Class with a simple synchronous remote method invocation (RMI) in function1.
+ *
+ */
 class Class01
 {
 public:
@@ -29,7 +35,7 @@ private:
 
 int main()
 {
-    printf("main();\n");
+    printf("main(): begin\n");
     Class01 class01;
     int ret1 = class01.function1(11, 12);
     int ret2 = class01.function1(21, 22);
@@ -41,5 +47,6 @@ int main()
     printf("main(): ret2 = %d\n", ret2);
     printf("main(): ret3 = %d\n", ret3);
     printf("main(): ret4 = %d\n", ret4);
+    printf("main(): end\n");
     return 0;
 }
