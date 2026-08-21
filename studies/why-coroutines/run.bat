@@ -45,6 +45,10 @@ p1510-async-3-parallel-rmis.exe
 p1515-async+thread-3-parallel-rmis.exe
 p1520-coroutines-3-parallel-rmis.exe
 
+p1525-coroutines-3-parallel-rmis.exe
+p1526-coroutines-3-parallel-rmis.exe
+p1527-coroutines-3-parallel-rmis.exe
+
 p1300-sync-nested-loop.exe
 p1310-async-nested-loop.exe
 p1315-async+thread-nested-loop.exe

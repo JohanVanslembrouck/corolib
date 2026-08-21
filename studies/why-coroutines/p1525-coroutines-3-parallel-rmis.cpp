@@ -1,6 +1,13 @@
 /**
- * @file p1520-coroutines-3-parallel-rmis.cpp
- * @brief Coroutine variant of p1500-sync-3-parallel-rmis.cpp.
+ * @file p1525-coroutines-3-parallel-rmis.cpp
+ * @brief Variant of p1520-coroutines-3-parallel-rmis.cpp.
+ * This application file will be linked with 3 implementations of RemoteObject1Co defined in p1200cog.h,
+ * producing 3 different applications:
+ *      application                                implementation
+ *      --------------------------------------------------------------
+ *      p1525-coroutines-3-parallel-rmis(.exe)     p1200cog.cpp
+ *      p1526-coroutines-3-parallel-rmis(.exe)     p1200cogthr.cpp
+ *      p1527-coroutines-3-parallel-rmis(.exe)     p1200cogthreq.cpp
  *
  * @author Johan Vanslembrouck
  */
@@ -23,7 +30,7 @@ class Class01a
 public: 
     async_task<int> coroutine1(int in1, int in2)
     {
-        printf("Class01a::coroutine1(): begin\n");
+        print(PRI1, "Class01a::coroutine1(): begin\n");
         async_operation<op1_ret_t> op1 = remoteObj1co.start_op1(in1, in2);
         async_operation<op1_ret_t> op2 = remoteObj2co.start_op1(in1, in2);
         async_operation<op1_ret_t> op3 = remoteObj3co.start_op1(in1, in2);
@@ -34,7 +41,7 @@ public:
         co_await when_all(op1, op2, op3);
 #endif
         int result = op1.get_result().ret + op2.get_result().ret + op3.get_result().ret;
-        printf("Class01a::coroutine1(): result = %d\n", result);
+        print(PRI1, "Class01a::coroutine1(): result = %d\n", result);
         co_return result;
     } // g++ 11 reports at this line: error: array used as initializer
 
@@ -53,7 +60,7 @@ class Class01
 public:
     async_task<int> coroutine1(int in1, int in2)
     {
-        printf("Class01::coroutine1(): begin\n");
+        print(PRI1, "Class01::coroutine1(): begin\n");
         int out11 = -1, out12 = -1;
         int out21 = -1, out22 = -1;
         int out31 = -1, out32 = -1;
@@ -69,7 +76,7 @@ public:
         co_await wa;
 #endif
         int result = op1.get_result() + op2.get_result() + op3.get_result();
-        printf("Class01::coroutine1(): result = %d\n", result);
+        print(PRI1, "Class01::coroutine1(): result = %d\n", result);
         co_return result;
     } // g++ 11 reports at this line: error: array used as initializer
 
@@ -83,11 +90,37 @@ private:
     RemoteObject1Co remoteObj3co{ remoteObj3 };
 };
 
+// ---------------------------------------------------------
+
+#if USE_EVENTQUEUETHR
+
+EventQueueThr<lambda_void_t, 32> eventQueueThr;
+
+void runEventQueue(int size = 1)
+{
+    for (int i = 0; i < size; i++)
+    {
+        lambda_void_t op = eventQueueThr.pop();
+        op();
+    }
+}
+
+#else
+
 EventQueue eventQueue;
+
+void runEventQueue(int size = 1)
+{
+    eventQueue.run();
+}
+
+#endif
+
+// ---------------------------------------------------------
 
 int main()
 {
-    printf("main(): begin\n");
+    print(PRI1, "main(): begin\n");
     Class01a class01a;
     Class01 class01;
 
@@ -101,7 +134,7 @@ int main()
     async_task<int> t3 = class01.coroutine1(31, 32);
     async_task<int> t4 = class01.coroutine1(41, 42);
 
-    eventQueue.run();
+    runEventQueue(2 * 4 * 3);
 
     int ret1a = t1a.get_result();
     int ret2a = t2a.get_result();
@@ -113,16 +146,16 @@ int main()
     int ret3 = t3.get_result();
     int ret4 = t4.get_result();
 
-    printf("\n");
-    printf("main(): ret1a = %d\n", ret1a);
-    printf("main(): ret2a = %d\n", ret2a);
-    printf("main(): ret3a = %d\n", ret3a);
-    printf("main(): ret4a = %d\n", ret4a);
+    print(PRI1, "\n");
+    print(PRI1, "main(): ret1a = %d\n", ret1a);
+    print(PRI1, "main(): ret2a = %d\n", ret2a);
+    print(PRI1, "main(): ret3a = %d\n", ret3a);
+    print(PRI1, "main(): ret4a = %d\n", ret4a);
 
-    printf("main(): ret1 = %d\n", ret1);
-    printf("main(): ret2 = %d\n", ret2);
-    printf("main(): ret3 = %d\n", ret3);
-    printf("main(): ret4 = %d\n", ret4);
-    printf("main(): end\n");
+    print(PRI1, "main(): ret1 = %d\n", ret1);
+    print(PRI1, "main(): ret2 = %d\n", ret2);
+    print(PRI1, "main(): ret3 = %d\n", ret3);
+    print(PRI1, "main(): ret4 = %d\n", ret4);
+    print(PRI1, "main(): end\n");
     return 0;
 }

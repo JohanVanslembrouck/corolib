@@ -49,6 +49,10 @@ set -x
 ./p1515-async+thread-3-parallel-rmis
 ./p1520-coroutines-3-parallel-rmis
 
+./p1525-coroutines-3-parallel-rmis
+./p1526-coroutines-3-parallel-rmis
+./p1527-coroutines-3-parallel-rmis
+
 ./p1300-sync-nested-loop
 ./p1310-async-nested-loop
 ./p1315-async+thread-nested-loop
