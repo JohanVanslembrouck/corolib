@@ -1,17 +1,19 @@
 /**
- * @file p1108-auto_reset_event-3-when_any.h
+ * @file p1108-auto_reset_event-3-when_any_arr.h
  * @brief
  * Uses 3 auto_reset_event objects that will be resumed from main().
  * Coroutines coroutine4a, coroutine4b and coroutine4c are co_awaited in coroutine3 using when_any.
  * This example uses
- *      template<typename... AsyncBaseTypes>
- *      when_any(AsyncBaseTypes&... others)
+ *      template<typename AsyncBaseType, int Size>
+ *      when_any(std::array<AsyncBaseType, Size>& async_ops)
  * 
  * @author Johan Vanslembrouck
  */
 
-#ifndef _P1108_H_
-#define _P1108_H_
+#ifndef _P1108_ARR_H_
+#define _P1108_ARR_H_
+
+#include <array>
 
 #include <corolib/print.h>
 #include <corolib/async_task.h>
@@ -24,7 +26,7 @@ extern auto_reset_event are1;
 extern auto_reset_event are2;
 extern auto_reset_event are3;
 
-class Class1108
+class Class1108arr
 {
 public:
     async_task<int> coroutine4a()
@@ -56,15 +58,22 @@ public:
         int v1, v2, v3;
         v1 = v2 = v3 = 0;
 
-        print(PRI1, "coroutine3(): async_task<int> a = coroutine4a();\n");
-        async_task<int> a = coroutine4a();
-        print(PRI1, "coroutine3(): async_task<int> b = coroutine4b();\n");
-        async_task<int> b = coroutine4b();
-        print(PRI1, "coroutine3(): async_task<int> c = coroutine4c();\n");
-        async_task<int> c = coroutine4c();
+        // Special test: nothing to await
+        print(PRI1, "coroutine3(): std::array<async_task<int>, 0> arr0;\n");
+        std::array<async_task<int>, 0> arr0;
+        print(PRI1, "coroutine3(): when_any wa0(arr0);\n");
+        when_any wa0(arr0);
 
-        print(PRI1, "coroutine3(): when_any wa(a, b, c);\n");
-        when_any wa(a, b, c);
+        std::array<async_task<int>, 3> arr;
+        print(PRI1, "coroutine3(): arr[0] = coroutine4a();\n");
+        arr[0] = coroutine4a();
+        print(PRI1, "coroutine3(): arr[1] = coroutine4b();\n");
+        arr[1] = coroutine4b();
+        print(PRI1, "coroutine3(): arr[2] = coroutine4c();\n");
+        arr[2] = coroutine4c();
+
+        print(PRI1, "coroutine3(): when_any wa(arr);\n");
+        when_any wa(arr);
 
         for (int j = 0; j < 3; ++j)
         {
@@ -73,16 +82,16 @@ public:
             print(PRI1, "coroutine3(): i = %d\n", i);
             switch (i) {
             case 0:
-                print(PRI1, "coroutine3(): v1 = a.get_result();\n");
-                v1 = a.get_result();
+                print(PRI1, "coroutine3(): v1 = arr[0].get_result();\n");
+                v1 = arr[0].get_result();
                 break;
             case 1:
-                print(PRI1, "coroutine3(): v2 = b.get_result();\n");
-                v2 = b.get_result();
+                print(PRI1, "coroutine3(): v2 = arr[1].get_result();\n");
+                v2 = arr[1].get_result();
                 break;
             case 2:
-                print(PRI1, "coroutine3(): v3 = c.get_result();\n");
-                v3 = c.get_result();
+                print(PRI1, "coroutine3(): v3 = arr[2].get_result();\n");
+                v3 = arr[2].get_result();
                 break;
             default:
                 print(PRI1, "coroutine3(): invalid index = %d\n", i);

@@ -3,8 +3,11 @@
  * @brief
  * Uses 3 auto_reset_event objects that will be resumed from main().
  * Coroutines coroutine4a, coroutine4b and coroutine4c are co_awaited in coroutine3 using when_all.
+ * This example uses
+ *      template<typename... AsyncBaseTypes>
+ *      when_all(AsyncBaseTypes&... others)
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _P1107_H_
@@ -50,6 +53,12 @@ public:
 
     async_task<int> coroutine3()
     {
+        // Special test: nothing to await
+        print(PRI1, "coroutine3(): when_all wa0;\n");
+        when_all wa0;
+        print(PRI1, "coroutine3(): co_await wa0;\n");
+        co_await wa0;
+
         print(PRI1, "coroutine3(): async_task<int> a = coroutine4a();\n");
         async_task<int> a = coroutine4a();
         print(PRI1, "coroutine3(): async_task<int> b = coroutine4b();\n");

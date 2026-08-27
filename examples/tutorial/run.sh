@@ -22,7 +22,12 @@ set -x
 ./p1105-auto_reset_event-2-when_any
 ./p1106-auto_reset_event-3
 ./p1107-auto_reset_event-3-when_all
+./p1107-auto_reset_event-3-when_all_arr
+./p1107-auto_reset_event-3-when_all_vec
 ./p1108-auto_reset_event-3-when_any
+./p1108-auto_reset_event-3-when_any_arr
+./p1108-auto_reset_event-3-when_any_vec
+
 ./p1110-auto_reset_event-thread-1
 ./p1111-auto_reset_event-thread-1-when_all
 ./p1112-auto_reset_event-thread-1-when_any
@@ -102,10 +107,10 @@ set -x
 ./p1700-async_operation
 ./p1700a-async_operation
 ./p1706-async_operation-immediate
-./p1706a-async_operation-immediate
+#./p1706a-async_operation-immediate
 ./p1730-async_operation
 ./p1730a-async_operation
-./p1734-async_operation-thread
+#./p1734-async_operation-thread
 #./p1736-async_operation-immediate
 
 ./p1800-async_operation

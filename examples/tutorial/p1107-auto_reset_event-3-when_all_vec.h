@@ -1,22 +1,24 @@
 /**
- * @file p1108-auto_reset_event-3-when_any.h
+ * @file p1107-auto_reset_event-3-when_all_vec.h
  * @brief
  * Uses 3 auto_reset_event objects that will be resumed from main().
- * Coroutines coroutine4a, coroutine4b and coroutine4c are co_awaited in coroutine3 using when_any.
+ * Coroutines coroutine4a, coroutine4b and coroutine4c are co_awaited in coroutine3 using when_all.
  * This example uses
- *      template<typename... AsyncBaseTypes>
- *      when_any(AsyncBaseTypes&... others)
+ *      template<typename AsyncBaseType>
+ *      when_all(std::vector<AsyncBaseType>& async_ops)
  * 
  * @author Johan Vanslembrouck
  */
 
-#ifndef _P1108_H_
-#define _P1108_H_
+#ifndef _P1107_VEC_H_
+#define _P1107_VEC_H_
+
+#include <vector>
 
 #include <corolib/print.h>
 #include <corolib/async_task.h>
 #include <corolib/auto_reset_event.h>
-#include <corolib/when_any.h>
+#include <corolib/when_all.h>
 
 using namespace corolib;
 
@@ -24,7 +26,7 @@ extern auto_reset_event are1;
 extern auto_reset_event are2;
 extern auto_reset_event are3;
 
-class Class1108
+class Class1107vec
 {
 public:
     async_task<int> coroutine4a()
@@ -53,42 +55,33 @@ public:
 
     async_task<int> coroutine3()
     {
-        int v1, v2, v3;
-        v1 = v2 = v3 = 0;
+        // Special test: nothing to await
+        print(PRI1, "coroutine3(): std::vector<async_task<int>> vec0(0);\n");
+        std::vector<async_task<int>> vec0(0);
+        print(PRI1, "coroutine3(): when_all wa0(vec0);\n");
+        when_all wa0(vec0);
 
-        print(PRI1, "coroutine3(): async_task<int> a = coroutine4a();\n");
-        async_task<int> a = coroutine4a();
-        print(PRI1, "coroutine3(): async_task<int> b = coroutine4b();\n");
-        async_task<int> b = coroutine4b();
-        print(PRI1, "coroutine3(): async_task<int> c = coroutine4c();\n");
-        async_task<int> c = coroutine4c();
+        print(PRI1, "coroutine3(): std::vector<async_task<int>> vec(3);\n");
+        std::vector<async_task<int>> vec(3);
+        print(PRI1, "coroutine3(): vec[0] = coroutine4a();\n");
+        vec[0] = coroutine4a();
+        print(PRI1, "coroutine3(): vec[1] = coroutine4b();\n");
+        vec[1] = coroutine4b();
+        print(PRI1, "coroutine3(): vec[2] = coroutine4c();\n");
+        vec[2] = coroutine4c();
 
-        print(PRI1, "coroutine3(): when_any wa(a, b, c);\n");
-        when_any wa(a, b, c);
+        print(PRI1, "coroutine3(): when_all wa(vec);\n");
+        when_all wa(vec);
+        print(PRI1, "coroutine3(): co_await wa;\n");
+        co_await wa;
 
-        for (int j = 0; j < 3; ++j)
-        {
-            print(PRI1, "coroutine3(): i = co_await wa;\n");
-            int i = co_await wa;
-            print(PRI1, "coroutine3(): i = %d\n", i);
-            switch (i) {
-            case 0:
-                print(PRI1, "coroutine3(): v1 = a.get_result();\n");
-                v1 = a.get_result();
-                break;
-            case 1:
-                print(PRI1, "coroutine3(): v2 = b.get_result();\n");
-                v2 = b.get_result();
-                break;
-            case 2:
-                print(PRI1, "coroutine3(): v3 = c.get_result();\n");
-                v3 = c.get_result();
-                break;
-            default:
-                print(PRI1, "coroutine3(): invalid index = %d\n", i);
-            }
-        }
-
+        print(PRI1, "coroutine3(): int v1 = vec[0].get_result();\n");
+        int v1 = vec[0].get_result();
+        print(PRI1, "coroutine3(): int v2 = vec[1].get_result();\n");
+        int v2 = vec[1].get_result();
+        print(PRI1, "coroutine3(): int v3 = vec[2].get_result();\n");
+        int v3 = vec[2].get_result();
+        
         print(PRI1, "coroutine3(): co_return v+1 = %d;\n", v1 + v2 + v3 + 1);
         co_return v1 + v2 + v3 + 1;
     }

@@ -18,7 +18,12 @@ p1104-auto_reset_event-2-when_all.exe
 p1105-auto_reset_event-2-when_any.exe
 p1106-auto_reset_event-3.exe
 p1107-auto_reset_event-3-when_all.exe
+p1107-auto_reset_event-3-when_all_arr.exe
+p1107-auto_reset_event-3-when_all_vec.exe
 p1108-auto_reset_event-3-when_any.exe
+p1108-auto_reset_event-3-when_any_arr.exe
+p1108-auto_reset_event-3-when_any_vec.xe
+
 p1110-auto_reset_event-thread-1.exe
 p1111-auto_reset_event-thread-1-when_all.exe
 p1112-auto_reset_event-thread-1-when_any.exe

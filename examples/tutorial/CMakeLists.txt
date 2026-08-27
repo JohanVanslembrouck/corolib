@@ -12,52 +12,49 @@ foreach(_target
   target_link_libraries(${_target} corolib)
 endforeach()
 
-add_executable(p1100-auto_reset_event-1 p1100-auto_reset_event-1.cpp)
-target_link_libraries(p1100-auto_reset_event-1 corolib)
-add_executable(p1101-auto_reset_event-1-when_all p1101-auto_reset_event-1-when_all.cpp)
-target_link_libraries(p1101-auto_reset_event-1-when_all corolib)
-add_executable(p1102-auto_reset_event-1-when_any p1102-auto_reset_event-1-when_any.cpp)
-target_link_libraries(p1102-auto_reset_event-1-when_any corolib)
-add_executable(p1103-auto_reset_event-2 p1103-auto_reset_event-2.cpp)
-target_link_libraries(p1103-auto_reset_event-2 corolib)
-add_executable(p1104-auto_reset_event-2-when_all p1104-auto_reset_event-2-when_all.cpp)
-target_link_libraries(p1104-auto_reset_event-2-when_all corolib)
-add_executable(p1105-auto_reset_event-2-when_any p1105-auto_reset_event-2-when_any.cpp)
-target_link_libraries(p1105-auto_reset_event-2-when_any corolib)
-add_executable(p1106-auto_reset_event-3 p1106-auto_reset_event-3.cpp)
-target_link_libraries(p1106-auto_reset_event-3 corolib)
-add_executable(p1107-auto_reset_event-3-when_all p1107-auto_reset_event-3-when_all.cpp)
-target_link_libraries(p1107-auto_reset_event-3-when_all corolib)
-add_executable(p1108-auto_reset_event-3-when_any p1108-auto_reset_event-3-when_any.cpp)
-target_link_libraries(p1108-auto_reset_event-3-when_any corolib)
+foreach(_target
+    p1100-auto_reset_event-1
+    p1101-auto_reset_event-1-when_all
+    p1102-auto_reset_event-1-when_any
+    p1103-auto_reset_event-2
+    p1104-auto_reset_event-2-when_all
+    p1105-auto_reset_event-2-when_any
+    p1106-auto_reset_event-3
+    p1107-auto_reset_event-3-when_all
+    p1108-auto_reset_event-3-when_any
 
-add_executable(p1110-auto_reset_event-thread-1 p1110-auto_reset_event-thread-1.cpp)
-target_link_libraries(p1110-auto_reset_event-thread-1 corolib)
-add_executable(p1111-auto_reset_event-thread-1-when_all p1111-auto_reset_event-thread-1-when_all.cpp)
-target_link_libraries(p1111-auto_reset_event-thread-1-when_all corolib)
-add_executable(p1112-auto_reset_event-thread-1-when_any p1112-auto_reset_event-thread-1-when_any.cpp)
-target_link_libraries(p1112-auto_reset_event-thread-1-when_any corolib)
-add_executable(p1113-auto_reset_event-thread-2 p1113-auto_reset_event-thread-2.cpp)
-target_link_libraries(p1113-auto_reset_event-thread-2 corolib)
-add_executable(p1114-auto_reset_event-thread-2-when_all p1114-auto_reset_event-thread-2-when_all.cpp)
-target_link_libraries(p1114-auto_reset_event-thread-2-when_all corolib)
-add_executable(p1115-auto_reset_event-thread-2-when_any p1115-auto_reset_event-thread-2-when_any.cpp)
-target_link_libraries(p1115-auto_reset_event-thread-2-when_any corolib)
-add_executable(p1116-auto_reset_event-thread-3 p1116-auto_reset_event-thread-3.cpp)
-target_link_libraries(p1116-auto_reset_event-thread-3 corolib)
-add_executable(p1117-auto_reset_event-thread-3-when_all p1117-auto_reset_event-thread-3-when_all.cpp)
-target_link_libraries(p1117-auto_reset_event-thread-3-when_all corolib)
-add_executable(p1118-auto_reset_event-thread-3-when_any p1118-auto_reset_event-thread-3-when_any.cpp)
-target_link_libraries(p1118-auto_reset_event-thread-3-when_any corolib)
+    p1110-auto_reset_event-thread-1
+    p1111-auto_reset_event-thread-1-when_all
+    p1112-auto_reset_event-thread-1-when_any
+    p1113-auto_reset_event-thread-2
+    p1114-auto_reset_event-thread-2-when_all
+    p1115-auto_reset_event-thread-2-when_any
+    p1116-auto_reset_event-thread-3
+    p1117-auto_reset_event-thread-3-when_all
+    p1118-auto_reset_event-thread-3-when_any
 
-add_executable(p1120-auto_reset_event-oneway_task p1120-auto_reset_event-oneway_task.cpp)
-target_link_libraries(p1120-auto_reset_event-oneway_task corolib)
-add_executable(p1200-mini0 p1200-mini0.cpp)
-target_link_libraries(p1200-mini0 corolib)
-add_executable(p1210-mini1-thread p1210-mini1-thread.cpp)
-target_link_libraries(p1210-mini1-thread corolib)
-add_executable(p1220-mini1-oneway_task-thread p1220-mini1-oneway_task-thread.cpp)
-target_link_libraries(p1220-mini1-oneway_task-thread corolib)
+    p1120-auto_reset_event-oneway_task
+
+    p1200-mini0
+    p1210-mini1-thread
+    p1220-mini1-oneway_task-thread
+  )
+  add_executable(${_target} ${_target}.cpp)
+  target_link_libraries(${_target} corolib)
+endforeach()
+
+if(WIN32)
+# template functions are not instantiated (correctly) on Ubuntu 22.04 and 24.04. FFS
+foreach(_target
+    p1107-auto_reset_event-3-when_all_arr
+    p1107-auto_reset_event-3-when_all_vec
+    p1108-auto_reset_event-3-when_any_arr
+    p1108-auto_reset_event-3-when_any_vec
+  )
+  add_executable(${_target} ${_target}.cpp)
+  target_link_libraries(${_target} corolib)
+endforeach()
+endif()
 
 # Requires the use of experimental/coroutine.h
 #add_executable(p1300-future p1300-future.cpp)
