@@ -38,6 +38,12 @@
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
 
+#if USE_LAZY_START_TASKS
+#define task async_ltask
+#else
+#define task async_task
+#endif
+
 #ifdef BAZEL_BUILD
 #include "examples/protos/helloworld.grpc.pb.h"
 #else
@@ -60,17 +66,25 @@ const int NR_ITERATIONS = 100;
 class GreeterClient : public CommService
 {
 private:
+    // Added for the use of corolib - begin
+    struct GRPCEvent {
+        void* p;
+        std::function<void(void)> eventHandler;
+    };
+    // Added for the use of corolib - end
+
+#if !USE_LAZY_START_OPS
     // eager-start operation definition - begin
-    async_operation<void> start_SayHello(ClientContext* pcontext, HelloRequest& request, HelloReply& reply, Status& status) {
+    async_operation<void> start_SayHello(ClientContext* context, HelloRequest& request, HelloReply& reply, Status& status) {
         int index = get_free_index();
         async_operation<void> ret{ this, index };
-        start_SayHello_impl(index, pcontext, request, reply, status);
+        start_SayHello_impl(index, context, request, reply, status);
         return ret;
     }
 
-    void start_SayHello_impl(int idx, ClientContext* pcontext, HelloRequest& request, HelloReply& reply, Status& status) {
+    void start_SayHello_impl(int idx, ClientContext* context, HelloRequest& request, HelloReply& reply, Status& status) {
         std::unique_ptr<ClientAsyncResponseReader<HelloReply> > rpc(
-            stub_->AsyncSayHello(pcontext, request, &cq_));
+            stub_->AsyncSayHello(context, request, &cq_));
 
         uint64_t idx64 = static_cast<uint64_t>(idx);
 
@@ -80,6 +94,62 @@ private:
         grpcEvent_.eventHandler = [this, idx]() { completionHandler_v(idx); };
     }
     // eager-start operation definition - end
+#else
+        // lazy-start operation definition - begin
+    class SayHello_operation_impl
+    {
+    public:
+        SayHello_operation_impl(GreeterClient* greeterClient, ClientContext* context, HelloRequest& request, HelloReply& reply, Status& status)
+            : greeterClient_(greeterClient)
+            , context_(context)
+            , request_(request)
+            , reply_(reply)
+            , status_(status) {
+
+        }
+
+        bool try_start(async_operation_ls_base& operation) noexcept {
+            std::unique_ptr<ClientAsyncResponseReader<HelloReply> > rpc(
+                greeterClient_->stub_->AsyncSayHello(context_, request_, &greeterClient_->cq_));
+
+            uint64_t idx64 = 0;
+
+            rpc->Finish(&reply_, &status_, (void*)idx64);
+
+            greeterClient_->grpcEvent_.p = (void*)idx64;
+            greeterClient_->grpcEvent_.eventHandler = [this, &operation]() { operation.completed(); };
+
+            return true;
+        }
+
+        void get_result(async_operation_ls_base&) {}
+
+    private:
+        GreeterClient* greeterClient_;
+        ClientContext* context_;
+        HelloRequest& request_;
+        HelloReply& reply_;
+        Status& status_;
+    };
+
+    class SayHello_operation : public async_operation_ls<SayHello_operation>
+    {
+    public:
+        SayHello_operation(GreeterClient* greeterClient, ClientContext* context, HelloRequest& request, HelloReply& reply, Status& status)
+            : m_impl(greeterClient, context, request, reply, status) {
+        }
+
+        bool try_start() noexcept { return m_impl.try_start(*this); }
+        void get_result() { m_impl.get_result(*this); }
+
+        SayHello_operation_impl m_impl;
+    };
+
+    SayHello_operation start_SayHello(ClientContext* context, HelloRequest& request, HelloReply& reply, Status& status) {
+        return SayHello_operation(this, context, request, reply, status);
+    }
+    // lazy-start operation definition - end
+#endif
 
 public:
     explicit GreeterClient(std::shared_ptr<Channel> channel)
@@ -146,7 +216,7 @@ public:
         // >>> To be placed in SayHelloCo - end
     }
 
-    async_task<std::string> SayHelloCo(const std::string& user) {
+    task<std::string> SayHelloCo(const std::string& user) {
         // Data we are sending to the server.
         HelloRequest request;
         request.set_name(user);
@@ -202,11 +272,6 @@ private:
     CompletionQueue cq_;
 
     // Added for the use of corolib - begin
-    struct GRPCEvent {
-        void* p;
-        std::function<void(void)> eventHandler;
-    };
-
     GRPCEvent grpcEvent_;
     // Added for the use of corolib - end
 };
@@ -216,13 +281,13 @@ private:
 // notice that async_task<std::string> t is not co_await-ed upon; instead greeter.AsyncCompleteRpc()
 // is called as a replacement for co_await t.
 // See greeter_coroutine_client2.cc for the correct solution.
-// Because we do not co_await t, it is not possible to use async_ltask instead of async_task.
-// That is why greeter_coroutine_client_lso.cc uses async_task instead of async_ltask.
-async_task<void> runSayHelloCo(GreeterClient& greeter) {
+// Because we do not co_await t, it is not possible to use async_ltask instead of async_task at run-time.
+// Compilation is OK, but the program blocks at run-time.
+task<void> runSayHelloCo(GreeterClient& greeter) {
     for (int i = 0; i < NR_ITERATIONS; ++i) {
         std::string user("coroutine world ");
         user += std::to_string(i);
-        async_task<std::string> t = greeter.SayHelloCo(user);
+        task<std::string> t = greeter.SayHelloCo(user);
         greeter.AsyncCompleteRpc();         // Absent in greeter_coroutine_client2.cc, replaced with co_await t
         std::cout << "Greeter received: " << t.get_result() << std::endl;
     }
@@ -238,7 +303,8 @@ int main(int argc, char** argv)  {
                                 "localhost:50051", grpc::InsecureChannelCredentials()));
 
   print(PRI1, "main: async_task<void> t = runSayHelloCo(greeter);\n");
-  async_task<void> t = runSayHelloCo(greeter);
+  task<void> t = runSayHelloCo(greeter);
+  t.start();
   print(PRI1, "main: t.wait();\n");
   t.wait();
 

@@ -72,10 +72,10 @@ class MultiplexClient : public CommService
 {
 private:
     // eager-start operation definition - begin
-    async_operation<Status> start_SayHello(ClientContext* pcontext, helloworld::HelloRequest& request, helloworld::HelloReply& reply) {
+    async_operation<Status> start_SayHello(ClientContext* context, helloworld::HelloRequest& request, helloworld::HelloReply& reply) {
         int index = get_free_index();
         async_operation<Status> ret{ this, index };
-        helloworld::Greeter::NewStub(channel_)->async()->SayHello(pcontext, &request, &reply,
+        helloworld::Greeter::NewStub(channel_)->async()->SayHello(context, &request, &reply,
             [index, this](Status s) {
                 print(PRI5, "start_SayHello - completion handler\n");
                 Status status = std::move(s);
@@ -95,10 +95,10 @@ private:
         return ret;
     }
 
-    async_operation<Status> start_GetFeature(ClientContext* pcontext, routeguide::Point& request, routeguide::Feature& reply) {
+    async_operation<Status> start_GetFeature(ClientContext* context, routeguide::Point& request, routeguide::Feature& reply) {
         int index = get_free_index();
         async_operation<Status> ret{ this, index };
-        routeguide::RouteGuide::NewStub(channel_)->async()->GetFeature(pcontext, &request, &reply,
+        routeguide::RouteGuide::NewStub(channel_)->async()->GetFeature(context, &request, &reply,
             [index, this](Status s) {
                 print(PRI5, "start_GetFeature - completion handler\n");
                 Status status = std::move(s);

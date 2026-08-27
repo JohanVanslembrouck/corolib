@@ -76,18 +76,70 @@ target_link_libraries(
 # Targets multiplex_(client|server)
 foreach(_target multiplex_client 
                 multiplex_client2 
-                multiplex_coroutine_client2
-                multiplex_coroutine_client2_lso
-                multiplex_coroutine_client3
-                multiplex_coroutine_client3_lso
                 multiplex_coroutine_client3-when_all
                 multiplex_coroutine_client3-when_any
-                multiplex_coroutine_client3-all
                 multiplex_coroutine_client4
                 multiplex_coroutine_client5
                 multiplex_server)
   add_executable(${_target} "${_target}.cc")
   target_link_libraries(${_target}
+    example_grpc_proto
+    absl::flags
+    absl::flags_parse
+    ${_REFLECTION}
+    ${_GRPC_GRPCPP}
+    ${_PROTOBUF_LIBPROTOBUF})
+endforeach()
+
+# Targets multiplex_(client|server)
+foreach(_target multiplex_coroutine_client2
+                multiplex_coroutine_client3
+                multiplex_coroutine_client3-all)
+  add_executable(${_target}_ee "${_target}.cc")
+  target_compile_definitions(${_target}_ee PRIVATE USE_LAZY_START_TASKS=0 USE_LAZY_START_OPS=0)
+  target_link_libraries(${_target}_ee
+    example_grpc_proto
+    absl::flags
+    absl::flags_parse
+    ${_REFLECTION}
+    ${_GRPC_GRPCPP}
+    ${_PROTOBUF_LIBPROTOBUF})
+endforeach()
+
+foreach(_target multiplex_coroutine_client2
+                multiplex_coroutine_client3
+                multiplex_coroutine_client3-all)
+  add_executable(${_target}_el "${_target}.cc")
+  target_compile_definitions(${_target}_el PRIVATE USE_LAZY_START_TASKS=0 USE_LAZY_START_OPS=1)
+  target_link_libraries(${_target}_el
+    example_grpc_proto
+    absl::flags
+    absl::flags_parse
+    ${_REFLECTION}
+    ${_GRPC_GRPCPP}
+    ${_PROTOBUF_LIBPROTOBUF})
+endforeach()
+
+foreach(_target multiplex_coroutine_client2
+                multiplex_coroutine_client3
+                multiplex_coroutine_client3-all)
+  add_executable(${_target}_le "${_target}.cc")
+  target_compile_definitions(${_target}_le PRIVATE USE_LAZY_START_TASKS=1 USE_LAZY_START_OPS=0)
+  target_link_libraries(${_target}_le
+    example_grpc_proto
+    absl::flags
+    absl::flags_parse
+    ${_REFLECTION}
+    ${_GRPC_GRPCPP}
+    ${_PROTOBUF_LIBPROTOBUF})
+endforeach()
+
+foreach(_target multiplex_coroutine_client2
+                multiplex_coroutine_client3
+                multiplex_coroutine_client3-all)
+  add_executable(${_target}_ll "${_target}.cc")
+  target_compile_definitions(${_target}_ll PRIVATE USE_LAZY_START_TASKS=1 USE_LAZY_START_OPS=1)
+  target_link_libraries(${_target}_ll
     example_grpc_proto
     absl::flags
     absl::flags_parse

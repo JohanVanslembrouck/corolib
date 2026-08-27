@@ -8,16 +8,27 @@ REM greeter_async_client2.exe
 
 greeter_callback_client.exe
 
-greeter_cb_coroutine_client.exe
-greeter_cb_coroutine_client_lso.exe
-greeter_cb_coroutine_client2.exe
-greeter_cb_coroutine_client2_lso.exe
-greeter_cb_coroutine_client3.exe
-greeter_cb_coroutine_client3_lso.exe
+greeter_cb_coroutine_client_xe.exe
+greeter_cb_coroutine_client_xl.exe
 
-greeter_coroutine_client.exe
-greeter_coroutine_client_lso.exe
-greeter_coroutine_client2.exe
-greeter_coroutine_client2_lso.exe
-greeter_coroutine_client2a.exe
-greeter_coroutine_client2a_lso.exe
+greeter_cb_coroutine_client2_xe.exe
+greeter_cb_coroutine_client2_xl.exe
+
+greeter_cb_coroutine_client3_xe.exe
+greeter_cb_coroutine_client3_xl.exe
+
+greeter_coroutine_client_ee.exe
+greeter_coroutine_client_el.exe
+REM The following 2 programs block at run-time. See source code for explanation.
+REM greeter_coroutine_client_le.exe
+REM greeter_coroutine_client_ll.exe
+
+greeter_coroutine_client2_ee.exe
+greeter_coroutine_client2_el.exe
+greeter_coroutine_client2_le.exe
+greeter_coroutine_client2_ll.exe
+
+greeter_coroutine_client2a_ee.exe
+greeter_coroutine_client2a_el.exe
+greeter_coroutine_client2a_le.exe
+greeter_coroutine_client2a_ll.exe

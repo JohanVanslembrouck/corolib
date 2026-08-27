@@ -56,11 +56,12 @@ const int NR_ITERATIONS = 10;
 
 class GreeterClient : public CommService {
 private:
+#if !USE_LAZY_START_OPS
     // eager-start operation definition - begin
-    async_operation<void> start_SayHello(ClientContext* pcontext, HelloRequest& request, HelloReply& reply, Status& status) {
+    async_operation<void> start_SayHello(ClientContext* context, HelloRequest& request, HelloReply& reply, Status& status) {
         int index = get_free_index();
         async_operation<void> ret{ this, index };
-        stub_->async()->SayHello(pcontext, &request, &reply,
+        stub_->async()->SayHello(context, &request, &reply,
             [&status, index, this](Status s) {
                 print(PRI1, "start_SayHello: handler\n");
                 status = std::move(s);
@@ -69,6 +70,57 @@ private:
         return ret;
     }
     // eager-start operation definition - end
+#else
+    // lazy-start operation definition - begin
+    class SayHello_operation_impl
+    {
+    public:
+        SayHello_operation_impl(GreeterClient* greeterClient, ClientContext* context, HelloRequest& request, HelloReply& reply, Status& status)
+            : greeterClient_(greeterClient)
+            , context_(context)
+            , request_(request)
+            , reply_(reply)
+            , status_(status) {
+        }
+
+        bool try_start(async_operation_ls_base& operation) noexcept {
+            greeterClient_->stub_->async()->SayHello(context_, &request_, &reply_,
+                [this, &operation](Status s) {
+                    print(PRI1, "SayHello_operation_impl::try_start: handler\n");
+                    status_ = std::move(s);
+                    operation.completed();
+                });
+            return true;
+        }
+
+        void get_result(async_operation_ls_base&) {}
+
+    private:
+        GreeterClient* greeterClient_;
+        ClientContext* context_;
+        HelloRequest& request_;
+        HelloReply& reply_;
+        Status& status_;
+    };
+
+    class SayHello_operation : public async_operation_ls<SayHello_operation>
+    {
+    public:
+        SayHello_operation(GreeterClient* greeterClient, ClientContext* context, HelloRequest& request, HelloReply& reply, Status& status)
+            : m_impl(greeterClient, context, request, reply, status) {
+        }
+
+        bool try_start() noexcept { return m_impl.try_start(*this); }
+        void get_result() { m_impl.get_result(*this); }
+
+        SayHello_operation_impl m_impl;
+    };
+
+    SayHello_operation start_SayHello(ClientContext* context, HelloRequest& request, HelloReply& reply, Status& status) {
+        return SayHello_operation(this, context, request, reply, status);
+    }
+    // lazy-start operation definition - end
+#endif
 
  public:
   GreeterClient(std::shared_ptr<Channel> channel)

@@ -9,9 +9,17 @@ set -x
 ./multigreeter_coroutine_client2_nc
 ./multigreeter_coroutine_client3_nc
 
-./multigreeter_coroutine_client
-./multigreeter_coroutine_client_lso
-./multigreeter_coroutine_client2
-./multigreeter_coroutine_client2_lso
-./multigreeter_coroutine_client3
-./multigreeter_coroutine_client3_lso
+./multigreeter_coroutine_client_ee
+./multigreeter_coroutine_client_el
+./multigreeter_coroutine_client_le
+./multigreeter_coroutine_client_ll
+
+./multigreeter_coroutine_client2_ee
+./multigreeter_coroutine_client2_el
+./multigreeter_coroutine_client2_le
+./multigreeter_coroutine_client2_ll
+
+./multigreeter_coroutine_client3_ee
+./multigreeter_coroutine_client3_el
+./multigreeter_coroutine_client3_le
+./multigreeter_coroutine_client3_ll

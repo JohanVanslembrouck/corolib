@@ -20,6 +20,12 @@
 #include <corolib/async_operation.h>
 // added for using corolib - end
 
+#if USE_LAZY_START_TASKS
+#define task async_ltask
+#else
+#define task async_task
+#endif
+
 #ifdef BAZEL_BUILD
 #include "examples/protos/hellostreamingworld.grpc.pb.h"
 #else
@@ -43,6 +49,7 @@ using namespace corolib;
 class GreeterClient : public CommService {      // Added CommService as base class
 private:
 #if USE_COROUTINES
+#if !USE_LAZY_START_OPS
     // eager-start operation definition - begin
     async_operation<void> start_SayHello(HelloRequest& request) {
         int index = get_free_index();
@@ -68,6 +75,61 @@ private:
             };
     }
     // eager-start operation definition - end
+#else
+    // lazy-start operation definition - begin
+    class SayHello_operation_impl
+    {
+    public:
+        SayHello_operation_impl(GreeterClient* greeterClient, HelloRequest& request)
+            : greeterClient_(greeterClient)
+            , request_(request)
+        {
+        }
+
+        bool try_start(async_operation_ls_base& operation) noexcept {
+
+            // Call object to store rpc data
+            AsyncClientCall* call = new AsyncClientCall(greeterClient_);
+
+            // stub_->AsyncSayHello() performs the RPC call, returning an instance to
+            // store in "call". Because we are using the asynchronous API, we need to
+            // hold on to the "call" instance in order to get updates on the ongoing RPC.
+            call->response_reader = greeterClient_->stub_->AsyncsayHello(&call->context, request_, &greeterClient_->cq_, (void*)call);
+
+            call->completionHandler_ =
+                [this, &operation](Status) {
+                print(PRI1, "completionHandler\n");
+                operation.completed();
+                };
+
+            return true;
+        }
+
+        void get_result(async_operation_ls_base&) {}
+
+    private:
+        GreeterClient* greeterClient_;
+        HelloRequest& request_;
+    };
+
+    class SayHello_operation : public async_operation_ls<SayHello_operation>
+    {
+    public:
+        SayHello_operation(GreeterClient* greeterClient, HelloRequest& request)
+            : m_impl(greeterClient, request) {
+        }
+
+        bool try_start() noexcept { return m_impl.try_start(*this); }
+        void get_result() { m_impl.get_result(*this); }
+
+        SayHello_operation_impl m_impl;
+    };
+
+    SayHello_operation start_SayHello(GreeterClient* greeterClient, HelloRequest& request) {
+        return SayHello_operation(greeterClient, request);
+    }
+    // lazy-start operation definition - end
+#endif
 #endif
 
 public:
@@ -91,20 +153,23 @@ public:
 
 #if USE_COROUTINES
     // Top level coroutine. Added because main() cannot be a coroutine.
-    async_task<void> runSayHelloCo(const std::string& user) {
+    task<void> runSayHelloCo(const std::string& user) {
         co_await SayHelloCo(user);
         done_ = true;           // JVS: allow terminating the program automatically
         co_return;
     }
 
     // Coroutine version of SayHello
-    async_task<void> SayHelloCo(const std::string& user) {
+    task<void> SayHelloCo(const std::string& user) {
         print(PRI1, "SayHelloCo: begin\n");
         HelloRequest request;
         // Data we are sending to the server.
         request.set_name(user);
-
+#if !USE_LAZY_START_OPS
         co_await start_SayHello(request);
+#else
+        co_await start_SayHello(this, request);
+#endif
         print(PRI1, "SayHelloCo: end\n");
         co_return;
     }
@@ -230,7 +295,8 @@ int main(int argc, char** argv) {
     greeter.SayHello(user);  // The actual RPC call!
 #else
     std::string user("coroutine world");
-    async_task<void> t = greeter.runSayHelloCo(user);
+    task<void> t = greeter.runSayHelloCo(user);
+    t.start();
     t.wait();
 #endif
 

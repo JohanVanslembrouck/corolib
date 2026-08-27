@@ -74,6 +74,12 @@
 #include <corolib/async_operation.h>
 #include <corolib/eventqueue.h>
 
+#if USE_LAZY_START_TASKS
+#define task async_ltask
+#else
+#define task async_task
+#endif
+
 using grpc::Channel;
 using grpc::ClientContext;
 using grpc::Status;
@@ -486,29 +492,137 @@ private:
 
 class RouteGuideClient : public CommService {
   private:
+#if !USE_LAZY_START_OPS
     // eager-start operation definition - begin
     async_operation<ReaderResult> start_ListFeatures(ReaderCo* pReaderCo) {
+        print(PRI5, "start_ListFeatures(...)\n");
         int index = get_free_index();
         async_operation<ReaderResult> ret{ this, index };
         pReaderCo->setCompletionHandler(
             [this, index](ReaderResult result) {
-                print(PRI5, "completionHandler called\n");
+                print(PRI5, "start_ListFeatures::completionHandler called: result.state = %d\n", result.state);
                 this->completionHandler<ReaderResult>(index, result);
             });
         return ret;
     }
 
     async_operation<ChatterResult> start_Chatter(ChatterCo* pChatterCo) {
+        print(PRI5, "start_Chatter(...)\n");
         int index = get_free_index();
         async_operation<ChatterResult> ret{ this, index };
         pChatterCo->setCompletionHandler(
             [this, index](ChatterResult result) {
-                print(PRI1, "completionHandler called\n");
+                print(PRI5, "start_Chatter::completionHandler called: result.state = %d\n", result.state);
                 this->completionHandler<ChatterResult>(index, result);
             });
         return ret;
     }
     // eager-start operation definition - end
+#else
+      // lazy-start operation definition - begin
+      class ListFeatures_operation_impl
+      {
+      public:
+          ListFeatures_operation_impl(ReaderCo* pReaderCo)
+              : pReaderCo_(pReaderCo)
+              , started_(false) {
+          }
+
+          bool try_start(async_operation_ls_base& operation) noexcept {
+              if (started_)       // Avoid starting a lazy start operation multiple times, e.g. when co_await-ed in a loop.
+                  return true;
+
+              print(PRI5, "ListFeatures_operation_impl::try_start(...)\n");
+              pReaderCo_->setCompletionHandler(
+                  [this, &operation](ReaderResult result) {
+                      print(PRI5, "ListFeatures_operation_impl::completionHandler called: result.state = %d\n", result.state);
+                      result_ = std::move(result);
+                      operation.completed();
+                  });
+
+              started_ = true;
+              return true;
+          }
+
+          ReaderResult get_result(async_operation_ls_base&) {
+              return result_;
+          }
+
+      private:
+          ReaderCo* pReaderCo_;
+          ReaderResult result_;
+          bool started_;
+      };
+
+      class ListFeatures_operation : public async_operation_ls<ListFeatures_operation>
+      {
+      public:
+          ListFeatures_operation(ReaderCo* pReaderCo)
+              : m_impl(pReaderCo) {
+          }
+
+          bool try_start() noexcept { return m_impl.try_start(*this); }
+          ReaderResult get_result() { return m_impl.get_result(*this); }
+
+          ListFeatures_operation_impl m_impl;
+      };
+
+      ListFeatures_operation start_ListFeatures(ReaderCo* pReaderCo) {
+          return ListFeatures_operation(pReaderCo);
+      }
+
+      class Chatter_operation_impl
+      {
+      public:
+          Chatter_operation_impl(ChatterCo* pChatterCo)
+              : pChatterCo_(pChatterCo)
+              , started_(false) {
+          }
+
+          bool try_start(async_operation_ls_base& operation) noexcept {
+              if (started_)       // Avoid starting a lazy start operation multiple times, e.g. when co_await-ed in a loop.
+                  return true;
+
+              print(PRI5, "Chatter_operation_impl::try_start(...)\n");
+              pChatterCo_->setCompletionHandler(
+                  [this, &operation](ChatterResult result) {
+                      print(PRI5, "Chatter_operation_impl::completionHandler called: result.state = %d\n", result.state);
+                      result_ = std::move(result);
+                      operation.completed();
+                  });
+
+              started_ = true;
+              return true;
+          }
+
+          ChatterResult get_result(async_operation_ls_base&) {
+              return result_;
+          }
+
+      private:
+          ChatterCo* pChatterCo_;
+          ChatterResult result_;
+          bool started_;
+      };
+
+      class Chatter_operation : public async_operation_ls<Chatter_operation>
+      {
+      public:
+          Chatter_operation(ChatterCo* pChatterCo)
+              : m_impl(pChatterCo) {
+          }
+
+          bool try_start() noexcept { return m_impl.try_start(*this); }
+          ChatterResult get_result() { return m_impl.get_result(*this); }
+
+          Chatter_operation_impl m_impl;
+      };
+
+      Chatter_operation start_Chatter(ChatterCo* pChatterCo) {
+          return Chatter_operation(pChatterCo);
+      }
+      // lazy-start operation definition - end
+#endif
 
  public:
   RouteGuideClient(std::shared_ptr<Channel> channel, const std::string& db)
@@ -554,7 +668,7 @@ class RouteGuideClient : public CommService {
 
   // coroutine version
 
-  async_task<void> ListFeaturesCo() {
+  task<void> ListFeaturesCo() {
       print(PRI1, "ListFeaturesCo - begin\n");
       routeguide::Rectangle rect;
       Feature feature;
@@ -567,7 +681,9 @@ class RouteGuideClient : public CommService {
           << std::endl;
 
       ReaderCo reader(stub_.get(), kCoordFactor_, rect);
-      async_operation<ReaderResult> op = start_ListFeatures(&reader);
+      // async_operation<ReaderResult> op = start_ListFeatures(&reader);
+      // ListFeatures_operation op = start_ListFeatures(&reader);
+      auto op = start_ListFeatures(&reader);
       op.auto_reset(true);
       bool done = false;
       do {
@@ -631,10 +747,12 @@ class RouteGuideClient : public CommService {
 
   // coroutine version
 
-  async_task<void> RouteChatCo() {
+  task<void> RouteChatCo() {
       print(PRI1, "RouteChatCo - begin\n");
       ChatterCo chatter(stub_.get());
-      async_operation<ChatterResult> op = start_Chatter(&chatter);
+      // async_operation<ChatterResult> op = start_Chatter(&chatter);
+      // Chatter_operation op = start_Chatter(&chatter);
+      auto op = start_Chatter(&chatter);
       op.auto_reset(true);
       bool done = false;
       do {
@@ -716,23 +834,24 @@ void runListFeatures(RouteGuideClient& guide)
     }
 }
 
-async_task<void> runListFeaturesCo(RouteGuideClient& guide)
+task<void> runListFeaturesCo(RouteGuideClient& guide)
 {
     print(PRI1, "runListFeaturesCo\n");
     for (int i = 0; i < NR_INTERACTIONS; ++i) {
         std::cout << "-------------- ListFeaturesCo (1) (" << i << ") --------------" << std::endl;
-        async_task<void> tlf = guide.ListFeaturesCo();
+        task<void> tlf = guide.ListFeaturesCo();
         co_await tlf;
     }
     co_return;
 }
 
-async_task<void> runListFeaturesCo2(RouteGuideClient& guide)
+task<void> runListFeaturesCo2(RouteGuideClient& guide)
 {
     print(PRI1, "runListFeaturesCo2\n");
     for (int i = 0; i < NR_INTERACTIONS; ++i) {
         std::cout << "-------------- ListFeaturesCo (2) (" << i << ") --------------" << std::endl;
-        async_task<void> tlf = guide.ListFeaturesCo();
+        task<void> tlf = guide.ListFeaturesCo();
+        tlf.start();
         eventQueueThr.reset();
         runEventQueue(eventQueueThr);
     }
@@ -743,23 +862,24 @@ async_task<void> runListFeaturesCo2(RouteGuideClient& guide)
 
 // ---------------------------------------------
 
-async_task<void> runRouteChatCo(RouteGuideClient& guide)
+task<void> runRouteChatCo(RouteGuideClient& guide)
 {
     print(PRI1, "runRouteChatCo\n");
     for (int i = 0; i < NR_INTERACTIONS; ++i) {
         std::cout << "-------------- RouteChatCo (1) (" << i << ") --------------" << std::endl;
-        async_task<void> tlf = guide.RouteChatCo();
+        task<void> tlf = guide.RouteChatCo();
         co_await tlf;
     }
     co_return;
 }
 
-async_task<void> runRouteChatCo2(RouteGuideClient& guide)
+task<void> runRouteChatCo2(RouteGuideClient& guide)
 {
     print(PRI1, "runRouteChatCo\n");
     for (int i = 0; i < NR_INTERACTIONS; ++i) {
         std::cout << "-------------- RouteChatCo (2) (" << i << ") --------------" << std::endl;
-        async_task<void> tlf = guide.RouteChatCo();
+        task<void> tlf = guide.RouteChatCo();
+        tlf.start();
         eventQueueThr.reset();
         runEventQueue(eventQueueThr);
     }
@@ -786,15 +906,17 @@ int main(int argc, char** argv) {
   std::cout << "-------------- ListFeatures --------------" << std::endl;
   runListFeatures(guide);
 
-  print(PRI1, "main: async_task<void> tlf1 = runListFeaturesCo(guide);\n");
-  async_task<void> tlf1 = runListFeaturesCo(guide);
+  print(PRI1, "main: task<void> tlf1 = runListFeaturesCo(guide);\n");
+  task<void> tlf1 = runListFeaturesCo(guide);
+  tlf1.start();
   for (int i = 0; i < NR_INTERACTIONS; ++i) {
       eventQueueThr.reset();
       runEventQueue(eventQueueThr);
   }
 
-  print(PRI1, "main: async_task<void> tlf2 = runListFeaturesCo2(guide);\n");
-  async_task<void> tlf2 = runListFeaturesCo2(guide);
+  print(PRI1, "main: task<void> tlf2 = runListFeaturesCo2(guide);\n");
+  task<void> tlf2 = runListFeaturesCo2(guide);
+  tlf2.start();
   print(PRI1, "main: tlf2.wait();\n");
   tlf2.wait();
 
@@ -804,15 +926,17 @@ int main(int argc, char** argv) {
   std::cout << "-------------- RouteChat --------------" << std::endl;
   guide.RouteChat();
 
-  print(PRI1, "main: async_task<void> tlf5 = runRouteChatCo(guide);\n");
-  async_task<void> tlf5 = runRouteChatCo(guide);
+  print(PRI1, "main: task<void> tlf5 = runRouteChatCo(guide);\n");
+  task<void> tlf5 = runRouteChatCo(guide);
+  tlf5.start();
   for (int i = 0; i < NR_INTERACTIONS; ++i) {
       eventQueueThr.reset();
       runEventQueue(eventQueueThr);
   }
 
-  print(PRI1, "main: async_task<void> tlf6 = runRouteChatCo2(guide);\n");
-  async_task<void> tlf6 = runRouteChatCo2(guide);
+  print(PRI1, "main: task<void> tlf6 = runRouteChatCo2(guide);\n");
+  task<void> tlf6 = runRouteChatCo2(guide);
+  tlf6.start();
   print(PRI1, "main: tlf6.wait();\n");
   tlf6.wait();
 

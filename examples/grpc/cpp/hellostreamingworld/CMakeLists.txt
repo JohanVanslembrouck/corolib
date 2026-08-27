@@ -62,16 +62,62 @@ target_link_libraries(hsw_grpc_proto
 # Targets greeter_[async_](client|server)
 foreach(_target
   multigreeter_client
-  multigreeter_coroutine_client
-  multigreeter_coroutine_client_lso
-  multigreeter_coroutine_client2
-  multigreeter_coroutine_client2_lso
-  multigreeter_coroutine_client3
-  multigreeter_coroutine_client3_lso
   multigreeter_server)
   add_executable(${_target} "${_target}.cc")
   target_compile_definitions(${_target} PRIVATE USE_COROUTINES=1)
   target_link_libraries(${_target}
+    hsw_grpc_proto
+    ${_REFLECTION}
+    ${_GRPC_GRPCPP}
+    ${_PROTOBUF_LIBPROTOBUF})
+endforeach()
+
+foreach(_target
+  multigreeter_coroutine_client
+  multigreeter_coroutine_client2
+  multigreeter_coroutine_client3)
+  add_executable(${_target}_ee "${_target}.cc")
+  target_compile_definitions(${_target}_ee PRIVATE USE_COROUTINES=1 USE_LAZY_START_TASKS=0 USE_LAZY_START_OPS=0)
+  target_link_libraries(${_target}_ee
+    hsw_grpc_proto
+    ${_REFLECTION}
+    ${_GRPC_GRPCPP}
+    ${_PROTOBUF_LIBPROTOBUF})
+endforeach()
+
+foreach(_target
+  multigreeter_coroutine_client
+  multigreeter_coroutine_client2
+  multigreeter_coroutine_client3)
+  add_executable(${_target}_el "${_target}.cc")
+  target_compile_definitions(${_target}_el PRIVATE USE_COROUTINES=1 USE_LAZY_START_TASKS=0 USE_LAZY_START_OPS=1)
+  target_link_libraries(${_target}_el
+    hsw_grpc_proto
+    ${_REFLECTION}
+    ${_GRPC_GRPCPP}
+    ${_PROTOBUF_LIBPROTOBUF})
+endforeach()
+
+foreach(_target
+  multigreeter_coroutine_client
+  multigreeter_coroutine_client2
+  multigreeter_coroutine_client3)
+  add_executable(${_target}_le "${_target}.cc")
+  target_compile_definitions(${_target}_le PRIVATE USE_COROUTINES=1 USE_LAZY_START_TASKS=1 USE_LAZY_START_OPS=0)
+  target_link_libraries(${_target}_le
+    hsw_grpc_proto
+    ${_REFLECTION}
+    ${_GRPC_GRPCPP}
+    ${_PROTOBUF_LIBPROTOBUF})
+endforeach()
+
+foreach(_target
+  multigreeter_coroutine_client
+  multigreeter_coroutine_client2
+  multigreeter_coroutine_client3)
+  add_executable(${_target}_ll "${_target}.cc")
+  target_compile_definitions(${_target}_ll PRIVATE USE_COROUTINES=1 USE_LAZY_START_TASKS=1 USE_LAZY_START_OPS=1)
+  target_link_libraries(${_target}_ll
     hsw_grpc_proto
     ${_REFLECTION}
     ${_GRPC_GRPCPP}

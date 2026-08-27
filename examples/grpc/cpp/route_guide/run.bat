@@ -4,4 +4,8 @@ route_guide_client.exe
 route_guide_callback_client.exe
 route_guide_coroutine_client.exe
 route_guide_coroutine_client_a.exe
-route_guide_coroutine_client2.exe
+
+route_guide_coroutine_client2_ee.exe
+route_guide_coroutine_client2_el.exe
+route_guide_coroutine_client2_le.exe
+route_guide_coroutine_client2_ll.exe

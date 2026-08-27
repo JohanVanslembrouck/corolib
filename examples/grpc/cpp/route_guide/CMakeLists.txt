@@ -74,10 +74,8 @@ foreach(_target
   route_guide_client
   route_guide_server
   route_guide_callback_client
-  route_guide_coroutine_client2
   route_guide_callback_server)
-  add_executable(${_target}
-    "${_target}.cc")
+  add_executable(${_target} "${_target}.cc")
   target_link_libraries(${_target}
     rg_grpc_proto
     route_guide_helper
@@ -87,9 +85,56 @@ foreach(_target
 endforeach()
 
 foreach(_target
+  route_guide_coroutine_client2)
+  add_executable(${_target}_ee "${_target}.cc")
+  target_compile_definitions(${_target}_ee PRIVATE USE_LAZY_START_TASKS=0 USE_LAZY_START_OPS=0)
+  target_link_libraries(${_target}_ee
+    rg_grpc_proto
+    route_guide_helper
+    ${_REFLECTION}
+    ${_GRPC_GRPCPP}
+    ${_PROTOBUF_LIBPROTOBUF})
+endforeach()
+
+foreach(_target
+  route_guide_coroutine_client2)
+  add_executable(${_target}_el "${_target}.cc")
+  target_compile_definitions(${_target}_el PRIVATE USE_LAZY_START_TASKS=0 USE_LAZY_START_OPS=1)
+  target_link_libraries(${_target}_el
+    rg_grpc_proto
+    route_guide_helper
+    ${_REFLECTION}
+    ${_GRPC_GRPCPP}
+    ${_PROTOBUF_LIBPROTOBUF})
+endforeach()
+
+foreach(_target
+  route_guide_coroutine_client2)
+  add_executable(${_target}_le "${_target}.cc")
+  target_compile_definitions(${_target}_le PRIVATE USE_LAZY_START_TASKS=1 USE_LAZY_START_OPS=0)
+  target_link_libraries(${_target}_le
+    rg_grpc_proto
+    route_guide_helper
+    ${_REFLECTION}
+    ${_GRPC_GRPCPP}
+    ${_PROTOBUF_LIBPROTOBUF})
+endforeach()
+
+foreach(_target
+  route_guide_coroutine_client2)
+  add_executable(${_target}_ll "${_target}.cc")
+  target_compile_definitions(${_target}_ll PRIVATE USE_LAZY_START_TASKS=1 USE_LAZY_START_OPS=1)
+  target_link_libraries(${_target}_ll
+    rg_grpc_proto
+    route_guide_helper
+    ${_REFLECTION}
+    ${_GRPC_GRPCPP}
+    ${_PROTOBUF_LIBPROTOBUF})
+endforeach()
+
+foreach(_target
   route_guide_coroutine_client)
-  add_executable(${_target}
-    "${_target}.cc")
+  add_executable(${_target} "${_target}.cc")
   target_compile_definitions(${_target} PRIVATE USE_START_FROM_GRPC_OBJECT=0)
   target_link_libraries(${_target}
     rg_grpc_proto
@@ -101,8 +146,7 @@ endforeach()
 
 foreach(_target
   route_guide_coroutine_client)
-  add_executable(${_target}_a
-    "${_target}.cc")
+  add_executable(${_target}_a "${_target}.cc")
   target_compile_definitions(${_target}_a PRIVATE USE_START_FROM_GRPC_OBJECT=1)
   target_link_libraries(${_target}_a
     rg_grpc_proto

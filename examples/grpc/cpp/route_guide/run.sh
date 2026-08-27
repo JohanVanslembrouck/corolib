@@ -7,4 +7,8 @@ set -x
 ./route_guide_callback_client
 ./route_guide_coroutine_client
 ./route_guide_coroutine_client_a
-./route_guide_coroutine_client2
+
+./route_guide_coroutine_client2_ee
+./route_guide_coroutine_client2_el
+./route_guide_coroutine_client2_le
+./route_guide_coroutine_client2_ll

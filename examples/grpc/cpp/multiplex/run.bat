@@ -3,14 +3,23 @@ REM Assumption: multiplex_server.exe is already running
 multiplex_client.exe
 multiplex_client2.exe
 
-multiplex_coroutine_client2.exe
-multiplex_coroutine_client2_lso.exe
+multiplex_coroutine_client2_ee.exe
+multiplex_coroutine_client2_el.exe
+multiplex_coroutine_client2_le.exe
+multiplex_coroutine_client2_ll.exe
 
-multiplex_coroutine_client3.exe
-multiplex_coroutine_client3_lso.exe
+multiplex_coroutine_client3_ee.exe
+multiplex_coroutine_client3_el.exe
+multiplex_coroutine_client3_le.exe
+multiplex_coroutine_client3_ll.exe
+
 multiplex_coroutine_client3-when_all.exe
 multiplex_coroutine_client3-when_any.exe
-multiplex_coroutine_client3-all.exe
+
+multiplex_coroutine_client3-all_ee.exe
+multiplex_coroutine_client3-all_el.exe
+multiplex_coroutine_client3-all_le.exe
+multiplex_coroutine_client3-all_ll.exe
 
 multiplex_coroutine_client4.exe
 

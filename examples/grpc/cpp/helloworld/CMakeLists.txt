@@ -67,21 +67,87 @@ foreach(_target
   greeter_async_client2
   greeter_callback_client
   greeter_callback_server
-  greeter_coroutine_client
-  greeter_coroutine_client_lso
-  greeter_coroutine_client2
-  greeter_coroutine_client2_lso
-  greeter_coroutine_client2a
-  greeter_coroutine_client2a_lso
-  greeter_cb_coroutine_client
-  greeter_cb_coroutine_client_lso
-  greeter_cb_coroutine_client2
-  greeter_cb_coroutine_client2_lso
-  greeter_cb_coroutine_client3
-  greeter_cb_coroutine_client3_lso
   greeter_async_server)
   add_executable(${_target} "${_target}.cc")
   target_link_libraries(${_target}
+    hw_grpc_proto
+    ${_REFLECTION}
+    ${_GRPC_GRPCPP}
+    ${_PROTOBUF_LIBPROTOBUF})
+endforeach()
+
+foreach(_target
+  greeter_cb_coroutine_client
+  greeter_cb_coroutine_client2
+  greeter_cb_coroutine_client3)
+  add_executable(${_target}_xe "${_target}.cc")
+  target_compile_definitions(${_target}_xe PRIVATE USE_LAZY_START_OPS=0)
+  target_link_libraries(${_target}_xe
+    hw_grpc_proto
+    ${_REFLECTION}
+    ${_GRPC_GRPCPP}
+    ${_PROTOBUF_LIBPROTOBUF})
+endforeach()
+
+foreach(_target
+  greeter_cb_coroutine_client
+  greeter_cb_coroutine_client2
+  greeter_cb_coroutine_client3)
+  add_executable(${_target}_xl "${_target}.cc")
+  target_compile_definitions(${_target}_xl PRIVATE USE_LAZY_START_OPS=1)
+  target_link_libraries(${_target}_xl
+    hw_grpc_proto
+    ${_REFLECTION}
+    ${_GRPC_GRPCPP}
+    ${_PROTOBUF_LIBPROTOBUF})
+endforeach()
+
+foreach(_target
+  greeter_coroutine_client
+  greeter_coroutine_client2
+  greeter_coroutine_client2a)
+  add_executable(${_target}_ee "${_target}.cc")
+  target_compile_definitions(${_target}_ee PRIVATE USE_LAZY_START_TASKS=0 USE_LAZY_START_OPS=0)
+  target_link_libraries(${_target}_ee
+    hw_grpc_proto
+    ${_REFLECTION}
+    ${_GRPC_GRPCPP}
+    ${_PROTOBUF_LIBPROTOBUF})
+endforeach()
+
+foreach(_target
+  greeter_coroutine_client
+  greeter_coroutine_client2
+  greeter_coroutine_client2a)
+  add_executable(${_target}_el "${_target}.cc")
+  target_compile_definitions(${_target}_el PRIVATE USE_LAZY_START_TASKS=0 USE_LAZY_START_OPS=1)
+  target_link_libraries(${_target}_el
+    hw_grpc_proto
+    ${_REFLECTION}
+    ${_GRPC_GRPCPP}
+    ${_PROTOBUF_LIBPROTOBUF})
+endforeach()
+
+foreach(_target
+  greeter_coroutine_client
+  greeter_coroutine_client2
+  greeter_coroutine_client2a)
+  add_executable(${_target}_le "${_target}.cc")
+  target_compile_definitions(${_target}_le PRIVATE USE_LAZY_START_TASKS=1 USE_LAZY_START_OPS=0)
+  target_link_libraries(${_target}_le
+    hw_grpc_proto
+    ${_REFLECTION}
+    ${_GRPC_GRPCPP}
+    ${_PROTOBUF_LIBPROTOBUF})
+endforeach()
+
+foreach(_target
+  greeter_coroutine_client
+  greeter_coroutine_client2
+  greeter_coroutine_client2a)
+  add_executable(${_target}_ll "${_target}.cc")
+  target_compile_definitions(${_target}_ll PRIVATE USE_LAZY_START_TASKS=1 USE_LAZY_START_OPS=1)
+  target_link_libraries(${_target}_ll
     hw_grpc_proto
     ${_REFLECTION}
     ${_GRPC_GRPCPP}
