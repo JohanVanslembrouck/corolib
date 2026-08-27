@@ -9,12 +9,48 @@ else
     echo "Please build the project."
 fi
 
-if [ -d "../../corolib-build/examples/boost/" ]; then
+if [ -d "../../corolib-build/examples/boost/clientserver0" ]; then
+    echo "cp ../examples/boost/clientserver0/run.sh ../../corolib-build/examples/boost/clientserver0/."
+    cp ../examples/boost/clientserver0/run.sh ../../corolib-build/examples/boost/clientserver0/.
+    chmod ug+x ../../corolib-build/examples/boost/clientserver0/run.sh
+else
+    echo "../../corolib-build/examples/boost/clientserver0 does not exist."
+    echo "set(BOOST_INSTALLED TRUE) in CMakeList.txt and rebuild."
+fi
+
+if [ -d "../../corolib-build/examples/boost/clientserver1" ]; then
+    echo "cp ../examples/boost/clientserver1/run.sh ../../corolib-build/examples/boost/clientserver1/."
+    cp ../examples/boost/clientserver1/run.sh ../../corolib-build/examples/boost/clientserver1/.
+    chmod ug+x ../../corolib-build/examples/boost/clientserver1/run.sh
+else
+    echo "../../corolib-build/examples/boost/clientserver1 does not exist."
+    echo "set(BOOST_INSTALLED TRUE) in CMakeList.txt and rebuild."
+fi
+
+if [ -d "../../corolib-build/examples/boost/clientserver1lso" ]; then
+    echo "cp ../examples/boost/clientserver1lso/run.sh ../../corolib-build/examples/boost/clientserver1lso/."
+    cp ../examples/boost/clientserver1lso/run.sh ../../corolib-build/examples/boost/clientserver1lso/.
+    chmod ug+x ../../corolib-build/examples/boost/clientserver1lso/run.sh
+else
+    echo "../../corolib-build/examples/boost/clientserver1lso does not exist."
+    echo "set(BOOST_INSTALLED TRUE) in CMakeList.txt and rebuild."
+fi
+
+if [ -d "../../corolib-build/examples/boost/clientserver1x" ]; then
+    echo "cp ../examples/boost/clientserver1x/run.sh ../../corolib-build/examples/boost/clientserver1x/."
+    cp ../examples/boost/clientserver1x/run.sh ../../corolib-build/examples/boost/clientserver1x/.
+    chmod ug+x ../../corolib-build/examples/boost/clientserver1x/run.sh
+else
+    echo "../../corolib-build/examples/boost/clientserver1x does not exist."
+    echo "set(BOOST_INSTALLED TRUE) in CMakeList.txt and rebuild."
+fi
+
+if [ -d "../../corolib-build/examples/boost/various" ]; then
     echo "cp ../examples/boost/various/run.sh ../../corolib-build/examples/boost/various/."
     cp ../examples/boost/various/run.sh ../../corolib-build/examples/boost/various/.
     chmod ug+x ../../corolib-build/examples/boost/various/run.sh
 else
-    echo "../../corolib-build/examples/boost/ does not exist."
+    echo "../../corolib-build/examples/boost/various does not exist."
     echo "set(BOOST_INSTALLED TRUE) in CMakeList.txt and rebuild."
 fi
 

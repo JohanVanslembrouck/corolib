@@ -9,6 +9,38 @@ if exist ..\out\build\x64-Debug\examples\tutorial\ (
     echo Please build the project.
 )
 
+if exist ..\out\build\x64-Debug\examples\boost\clientserver0\ (
+    echo copy ..\examples\boost\clientserver0\run.bat ..\out\build\x64-Debug\examples\boost\clientserver0\.
+    copy ..\examples\boost\clientserver0\run.bat ..\out\build\x64-Debug\examples\boost\clientserver0\.
+) else (
+    echo ..\out\build\x64-Debug\examples\boost\clientserver0\ does not exist.
+    echo "set(BOOST_INSTALLED TRUE)" in CMakeList.txt and rebuild.
+)
+
+if exist ..\out\build\x64-Debug\examples\boost\clientserver1\ (
+    echo copy ..\examples\boost\clientserver1\run.bat ..\out\build\x64-Debug\examples\boost\clientserver1\.
+    copy ..\examples\boost\clientserver1\run.bat ..\out\build\x64-Debug\examples\boost\clientserver1\.
+) else (
+    echo ..\out\build\x64-Debug\examples\boost\clientserver1\ does not exist.
+    echo "set(BOOST_INSTALLED TRUE)" in CMakeList.txt and rebuild.
+)
+
+if exist ..\out\build\x64-Debug\examples\boost\clientserver1lso\ (
+    echo copy ..\examples\boost\clientserver1lso\run.bat ..\out\build\x64-Debug\examples\boost\clientserver1lso\.
+    copy ..\examples\boost\clientserver1lso\run.bat ..\out\build\x64-Debug\examples\boost\clientserver1lso\.
+) else (
+    echo ..\out\build\x64-Debug\examples\boost\clientserver1lso\ does not exist.
+    echo "set(BOOST_INSTALLED TRUE)" in CMakeList.txt and rebuild.
+)
+
+if exist ..\out\build\x64-Debug\examples\boost\clientserver1x\ (
+    echo copy ..\examples\boost\clientserver1x\run.bat ..\out\build\x64-Debug\examples\boost\clientserver1x\.
+    copy ..\examples\boost\clientserver1x\run.bat ..\out\build\x64-Debug\examples\boost\clientserver1x\.
+) else (
+    echo ..\out\build\x64-Debug\examples\boost\clientserver1x\ does not exist.
+    echo "set(BOOST_INSTALLED TRUE)" in CMakeList.txt and rebuild.
+)
+
 if exist ..\out\build\x64-Debug\examples\boost\various\ (
     echo copy ..\examples\boost\various\run.bat ..\out\build\x64-Debug\examples\boost\various\.
     copy ..\examples\boost\various\run.bat ..\out\build\x64-Debug\examples\boost\various\.
