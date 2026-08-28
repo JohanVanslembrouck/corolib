@@ -125,8 +125,8 @@ private:
         SayHello_operation_impl m_impl;
     };
 
-    SayHello_operation start_SayHello(GreeterClient* greeterClient, HelloRequest& request) {
-        return SayHello_operation(greeterClient, request);
+    SayHello_operation start_SayHello(HelloRequest& request) {
+        return SayHello_operation(this, request);
     }
     // lazy-start operation definition - end
 #endif
@@ -165,11 +165,7 @@ public:
         HelloRequest request;
         // Data we are sending to the server.
         request.set_name(user);
-#if !USE_LAZY_START_OPS
         co_await start_SayHello(request);
-#else
-        co_await start_SayHello(this, request);
-#endif
         print(PRI1, "SayHelloCo: end\n");
         co_return;
     }

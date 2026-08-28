@@ -155,8 +155,8 @@ private:
         SayHello_operation_impl m_impl;
     };
 
-    SayHello_operation start_SayHello(GreeterClient* greeterClient, HelloRequest& request) {
-        return SayHello_operation(greeterClient, request);
+    SayHello_operation start_SayHello(HelloRequest& request) {
+        return SayHello_operation(this, request);
     }
     // lazy-start operation definition - end
 #endif
@@ -198,11 +198,11 @@ public:
 
 #if !USE_LAZY_START_OPS
         async_operation<ReaderResult> op = start_SayHello(request);
-#else
-        SayHello_operation op = start_SayHello(this, request);
-#endif
         op.auto_reset(true);
-
+#else
+        SayHello_operation op = start_SayHello(request);
+#endif
+        
         bool done = false;
         do {
             ReaderResult result = co_await op;
