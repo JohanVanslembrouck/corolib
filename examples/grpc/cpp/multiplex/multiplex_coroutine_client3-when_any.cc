@@ -58,6 +58,12 @@
 #include <corolib/async_operation.h>
 #include <corolib/when_any.h>
 
+#if USE_LAZY_START_TASKS
+#define task async_ltask
+#else
+#define task async_task
+#endif
+
 ABSL_FLAG(std::string, target, "localhost:50051", "Server address");
 
 using grpc::Channel;
@@ -72,6 +78,32 @@ class MultiplexClient : public CommService
 {
 private:
     // eager-start operation definition - begin
+#if 0
+    // negative diff for coroutine count if we use the "unprotected" version of the functions
+    async_operation<Status> start_SayHello(ClientContext* context, helloworld::HelloRequest& request, helloworld::HelloReply& reply) {
+        int index = get_free_index();
+        async_operation<Status> ret{ this, index };
+        helloworld::Greeter::NewStub(channel_)->async()->SayHello(context, &request, &reply,
+            [index, this](Status s) {
+                print(PRI5, "start_SayHello - completion handler\n");
+                Status status = std::move(s);
+                completionHandler<Status>(index, status);
+            });
+        return ret;
+    }
+
+    async_operation<Status> start_GetFeature(ClientContext* context, routeguide::Point& request, routeguide::Feature& reply) {
+        int index = get_free_index();
+        async_operation<Status> ret{ this, index };
+        routeguide::RouteGuide::NewStub(channel_)->async()->GetFeature(context, &request, &reply,
+            [index, this](Status s) {
+                print(PRI5, "start_GetFeature - completion handler\n");
+                Status status = std::move(s);
+                completionHandler<Status>(index, status);
+            });
+        return ret;
+    }
+#else
     async_operation<Status> start_SayHello(ClientContext* context, helloworld::HelloRequest& request, helloworld::HelloReply& reply) {
         int index = get_free_index();
         async_operation<Status> ret{ this, index };
@@ -117,6 +149,7 @@ private:
             });
         return ret;
     }
+#endif
     // eager-start operation definition - end
 
 public:
@@ -124,10 +157,10 @@ public:
         : channel_(channel)
     {}
 
-    async_task<void> SayHello_GetFeatureCo_when_any() {
+    task<void> SayHello_GetFeatureCo_when_any() {
         print(PRI5, "SayHello_GetFeatureCo_when_any - begin\n");    // runs on the original thread 0
-        async_task<std::string> t1 = SayHelloCo();
-        async_task<std::string> t2 = GetFeatureCo();
+        task<std::string> t1 = SayHelloCo();
+        task<std::string> t2 = GetFeatureCo();
         when_any wa(t1, t2);
         print(PRI5, "SayHello_GetFeatureCo_when_any - before loop\n");    // runs on the original thread 0
         for (int i = 0; i < 2; ++i) {
@@ -143,7 +176,7 @@ public:
         co_return;
     }
 
-    async_task <std::string> SayHelloCo() {
+    task <std::string> SayHelloCo() {
         ClientContext hello_context;
         helloworld::HelloRequest hello_request;
         helloworld::HelloReply hello_response;
@@ -163,7 +196,7 @@ public:
         co_return strstr.str();
     }
 
-    async_task<std::string> GetFeatureCo() {
+    task<std::string> GetFeatureCo() {
         ClientContext feature_context;
         routeguide::Point feature_request;
         routeguide::Feature feature_response;
@@ -208,7 +241,8 @@ int main(int argc, char** argv) {
 
   print(PRI1); print(PRI1, "Using SayHello_GetFeatureCo_when_any\n");
   for (int i = 0; i < NR_ITERATIONS; ++i) {
-      async_task<void> t = multiplexClient.SayHello_GetFeatureCo_when_any();
+      task<void> t = multiplexClient.SayHello_GetFeatureCo_when_any();
+      t.start();
       print(PRI2, "Before wait: i = %d\n", i);
       t.wait();
       print(PRI2, "After wait: i = %d\n", i);
@@ -221,7 +255,8 @@ int main(int argc, char** argv) {
 
   print(PRI1, "Using SayHello_GetFeatureCo_when_any\n");
   for (int i = 0; i < NR_ITERATIONS; ++i) {
-      async_task<void> t = multiplexClient.SayHello_GetFeatureCo_when_any();
+      task<void> t = multiplexClient.SayHello_GetFeatureCo_when_any();
+      t.start();
       print(PRI2, "Before wait: i = %d\n", i);
       t.wait();
       print(PRI2, "After wait: i = %d\n", i);

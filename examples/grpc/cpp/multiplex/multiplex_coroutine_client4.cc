@@ -57,6 +57,12 @@
 #include <corolib/when_any.h>
 #include <corolib/eventqueue.h>
 
+#if USE_LAZY_START_TASKS
+#define task async_ltask
+#else
+#define task async_task
+#endif
+
 ABSL_FLAG(std::string, target, "localhost:50051", "Server address");
 
 using grpc::Channel;
@@ -67,11 +73,18 @@ using namespace corolib;
 
 const int NR_ITERATIONS = 100;
 
+#if !USE_LAZY_START_OPS
 struct StatusCo
 {
     int index;
     Status status;
 };
+#else
+struct StatusCo
+{
+    async_operation_ls_base* op;
+};
+#endif
 
 #include "../helloworld/runeventqueue.h"
 
@@ -80,6 +93,7 @@ using EventQueueThrStatusCo = QueueThreadSafe<StatusCo, ARRAYSIZE>;
 class MultiplexClient : public CommService
 {
 private:
+#if !USE_LAZY_START_OPS
     // eager-start operation definition - begin
     async_operation<Status> start_SayHello(ClientContext* context, helloworld::HelloRequest& request, helloworld::HelloReply& reply) {
         int index = get_free_index();
@@ -105,6 +119,114 @@ private:
         return ret;
     }
     // eager-start operation definition - end
+#else
+    // lazy-start operation definition - begin
+    class SayHello_operation_impl
+    {
+    public:
+        SayHello_operation_impl(MultiplexClient* multiplexClient, ClientContext* context, helloworld::HelloRequest& request, helloworld::HelloReply& reply)
+            : multiplexClient_(multiplexClient)
+            , context_(context)
+            , request_(request)
+            , reply_(reply) {
+        }
+
+        bool try_start(async_operation_ls_base& operation) noexcept {
+            helloworld::Greeter::NewStub(multiplexClient_->channel_)->async()->SayHello(context_, &request_, &reply_,
+                [this, &operation](Status s) {
+                    print(PRI5, "SayHello_operation_impl::try_start: handler\n");
+                    status_ = std::move(s);
+                    StatusCo statusCo{ &operation };
+                    multiplexClient_->m_eventQueueThrStatusCo.push(statusCo);
+                });
+            return true;
+        }
+
+        Status get_result(async_operation_ls_base&) {
+            return status_;
+        }
+
+    private:
+        int index_ = 0;
+        MultiplexClient* multiplexClient_;
+        ClientContext* context_;
+        helloworld::HelloRequest& request_;
+        helloworld::HelloReply& reply_;
+        Status status_;
+    };
+
+    class SayHello_operation : public async_operation_ls<SayHello_operation>
+    {
+    public:
+        SayHello_operation(MultiplexClient* multiplexClient, ClientContext* context, helloworld::HelloRequest& request, helloworld::HelloReply& reply)
+            : m_impl(multiplexClient, context, request, reply) {
+        }
+
+        bool try_start() noexcept { return m_impl.try_start(*this); }
+        Status get_result() { return m_impl.get_result(*this); }
+
+        SayHello_operation_impl m_impl;
+    };
+
+    SayHello_operation start_SayHello(ClientContext* context, helloworld::HelloRequest& request, helloworld::HelloReply& reply) {
+        return SayHello_operation(this, context, request, reply);
+    }
+
+    // -------------------------------------------------------------------------------------
+
+    class GetFeature_operation_impl
+    {
+    public:
+        GetFeature_operation_impl(MultiplexClient* multiplexClient, ClientContext* context, routeguide::Point& request, routeguide::Feature& reply)
+            : multiplexClient_(multiplexClient)
+            , context_(context)
+            , request_(request)
+            , reply_(reply) {
+        }
+
+        bool try_start(async_operation_ls_base& operation) noexcept {
+            routeguide::RouteGuide::NewStub(multiplexClient_->channel_)->async()->GetFeature(context_, &request_, &reply_,
+                [this, &operation](Status s) {
+                    print(PRI5, "GetFeature_operation_impl::try_start - handler\n");
+                    status_ = std::move(s);
+                    StatusCo statusCo{ &operation };
+                    multiplexClient_->m_eventQueueThrStatusCo.push(statusCo);
+                });
+
+            return true;
+        }
+
+        Status get_result(async_operation_ls_base&) {
+            return status_;
+        }
+
+    private:
+        int index_ = 0;
+        MultiplexClient* multiplexClient_;
+        ClientContext* context_;
+        routeguide::Point& request_;
+        routeguide::Feature& reply_;
+        Status status_;
+    };
+
+    class GetFeature_operation : public async_operation_ls<GetFeature_operation>
+    {
+    public:
+        GetFeature_operation(MultiplexClient* multiplexClient, ClientContext* context, routeguide::Point& request, routeguide::Feature& reply)
+            : m_impl(multiplexClient, context, request, reply) {
+        }
+
+        bool try_start() noexcept { return m_impl.try_start(*this); }
+        Status get_result() { return m_impl.get_result(*this); }
+
+        GetFeature_operation_impl m_impl;
+    };
+
+    GetFeature_operation start_GetFeature(ClientContext* context, routeguide::Point& request, routeguide::Feature& reply) {
+        return GetFeature_operation(this, context, request, reply);
+    }
+    // lazy-start operation definition - end
+#endif
 
 public:
     explicit MultiplexClient(std::shared_ptr<Channel> channel)
@@ -201,7 +323,7 @@ public:
         }
         co_return strstr.str();
     }
-
+#if !USE_LAZY_START_OPS
     void runEventQueue(int size)
     {
         for (int i = 0; i < size; i++)
@@ -209,10 +331,23 @@ public:
             print(PRI5, "runEventQueue(): StatusCo statusCo = m_eventQueueThrStatusCo.pop();\n");
             StatusCo statusCo = m_eventQueueThrStatusCo.pop();
 
-            print(PRI5, "runEventQueue(): completionHandler<Status>(statusCo.index, statusCo.status);;\n");
+            print(PRI5, "runEventQueue(): completionHandler<Status>(statusCo.index, statusCo.status);\n");
             completionHandler<Status>(statusCo.index, statusCo.status);
         }
     }
+#else
+    void runEventQueue(int size)
+    {
+        for (int i = 0; i < size; i++)
+        {
+            print(PRI5, "runEventQueue(): StatusCo statusCo = m_eventQueueThrStatusCo.pop();\n");
+            StatusCo statusCo = m_eventQueueThrStatusCo.pop();
+
+            print(PRI5, "runEventQueue(): statusCo.op->completed();\n");
+            statusCo.op->completed();
+        }
+    }
+#endif
 
 private:
     std::shared_ptr<Channel> channel_;

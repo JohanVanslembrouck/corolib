@@ -13,14 +13,27 @@ multiplex_coroutine_client3_el.exe
 multiplex_coroutine_client3_le.exe
 multiplex_coroutine_client3_ll.exe
 
-multiplex_coroutine_client3-when_all.exe
-multiplex_coroutine_client3-when_any.exe
+multiplex_coroutine_client3-when_all_ee.exe
+multiplex_coroutine_client3-when_all_el.exe
+multiplex_coroutine_client3-when_all_le.exe
+multiplex_coroutine_client3-when_all_ll.exe
 
+multiplex_coroutine_client3-when_any_le.exe
+multiplex_coroutine_client3-when_any_le.exe
+
+REM negative diff for coroutine count (following 4)
+REM see multiplex_coroutine_client3-when_any.cc for an explanation
 multiplex_coroutine_client3-all_ee.exe
 multiplex_coroutine_client3-all_el.exe
 multiplex_coroutine_client3-all_le.exe
 multiplex_coroutine_client3-all_ll.exe
 
-multiplex_coroutine_client4.exe
+multiplex_coroutine_client4_ee.exe
+multiplex_coroutine_client4_el.exe
+multiplex_coroutine_client4_le.exe
+multiplex_coroutine_client4_ll.exe
 
-multiplex_coroutine_client5.exe
+multiplex_coroutine_client5_ee.exe
+multiplex_coroutine_client5_el.exe
+multiplex_coroutine_client5_le.exe
+multiplex_coroutine_client5_ll.exe

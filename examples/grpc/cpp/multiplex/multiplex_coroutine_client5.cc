@@ -57,6 +57,12 @@
 #include <corolib/when_any.h>
 #include <corolib/eventqueue.h>
 
+#if USE_LAZY_START_TASKS
+#define task async_ltask
+#else
+#define task async_task
+#endif
+
 ABSL_FLAG(std::string, target, "localhost:50051", "Server address");
 
 using grpc::Channel;
@@ -80,6 +86,7 @@ EventQueueFunctionVoidVoid eventQueue;
 class MultiplexClient : public CommService
 {
 private:
+#if !USE_LAZY_START_OPS
     // eager-start operation definition - begin
     async_operation<Status> start_SayHello(ClientContext* context, helloworld::HelloRequest& request, helloworld::HelloReply& reply) {
         int index = get_free_index();
@@ -109,16 +116,126 @@ private:
         return ret;
     }
     // eager-start operation definition - end
+#else
+    // lazy-start operation definition - begin
+    class SayHello_operation_impl
+    {
+    public:
+        SayHello_operation_impl(MultiplexClient* multiplexClient, ClientContext* context, helloworld::HelloRequest& request, helloworld::HelloReply& reply)
+            : multiplexClient_(multiplexClient)
+            , context_(context)
+            , request_(request)
+            , reply_(reply) {
+        }
+
+        bool try_start(async_operation_ls_base& operation) noexcept {
+            helloworld::Greeter::NewStub(multiplexClient_->channel_)->async()->SayHello(context_, &request_, &reply_,
+                [this, &operation](Status s) {
+                    print(PRI5, "SayHello_operation_impl::try_start: handler\n");
+                    std::function<void(void)> ch = [this, &operation, s]() {
+                        status_ = std::move(s);
+                        operation.completed();
+                        };
+                    eventQueue.push(ch);
+                });
+            return true;
+        }
+
+        Status get_result(async_operation_ls_base&) {
+            return status_;
+        }
+
+    private:
+        MultiplexClient* multiplexClient_;
+        ClientContext* context_;
+        helloworld::HelloRequest& request_;
+        helloworld::HelloReply& reply_;
+        Status status_;
+    };
+
+    class SayHello_operation : public async_operation_ls<SayHello_operation>
+    {
+    public:
+        SayHello_operation(MultiplexClient* multiplexClient, ClientContext* context, helloworld::HelloRequest& request, helloworld::HelloReply& reply)
+            : m_impl(multiplexClient, context, request, reply) {
+        }
+
+        bool try_start() noexcept { return m_impl.try_start(*this); }
+        Status get_result() { return m_impl.get_result(*this); }
+
+        SayHello_operation_impl m_impl;
+    };
+
+    SayHello_operation start_SayHello(ClientContext* context, helloworld::HelloRequest& request, helloworld::HelloReply& reply) {
+        return SayHello_operation(this, context, request, reply);
+    }
+
+    // -------------------------------------------------------------------------------------
+
+    class GetFeature_operation_impl
+    {
+    public:
+        GetFeature_operation_impl(MultiplexClient* multiplexClient, ClientContext* context, routeguide::Point& request, routeguide::Feature& reply)
+            : multiplexClient_(multiplexClient)
+            , context_(context)
+            , request_(request)
+            , reply_(reply) {
+        }
+
+        bool try_start(async_operation_ls_base& operation) noexcept {
+            routeguide::RouteGuide::NewStub(multiplexClient_->channel_)->async()->GetFeature(context_, &request_, &reply_,
+                [this, &operation](Status s) {
+                    print(PRI5, "GetFeature_operation_impl::try_start - handler\n");
+                    std::function<void(void)> ch = [this, &operation, s]() {
+                        status_ = std::move(s);
+                        operation.completed();
+                        };
+                    eventQueue.push(ch);
+                });
+
+            return true;
+        }
+
+        Status get_result(async_operation_ls_base&) {
+            return status_;
+        }
+
+    private:
+        MultiplexClient* multiplexClient_;
+        ClientContext* context_;
+        routeguide::Point& request_;
+        routeguide::Feature& reply_;
+        Status status_;
+    };
+
+    class GetFeature_operation : public async_operation_ls<GetFeature_operation>
+    {
+    public:
+        GetFeature_operation(MultiplexClient* multiplexClient, ClientContext* context, routeguide::Point& request, routeguide::Feature& reply)
+            : m_impl(multiplexClient, context, request, reply) {
+        }
+
+        bool try_start() noexcept { return m_impl.try_start(*this); }
+        Status get_result() { return m_impl.get_result(*this); }
+
+        GetFeature_operation_impl m_impl;
+    };
+
+    GetFeature_operation start_GetFeature(ClientContext* context, routeguide::Point& request, routeguide::Feature& reply) {
+        return GetFeature_operation(this, context, request, reply);
+    }
+    // lazy-start operation definition - end
+#endif
 
 public:
     explicit MultiplexClient(std::shared_ptr<Channel> channel)
         : channel_(channel)
     {}
 
-    async_task<void> SayHello_GetFeatureCo() {
+    task<void> SayHello_GetFeatureCo() {
         print(PRI5, "SayHello_GetFeatureCo - begin\n");    // runs on the original thread
-        async_task<std::string> t1 = SayHelloCo();
-        async_task<std::string> t2 = GetFeatureCo();
+        task<std::string> t1 = SayHelloCo();
+        task<std::string> t2 = GetFeatureCo();
         std::string helloReply = co_await t1;
         print(PRI5, "SayHello_GetFeatureCo - after co_await t1\n");    // runs on the original thread
         std::string featureReply = co_await t2;
@@ -129,10 +246,10 @@ public:
         co_return;
     }
 
-    async_task<void> SayHello_GetFeatureCo_when_all() {
+    task<void> SayHello_GetFeatureCo_when_all() {
         print(PRI5, "SayHello_GetFeatureCo - begin\n");    // runs on the original thread 0
-        async_task<std::string> t1 = SayHelloCo();
-        async_task<std::string> t2 = GetFeatureCo();
+        task<std::string> t1 = SayHelloCo();
+        task<std::string> t2 = GetFeatureCo();
         when_all wa(t1, t2);
         print(PRI5, "SayHello_GetFeatureCo - before co_await wa\n");   // runs on the original thread
         co_await wa;
@@ -143,10 +260,10 @@ public:
         co_return;
     }
 
-    async_task<void> SayHello_GetFeatureCo_when_any() {
+    task<void> SayHello_GetFeatureCo_when_any() {
         print(PRI5, "SayHello_GetFeatureCo - begin\n");    // runs on the original thread
-        async_task<std::string> t1 = SayHelloCo();
-        async_task<std::string> t2 = GetFeatureCo();
+        task<std::string> t1 = SayHelloCo();
+        task<std::string> t2 = GetFeatureCo();
         when_any wa(t1, t2);
         print(PRI5, "SayHello_GetFeatureCo - before loop\n");    // runs on the original thread
         for (int i = 0; i < 2; ++i) {
@@ -162,7 +279,7 @@ public:
         co_return;
     }
 
-    async_task <std::string> SayHelloCo() {
+    task <std::string> SayHelloCo() {
         ClientContext hello_context;
         helloworld::HelloRequest hello_request;
         helloworld::HelloReply hello_response;
@@ -184,7 +301,7 @@ public:
         co_return strstr.str();
     }
 
-    async_task<std::string> GetFeatureCo() {
+    task<std::string> GetFeatureCo() {
         ClientContext feature_context;
         routeguide::Point feature_request;
         routeguide::Feature feature_response;
@@ -225,7 +342,8 @@ int main(int argc, char** argv) {
 
   print(PRI1); print(PRI1, "Using SayHello_GetFeatureCo\n");
   for (int i = 0; i < NR_ITERATIONS; ++i) {
-      async_task<void> t = multiplexClient.SayHello_GetFeatureCo();
+      task<void> t = multiplexClient.SayHello_GetFeatureCo();
+      t.start();
       runEventQueue(eventQueue, 2);     // Started 2 operations
       //t.wait();                       // No need to call t.wait()
 
@@ -235,7 +353,8 @@ int main(int argc, char** argv) {
 
   print(PRI1); print(PRI1, "Using SayHello_GetFeatureCo_when_all\n");
   for (int i = 0; i < NR_ITERATIONS; ++i) {
-      async_task<void> t = multiplexClient.SayHello_GetFeatureCo_when_all();
+      task<void> t = multiplexClient.SayHello_GetFeatureCo_when_all();
+      t.start();
       runEventQueue(eventQueue, 2);     // Started 2 operations
       //t.wait();                       // No need to call t.wait()
 
@@ -245,7 +364,8 @@ int main(int argc, char** argv) {
 
   print(PRI1); print(PRI1, "Using SayHello_GetFeatureCo_when_any\n");
   for (int i = 0; i < NR_ITERATIONS; ++i) {
-      async_task<void> t = multiplexClient.SayHello_GetFeatureCo_when_any();
+      task<void> t = multiplexClient.SayHello_GetFeatureCo_when_any();
+      t.start();
       runEventQueue(eventQueue, 2);     // Started 2 operations
       //t.wait();                       // No need to call t.wait()
 

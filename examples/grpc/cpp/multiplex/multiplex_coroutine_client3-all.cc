@@ -106,15 +106,15 @@ private:
     class SayHello_operation_impl
     {
     public:
-        SayHello_operation_impl(MultiplexClient* greeterClient, ClientContext* context, helloworld::HelloRequest& request, helloworld::HelloReply& reply)
-            : greeterClient_(greeterClient)
+        SayHello_operation_impl(MultiplexClient* multiplexClient, ClientContext* context, helloworld::HelloRequest& request, helloworld::HelloReply& reply)
+            : multiplexClient_(multiplexClient)
             , context_(context)
             , request_(request)
             , reply_(reply) {
         }
 
         bool try_start(async_operation_ls_base& operation) noexcept {
-            helloworld::Greeter::NewStub(greeterClient_->channel_)->async()->SayHello(context_, &request_, &reply_,
+            helloworld::Greeter::NewStub(multiplexClient_->channel_)->async()->SayHello(context_, &request_, &reply_,
                 [this, &operation](Status s) {
                     print(PRI5, "SayHello_operation_impl::try_start: handler\n");
                     status_ = std::move(s);
@@ -128,7 +128,7 @@ private:
         }
 
     private:
-        MultiplexClient* greeterClient_;
+        MultiplexClient* multiplexClient_;
         ClientContext* context_;
         helloworld::HelloRequest& request_;
         helloworld::HelloReply& reply_;
@@ -138,8 +138,8 @@ private:
     class SayHello_operation : public async_operation_ls<SayHello_operation>
     {
     public:
-        SayHello_operation(MultiplexClient* greeterClient, ClientContext* context, helloworld::HelloRequest& request, helloworld::HelloReply& reply)
-            : m_impl(greeterClient, context, request, reply) {
+        SayHello_operation(MultiplexClient* multiplexClient, ClientContext* context, helloworld::HelloRequest& request, helloworld::HelloReply& reply)
+            : m_impl(multiplexClient, context, request, reply) {
         }
 
         bool try_start() noexcept { return m_impl.try_start(*this); }
@@ -157,17 +157,17 @@ private:
     class GetFeature_operation_impl
     {
     public:
-        GetFeature_operation_impl(MultiplexClient* greeterClient, ClientContext* context, routeguide::Point& request, routeguide::Feature& reply)
-            : greeterClient_(greeterClient)
+        GetFeature_operation_impl(MultiplexClient* multiplexClient, ClientContext* context, routeguide::Point& request, routeguide::Feature& reply)
+            : multiplexClient_(multiplexClient)
             , context_(context)
             , request_(request)
             , reply_(reply) {
         }
 
         bool try_start(async_operation_ls_base& operation) noexcept {
-            routeguide::RouteGuide::NewStub(greeterClient_->channel_)->async()->GetFeature(context_, &request_, &reply_,
+            routeguide::RouteGuide::NewStub(multiplexClient_->channel_)->async()->GetFeature(context_, &request_, &reply_,
                 [this, &operation](Status s) {
-                    print(PRI5, "GetFeature_operation_impl::trystart - handler\n");
+                    print(PRI5, "GetFeature_operation_impl::try_start - handler\n");
                     status_ = std::move(s);
                     operation.completed();
                 });
@@ -180,7 +180,7 @@ private:
         }
 
     private:
-        MultiplexClient* greeterClient_;
+        MultiplexClient* multiplexClient_;
         ClientContext* context_;
         routeguide::Point& request_;
         routeguide::Feature& reply_;
@@ -190,8 +190,8 @@ private:
     class GetFeature_operation : public async_operation_ls<GetFeature_operation>
     {
     public:
-        GetFeature_operation(MultiplexClient* greeterClient, ClientContext* context, routeguide::Point& request, routeguide::Feature& reply)
-            : m_impl(greeterClient, context, request, reply) {
+        GetFeature_operation(MultiplexClient* multiplexClient, ClientContext* context, routeguide::Point& request, routeguide::Feature& reply)
+            : m_impl(multiplexClient, context, request, reply) {
         }
 
         bool try_start() noexcept { return m_impl.try_start(*this); }
