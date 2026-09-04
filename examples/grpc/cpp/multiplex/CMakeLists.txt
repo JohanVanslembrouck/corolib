@@ -109,6 +109,7 @@ endforeach()
 foreach(_target multiplex_coroutine_client2
                 multiplex_coroutine_client3
                 multiplex_coroutine_client3-when_all
+                multiplex_coroutine_client3-when_any
                 multiplex_coroutine_client3-all
                 multiplex_coroutine_client4
                 multiplex_coroutine_client5)
@@ -144,6 +145,7 @@ endforeach()
 foreach(_target multiplex_coroutine_client2
                 multiplex_coroutine_client3
                 multiplex_coroutine_client3-when_all
+                multiplex_coroutine_client3-when_any
                 multiplex_coroutine_client3-all
                 multiplex_coroutine_client4
                 multiplex_coroutine_client5)

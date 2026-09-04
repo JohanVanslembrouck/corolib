@@ -77,6 +77,7 @@ const int NR_ITERATIONS = 100;
 class MultiplexClient : public CommService
 {
 private:
+#if !USE_LAZY_START_OPS
     // eager-start operation definition - begin
 #if 0
     // negative diff for coroutine count if we use the "unprotected" version of the functions
@@ -151,6 +152,120 @@ private:
     }
 #endif
     // eager-start operation definition - end
+#else
+    // lazy-start operation definition - begin
+    class SayHello_operation_impl
+    {
+    public:
+        SayHello_operation_impl(MultiplexClient* multiplexClient, ClientContext* context, helloworld::HelloRequest& request, helloworld::HelloReply& reply)
+            : multiplexClient_(multiplexClient)
+            , context_(context)
+            , request_(request)
+            , reply_(reply) {
+        }
+
+        bool try_start(async_operation_ls_base& operation) noexcept {
+            helloworld::Greeter::NewStub(multiplexClient_->channel_)->async()->SayHello(context_, &request_, &reply_,
+                [this, &operation](Status s) {
+                    print(PRI5, "SayHello_operation_impl::try_start: handler\n");
+                    status_ = std::move(s);
+                    if (multiplexClient_->m_use_mutex) {
+                        std::lock_guard<std::mutex> guard(multiplexClient_->m_mutex);
+                        operation.completed();
+                    }
+                    else
+                        operation.completed();
+                });
+            return true;
+        }
+
+        Status get_result(async_operation_ls_base&) {
+            return status_;
+        }
+
+    private:
+        MultiplexClient* multiplexClient_;
+        ClientContext* context_;
+        helloworld::HelloRequest& request_;
+        helloworld::HelloReply& reply_;
+        Status status_;
+    };
+
+    class SayHello_operation : public async_operation_ls<SayHello_operation>
+    {
+    public:
+        SayHello_operation(MultiplexClient* multiplexClient, ClientContext* context, helloworld::HelloRequest& request, helloworld::HelloReply& reply)
+            : m_impl(multiplexClient, context, request, reply) {
+        }
+
+        bool try_start() noexcept { return m_impl.try_start(*this); }
+        Status get_result() { return m_impl.get_result(*this); }
+
+        SayHello_operation_impl m_impl;
+    };
+
+    SayHello_operation start_SayHello(ClientContext* context, helloworld::HelloRequest& request, helloworld::HelloReply& reply) {
+        return SayHello_operation(this, context, request, reply);
+    }
+
+    // -------------------------------------------------------------------------------------
+
+    class GetFeature_operation_impl
+    {
+    public:
+        GetFeature_operation_impl(MultiplexClient* multiplexClient, ClientContext* context, routeguide::Point& request, routeguide::Feature& reply)
+            : multiplexClient_(multiplexClient)
+            , context_(context)
+            , request_(request)
+            , reply_(reply) {
+        }
+
+        bool try_start(async_operation_ls_base& operation) noexcept {
+            routeguide::RouteGuide::NewStub(multiplexClient_->channel_)->async()->GetFeature(context_, &request_, &reply_,
+                [this, &operation](Status s) {
+                    print(PRI5, "GetFeature_operation_impl::try_start - handler\n");
+                    status_ = std::move(s);
+                    if (multiplexClient_->m_use_mutex) {
+                        std::lock_guard<std::mutex> guard(multiplexClient_->m_mutex);
+                        operation.completed();
+                    }
+                    else
+                        operation.completed();
+                });
+
+            return true;
+        }
+
+        Status get_result(async_operation_ls_base&) {
+            return status_;
+        }
+
+    private:
+        MultiplexClient* multiplexClient_;
+        ClientContext* context_;
+        routeguide::Point& request_;
+        routeguide::Feature& reply_;
+        Status status_;
+    };
+
+    class GetFeature_operation : public async_operation_ls<GetFeature_operation>
+    {
+    public:
+        GetFeature_operation(MultiplexClient* multiplexClient, ClientContext* context, routeguide::Point& request, routeguide::Feature& reply)
+            : m_impl(multiplexClient, context, request, reply) {
+        }
+
+        bool try_start() noexcept { return m_impl.try_start(*this); }
+        Status get_result() { return m_impl.get_result(*this); }
+
+        GetFeature_operation_impl m_impl;
+    };
+
+    GetFeature_operation start_GetFeature(ClientContext* context, routeguide::Point& request, routeguide::Feature& reply) {
+        return GetFeature_operation(this, context, request, reply);
+    }
+    // lazy-start operation definition - end
+#endif
 
 public:
     explicit MultiplexClient(std::shared_ptr<Channel> channel)

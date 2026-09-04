@@ -77,6 +77,7 @@ class MultiplexClient : public CommService
 private:
 #if !USE_LAZY_START_OPS
     // eager-start operation definition - begin
+#if 0
     async_operation<Status> start_SayHello(ClientContext* context, helloworld::HelloRequest& request, helloworld::HelloReply& reply) {
         int index = get_free_index();
         async_operation<Status> ret{ this, index };
@@ -100,6 +101,53 @@ private:
             });
         return ret;
     }
+#else
+    async_operation<Status> start_SayHello(ClientContext* context, helloworld::HelloRequest& request, helloworld::HelloReply& reply) {
+        int index = get_free_index();
+        async_operation<Status> ret{ this, index };
+        helloworld::Greeter::NewStub(channel_)->async()->SayHello(context, &request, &reply,
+            [index, this](Status s) {
+                print(PRI5, "start_SayHello - completion handler\n");
+                Status status = std::move(s);
+                async_operation_base* om_async_operation = get_async_operation(index);
+                async_operation<Status>* om_async_operation_t =
+                    static_cast<async_operation<Status>*>(om_async_operation);
+                if (om_async_operation_t) {
+                    om_async_operation_t->set_result(status);
+                    if (m_use_mutex) {
+                        std::lock_guard<std::mutex> guard(m_mutex);
+                        om_async_operation_t->completed();
+                    }
+                    else
+                        om_async_operation_t->completed();
+                }
+            });
+        return ret;
+    }
+
+    async_operation<Status> start_GetFeature(ClientContext* context, routeguide::Point& request, routeguide::Feature& reply) {
+        int index = get_free_index();
+        async_operation<Status> ret{ this, index };
+        routeguide::RouteGuide::NewStub(channel_)->async()->GetFeature(context, &request, &reply,
+            [index, this](Status s) {
+                print(PRI5, "start_GetFeature - completion handler\n");
+                Status status = std::move(s);
+                async_operation_base* om_async_operation = get_async_operation(index);
+                async_operation<Status>* om_async_operation_t =
+                    static_cast<async_operation<Status>*>(om_async_operation);
+                if (om_async_operation_t) {
+                    om_async_operation_t->set_result(status);
+                    if (m_use_mutex) {
+                        std::lock_guard<std::mutex> guard(m_mutex);
+                        om_async_operation_t->completed();
+                    }
+                    else
+                        om_async_operation_t->completed();
+                }
+            });
+        return ret;
+    }
+#endif
     // eager-start operation definition - end
 #else
     // lazy-start operation definition - begin
@@ -118,7 +166,12 @@ private:
                 [this, &operation](Status s) {
                     print(PRI5, "SayHello_operation_impl::try_start: handler\n");
                     status_ = std::move(s);
-                    operation.completed();
+                    if (multiplexClient_->m_use_mutex) {
+                        std::lock_guard<std::mutex> guard(multiplexClient_->m_mutex);
+                        operation.completed();
+                    }
+                    else
+                        operation.completed();
                 });
             return true;
         }
@@ -169,7 +222,12 @@ private:
                 [this, &operation](Status s) {
                     print(PRI5, "GetFeature_operation_impl::try_start - handler\n");
                     status_ = std::move(s);
-                    operation.completed();
+                    if (multiplexClient_->m_use_mutex) {
+                        std::lock_guard<std::mutex> guard(multiplexClient_->m_mutex);
+                        operation.completed();
+                    }
+                    else
+                        operation.completed();
                 });
 
             return true;
@@ -302,8 +360,13 @@ public:
         co_return strstr.str();
     }
 
+    void set_use_mutex(bool use_mutex) {
+        m_use_mutex = use_mutex;
+    }
 private:
     std::shared_ptr<Channel> channel_;
+    bool m_use_mutex = true;
+    std::mutex m_mutex;
 };
 
 int main(int argc, char** argv) {
@@ -342,7 +405,7 @@ int main(int argc, char** argv) {
       print(PRI2, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
-#if 1
+
   print(PRI1); print(PRI1, "Using SayHello_GetFeatureCo_when_any\n");
   for (int i = 0; i < NR_ITERATIONS; ++i) {
       task<void> t = multiplexClient.SayHello_GetFeatureCo_when_any();
@@ -354,6 +417,6 @@ int main(int argc, char** argv) {
       print(PRI2, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
-#endif
+
   return 0;
 }

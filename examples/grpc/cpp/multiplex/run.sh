@@ -22,11 +22,10 @@ set -x
 ./multiplex_coroutine_client3-when_all_ll
 
 ./multiplex_coroutine_client3-when_any_le
+./multiplex_coroutine_client3-when_any_el
 ./multiplex_coroutine_client3-when_any_le
+./multiplex_coroutine_client3-when_any_ll
 
-# negative diff for coroutine count (following 4)
-# see multiplex_coroutine_client3-when_any.cc for an explanation
-# the following 4 applications may crash
 ./multiplex_coroutine_client3-all_ee
 ./multiplex_coroutine_client3-all_el
 ./multiplex_coroutine_client3-all_le
