@@ -15,14 +15,23 @@
  * @author Johan Vanslembrouck
  */
 
+#ifdef __GNUC__
+#if __GNUC_PREREQ(12,0)
+#define COMPILE_IN 1
+#else
+#define COMPILE_IN 0
+#endif
+#else
+#define COMPILE_IN 1
+#endif
+
 task coroutine_open()
 {
     print(PRI2, "coroutine_open(): auto op = start_open();\n");
     auto op = start_open();
-    print(PRI2, "coroutine_open(): int res = co_await op;\n");
-    int res = co_await op;
-    print(PRI2, "coroutine_open(): res = %d\n", res);
-    print(PRI1, "open completion handled\n");
+    print(PRI2, "coroutine_open(): int res1 = co_await op;\n");
+    int res1 = co_await op;
+    print(PRI1, "open completed: res1 = %d\n", res1);
 
     print(PRI2, "coroutine_open(): co_return 0;\n");
     co_return 0;
@@ -46,10 +55,9 @@ task coroutine_write_after_open()
     int rest = co_await t;
     print(PRI2, "coroutine_write_after_open(): rest = %d\n", rest);
 
-    print(PRI2, "coroutine_write_after_open(): int res = co_await op;\n");
-    int res = co_await op;
-    print(PRI2, "coroutine_write_after_open(): res = %d\n", res);
-    print(PRI1, "write completion handled\n");
+    print(PRI2, "coroutine_write_after_open(): int res2 = co_await op;\n");
+    int res2 = co_await op;
+    print(PRI1, "write completed: res2 = %d\n", res2);
 
     print(PRI2, "coroutine_write_after_open(): co_return 0;\n");
     co_return 0;
@@ -71,10 +79,14 @@ task coroutine_read_after_write()
     int rest = co_await t;
     print(PRI2, "coroutine_read_after_write(): rest = %d;\n", rest);
 
-    print(PRI2, "coroutine_read_after_write(): res = co_await op;\n");
-    std::string res = co_await op;
-    print(PRI2, "coroutine_read_after_write(): res2 = %s\n", res.c_str());
-    print(PRI1, "read completion handled\n");
+#if COMPILE_IN
+    print(PRI2, "coroutine_read_after_write(): res3 = co_await op;\n");
+    std::string res3 = co_await op;
+    print(PRI1, "read completed: res3 = %s\n", res3.c_str());
+    // gcc (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0:
+    // error: no suspend point info for ‘‘co_await’ not supported by dump_decl<declaration error>’
+    //  std::string res = co_await op;
+#endif
 
     print(PRI2, "coroutine_read_after_write(): co_return 0;\n");
     co_return 0;
@@ -96,10 +108,9 @@ task coroutine_close_after_read()
     int rest = co_await t;
     print(PRI2, "coroutine_close_after_read(): rest = %d;\n", rest);
 
-    print(PRI2, "coroutine_close_after_read(): bool res = co_await op;\n");
-    bool res = co_await op;
-    print(PRI2, "coroutine_close_after_read(): res = %d\n", res);
-    print(PRI1, "close completion handled\n");
+    print(PRI2, "coroutine_close_after_read(): bool res4 = co_await op;\n");
+    bool res4 = co_await op;
+    print(PRI1, "close completed: res4 = %d\n", res4);
 
     print(PRI2, "coroutine_close_after_read(): co_return 0;\n");
     co_return 0;

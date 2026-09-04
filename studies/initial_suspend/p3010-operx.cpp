@@ -12,13 +12,23 @@
  * @author Johan Vanslembrouck
  */
 
+#ifdef __GNUC__
+#if __GNUC_PREREQ(12,0)
+#define COMPILE_IN 1
+#else
+#define COMPILE_IN 0
+#endif
+#else
+#define COMPILE_IN 1
+#endif
+
 task coroutine1()
 {
     print(PRI1, "coroutine1(): auto op1 = start_open();\n");
     auto op1 = start_open();
     print(PRI1, "coroutine1(): int res1 = co_await op1;\n");
     int res1 = co_await op1;
-    print(PRI1, "coroutine1(): res1 = %d\n", res1);
+	print(PRI1, "coroutine1(): open completed: res1 = %d\n", res1);
 
     char buffer[100];
     sprintf(buffer, "Input string\n");
@@ -26,19 +36,24 @@ task coroutine1()
     auto op2 = start_write(buffer);
     print(PRI1, "coroutine1(): int res2 = co_await op2;\n");
     int res2 = co_await op2;
-    print(PRI1, "coroutine1(): res2 = %d\n", res2);
+	print(PRI1, "coroutine1(): write completed: res2 = %d\n", res2);
 
+#if COMPILE_IN
     print(PRI1, "coroutine1(): auto op3 = start_read();\n");
     auto op3 = start_read();
     print(PRI1, "coroutine1(): std::string res3 = co_await op3;\n");
     std::string res3 = co_await op3;
-    print(PRI1, "coroutine1(): res3 = %s\n", res3.c_str());
+    print(PRI1, "coroutine1(): read completed: res3 = %s\n", res3.c_str());
+    // gcc (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0:
+    // error: no suspend point info for ‘‘co_await’ not supported by dump_decl<declaration error>’
+    //  std::string res3 = co_await op3;
+#endif
 
     print(PRI1, "coroutine1(): auto op4 = start_close();\n");
     auto op4 = start_close();
     print(PRI1, "coroutine1(): bool res4 = co_await op4;\n");
     bool res4 = co_await op4;
-    print(PRI1, "coroutine1(): res4 = %d\n", res4);
+	print(PRI1, "coroutine1(): close completed: res4 = %d\n", res4);
 
     print(PRI1, "coroutine1(): co_return 0;\n");
     co_return 0;
