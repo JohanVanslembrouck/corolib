@@ -1,5 +1,5 @@
 /**
- * @file p2204-async_operation-thread.cpp
+ * @file p2200-async_operation.cpp
  * @brief
  *
  * @author Johan Vanslembrouck
@@ -10,6 +10,23 @@
 #include <corolib/when_all.h>
 
 #include "p2200.h"
+
+#if !USE_LAZY_START_OPS
+void completionflow(Sorter& sorter)
+{
+    // To be correct, indices should be pushed and popped from a queue.
+    print(PRI1, "completionflow(): before sorter.completionHandler_v(%d);\n", 0);
+    sorter.completionHandler_v(0);
+    print(PRI1, "completionflow(): before sorter.completionHandler_v(%d);\n", 1);
+    sorter.completionHandler_v(1);
+}
+#else
+void completionflow(Sorter& sorter)
+{
+    print(PRI1, "completionflow(): not implemented (yet): application will hang!!!\n");
+    // Needs the addresses of op1 and op2.
+}
+#endif
 
 async_task<bool> sortRandumNumberVector(int size)
 {
@@ -22,7 +39,7 @@ async_task<bool> sortRandumNumberVector(int size)
     std::vector<int> values(size);
     std::ranges::generate(values, [&]() {return ints(engine); });
 
-    Sorter sorter(UseMode::USE_THREAD);
+    Sorter sorter(UseMode::USE_NONE);
 
 #if !USE_LAZY_START_OPS
     print(PRI1, "sortRandumNumberVector(): starting sortCoroutine\n");
@@ -31,6 +48,7 @@ async_task<bool> sortRandumNumberVector(int size)
     print(PRI1, "sortRandumNumberVector(): starting sortCoroutine_lso\n");
     async_task<void> result = sortCoroutine_lso(sorter, values);
 #endif
+    completionflow(sorter);
 
     co_await result;
 
@@ -69,22 +87,13 @@ int main()
        print(PRI1, "main(): bool res = t.get_result();\n");
        bool res = t.get_result();
        print(PRI1, "main(): res = %d\n", res);
-
-       // Give threads time to finish
-       print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
-       std::this_thread::sleep_for(std::chrono::milliseconds(10));
    }
 
    print(PRI1, "main(): async_task<bool> t = sort3RandumNumberVectors()\n");
    async_task<bool> t = sort3RandumNumberVectors();
-   print(PRI1, "main(): runEventQueue(eventQueue, 0)\n");
    print(PRI1, "main(): bool res = t.get_result();\n");
    bool res = t.get_result();
    print(PRI1, "main(): res = %d\n", res);
-
-   // Give threads time to finish
-   print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
-   std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
    return 0;
 }

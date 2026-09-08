@@ -23,8 +23,11 @@ void runEventQueue(EventQueueFunctionVoidInt& queue, int val, int sleeptime)
 {
     while (!queue.empty())
     {
-        print(PRI1, "runEventQueue(): std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", sleeptime);
-        std::this_thread::sleep_for(std::chrono::milliseconds(sleeptime));
+        if (sleeptime > 0)
+        {
+            print(PRI1, "runEventQueue(): std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", sleeptime);
+            std::this_thread::sleep_for(std::chrono::milliseconds(sleeptime));
+        }
 
         print(PRI1, "runEventQueue(): std::function<void(int)> op = queue.pop();\n");
         std::function<void(int)> op = queue.pop();
@@ -37,8 +40,11 @@ void runEventQueue(EventQueueFunctionVoidVoid& queue, int sleeptime)
 {
     while (!queue.empty())
     {
-        print(PRI1, "runEventQueue(): std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", sleeptime);
-        std::this_thread::sleep_for(std::chrono::milliseconds(sleeptime));
+        if (sleeptime > 0)
+        {
+            print(PRI1, "runEventQueue(): std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", sleeptime);
+            std::this_thread::sleep_for(std::chrono::milliseconds(sleeptime));
+        }
 
         print(PRI1, "runEventQueue(): std::function<void(int)> op = queue.pop();\n");
         std::function<void(void)> op = queue.pop();

@@ -43,7 +43,7 @@ foreach(_target
   target_link_libraries(${_target} corolib)
 endforeach()
 
-if(WIN32)
+if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 # template functions are not instantiated (correctly) on Ubuntu 22.04 and 24.04. FFS
 foreach(_target
     p1107-auto_reset_event-3-when_all_arr
@@ -176,18 +176,6 @@ target_link_libraries(p1475-async_operation-thread-queue corolib)
 add_executable(p1476-async_operation-immediate p1476-async_operation-immediate.cpp class02.cpp p1470.cpp)
 target_link_libraries(p1476-async_operation-immediate corolib)
 
-if (WIN32)
-# Not supported with g++11 (?):
-# std::ranges::generate
-# std::ranges::is_sorted
-add_executable(p1482-async_operation-eventqueue p1482-async_operation-eventqueue.cpp p1480.cpp eventqueue.cpp)
-target_link_libraries(p1482-async_operation-eventqueue corolib)
-add_executable(p1484-async_operation-thread p1484-async_operation-thread.cpp p1480.cpp)
-target_link_libraries(p1484-async_operation-thread corolib)
-add_executable(p1485-async_operation-thread-queue p1485-async_operation-thread-queue.cpp p1480.cpp eventqueuethr.cpp)
-target_link_libraries(p1485-async_operation-thread-queue corolib)
-endif()
-
 add_executable(p1500-async_operation p1500-async_operation.cpp p1500.cpp)
 target_link_libraries(p1500-async_operation corolib)
 
@@ -300,3 +288,36 @@ add_executable(p2110-async_operation p2110-async_operation.cpp class01.cpp p2110
 target_link_libraries(p2110-async_operation corolib)
 add_executable(p2112-async_operation-eventqueue p2112-async_operation-eventqueue.cpp class01.cpp p2110.cpp eventqueue.cpp)
 target_link_libraries(p2112-async_operation-eventqueue corolib)
+
+
+add_executable(p2200-async_operation p2200-async_operation.cpp p2200.cpp)
+target_compile_definitions(p2200-async_operation PRIVATE USE_LAZY_START_OPS=0)
+target_link_libraries(p2200-async_operation corolib)
+add_executable(p2202-async_operation-eventqueue p2202-async_operation-eventqueue.cpp p2200.cpp eventqueue.cpp)
+target_compile_definitions(p2202-async_operation-eventqueue PRIVATE USE_LAZY_START_OPS=0)
+target_link_libraries(p2202-async_operation-eventqueue corolib)
+add_executable(p2204-async_operation-thread p2204-async_operation-thread.cpp p2200.cpp)
+target_compile_definitions(p2204-async_operation-thread PRIVATE USE_LAZY_START_OPS=0)
+target_link_libraries(p2204-async_operation-thread corolib)
+add_executable(p2205-async_operation-thread-queue p2205-async_operation-thread-queue.cpp p2200.cpp eventqueuethr.cpp)
+target_compile_definitions(p2205-async_operation-thread-queue PRIVATE USE_LAZY_START_OPS=0)
+target_link_libraries(p2205-async_operation-thread-queue corolib)
+add_executable(p2206-async_operation-immediate p2206-async_operation-immediate.cpp p2200.cpp)
+target_compile_definitions(p2206-async_operation-immediate PRIVATE USE_LAZY_START_OPS=0)
+target_link_libraries(p2206-async_operation-immediate corolib)
+
+add_executable(p2200-async_operation_lso p2200-async_operation.cpp p2200.cpp)
+target_compile_definitions(p2200-async_operation_lso PRIVATE USE_LAZY_START_OPS=1)
+target_link_libraries(p2200-async_operation_lso corolib)
+add_executable(p2202-async_operation-eventqueue_lso p2202-async_operation-eventqueue.cpp p2200.cpp eventqueue.cpp)
+target_compile_definitions(p2202-async_operation-eventqueue_lso PRIVATE USE_LAZY_START_OPS=1)
+target_link_libraries(p2202-async_operation-eventqueue_lso corolib)
+add_executable(p2204-async_operation-thread_lso p2204-async_operation-thread.cpp p2200.cpp)
+target_compile_definitions(p2204-async_operation-thread_lso PRIVATE USE_LAZY_START_OPS=1)
+target_link_libraries(p2204-async_operation-thread_lso corolib)
+add_executable(p2205-async_operation-thread-queue_lso p2205-async_operation-thread-queue.cpp p2200.cpp eventqueuethr.cpp)
+target_compile_definitions(p2205-async_operation-thread-queue_lso PRIVATE USE_LAZY_START_OPS=1)
+target_link_libraries(p2205-async_operation-thread-queue_lso corolib)
+add_executable(p2206-async_operation-immediate_lso p2206-async_operation-immediate.cpp p2200.cpp)
+target_compile_definitions(p2206-async_operation-immediate_lso PRIVATE USE_LAZY_START_OPS=1)
+target_link_libraries(p2206-async_operation-immediate_lso corolib)

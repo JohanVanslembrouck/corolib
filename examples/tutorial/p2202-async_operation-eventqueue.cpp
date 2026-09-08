@@ -1,43 +1,87 @@
 /**
- * @file p1482-async_operation-eventqueue.cpp
+ * @file p2200-async_operation-eventqueue.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
-#include <ranges>
+#include <algorithm>
 
-#include "p1480.h"
+#include <corolib/when_all.h>
 
-int main()
+#include "p2200.h"
+
+EventQueueFunctionVoidVoid eventQueue;
+
+async_task<bool> sortRandumNumberVector(int size)
 {
-    set_priority(0x01);        // Use 0x03 to follow the flow in corolib
-
     // set up random number generation 
     std::random_device rd;
     std::default_random_engine engine{ rd() };
     std::uniform_int_distribution ints;
 
-    print(PRI1, "main(): creating vector of random ints\n");
-    //std::vector<int> values(100'000'000);
-    std::vector<int> values(10'000'000);
+    print(PRI1, "sortRandumNumberVector(): creating vector of random ints\n");
+    std::vector<int> values(size);
     std::ranges::generate(values, [&]() {return ints(engine); });
-
-    EventQueueFunctionVoidVoid eventQueue;
+    
     Sorter sorter(UseMode::USE_EVENTQUEUE, &eventQueue);
 
-    print(PRI1, "main(): starting sortCoroutine\n");
+#if !USE_LAZY_START_OPS
+    print(PRI1, "sortRandumNumberVector(): starting sortCoroutine\n");
     async_task<void> result = sortCoroutine(sorter, values);
+#else
+    print(PRI1, "sortRandumNumberVector(): starting sortCoroutine_lso\n");
+    async_task<void> result = sortCoroutine_lso(sorter, values);
+#endif
 
-    print(PRI1, "main(): runEventQueue(eventQueue)\n");
-    runEventQueue(eventQueue);
+    co_await result;
 
-    print(PRI1, "main(): resumed. Waiting for sortCoroutine to complete\n");
-    result.wait();
+    print(PRI1, "sortRandumNumberVector(): confirming that vector is sorted\n");
+    bool sorted = std::ranges::is_sorted(values);
+    print(PRI1, "sortRandumNumberVector(): values is %s sorted\n", sorted ? "" : " not");
 
-    print(PRI1, "main(): confirming that vector is sorted\n");
-    bool sorted{ std::ranges::is_sorted(values) };
-    print(PRI1, "main(): values is %s sorted\n", sorted ? "" : " not");
+    co_return sorted;
+}
+
+async_task<bool> sort3RandumNumberVectors()
+{
+    print(PRI1, "sort3RandumNumberVectors(): async_task<bool> t1 = sortRandumNumberVector(9'000'000);\n");
+    async_task<bool> t1 = sortRandumNumberVector(9'000'000);
+    print(PRI1, "sort3RandumNumberVectors(): async_task<bool> t2 = sortRandumNumberVector(10'000'000);\n");
+    async_task<bool> t2 = sortRandumNumberVector(10'000'000);
+    print(PRI1, "sort3RandumNumberVectors(): async_task<bool> t3 = sortRandumNumberVector(11'000'000);\n");
+    async_task<bool> t3 = sortRandumNumberVector(11'000'000);
+
+    print(PRI1, "sort3RandumNumberVectors(): co_await when_all(t1, t2, t3);\n");
+    co_await when_all(t1, t2, t3);
+
+    bool res = t1.get_result() & t2.get_result() & t3.get_result();
+    print(PRI1, "sort3RandumNumberVectors(): res = %d\n", res);
+    co_return res;
+}
+
+int main()
+{
+    set_priority(0x01);        // Use 0x03 to follow the flow in corolib
+
+    for (int i = 1; i <= 3; ++i)
+    {
+        print(PRI1, "main(): async_task<bool> t = sortRandumNumberVector(%d * 10'000'000);\n", i);
+        async_task<bool> t = sortRandumNumberVector(i * 10'000'000);
+        print(PRI1, "main(): runEventQueue(eventQueue, 0)\n");
+        runEventQueue(eventQueue, 0);
+        print(PRI1, "main(): bool res = t.get_result();\n");
+        bool res = t.get_result();
+        print(PRI1, "main(): res = %d\n", res);
+    }
+
+    print(PRI1, "main(): async_task<bool> t = sort3RandumNumberVectors()\n");
+    async_task<bool> t = sort3RandumNumberVectors();
+    print(PRI1, "main(): runEventQueue(eventQueue, 0)\n");
+    runEventQueue(eventQueue, 0);
+    print(PRI1, "main(): bool res = t.get_result();\n");
+    bool res = t.get_result();
+    print(PRI1, "main(): res = %d\n", res);
 
     return 0;
 }

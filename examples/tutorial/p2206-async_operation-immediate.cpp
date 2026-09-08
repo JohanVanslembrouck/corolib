@@ -1,5 +1,5 @@
 /**
- * @file p2204-async_operation-thread.cpp
+ * @file p2206-async_operation-immediate.cpp
  * @brief
  *
  * @author Johan Vanslembrouck
@@ -22,7 +22,7 @@ async_task<bool> sortRandumNumberVector(int size)
     std::vector<int> values(size);
     std::ranges::generate(values, [&]() {return ints(engine); });
 
-    Sorter sorter(UseMode::USE_THREAD);
+    Sorter sorter(UseMode::USE_IMMEDIATE_COMPLETION);
 
 #if !USE_LAZY_START_OPS
     print(PRI1, "sortRandumNumberVector(): starting sortCoroutine\n");
@@ -64,27 +64,18 @@ int main()
 
    for (int i = 1; i <= 3; ++i)
    {
-       print(PRI1, "main(): async_task<bool> t = sortRandumNumberVector(%d * 10'000'000);\n", i);
+       print(PRI1, "main(): async_task<bool> t = sortRandumNumberVector(i * 10'000'000);\n", i);
        async_task<bool> t = sortRandumNumberVector(i * 10'000'000);
        print(PRI1, "main(): bool res = t.get_result();\n");
        bool res = t.get_result();
        print(PRI1, "main(): res = %d\n", res);
-
-       // Give threads time to finish
-       print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
-       std::this_thread::sleep_for(std::chrono::milliseconds(10));
    }
 
    print(PRI1, "main(): async_task<bool> t = sort3RandumNumberVectors()\n");
    async_task<bool> t = sort3RandumNumberVectors();
-   print(PRI1, "main(): runEventQueue(eventQueue, 0)\n");
    print(PRI1, "main(): bool res = t.get_result();\n");
    bool res = t.get_result();
    print(PRI1, "main(): res = %d\n", res);
-
-   // Give threads time to finish
-   print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
-   std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
    return 0;
 }

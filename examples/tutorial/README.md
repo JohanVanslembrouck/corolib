@@ -217,11 +217,6 @@ The following describes implementation of the examples per group.
   There is no p1470-async_operation.cpp, because the manual resumption from main is difficult 
   in this example and will be different for other timeouts used in coroutine5c.
 
-* p148X.cpp is based upon https://github.com/pdeitel/CPlusPlus20ForProgrammers/blob/master/examples/ch18/fig18_03.cpp
-  p148X.cpp uses corolib instead of concurrencpp: https://github.com/David-Haim/concurrencpp
-  No changes had to be made to corolib to "translate" the example. corolib does not support executors;
-  "ordinary" threads are used instead.
-
 * p150X.cpp contains a coroutine that, when it is resumed, has to complete a coroutine that it has under its control.
 
 * p160X.cpp demonstrates "split-and-combine". See p1600.cpp for further explanation.
@@ -274,3 +269,8 @@ these coroutines in the sense that a coroutine can be resumed from another threa
 * p211X.cpp is based on p210X.cpp. This variant avoids the use of thread_local variables by defining a class CoroClass01 that
   contains all data members and functions that will be called from a thread function.
   In other words, the thread local context is provided by the CoroClass01 object that is passed to the thread function.
+
+* p220X.cpp is based upon https://github.com/pdeitel/CPlusPlus20ForProgrammers/blob/master/examples/ch18/fig18_03.cpp
+  p220Xcpp uses corolib instead of concurrencpp: https://github.com/David-Haim/concurrencpp
+  No changes had to be made to corolib to "translate" the example. corolib does not support executors;
+  "ordinary" threads are used instead.
