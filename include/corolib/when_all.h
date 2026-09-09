@@ -285,8 +285,8 @@ namespace corolib
                 void await_suspend(std::coroutine_handle<> awaiting)
                 {
                     clprint(PRI2, "%p: when_all::awaiter::await_suspend(...)\n", this);
+                    m_when_all.m_counter.set_awaiting(awaiting);    // Must be called before m_when_all.start_all()!
                     m_when_all.start_all();    // Will have no effect in case of an eager start
-                    m_when_all.m_counter.set_awaiting(awaiting);
                 }
 
                 void await_resume()
@@ -459,8 +459,8 @@ namespace corolib
                 void await_suspend(std::coroutine_handle<> awaiting)
                 {
                     clprint(PRI2, "%p: when_allT::awaiter::await_suspend(...)\n", this);
+                    m_when_all.m_counter.set_awaiting(awaiting);    // Must be called before m_when_all.start_all()!
                     m_when_all.start_all();    // Will have no effect in case of an eager start
-                    m_when_all.m_counter.set_awaiting(awaiting);
                 }
 
                 void await_resume()

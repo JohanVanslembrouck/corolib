@@ -355,7 +355,6 @@ namespace corolib
                 {
                     clprint(PRI2, "%p: when_any::awaiter::await_suspend(...): size = %ld\n",
                         this, m_when_any.m_when_any_info_vector.size());
-                    m_when_any.start_all();    // Will have no effect in case of an eager start
 #if !USE_WHEN_TYPE
                     for (std::size_t i = 0; i < m_when_any.m_when_any_info_vector.size(); ++i)
                     {
@@ -371,6 +370,7 @@ namespace corolib
                         p->set_awaiting(awaiting);
                     }
 #endif
+                    m_when_any.start_all();    // Will have no effect in case of an eager start
                 }
 
                 int await_resume()
@@ -601,13 +601,13 @@ namespace corolib
                 {
                     clprint(PRI2, "%p: when_anyT::awaiter::await_suspend(...): size = %ld\n",
                             this, m_when_any.m_when_any_info_vector.size());
-                    m_when_any.start_all();    // Will have no effect in case of an eager start
                     for (std::size_t i = 0; i < m_when_any.m_when_any_info_vector.size(); ++i)
                     {
                         when_any_one * p = &m_when_any.m_when_any_info_vector[i].m_when_any_one;
                         clprint(PRI2, "%p: when_any::awaiter::await_suspend(...): p = %p\n", this, p);
                         p->set_awaiting(awaiting);
                     }
+                    m_when_any.start_all();    // Will have no effect in case of an eager start
                 }
 
                 int await_resume()

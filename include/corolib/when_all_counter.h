@@ -31,8 +31,7 @@ namespace corolib
     public:
     
         when_all_counter(int nr)
-            : m_awaiting(nullptr)
-            , m_nr(nr)
+            : m_nr(nr)
         {
             clprint(PRI2, "%p: when_all_counter::when_all_counter(%d)\n", this, nr);
         }
@@ -85,14 +84,17 @@ namespace corolib
 #endif
             if (--m_nr == 0)
             {
-                clprint(PRI2, "%p: when_all_counter::completed(): all replies received\n", this);
-                return m_awaiting;
+                clprint(PRI2, "%p: when_all_counter::completed(): all replies received: return m_awaiting;\n", this);
+                if (m_awaiting)
+                    return m_awaiting;
+                clprint(PRI1, "%p: when_all_counter::completed(): all replies received: m_awaiting has not been initialized!!!\n", this);
             }
+            clprint(PRI2, "%p: when_all_counter::completed(): return std::noop_coroutine();\n", this);
             return std::noop_coroutine();
         }
 
     private:
-        std::coroutine_handle<> m_awaiting;
+        std::coroutine_handle<> m_awaiting = nullptr;
 #if USE_IN_MT_APPS
         std::atomic<int> m_nr;
 #else

@@ -27,14 +27,14 @@
              |                   |            |                                     |
              |                   |            |                                     |
      template<typename TYPE>     |      template<>                            async_operation_ls_base
-     class async_operation       |      class async_operation<void>
-                                 |
-                                 |
-             ----------------------------------
-             |                                |
+     class async_operation       |      class async_operation<void>                    |
+                                 |                                                     |
+                                 |                                                     |
+             ----------------------------------                                 template<typename OPERATION>
+             |                                |                                 async_operation_ls
              |                                |
      template<typename TYPE>            template<>
-     class async_operation_rmc         class async_operation_rmc<void>
+     class async_operation_rmc          class async_operation_rmc<void>
 
 
 */

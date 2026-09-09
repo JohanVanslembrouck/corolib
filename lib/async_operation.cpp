@@ -173,26 +173,27 @@ namespace corolib
      */
     void async_operation_base::inform_interested_parties()
     {
-        clprint(PRI2, "%p: async_operation_base::inform_interested_parties()\n");
+        clprint(PRI2, "%p: async_operation_base::inform_interested_parties(): m_index = %d: begin\n", this, m_index);
         if (m_ctr)
         {
-            clprint(PRI2, "%p: async_operation_base::completed(): m_index = %d, before m_ctr->completed();\n", this, m_index);
+            clprint(PRI2, "%p: async_operation_base::inform_interested_parties(): m_index = %d: before m_ctr->completed();\n", this, m_index);
             std::coroutine_handle<> handle = m_ctr->completed();
             handle.resume();
-            clprint(PRI2, "%p: async_operation_base::completed(): m_index = %d, after m_ctr->completed();\n", this, m_index);
+            clprint(PRI2, "%p: async_operation_base::inform_interested_parties(): m_index = %d: after m_ctr->completed();\n", this, m_index);
         }
         else if (m_waitany)
         {
-            clprint(PRI2, "%p: async_operation_base::completed(): m_index = %d, before m_waitany->completed();\n", this, m_index);
+            clprint(PRI2, "%p: async_operation_base::inform_interested_parties(): m_index = %d: before m_waitany->completed();\n", this, m_index);
             std::coroutine_handle<> handle = m_waitany->completed();
             handle.resume();
-            clprint(PRI2, "%p: async_operation_base::completed(): m_index = %d, after m_waitany->completed();\n", this, m_index);
+            clprint(PRI2, "%p: async_operation_base::inform_interested_parties(): m_index = %d: after m_waitany->completed();\n", this, m_index);
         }
         else
         {
-            clprint(PRI2, "%p: async_operation_base::completed(): m_index = %d, m_awaiting not (yet) initialized!\n", this, m_index);
-            clprint(PRI2, "%p: async_operation_base::completed(): m_index = %d, operation completed before co_waited!\n", this, m_index);
+            clprint(PRI2, "%p: async_operation_base::inform_interested_parties(): m_index = %d: m_awaiting not (yet) initialized!\n", this, m_index);
+            clprint(PRI2, "%p: async_operation_base::inform_interested_parties(): m_index = %d: operation completed before co_waited!\n", this, m_index);
             m_ready = true;     // Set to completed.
         }
+        clprint(PRI2, "%p: async_operation_base::inform_interested_parties(): m_index = %d: end\n", this, m_index);
     }
 }

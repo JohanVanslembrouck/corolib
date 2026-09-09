@@ -32,9 +32,7 @@ namespace corolib
     public:
     
         when_any_one()
-            : m_awaiting(nullptr)
-            , m_completed(false)
-            , m_completion_status(when_any_one_status::NOT_COMPLETED)
+            : m_completion_status(when_any_one_status::NOT_COMPLETED)
         {
             clprint(PRI2, "%p: when_any_one::when_any_one()\n", this);
         }
@@ -111,7 +109,11 @@ namespace corolib
             clprint(PRI2, "%p: when_any_one::completed()\n", this);
             m_completion_status = when_any_one_status::NEWLY_COMPLETED;
             m_completed = true;
-            return m_awaiting;
+            if (m_awaiting)
+                return m_awaiting;
+            clprint(PRI1, "%p: when_any_one::completed(): m_awaiting has not been initialized!!!\n", this);
+            clprint(PRI2, "%p: when_any_one::completed(): return std::noop_coroutine();\n", this);
+            return std::noop_coroutine();
         }
 
         void set_completed(bool completed)
@@ -120,11 +122,11 @@ namespace corolib
         }
 
     private:
-        std::coroutine_handle<> m_awaiting;
+        std::coroutine_handle<> m_awaiting = nullptr;
 #if USE_IN_MT_APPS
-        std::atomic<bool> m_completed;
+        std::atomic<bool> m_completed = false;
 #else
-        bool m_completed;
+        bool m_completed = false;
 #endif
         when_any_one_status m_completion_status;
     };
