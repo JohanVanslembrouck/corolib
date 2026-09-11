@@ -100,8 +100,10 @@ set -x
 ./p1469-async_operation-thread-imm
 
 ./p1472-async_operation-eventqueue
-#./p1474-async_operation-thread
+./p1474-async_operation-thread
+# hangs:
 #./p1475-async_operation-thread-queue
+# does not terminate:
 #./p1476-async_operation-immediate
 
 ./p1500-async_operation
@@ -111,11 +113,12 @@ set -x
 ./p1700-async_operation
 ./p1700a-async_operation
 ./p1706-async_operation-immediate
-#./p1706a-async_operation-immediate
+# FFS: async_task_base::destroy_coroutine_frame(): m_coro_handle.done() returned false:
+./p1706a-async_operation-immediate
 ./p1730-async_operation
 ./p1730a-async_operation
-#./p1734-async_operation-thread
-#./p1736-async_operation-immediate
+./p1734-async_operation-thread
+./p1736-async_operation-immediate
 
 ./p1800-async_operation
 ./p1802-async_operation-eventqueue
@@ -164,14 +167,17 @@ set -x
 ./p2110-async_operation
 ./p2112-async_operation-eventqueue
 
+./p2200-future
+
 ./p2200-async_operation
 ./p2202-async_operation-eventqueue
 ./p2204-async_operation-thread
 ./p2205-async_operation-thread-queue
 ./p2206-async_operation-immediate
 
+# incomplete implementation:
 #./p2200-async_operation_lso
 ./p2202-async_operation-eventqueue_lso
 ./p2204-async_operation-thread_lso
 ./p2205-async_operation-thread-queue_lso
-#./p2206-async_operation-immediate_lso
+./p2206-async_operation-immediate_lso

@@ -96,8 +96,10 @@ p1468-async_operation-evtq-imm.exe
 p1469-async_operation-thread-imm.exe
 
 p1472-async_operation-eventqueue.exe
-REM p1474-async_operation-thread.exe
+p1474-async_operation-thread.exe
+REM hangs:
 REM p1475-async_operation-thread-queue.exe
+REM does not terminate:
 REM p1476-async_operation-immediate.exe
 
 p1500-async_operation.exe
@@ -107,11 +109,12 @@ p1610-async_operation.exe
 p1700-async_operation.exe
 p1700a-async_operation.exe
 p1706-async_operation-immediate.exe
+REM FFS: async_task_base::destroy_coroutine_frame(): m_coro_handle.done() returned false:
 p1706a-async_operation-immediate.exe
 p1730-async_operation.exe
 p1730a-async_operation.exe
 p1734-async_operation-thread.exe
-REM p1736-async_operation-immediate.exe
+p1736-async_operation-immediate.exe
 
 p1800-async_operation.exe
 p1802-async_operation-eventqueue.exe
@@ -158,14 +161,17 @@ p2102-async_operation-eventqueue.exe
 p2110-async_operation.exe
 p2112-async_operation-eventqueue.exe
 
+p2200-future.exe
+
 p2200-async_operation.exe
 p2202-async_operation-eventqueue.exe
 p2204-async_operation-thread.exe
 p2205-async_operation-thread-queue.exe
 p2206-async_operation-immediate.exe
 
+REM incomplete implementation:
 REM p2200-async_operation_lso.exe
 p2202-async_operation-eventqueue_lso.exe
 p2204-async_operation-thread_lso.exe
 p2205-async_operation-thread-queue_lso.exe
-REM p2206-async_operation-immediate_lso.exe
+p2206-async_operation-immediate_lso.exe

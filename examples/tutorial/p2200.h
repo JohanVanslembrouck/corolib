@@ -18,6 +18,12 @@
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
 
+#define USE_THREAD_POOL 1
+
+#if USE_THREAD_POOL
+#include <corolib/threadpool.h>
+#endif
+
 #include "use_mode.h"
 
 #include "eventqueue.h"
@@ -82,6 +88,9 @@ private:
     EventQueueFunctionVoidVoid* m_eventQueue;
     EventQueueThrFunctionVoidVoid* m_eventQueueThr;
     int m_queueSize;
+#if USE_THREAD_POOL
+    ThreadPool m_pool{ 8 };
+#endif
 };
 
 // -----------------------------------------------------------------
