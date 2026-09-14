@@ -24,7 +24,7 @@ constexpr int ARRAYSIZE = 16;   // Use 2^N
 using EventQueueThrFunctionVoidInt = QueueThr<std::function<void(int)>, ARRAYSIZE>;
 using EventQueueThrFunctionVoidVoid = QueueThr<std::function<void(void)>, ARRAYSIZE>;
 
-void runEventQueue(EventQueueThrFunctionVoidInt& queue, int size, int val = 10);
-void runEventQueue(EventQueueThrFunctionVoidVoid& queue, int size);
+void runEventQueueThr(EventQueueThrFunctionVoidInt& queue, int val = 10, int size = -1);
+void runEventQueueThr(EventQueueThrFunctionVoidVoid& queue, int size = -1);
 
 #endif

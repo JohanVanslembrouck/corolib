@@ -2,7 +2,7 @@
  * @file class02.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
  
 #include "class02.h"
@@ -21,7 +21,6 @@ Class02::Class02(UseMode useMode,
     , m_mutex(mtx)
     , m_awaker(awaker)
     , m_delay(delay)
-    , m_queueSize(0)
 {
     for (int i = 0; i < NROPERATIONS; ++i)
     {
@@ -89,7 +88,8 @@ void Class02::async_op1(const int idx, std::function<void(int)>&& completionHand
     }
     case UseMode::USE_THREAD_QUEUE:
     {
-        m_queueSize++;
+        if (m_eventQueueThr)
+            m_eventQueueThr->incrementPushCounter();
 
         std::thread thread1([this, completionHandler]() {
             print(PRI1, "Class02::async_op1(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", m_delay);
@@ -97,7 +97,8 @@ void Class02::async_op1(const int idx, std::function<void(int)>&& completionHand
 
             std::function<void(int)> completionHandler1 = completionHandler;
             print(PRI1, "Class02::async_op1(): thread1: m_eventQueueThr->push(std::move(completionHandler1));\n");
-            m_eventQueueThr->push(std::move(completionHandler1));
+            if (m_eventQueueThr)
+                m_eventQueueThr->push(std::move(completionHandler1));
             print(PRI1, "Class02::async_op1(): thread1: return;\n");
             });
         thread1.detach();
@@ -214,7 +215,8 @@ void Class02::async_op2(int idx, int bias, std::function<void(int)>&& completion
     }
     case UseMode::USE_THREAD_QUEUE:
     {
-        m_queueSize++;
+        if (m_eventQueueThr)
+            m_eventQueueThr->incrementPushCounter();
 
         std::thread thread1([this, completionHandler]() {
             print(PRI1, "Class02::async_op2(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", m_delay);
@@ -222,7 +224,8 @@ void Class02::async_op2(int idx, int bias, std::function<void(int)>&& completion
 
             std::function<void(int)> completionHandler1 = completionHandler;
             print(PRI1, "Class02::async_op2(): thread1: m_eventQueueThr->push(std::move(completionHandler1));\n");
-            m_eventQueueThr->push(std::move(completionHandler1));
+            if (m_eventQueueThr)
+                m_eventQueueThr->push(std::move(completionHandler1));
             print(PRI1, "Class02::async_op2(): thread1: return;\n");
             });
         thread1.detach();

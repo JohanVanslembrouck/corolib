@@ -3,7 +3,7 @@
  * @brief
  *
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
  
 #include "class01.h"
@@ -24,7 +24,6 @@ Class01::Class01(UseMode useMode,
     , m_mutex(mtx)
     , m_awaker(awaker)
     , m_delay(delay)
-    , m_queueSize(0)
 {
     m_eventHandler = [this](int) {
         print(PRI1, "%p: Class01::invalid m_eventHandler entry\n", this);
@@ -104,7 +103,8 @@ void Class01::async_op(std::function<void(int)>&& completionHandler)
     }
     case UseMode::USE_THREAD_QUEUE:
     {
-        m_queueSize++;
+        if (m_eventQueueThr)
+            m_eventQueueThr->incrementPushCounter();
 
         std::thread thread1([this, completionHandler]() {
             print(PRI1, "Class01::async_op(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(%d));\n", m_delay);

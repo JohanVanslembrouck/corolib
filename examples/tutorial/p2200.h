@@ -70,7 +70,6 @@ public:
         : m_useMode(useMode)
         , m_eventQueue(eventQueue)
         , m_eventQueueThr(eventQueueThr)
-        , m_queueSize(0)
     {
     }
 
@@ -87,7 +86,6 @@ private:
     UseMode     m_useMode;
     EventQueueFunctionVoidVoid* m_eventQueue;
     EventQueueThrFunctionVoidVoid* m_eventQueueThr;
-    int m_queueSize;
 #if USE_THREAD_POOL
     ThreadPool m_pool{ 8 };
 #endif

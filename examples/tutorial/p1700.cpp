@@ -6,7 +6,7 @@
  * coroutine3 calls coroutine4 twice.
  * coroutine5 starts an asynchronous operation and awaits its completion.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <functional>
@@ -16,8 +16,6 @@
 #include "eventqueuethr.h"
 
 using namespace corolib;
-
-int queueSize = 0;
 
 EventQueueFunctionVoidInt eventQueue;
 EventQueueThrFunctionVoidInt eventQueueThr;
@@ -60,7 +58,7 @@ void async_op(std::function<void(int)>&& completionHandler)
     case UseMode::USE_THREAD_QUEUE:
     {
         print(PRI1, "async_op(): UseMode::USE_THREAD_QUEUE\n");
-        queueSize++;
+        eventQueueThr.incrementPushCounter();
 
         std::thread thread1([completionHandler]() {
             print(PRI1, "async_op(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");

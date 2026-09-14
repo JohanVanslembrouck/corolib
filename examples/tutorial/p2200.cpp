@@ -74,7 +74,9 @@ void Sorter::start_sorting_impl(int idx, auto begin, auto end)
     case UseMode::USE_THREAD_QUEUE:
     {
         print(PRI1, "Sorter::start_sorting_impl(): UseMode::USE_THREAD_QUEUE\n");
-        m_queueSize++;
+
+        if (m_eventQueueThr)
+            m_eventQueueThr->incrementPushCounter();
 #if USE_THREAD_POOL
         m_pool.enqueue(
             [this, idx, begin, end]() {
@@ -186,7 +188,9 @@ bool Sorter::sort_operation_impl::try_start(async_operation_ls_base& operation) 
     case UseMode::USE_THREAD_QUEUE:
     {
         print(PRI1, "sort_operation_impl::try_start(): UseMode::USE_THREAD_QUEUE\n");
-        m_sorter->m_queueSize++;
+
+        if (m_sorter->m_eventQueueThr)
+            m_sorter->m_eventQueueThr->incrementPushCounter();
 #if USE_THREAD_POOL
         m_sorter->m_pool.enqueue(
             [this, &operation]() {

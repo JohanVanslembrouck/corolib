@@ -77,7 +77,6 @@ int main()
 
    print(PRI1, "main(): async_task<bool> t = sort3RandumNumberVectors()\n");
    async_task<bool> t = sort3RandumNumberVectors();
-   print(PRI1, "main(): runEventQueue(eventQueue, 0)\n");
    print(PRI1, "main(): bool res = t.get_result();\n");
    bool res = t.get_result();
    print(PRI1, "main(): res = %d\n", res);

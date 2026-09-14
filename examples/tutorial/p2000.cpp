@@ -13,7 +13,6 @@
 
 using namespace corolib;
 
-int queueSize = 0;
 EventQueueFunctionVoidInt eventQueue;
 EventQueueThrFunctionVoidInt eventQueueThr;
 
@@ -45,7 +44,7 @@ void async_op(std::function<void(int)>&& completionHandler)
     }
     case UseMode::USE_THREAD_QUEUE:
     {
-        queueSize++;
+        eventQueueThr.incrementPushCounter();
 
         std::thread thread1([completionHandler]() {
             std::function<void(int)> completionHandler1 = completionHandler;

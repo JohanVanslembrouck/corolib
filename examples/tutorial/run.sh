@@ -101,8 +101,7 @@ set -x
 
 ./p1472-async_operation-eventqueue
 ./p1474-async_operation-thread
-# hangs:
-#./p1475-async_operation-thread-queue
+./p1475-async_operation-thread-queue
 # does not terminate:
 #./p1476-async_operation-immediate
 

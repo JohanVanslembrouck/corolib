@@ -96,9 +96,8 @@ p1468-async_operation-evtq-imm.exe
 p1469-async_operation-thread-imm.exe
 
 p1472-async_operation-eventqueue.exe
-p1474-async_operation-thread.exe
-REM hangs:
-REM p1475-async_operation-thread-queue.exe
+p1474-async_operation-thread.exe:
+p1475-async_operation-thread-queue.exe
 REM does not terminate:
 REM p1476-async_operation-immediate.exe
 

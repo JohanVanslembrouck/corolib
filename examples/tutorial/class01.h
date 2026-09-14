@@ -58,7 +58,6 @@ private:
     std::mutex* m_mutex;
     ThreadAwaker* m_awaker;
     int m_delay;
-    int m_queueSize;
 };
 
 #endif

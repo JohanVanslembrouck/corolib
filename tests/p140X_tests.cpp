@@ -177,8 +177,8 @@ void completionflow1405()
     print(PRI1, "completionflow1405(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1485():runEventQueue(eventQueueThr, 2, %d);\n", defaultCompletionValue);
-    runEventQueue(eventQueueThr, 2, defaultCompletionValue);
+    print(PRI1, "completionflow1485():runEventQueueThr(eventQueueThr, %d);\n", defaultCompletionValue);
+    runEventQueueThr(eventQueueThr, defaultCompletionValue);
 }
 
 TEST(TutorialTest, p1405)
@@ -396,8 +396,8 @@ void completionflow1415()
     print(PRI1, "completionflow1415(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1415():runEventQueue(eventQueueThr, 2, %d);\n", defaultCompletionValue);
-    runEventQueue(eventQueueThr, 2, defaultCompletionValue);
+    print(PRI1, "completionflow1415():runEventQueueThr(eventQueueThr, %d);\n", defaultCompletionValue);
+    runEventQueueThr(eventQueueThr, defaultCompletionValue);
 }
 
 TEST(TutorialTest, p1415)
@@ -651,8 +651,8 @@ void completionflow1425()
     print(PRI1, "completionflow1425(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1425():runEventQueue(eventQueueThr, 4, %d);\n", defaultCompletionValue);
-    runEventQueue(eventQueueThr, 4, defaultCompletionValue);
+    print(PRI1, "completionflow1425():runEventQueueThr(eventQueueThr, %d);\n", defaultCompletionValue);
+    runEventQueueThr(eventQueueThr, defaultCompletionValue);
 }
 
 TEST(TutorialTest, p1425)
@@ -1001,8 +1001,8 @@ void completionflow1435()
     print(PRI1, "completionflow1435(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1435():runEventQueue(eventQueueThr, 4, %d);\n", defaultCompletionValue);
-    runEventQueue(eventQueueThr, 4, defaultCompletionValue);
+    print(PRI1, "completionflow1435():runEventQueueThr(eventQueueThr, %d);\n", defaultCompletionValue);
+    runEventQueueThr(eventQueueThr, defaultCompletionValue);
 }
 
 TEST(TutorialTest, p1435)
@@ -1283,8 +1283,8 @@ void completionflow1445()
     print(PRI1, "completionflow1445(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1445():runEventQueue(eventQueueThr, 4, %d);\n", defaultCompletionValue);
-    runEventQueue(eventQueueThr, 4, defaultCompletionValue);
+    print(PRI1, "completionflow1445():runEventQueueThr(eventQueueThr, %d);\n", defaultCompletionValue);
+    runEventQueueThr(eventQueueThr, defaultCompletionValue);
 }
 TEST(TutorialTest, p1445)
 {
@@ -1560,8 +1560,8 @@ void completionflow1455()
     print(PRI1, "completionflow1455(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1455():runEventQueue(eventQueueThr, 8, %d);\n", defaultCompletionValue);
-    runEventQueue(eventQueueThr, 8, defaultCompletionValue);
+    print(PRI1, "completionflow1455():runEventQueueThr(eventQueueThr, %d);\n", defaultCompletionValue);
+    runEventQueueThr(eventQueueThr, defaultCompletionValue);
 }
 
 TEST(TutorialTest, p1455)
@@ -1833,8 +1833,8 @@ void completionflow1465()
     print(PRI1, "completionflow1465(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1465():runEventQueue(eventQueueThr, 24, %d);\n", defaultCompletionValue);
-    runEventQueue(eventQueueThr, 24, defaultCompletionValue);
+    print(PRI1, "completionflow1465():runEventQueueThr(eventQueueThr, %d);\n", defaultCompletionValue);
+    runEventQueueThr(eventQueueThr, defaultCompletionValue);
 }
 
 TEST(TutorialTest, p1465)
@@ -1878,7 +1878,6 @@ TEST(TutorialTest, p1466)
     print(PRI1, "p1466(): int v = a.get_result();\n");
     int v = a.get_result();
     print(PRI1, "p1466(): v = %d\n", v);
-
 
     ASSERT_EQ(v, 273);
 }

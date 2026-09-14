@@ -5,7 +5,7 @@
  * Because async_operation<int> op is co_awaited by two coroutines,
  * both coroutines have to be resumed when op is completed.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <functional>
@@ -16,8 +16,6 @@
 #include "eventqueuethr.h"
 
 using namespace corolib;
-
-int queueSize = 0;
 
 EventQueueFunctionVoidInt eventQueue;
 EventQueueThrFunctionVoidInt eventQueueThr;
@@ -50,7 +48,7 @@ void async_op(std::function<void(int)>&& completionHandler)
     }
     case UseMode::USE_THREAD_QUEUE:
     {
-        queueSize++;
+        eventQueueThr.incrementPushCounter();
 
         std::thread thread1([completionHandler]() {
             print(PRI1, "async_op(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");

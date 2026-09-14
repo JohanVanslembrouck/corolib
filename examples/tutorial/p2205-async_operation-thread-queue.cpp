@@ -68,8 +68,8 @@ int main()
     {
         print(PRI1, "main(): async_task<bool> t = sortRandumNumberVector(%d * 10'000'000);\n", i);
         async_task<bool> t = sortRandumNumberVector(i * 10'000'000);
-        print(PRI1, "main(): runEventQueue(eventQueueThr, 2)\n");
-        runEventQueue(eventQueueThr, 2);
+        print(PRI1, "main(): runEventQueueThr(eventQueueThr)\n");
+        runEventQueueThr(eventQueueThr);
         print(PRI1, "main(): bool res = t.get_result();\n");
         bool res = t.get_result();
         print(PRI1, "main(): res = %d\n", res);
@@ -77,8 +77,8 @@ int main()
 
     print(PRI1, "main(): async_task<bool> t = sort3RandumNumberVectors()\n");
     async_task<bool> t = sort3RandumNumberVectors();
-    print(PRI1, "main(): runEventQueue(eventQueue, 0)\n");
-    runEventQueue(eventQueueThr, 6);
+    print(PRI1, "main(): runEventQueueThr(eventQueue)\n");
+    runEventQueueThr(eventQueueThr);
     print(PRI1, "main(): bool res = t.get_result();\n");
     bool res = t.get_result();
     print(PRI1, "main(): res = %d\n", res);
