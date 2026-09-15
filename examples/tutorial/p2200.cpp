@@ -39,6 +39,7 @@ void Sorter::start_sorting_impl(int idx, auto begin, auto end)
         print(PRI1, "Sorter::start_sorting_impl(): end sorting\n");
         if (m_eventQueue)
             m_eventQueue->push([this, idx]() { completionHandler_v(idx); });
+        print(PRI1, "Sorter::start_sorting_impl(): end\n");
         break;
     }
     case UseMode::USE_THREAD:
@@ -52,9 +53,9 @@ void Sorter::start_sorting_impl(int idx, auto begin, auto end)
                 std::sort(begin, end);
                 print(PRI1, "Sorter::start_sorting_impl(): thread1: end sorting\n");
 
-                print(PRI1, "Sorter::start_sorting_impl(): thread1: completionHandler_v(idx = %d)\n", idx);
+                print(PRI1, "Sorter::start_sorting_impl(): thread1: before completionHandler_v(idx = %d)\n", idx);
                 completionHandler_v(idx);
-                print(PRI1, "Sorter::start_sorting_impl(): thread1: return\n");
+                print(PRI1, "Sorter::start_sorting_impl(): thread1: after completionHandler_v(idx = %d)\n", idx);
             });
 #else
         std::thread thread1(
@@ -63,9 +64,9 @@ void Sorter::start_sorting_impl(int idx, auto begin, auto end)
                 std::sort(begin, end);
                 print(PRI1, "Sorter::start_sorting_impl(): thread1: end sorting\n");
 
-                print(PRI1, "Sorter::start_sorting_impl(): thread1: completionHandler_v(idx = %d)\n", idx);
+                print(PRI1, "Sorter::start_sorting_impl(): thread1: before completionHandler_v(idx = %d)\n", idx);
                 completionHandler_v(idx);
-                print(PRI1, "Sorter::start_sorting_impl(): thread1: return\n");
+                print(PRI1, "Sorter::start_sorting_impl(): thread1: after completionHandler_v(idx = %d)\n", idx);
             });
         thread1.detach();
 #endif
@@ -74,9 +75,9 @@ void Sorter::start_sorting_impl(int idx, auto begin, auto end)
     case UseMode::USE_THREAD_QUEUE:
     {
         print(PRI1, "Sorter::start_sorting_impl(): UseMode::USE_THREAD_QUEUE\n");
-
         if (m_eventQueueThr)
             m_eventQueueThr->incrementPushCounter();
+
 #if USE_THREAD_POOL
         m_pool.enqueue(
             [this, idx, begin, end]() {
@@ -85,7 +86,7 @@ void Sorter::start_sorting_impl(int idx, auto begin, auto end)
                 print(PRI1, "Sorter::start_sorting_impl(): thread1: end sorting\n");
                 if (m_eventQueueThr)
                     m_eventQueueThr->push([this, idx]() { completionHandler_v(idx); });
-                print(PRI1, "Sorter::start_sorting_impl(): thread1: return;\n");
+                print(PRI1, "Sorter::start_sorting_impl(): thread1: end\n");
             }
         );
 #else
@@ -96,7 +97,7 @@ void Sorter::start_sorting_impl(int idx, auto begin, auto end)
                 print(PRI1, "Sorter::start_sorting_impl(): thread1: end sorting\n");
                 if (m_eventQueueThr)
                     m_eventQueueThr->push([this, idx]() { completionHandler_v(idx); });
-                print(PRI1, "Sorter::start_sorting_impl(): thread1: return;\n");
+                print(PRI1, "Sorter::start_sorting_impl(): thread1: end\n");
             });
         thread1.detach();
 #endif
@@ -107,13 +108,12 @@ void Sorter::start_sorting_impl(int idx, auto begin, auto end)
         print(PRI1, "Sorter::start_sorting_impl(): begin sorting\n");
         std::sort(begin, end);
         print(PRI1, "Sorter::start_sorting_impl(): end sorting\n");
-        print(PRI1, "Sorter::try_start(): before completionHandler_v(idx);\n");
         completionHandler_v(idx);
-        print(PRI1, "Sorter::try_start(): after completionHandler_v(idx);\n");
+        print(PRI1, "Sorter::try_start(): end\n");
         break;
     }
 
-    print(PRI1, "Sorter::start_sort(): return\n");
+    print(PRI1, "Sorter::start_sort(): return;\n");
 }
 
 // -----------------------------------------------------------------------------
@@ -153,6 +153,7 @@ bool Sorter::sort_operation_impl::try_start(async_operation_ls_base& operation) 
         print(PRI1, "sort_operation_impl::try_start(): end sorting\n");
         if (m_sorter->m_eventQueue)
             m_sorter->m_eventQueue->push([this, &operation]() { operation.completed(); });
+        print(PRI1, "sort_operation_impl::try_start(): end\n");
         break;
     }
     case UseMode::USE_THREAD:
@@ -166,9 +167,9 @@ bool Sorter::sort_operation_impl::try_start(async_operation_ls_base& operation) 
                 std::sort(m_begin, m_end);
                 print(PRI1, "sort_operation_impl::try_start(): thread1: end sorting\n");
 
-                print(PRI1, "sort_operation_impl::try_start(): thread1: operation.completed()\n");
+                print(PRI1, "sort_operation_impl::try_start(): thread1: before operation.completed()\n");
                 operation.completed();
-                print(PRI1, "sort_operation_impl::try_start(): thread1: return\n");
+                print(PRI1, "sort_operation_impl::try_start(): thread1: after operation.completed()\n");
             });
 #else
         std::thread thread1(
@@ -177,9 +178,9 @@ bool Sorter::sort_operation_impl::try_start(async_operation_ls_base& operation) 
                 std::sort(m_begin, m_end);
                 print(PRI1, "sort_operation_impl::try_start(): thread1: end sorting\n");
 
-                print(PRI1, "sort_operation_impl::try_start(): thread1: operation.completed()\n");
+                print(PRI1, "sort_operation_impl::try_start(): thread1: before operation.completed()\n");
                 operation.completed();
-                print(PRI1, "sort_operation_impl::try_start(): thread1: return\n");
+                print(PRI1, "sort_operation_impl::try_start(): thread1: after operation.completed()\n");
             });
         thread1.detach();
 #endif
@@ -188,9 +189,9 @@ bool Sorter::sort_operation_impl::try_start(async_operation_ls_base& operation) 
     case UseMode::USE_THREAD_QUEUE:
     {
         print(PRI1, "sort_operation_impl::try_start(): UseMode::USE_THREAD_QUEUE\n");
-
         if (m_sorter->m_eventQueueThr)
             m_sorter->m_eventQueueThr->incrementPushCounter();
+
 #if USE_THREAD_POOL
         m_sorter->m_pool.enqueue(
             [this, &operation]() {
@@ -199,7 +200,7 @@ bool Sorter::sort_operation_impl::try_start(async_operation_ls_base& operation) 
                 print(PRI1, "sort_operation_impl::try_start(): thread1: end sorting\n");
                 if (m_sorter->m_eventQueueThr)
                     m_sorter->m_eventQueueThr->push([this, &operation]() { operation.completed(); });
-                print(PRI1, "sort_operation_impl::try_start(): thread1: return;\n");
+                print(PRI1, "sort_operation_impl::try_start(): thread1: end\n");
             });
 #else
         std::thread thread1(
@@ -209,7 +210,7 @@ bool Sorter::sort_operation_impl::try_start(async_operation_ls_base& operation) 
                 print(PRI1, "sort_operation_impl::try_start(): thread1: end sorting\n");
                 if (m_sorter->m_eventQueueThr)
                     m_sorter->m_eventQueueThr->push([this, &operation]() { operation.completed(); });
-                print(PRI1, "sort_operation_impl::try_start(): thread1: return;\n");
+                print(PRI1, "sort_operation_impl::try_start(): thread1: end\n");
             });
         thread1.detach();
 #endif
@@ -220,13 +221,13 @@ bool Sorter::sort_operation_impl::try_start(async_operation_ls_base& operation) 
         print(PRI1, "sort_operation_impl::try_start(): begin sorting\n");
         std::sort(m_begin, m_end);
         print(PRI1, "sort_operation_impl::try_start(): end sorting\n");
-        print(PRI1, "sort_operation_impl::try_start(): before operation.completed()\n");
+        print(PRI1, "sort_operation_impl::try_start(): operation.completed()\n");
         operation.completed();
-        print(PRI1, "sort_operation_impl::try_start(): after operation.completed()\n");
+        print(PRI1, "sort_operation_impl::try_start(): end\n");
         break;
     }
 
-    print(PRI1, "sort_operation_impl::try_start(): return\n");
+    print(PRI1, "sort_operation_impl::try_start(): return;\n");
     return true;
 }
 
@@ -239,9 +240,9 @@ void Sorter::sort_operation_impl::get_result(async_operation_ls_base&)
 
 #if 1
 
-async_task<void> sortCoroutine(Sorter& sorter, std::vector<int>& values)
+async_task<void> sortVector(Sorter& sorter, std::vector<int>& values)
 {
-   print(PRI1, "sortCoroutine: start\n");
+   print(PRI1, "sortVector: start\n");
 
    size_t middle{ values.size() / 2 }; // middle element index
 
@@ -250,43 +251,43 @@ async_task<void> sortCoroutine(Sorter& sorter, std::vector<int>& values)
    std::vector<int>::iterator e = values.end();
    async_operation<void> op1 = sorter.start_sorting(b, m);
    async_operation<void> op2 = sorter.start_sorting(m, e);
-   print(PRI1, "sortCoroutine: co_await when_all(op1, op2);\n");
+   print(PRI1, "sortVector: co_await when_all(op1, op2);\n");
    co_await when_all(op1, op2);
 
    // merge the two sorted sub-vectors
-   print(PRI1, "sortCoroutine: merging results\n");
+   print(PRI1, "sortVector: merging results\n");
    std::inplace_merge(b, m, e);
 
-   print(PRI1, "sortCoroutine: co_return\n");
+   print(PRI1, "sortVector: co_return;\n");
    co_return;
 }
 
 #else
 
-async_task<void> sortCoroutine(Sorter& sorter, std::vector<int>& values)
+async_task<void> sortVector(Sorter& sorter, std::vector<int>& values)
 {
-    print(PRI1, "sortCoroutine: start\n");
+    print(PRI1, "sortVector: start\n");
 
     size_t middle{ values.size() / 2 }; // middle element index
 
     async_operation<void> op1 = sorter.start_sorting(values.begin(), values.begin() + middle);
     async_operation<void> op2 = sorter.start_sorting(values.begin() + middle, values.end());
-    print(PRI1, "sortCoroutine: co_await when_all(op1, op2);\n");
+    print(PRI1, "sortVector: co_await when_all(op1, op2);\n");
     co_await when_all(op1, op2);
 
     // merge the two sorted sub-vectors
-    print(PRI1, "sortCoroutine: merging results\n");
+    print(PRI1, "sortVector: merging results\n");
     std::inplace_merge(values.begin(), values.begin() + middle, values.end());
 
-    print(PRI1, "sortCoroutine: co_return\n");
+    print(PRI1, "sortVector: co_return;\n");
     co_return;
 }
 
 #endif
 
-async_task<void> sortCoroutine_lso(Sorter& sorter, std::vector<int>& values)
+async_task<void> sortVector_lso(Sorter& sorter, std::vector<int>& values)
 {
-    print(PRI1, "sortCoroutine_lso: start\n");
+    print(PRI1, "sortVector_lso: start\n");
 
     size_t middle{ values.size() / 2 }; // middle element index
 
@@ -297,13 +298,13 @@ async_task<void> sortCoroutine_lso(Sorter& sorter, std::vector<int>& values)
     Sorter::sort_operation op1 = sorter.start_sorting(&sorter, b, m);
     Sorter::sort_operation op2 = sorter.start_sorting(&sorter, m, e);
 
-    print(PRI1, "sortCoroutine_lso: co_await when_all(op1, op2);\n");
+    print(PRI1, "sortVector_lso: co_await when_all(op1, op2);\n");
     co_await when_all(op1, op2);
 
     // merge the two sorted sub-vectors
-    print(PRI1, "sortCoroutine_lso: merging results\n");
+    print(PRI1, "sortVector_lso: merging results\n");
     std::inplace_merge(b, m, e);
 
-    print(PRI1, "sortCoroutine_lso: co_return\n");
+    print(PRI1, "sortVector_lso: co_return;\n");
     co_return;
 }

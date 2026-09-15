@@ -50,9 +50,9 @@ async_operation<void> start_sorting(const std::vector<int>::iterator& begin, con
 
 #if 1
 
-void sortCoroutine(std::vector<int>& values)
+void sortVector(std::vector<int>& values)
 {
-    printf("sortCoroutine: start\n");
+    printf("sortVector: start\n");
 
     size_t middle{ values.size() / 2 }; // middle element index
 
@@ -65,7 +65,7 @@ void sortCoroutine(std::vector<int>& values)
     op2.get_result();
 
     // merge the two sorted sub-vectors
-    printf("sortCoroutine: merging results\n");
+    printf("sortVector: merging results\n");
     std::inplace_merge(b, m, e);
 }
 
@@ -74,9 +74,9 @@ void sortCoroutine(std::vector<int>& values)
 /*
 // Deadlock on Ubuntu?
 ./p2200-future
-main(): bool res = sortRandumNumberVector(1 * 10'000'000);
-sortRandumNumberVector(): creating vector of random ints
-sortCoroutine: start
+main(): bool res = sortRandomNumberVector(1 * 10'000'000);
+sortRandomNumberVector(): creating vector of random ints
+sortVector: start
 async_operation::async_operation(...)
 sort_operation::start_sorting_impl(): begin
 sort_operation::start_sorting_impl(): end
@@ -89,9 +89,9 @@ sort_operation::start_sorting_impl(): begin sorting
 ^C
 */
 
-void sortCoroutine(std::vector<int>& values)
+void sortVector(std::vector<int>& values)
 {
-    printf("sortCoroutine: start\n");
+    printf("sortVector: start\n");
 
     size_t middle{ values.size() / 2 }; // middle element index
 
@@ -101,43 +101,43 @@ void sortCoroutine(std::vector<int>& values)
     op2.get_result();
 
     // merge the two sorted sub-vectors
-    printf("sortCoroutine: merging results\n");
+    printf("sortVector: merging results\n");
     std::inplace_merge(values.begin(), values.begin() + middle, values.end());
 }
 
 #endif
 
-bool sortRandumNumberVector(int size)
+bool sortRandomNumberVector(int size)
 {
     // set up random number generation 
     std::random_device rd;
     std::default_random_engine engine{ rd() };
     std::uniform_int_distribution ints;
 
-    printf("sortRandumNumberVector(): creating vector of random ints\n");
+    printf("sortRandomNumberVector(): creating vector of random ints\n");
     std::vector<int> values(size);
     std::ranges::generate(values, [&]() {return ints(engine); });
 
-    sortCoroutine(values);
+    sortVector(values);
 
-    printf("sortRandumNumberVector(): confirming that vector is sorted\n");
+    printf("sortRandomNumberVector(): confirming that vector is sorted\n");
     bool sorted = std::ranges::is_sorted(values);
-    printf("sortRandumNumberVector(): values is %s sorted\n", sorted ? "" : " not");
+    printf("sortRandomNumberVector(): values is %s sorted\n", sorted ? "" : " not");
 
     return sorted;
 }
 
-bool sort3RandumNumberVectors()
+bool sort3RandomNumberVectors()
 {
-    printf("sort3RandumNumberVectors(): bool res1 = sortRandumNumberVector(9'000'000);\n");
-    bool res1 = sortRandumNumberVector(9'000'000);
-    printf("sort3RandumNumberVectors(): bool res2 = sortRandumNumberVector(10'000'000);\n");
-    bool res2 = sortRandumNumberVector(10'000'000);
-    printf("sort3RandumNumberVectors(): bool res3 = sortRandumNumberVector(11'000'000);\n");
-    bool res3 = sortRandumNumberVector(11'000'000);
+    printf("sort3RandomNumberVectors(): bool res1 = sortRandomNumberVector(9'000'000);\n");
+    bool res1 = sortRandomNumberVector(9'000'000);
+    printf("sort3RandomNumberVectors(): bool res2 = sortRandomNumberVector(10'000'000);\n");
+    bool res2 = sortRandomNumberVector(10'000'000);
+    printf("sort3RandomNumberVectors(): bool res3 = sortRandomNumberVector(11'000'000);\n");
+    bool res3 = sortRandomNumberVector(11'000'000);
 
     bool res = res1 && res2 && res3;
-    printf("sort3RandumNumberVectors(): res = %d\n", res);
+    printf("sort3RandomNumberVectors(): res = %d\n", res);
     return res;
 }
 
@@ -145,13 +145,13 @@ int main()
 {
     for (int i = 1; i <= 3; ++i)
     {
-        printf("main(): bool res = sortRandumNumberVector(%d * 10'000'000);\n", i);
-        bool res = sortRandumNumberVector(i * 10'000'000);
+        printf("main(): bool res = sortRandomNumberVector(%d * 10'000'000);\n", i);
+        bool res = sortRandomNumberVector(i * 10'000'000);
         printf("main(): res = %d\n", res);
     }
 
-    printf("main(): bool res = sort3RandumNumberVectors()\n");
-    bool res = sort3RandumNumberVectors();
+    printf("main(): bool res = sort3RandomNumberVectors()\n");
+    bool res = sort3RandomNumberVectors();
     printf("main(): bool res = %d\n", res);
 
     return 0;

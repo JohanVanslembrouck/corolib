@@ -93,7 +93,7 @@ private:
 
 // -----------------------------------------------------------------
 
-async_task<void> sortCoroutine(Sorter& sorter, std::vector<int>& values);
-async_task<void> sortCoroutine_lso(Sorter& sorter, std::vector<int>& values);
+async_task<void> sortVector(Sorter& sorter, std::vector<int>& values);
+async_task<void> sortVector_lso(Sorter& sorter, std::vector<int>& values);
 
 #endif
