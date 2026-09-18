@@ -1189,7 +1189,7 @@ async_task<int> TcpClient03::measurementLoop60(TcpClientCo1& tcpClient, int nrRe
             msgLength = data.length();
             tcpClient.sendMessage(data);
 
-            async_operation<QByteArray> op = tcpClient.start_reading();
+            async_operation<QByteArray> op = tcpClient.start_reading(false);
             for (int i = 0; i < nrRepetitions; i++)
             {
                 QByteArray dataOut = co_await op;
@@ -1334,7 +1334,7 @@ async_task<int> TcpClient03::measurementLoop70(TcpClientCo1& tcpClient, int nrRe
             msgLength = data.length();
             tcpClient.sendMessage(data);
 
-            async_operation<QByteArray> op = tcpClient.start_reading();
+            async_operation<QByteArray> op = tcpClient.start_reading(false);
             for (int i = 0; i < nrRepetitions; i++)
             {
                 QByteArray dataOut = co_await op;

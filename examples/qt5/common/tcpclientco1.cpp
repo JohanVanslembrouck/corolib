@@ -128,27 +128,67 @@ bool TcpClientCo1::connectToServer(QString& serverIPaddress, quint16 serverPort)
                 m_connection_read = connect(this, &TcpClientCo1::responseReceivedSig,
                     [this](QByteArray msg)
                     {
-                        int idx = m_index_read;
-                        print(PRI2, "%p: TcpClientCo1::handle_read() lambda: idx = %d\n", this, idx);
-                        completionHandler<QByteArray>(idx, msg);
+                        // Has function start_reading(_impl) been called before?
+                        if (m_index_read == -1)
+                        {
+                            // No. There isn't an associated async_operation<QByteArray> object to store the result.
+                            print(PRI1, "%p: TcpClientCo1::handle_read(): m_index_read has not been initialized yet!\n");
+                        }
+                        else
+                        {
+                            // Yes. There is an associated async_operation<QByteArray> object to store the result.
+                            int idx = m_index_read;
+                            if (m_index_read_reset_enabled)
+                                // Reinitialize m_index_read: application code has to call start_reading(_impl) again.
+                                m_index_read = -1;
+                            else
+                                // A single start_reading(_impl) call is allowed to wait for multiple replies.
+                                ;
+                            print(PRI2, "%p: TcpClientCo1::handle_read() lambda: idx = %d\n", this, idx);
+                            completionHandler<QByteArray>(idx, msg);
+                        }
                     }
                 );
                 
                 m_connection_connect = connect(this, &TcpClientCo1::connectedSig,
                     [this]()
                     {
-                        int idx = m_index_connect;
-                        print(PRI2, "%p: TcpClientCo1::handle_connect() lambda: idx = %d\n", this, idx);
-                        completionHandler_v(idx);
+                        // Has function start_connecting(_impl) been called before?
+                        if (m_index_connect == -1)
+                        {
+                            // No. There isn't an associated async_operation<void> object to store the result.
+                            print(PRI1, "%p: TcpClientCo1::handle_connect(): m_index_connect has not been initialized yet!\n");
+                        }
+                        else
+                        {
+                            // Yes. There is an associated async_operation<void> object to store the result.
+                            int idx = m_index_connect;
+                            // Reinitialize m_index_connect: application code has to call start_connecting(_impl) again.
+                            m_index_connect = -1;
+                            print(PRI2, "%p: TcpClientCo1::handle_connect() lambda: idx = %d\n", this, idx);
+                            completionHandler_v(idx);
+                        }
                     }
                 );
 #if 0
                 m_connection_timer = connect(&tmr, &QTimer::timeout,
                     [this]()
                     {
-                        int idx = m_index_timer;
-                        print(PRI2, "%p: TcpClientCo1::handle_timer(): idx = %d\n", this, idx);
-                        completionHandler_v(idx);
+                        // Has function start_timer(_impl) been called before?
+                        if (m_index_timer == -1)
+                        {
+                            // No. There isn't an associated async_operation<void> object to store the result.
+                            print(PRI1, "%p: TcpClientCo1::handle_timer(): m_index_timer has not been initialized yet!\n");
+                        }
+                        else
+                        {
+                            // Yes. There is an associated async_operation<void> object to store the result.
+                            int idx = m_index_timer;
+                            // Reinitialize m_index_timer: application code has to call start_timer(_impl) again.
+                            m_index_timer = -1;
+                            print(PRI2, "%p: TcpClientCo1::handle_timer(): idx = %d\n", this, idx);
+                            completionHandler_v(idx);
+                        }
                     }
                 );
 #endif
@@ -442,10 +482,11 @@ void TcpClientCo1::readyReadTcpCo2(QByteArray& data)
  * @brief TcpClientCo1::start_reading
  * @return
  */
-async_operation<QByteArray> TcpClientCo1::start_reading()    // no doDisconnect parameter compared with tcpclientco.cpp
+async_operation<QByteArray> TcpClientCo1::start_reading(bool index_read_reset_enabled)    // no doDisconnect parameter compared with tcpclientco.cpp
 {
     int index = get_free_index();
     print(PRI2, "%p: TcpClientCo1::start_reading(): index = %d\n", this, index);
+    m_index_read_reset_enabled = index_read_reset_enabled;
     async_operation<QByteArray> ret{ this, index };         // no doDisconnect parameter compared with tcpclientco.cpp
     start_reading_impl(index);
     return ret;
@@ -463,9 +504,16 @@ void TcpClientCo1::start_reading_impl(const int idx)        // no doDisconnect p
 {
     print(PRI2, "%p: TcpClientCo1::start_reading_impl(): idx = %d, operation = %p\n", this, idx, get_async_operation(idx));
 
-    m_index_read = idx;            // New statement compared with tcpclientco.cpp
+    // New statements compared with tcpclientco.cpp.
+    // Has the previous read operation completed, i.e. has m_index_read been reinitialized to -1?
+    // This reinitialization must only be checked if m_index_read_reset_enabled == true.
+    // Otherwise, m_index_read remains valid for multiple read operations.
+    if (m_index_read_reset_enabled && m_index_read != -1)
+        print(PRI1, "%p: TcpClientCo1::start_reading_impl(): m_index_read has already a value: %d\n", m_index_read);
+    // Inform the completion handler which async_operation<QByteArray> object to use (using its index).
+    m_index_read = idx;
     
-    // Original code from tcpclientco.cpp has been moved to connectToServer(), see above
+    // Original code from tcpclientco.cpp has been moved to connectToServer(), see above.
 }
 
 /**
@@ -513,20 +561,7 @@ void TcpClientCo1::start_timer_impl(const int idx, QTimer& tmr, int ms)
         [this, idx]()
         {
             print(PRI2, "%p: TcpClientCo1::handle_timer() lambda: idx = %d\n", this, idx);
-
-            async_operation_base* om_async_operation = get_async_operation(idx);
-            async_operation<void>* om_async_operation_t =
-                static_cast<async_operation<void>*>(om_async_operation);
-
-            if (om_async_operation_t)
-            {
-                om_async_operation_t->completed();
-            }
-            else
-            {
-                // This can occur when the async_operation_base has gone out of scope.
-                print(PRI2, "%p: TcpClientCo1::handle_timer(): idx = %d, Warning: om_async_operation_t == nullptr\n", this, idx);
-            }
+            completionHandler_v(idx);
 
             if (!disconnect(m_connections[idx]))
             {
@@ -576,9 +611,14 @@ void TcpClientCo1::start_connecting_impl(const int idx, QString& serverIpAddress
 {
     print(PRI2, "%p: TcpClientCo1::start_connecting_impl(): idx = %d, operation = %p\n", this, idx, get_async_operation(idx));
 
-    m_index_connect = idx;        // New statement compared with tcpclientco.cpp
+    // New statements compared with tcpclientco.cpp.
+    // Has the previous connect operation completed, i.e. has m_index_connect been reinitialized to -1?
+    if (m_index_connect != -1)
+        print(PRI1, "%p: TcpClientCo1::start_connecting_impl(): m_index_connect has already a value: %d\n", m_index_connect);
+    // Inform the completion handler which async_operation<void> object to use (using its index).
+    m_index_connect = idx;
 
-    // Original code from tcpclientco.cpp has been moved to connectToServer(), see above
+    // Original code from tcpclientco.cpp has been moved to connectToServer(), see above.
     
     //connectToServer(serverIpAddress, port);
 

@@ -57,7 +57,7 @@ public:
     void sendMessage(QByteArray& message);
 
 	// Coroutine related
-    async_operation<QByteArray> start_reading();	// no doDisconnect parameter compared with tcpclientco.h
+    async_operation<QByteArray> start_reading(bool index_read_reset_enabled = true);	// no doDisconnect parameter compared with tcpclientco.h
     async_operation<void> start_timer(QTimer& timer, int ms);
     async_operation<void> start_connecting(QString& serverIpAddress, quint16 port);
 
@@ -68,7 +68,7 @@ protected:    // functions
     void enableKeepAlive(QTcpSocket *socket);
     void closeConnection(QTcpSocket *socket);
 
-    void start_reading_impl(const int idx);			// no doDisconnect parameter compared with tcpclientco.h
+    void start_reading_impl(const int idx);    // no doDisconnect parameter compared with tcpclientco.h
     void start_timer_impl(const int idx, QTimer& tmr, int ms);
     void start_connecting_impl(const int idx, QString& serverIpAddress, quint16 port);
 
@@ -101,13 +101,14 @@ private:
 	
     // The following data members are new compared with tcpclientco.h
 	QMetaObject::Connection m_connection_connect;
-	int m_index_connect;
+    int m_index_connect{ -1 };
 	
 	QMetaObject::Connection m_connection_read;
-	int m_index_read;
+	int m_index_read{ -1 };
+    bool m_index_read_reset_enabled{ true };
 
 	QMetaObject::Connection m_connection_timer;
-	int m_index_timer;
+	int m_index_timer{ -1 };
 };
 
 #endif
