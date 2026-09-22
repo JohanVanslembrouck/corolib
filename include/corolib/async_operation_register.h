@@ -27,6 +27,8 @@
  * More flexible mechanisms are possible because the array size limits the number of operations 
  * that can be active at any moment: its size may be too big or too small.
  * 
+ * In the code below, rmc stands for "resume multiple coroutines."
+ * 
  * @author Johan Vanslembrouck
  */
 

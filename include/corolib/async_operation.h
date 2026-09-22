@@ -15,7 +15,7 @@
  Class hierarchy
  ===============
 
-                     (class async_base)
+                     (class async_base)     (optional: a C++ concept can be used instead)
                              ^
                              |
                              |
@@ -471,6 +471,7 @@ namespace corolib
     }; // template<> class async_operation<void>
 
     // ---------------------------------------------------------
+    // rmc stands for "resume multiple coroutines"
     // ---------------------------------------------------------
 
     template<typename TYPE>
@@ -824,25 +825,25 @@ namespace corolib
                 awaiter(async_operation_ls& async_) :
                     m_async(async_)
                 {
-                    clprint(PRI2, "%p: async_operation_ls::awaiter::await_ready()\n", this);
+                    clprint(PRI2, "%p: async_operation_ls<OPERATION>::awaiter::await_ready()\n", this);
                 }
 
                 bool await_ready() const noexcept
                 {
-                    clprint(PRI2, "%p: async_operation_ls::awaiter::await_ready()\n", this);
+                    clprint(PRI2, "%p: async_operation_ls<OPERATION>::awaiter::await_ready()\n", this);
                     return false;
                 }
 
                 bool await_suspend(std::coroutine_handle<> awaitingCoroutine)
                 {
-                    clprint(PRI2, "%p: async_operation_ls::awaiter::await_suspend()\n", this);
+                    clprint(PRI2, "%p: async_operation_ls<OPERATION>::awaiter::await_suspend()\n", this);
                     m_async.m_awaitingCoroutine = awaitingCoroutine;
                     return static_cast<OPERATION*>(&m_async)->try_start();
                 }
 
                 decltype(auto) await_resume()
                 {
-                    clprint(PRI2, "%p: async_operation_ls::await_resume()\n", this);
+                    clprint(PRI2, "%p: async_operation_ls<OPERATION>::await_resume()\n", this);
                     return static_cast<OPERATION*>(&m_async)->get_result();
                 }
 
@@ -855,7 +856,7 @@ namespace corolib
 
         void start() override_if_async_base
         {
-            clprint(PRI2, "%p: async_operation_ls::start()\n", this);
+            clprint(PRI2, "%p: async_operation_ls<OPERATION>::start()\n", this);
             static_cast<OPERATION*>(this)->try_start();
         }
     };
