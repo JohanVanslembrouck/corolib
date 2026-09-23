@@ -173,7 +173,7 @@ namespace corolib
             }
         }
 
-        template<typename AsyncBaseType, int Size>
+        template<typename AsyncBaseType, std::size_t Size>
         when_any(std::array<AsyncBaseType, Size>& async_ops)
         {
             clprint(PRI2, "%p: when_any(std::array<AsyncBaseType, Size>)\n", this);
@@ -215,7 +215,7 @@ namespace corolib
             }
         }
 #else
-        template<typename AsyncBaseType, int Size>
+        template<typename AsyncBaseType, std::size_t Size>
         when_any(std::array<AsyncBaseType, Size>& async_ops)
         {
             clprint(PRI2, "%p: when_any(std::array<AsyncBaseType, Size>)\n", this);
@@ -248,11 +248,6 @@ namespace corolib
        /**
        * @brief constructor that takes a variable list of async_base-derived objects and
        * populates the internal vector m_elements with its elements.
-       * 
-       * Note: this definition has to be placed behind the definitions for std::array and std::vector;
-       * otherwise, gcc starts expanding this definition with a std::array or std::vector
-       * and then runs into problems because, in make_when_any, std::array and std::vector
-       * do not satisfy the WHEN_TYPE requirements.
        */
         template<typename... AsyncBaseTypes>
         when_any(AsyncBaseTypes&... others)
