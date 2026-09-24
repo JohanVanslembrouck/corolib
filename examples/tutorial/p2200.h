@@ -1,5 +1,5 @@
 /**
- * @file 2200.h
+ * @file p2200.h
  * @brief
  *
  * @author Johan Vanslembrouck
@@ -8,21 +8,11 @@
 #ifndef _P2200_H_
 #define _P2200_H_
 
-#include <random>
-#include <string>
-#include <thread>
 #include <vector>
 
-#include <corolib/print.h>
 #include <corolib/commservice.h>
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
-
-#define USE_THREAD_POOL 1
-
-#if USE_THREAD_POOL
-#include <corolib/threadpool.h>
-#endif
 
 #include "use_mode.h"
 
@@ -86,14 +76,6 @@ private:
     UseMode     m_useMode;
     EventQueueFunctionVoidVoid* m_eventQueue;
     EventQueueThrFunctionVoidVoid* m_eventQueueThr;
-#if USE_THREAD_POOL
-    ThreadPool m_pool{ 8 };
-#endif
 };
-
-// -----------------------------------------------------------------
-
-async_task<void> sortVector(Sorter& sorter, std::vector<int>& values);
-async_task<void> sortVector_lso(Sorter& sorter, std::vector<int>& values);
 
 #endif

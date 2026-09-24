@@ -6,10 +6,11 @@
  */
 
 #include <algorithm>
+#include <random>
 
 #include <corolib/when_all.h>
 
-#include "p2200.h"
+#include "p2200-sort.h"
 
 #if !USE_LAZY_START_OPS
 void completionflow(Sorter& sorter)
@@ -41,6 +42,8 @@ async_task<bool> sortRandomNumberVector(int size)
 
     Sorter sorter(UseMode::USE_NONE);
 
+    auto t0 = std::chrono::high_resolution_clock::now();
+
 #if !USE_LAZY_START_OPS
     print(PRI1, "sortRandomNumberVector(): starting sortVector\n");
     async_task<void> result = sortVector(sorter, values);
@@ -52,10 +55,14 @@ async_task<bool> sortRandomNumberVector(int size)
 
     co_await result;
 
+    auto t1 = std::chrono::high_resolution_clock::now();
+    auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
+
     print(PRI1, "sortRandomNumberVector(): confirming that vector is sorted\n");
     bool sorted = std::ranges::is_sorted(values);
     print(PRI1, "sortRandomNumberVector(): values is %s sorted\n", sorted ? "" : " not");
 
+    print(PRI1, "sortRandomNumberVector(): took %dms\n", int(dt));
     co_return sorted;
 }
 
@@ -79,6 +86,13 @@ async_task<bool> sort3RandomNumberVectors()
 int main() 
 {
    set_priority(0x01);        // Use 0x03 to follow the flow in corolib
+
+   for (int i = 1; i <= 3; ++i)
+   {
+       print(PRI1, "main(): async_task<bool> t = sortRandomNumberVectorSerial(%d * 10'000'000);\n", i);
+       bool res = sortRandomNumberVectorSerial(i * 10'000'000);
+       print(PRI1, "main(): res = %d\n", res);
+   }
 
    for (int i = 1; i <= 3; ++i)
    {

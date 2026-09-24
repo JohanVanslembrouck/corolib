@@ -160,6 +160,7 @@ p2102-async_operation-eventqueue.exe
 p2110-async_operation.exe
 p2112-async_operation-eventqueue.exe
 
+p2200-serial.exe
 p2200-future.exe
 
 p2200-async_operation.exe

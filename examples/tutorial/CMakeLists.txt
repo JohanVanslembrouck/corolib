@@ -43,18 +43,15 @@ foreach(_target
   target_link_libraries(${_target} corolib)
 endforeach()
 
-if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-# template functions are not instantiated (correctly) on Ubuntu 22.04 and 24.04. FFS
 foreach(_target
-    p1107-auto_reset_event-3-when_all_arr
     p1107-auto_reset_event-3-when_all_vec
-    p1108-auto_reset_event-3-when_any_arr
+    p1107-auto_reset_event-3-when_all_arr
     p1108-auto_reset_event-3-when_any_vec
+    p1108-auto_reset_event-3-when_any_arr
   )
   add_executable(${_target} ${_target}.cpp)
   target_link_libraries(${_target} corolib)
 endforeach()
-endif()
 
 # Requires the use of experimental/coroutine.h
 #add_executable(p1300-future p1300-future.cpp)
@@ -288,6 +285,9 @@ add_executable(p2110-async_operation p2110-async_operation.cpp class01.cpp p2110
 target_link_libraries(p2110-async_operation corolib)
 add_executable(p2112-async_operation-eventqueue p2112-async_operation-eventqueue.cpp class01.cpp p2110.cpp eventqueue.cpp)
 target_link_libraries(p2112-async_operation-eventqueue corolib)
+
+add_executable(p2200-serial p2200-serial.cpp p2200.cpp)
+target_link_libraries(p2200-serial corolib)
 
 add_executable(p2200-future p2200-future.cpp)
 

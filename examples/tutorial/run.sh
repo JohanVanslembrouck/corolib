@@ -166,6 +166,7 @@ set -x
 ./p2110-async_operation
 ./p2112-async_operation-eventqueue
 
+./p2200-serial
 ./p2200-future
 
 ./p2200-async_operation
