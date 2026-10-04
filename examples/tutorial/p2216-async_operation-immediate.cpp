@@ -1,5 +1,5 @@
 /**
- * @file p2206-async_operation-immediate.cpp
+ * @file p2216-async_operation-immediate.cpp
  * @brief
  *
  * @author Johan Vanslembrouck
@@ -10,7 +10,7 @@
 
 #include <corolib/when_all.h>
 
-#include "p2200-sort.h"
+#include "p2210.h"
 
 async_task<bool> sortRandomNumberVector(int size)
 {
@@ -28,11 +28,11 @@ async_task<bool> sortRandomNumberVector(int size)
     auto t0 = std::chrono::high_resolution_clock::now();
 
 #if !USE_LAZY_START_OPS
-    print(PRI1, "sortRandomNumberVector(): starting sortVector\n");
-    async_task<void> result = sortVector(sorter, values);
+    print(PRI1, "sortRandomNumberVector(): start_sorting\n");
+    async_operation<void> result = sorter.start_sorting(values);
 #else
-    print(PRI1, "sortRandomNumberVector(): starting sortVector_lso\n");
-    async_task<void> result = sortVector_lso(sorter, values);
+    print(PRI1, "sortRandomNumberVector(): start_sorting_lso\n");
+    Sorter::sort_operation result = sorter.start_sorting_lso(values);
 #endif
 
     co_await result;

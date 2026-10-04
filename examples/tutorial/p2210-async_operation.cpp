@@ -1,5 +1,5 @@
 /**
- * @file p2206-async_operation-immediate.cpp
+ * @file p2210-async_operation.cpp
  * @brief
  *
  * @author Johan Vanslembrouck
@@ -10,7 +10,22 @@
 
 #include <corolib/when_all.h>
 
-#include "p2200-sort.h"
+#include "p2210.h"
+
+#if !USE_LAZY_START_OPS
+void completionflow(Sorter& sorter)
+{
+    // To be correct, indices should be pushed and popped from a queue.
+    print(PRI1, "completionflow(): before sorter.completionHandler_v(%d);\n", 0);
+    sorter.completionHandler_v(0);
+}
+#else
+void completionflow(Sorter& sorter)
+{
+    print(PRI1, "completionflow(): not implemented (yet): application will hang!!!\n");
+    // Needs the addresses of op1 and op2.
+}
+#endif
 
 async_task<bool> sortRandomNumberVector(int size)
 {
@@ -23,17 +38,18 @@ async_task<bool> sortRandomNumberVector(int size)
     std::vector<int> values(size);
     std::ranges::generate(values, [&]() {return ints(engine); });
 
-    Sorter sorter(UseMode::USE_IMMEDIATE_COMPLETION);
+    Sorter sorter(UseMode::USE_NONE);
 
     auto t0 = std::chrono::high_resolution_clock::now();
 
 #if !USE_LAZY_START_OPS
-    print(PRI1, "sortRandomNumberVector(): starting sortVector\n");
-    async_task<void> result = sortVector(sorter, values);
+    print(PRI1, "sortRandomNumberVector(): start_sorting\n");
+    async_operation<void> result = sorter.start_sorting(values);
 #else
-    print(PRI1, "sortRandomNumberVector(): starting sortVector_lso\n");
-    async_task<void> result = sortVector_lso(sorter, values);
+    print(PRI1, "sortRandomNumberVector(): start_sorting_lso\n");
+    Sorter::sort_operation result = sorter.start_sorting_lso(values);
 #endif
+    completionflow(sorter);
 
     co_await result;
 

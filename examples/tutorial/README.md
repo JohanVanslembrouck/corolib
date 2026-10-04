@@ -274,3 +274,13 @@ these coroutines in the sense that a coroutine can be resumed from another threa
   p220Xcpp uses corolib instead of concurrencpp: https://github.com/David-Haim/concurrencpp
   No changes had to be made to corolib to "translate" the example. corolib does not support executors;
   "ordinary" threads are used instead.
+
+* p221X.cpp is a variant of p220X.cpp. Instead of using the library function std::sort as the operation called
+  in Sorter::start_sorting_impl and Sorter::sort_operation_impl::try_start, the complete sortVector function
+  is called instead.
+  
+* p222X.cpp is based upon the senders/receivers example in https://github.com/lucteo/overload185_sr_examples.
+  The std::execution code has been removed and replaced with a ThreadPool from corolib. There aren't any
+  coroutine examples, but the code would be very similar to the code of the p2210.cpp-related examples,
+  with sortVector being replaced with concurrent_sort.
+ 

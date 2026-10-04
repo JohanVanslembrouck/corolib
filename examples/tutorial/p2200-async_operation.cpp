@@ -89,13 +89,6 @@ int main()
 
    for (int i = 1; i <= 3; ++i)
    {
-       print(PRI1, "main(): async_task<bool> t = sortRandomNumberVectorSerial(%d * 10'000'000);\n", i);
-       bool res = sortRandomNumberVectorSerial(i * 10'000'000);
-       print(PRI1, "main(): res = %d\n", res);
-   }
-
-   for (int i = 1; i <= 3; ++i)
-   {
        print(PRI1, "main(): async_task<bool> t = sortRandomNumberVector(%d * 10'000'000);\n", i);
        async_task<bool> t = sortRandomNumberVector(i * 10'000'000);
        print(PRI1, "main(): bool res = t.get_result();\n");

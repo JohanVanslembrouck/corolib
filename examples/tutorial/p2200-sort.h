@@ -11,7 +11,6 @@
 #include "p2200.h"
 
 void sortVector(std::vector<int>& values);
-bool sortRandomNumberVectorSerial(int size);
 
 async_task<void> sortVector(Sorter& sorter, std::vector<int>& values);
 async_task<void> sortVector_lso(Sorter& sorter, std::vector<int>& values);  // lso = lazy-start operation

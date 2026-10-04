@@ -1,21 +1,20 @@
 /**
- * @file p2200-serial.cpp
+ * @file p2210-no-coroutines.cpp
  * @brief
  *
  * @author Johan Vanslembrouck
  */
 
 #include <algorithm>
-#include <chrono>
 #include <random>
+#include <chrono>
 
-#include "p2200-sort.h"
+#include <corolib/print.h>
 
-#include "corolib/print.h"
+#include "p2210-sort.h"
 
 using namespace corolib;
 
- // Serial sort: not using coroutines
 bool sortRandomNumberVector(int size)
 {
     // set up random number generation 
@@ -30,7 +29,7 @@ bool sortRandomNumberVector(int size)
     auto t0 = std::chrono::high_resolution_clock::now();
 
     sortVector(values);
-
+    
     auto t1 = std::chrono::high_resolution_clock::now();
     auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
 
@@ -39,17 +38,18 @@ bool sortRandomNumberVector(int size)
     print(PRI1, "sortRandomNumberVector(): values is %s sorted\n", sorted ? "" : " not");
 
     print(PRI1, "sortRandomNumberVector(): took %dms\n", int(dt));
+
     return sorted;
 }
 
-int main() 
+int main()
 {
-   for (int i = 1; i <= 3; ++i)
-   {
-       print(PRI1, "main(): bool res = sortRandomNumberVector(%d * 10'000'000);\n", i);
-       bool res = sortRandomNumberVector(i * 10'000'000);
-       print(PRI1, "main(): res = %d\n", res);
-   }
+    for (int i = 1; i <= 3; ++i)
+    {
+        print(PRI1, "main(): bool res = sortRandomNumberVector(%d * 10'000'000);\n", i);
+        bool res = sortRandomNumberVector(i * 10'000'000);
+        print(PRI1, "main(): res = %d\n", res);
+    }
 
-   return 0;
+    return 0;
 }
