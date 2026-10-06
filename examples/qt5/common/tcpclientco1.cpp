@@ -132,7 +132,7 @@ bool TcpClientCo1::connectToServer(QString& serverIPaddress, quint16 serverPort)
                         if (m_index_read == -1)
                         {
                             // No. There isn't an associated async_operation<QByteArray> object to store the result.
-                            print(PRI1, "%p: TcpClientCo1::handle_read(): m_index_read has not been initialized yet!\n");
+                            print(PRI1, "%p: TcpClientCo1::handle_read(): m_index_read has not been initialized yet!\n", this);
                         }
                         else
                         {
@@ -157,7 +157,7 @@ bool TcpClientCo1::connectToServer(QString& serverIPaddress, quint16 serverPort)
                         if (m_index_connect == -1)
                         {
                             // No. There isn't an associated async_operation<void> object to store the result.
-                            print(PRI1, "%p: TcpClientCo1::handle_connect(): m_index_connect has not been initialized yet!\n");
+                            print(PRI1, "%p: TcpClientCo1::handle_connect(): m_index_connect has not been initialized yet!\n", this);
                         }
                         else
                         {
@@ -178,7 +178,7 @@ bool TcpClientCo1::connectToServer(QString& serverIPaddress, quint16 serverPort)
                         if (m_index_timer == -1)
                         {
                             // No. There isn't an associated async_operation<void> object to store the result.
-                            print(PRI1, "%p: TcpClientCo1::handle_timer(): m_index_timer has not been initialized yet!\n");
+                            print(PRI1, "%p: TcpClientCo1::handle_timer(): m_index_timer has not been initialized yet!\n", this);
                         }
                         else
                         {
@@ -509,7 +509,7 @@ void TcpClientCo1::start_reading_impl(const int idx)        // no doDisconnect p
     // This reinitialization must only be checked if m_index_read_reset_enabled == true.
     // Otherwise, m_index_read remains valid for multiple read operations.
     if (m_index_read_reset_enabled && m_index_read != -1)
-        print(PRI1, "%p: TcpClientCo1::start_reading_impl(): m_index_read has already a value: %d\n", m_index_read);
+        print(PRI1, "%p: TcpClientCo1::start_reading_impl(): m_index_read has already a value: %d\n", this, m_index_read);
     // Inform the completion handler which async_operation<QByteArray> object to use (using its index).
     m_index_read = idx;
     
@@ -614,7 +614,7 @@ void TcpClientCo1::start_connecting_impl(const int idx, QString& serverIpAddress
     // New statements compared with tcpclientco.cpp.
     // Has the previous connect operation completed, i.e. has m_index_connect been reinitialized to -1?
     if (m_index_connect != -1)
-        print(PRI1, "%p: TcpClientCo1::start_connecting_impl(): m_index_connect has already a value: %d\n", m_index_connect);
+        print(PRI1, "%p: TcpClientCo1::start_connecting_impl(): m_index_connect has already a value: %d\n", this, m_index_connect);
     // Inform the completion handler which async_operation<void> object to use (using its index).
     m_index_connect = idx;
 

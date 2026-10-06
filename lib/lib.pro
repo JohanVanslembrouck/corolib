@@ -16,7 +16,9 @@ INCLUDEPATH += \
     ../include
 				
 SOURCES += async_operation.cpp \
+        async_operation_register.cpp \
         commservice.cpp \
+        eventqueue.cpp \
         tracker.cpp \
         print.cpp
 
