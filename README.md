@@ -34,495 +34,31 @@ For its communication, corolib currently uses any of the following frameworks:
 
 * Boost ASIO library
 * Qt (QTcpSocket, QTcpServer)
-* gRPC
+* gRPC (Google Remote Procedure Call)
+* cppcoro (source code included in corolib)
 * libevent
-* ROS2 (Humble)
-* TAO (The ACE ORB)
-* cppcoro (WIN32 API) (included in corolib)
+* ROS2 (Humble) (ROS = Robot Operating System)
+* TAO (The ACE (ADAPTIVE (A Dynamically Assembled Protocol Transformation, Integration and eValuation Environment)) ORB (Object Request Broker))
 * curl
 
-You do not have to install Boost, Qt, gRPC, libevent, ROS2, TAO or curl on your computer 
+You do not have to install any of these frameworks/libraries on your computer 
 before building corolib from the top-level CMakeLists.txt file.
-Without any of these libraries, you can still build and run many examples illustrating the use of corolib.
 
-You can install any of the mentioned communication libraries one by one and then include them in the build by setting a flag in the top-level CMakeLists.txt file.
-The installation of these libraries is described below.
+Without any of these libraries, you can still build and run the tutorial examples illustrating the use of corolib.
 
-### On Windows 10 or 11
+You can install any of the mentioned communication libraries one by one
+and then include them in the build by setting a flag in the top-level CMakeLists.txt file.
 
-#### corolib
+Please read [Installation and building on Windows](INSTALLATION_Windows.md) for instructions
+on how to install and build corolib and its examples on Windows 10/11.
 
-Copy or clone corolib.git to your computer.
+Please read [Installation and building on Ubuntu](INSTALLATION_Ubuntu.md) for instructions
+on how to install and build corolib and its examples on Ubuntu 22.04/24.04/26.04.
 
-I originally developed corolib with Visual Studio 2019 and Qt Creator 4.12.0 on a Windows 10 laptop.
-Now I am using Visual Studio 2022 and Qt Creator 10.0.1 on a Windows 11 laptop.
-
-Building the Visual Studio projects makes use of the CMake support of Visual Studio:
-
-	File -> Open -> CMake...
-	
-and select the CMakeLists.txt in the top-level folder (directory).
-
-Go to [tutorial](./examples/tutorial) or any of the [studies](./studies) subdirectories and start the executables.
-(See the README.md files in these directories.)
-
-#### Boost
-
-I originally used Boost 1.70 (now Boost 1.82), but many other versions will do.
-
-Starting point: https://www.boost.org/
-
-Download release 1.82 from https://boostorg.jfrog.io/artifactory/main/release/1.82.0/source/
-
-I copied boost_1_82_0.zip to C:\local\boost and unzipped it into this directory.
-
-In a Windows terminal (e.g. Command Prompt or PowerShell), go to C:\local\boost\boost_1_82_0
-
-Follow the instructions in https://www.boost.org/doc/libs/1_82_0/more/getting_started/windows.html#simplified-build-from-source
-
-Step 1: .\bootstrap.bat
-
-This will generate b2.exe
-
-Step 2: .\b2.exe
-
-b2.exe generates the libraries we will need. Its execution takes a while.
-
-The root directory for the include files is C:/local/boost/boost_1_82_0.
-
-The root directory for the libraries is C:/local/boost/boost_1_82_0/stage/lib.
-
-In the top-level CMakeLists.txt, adapt BOOST_ROOT to your own installation of the Boost library:
-
-    set(BOOST_ROOT C:/local/boost/boost_1_82_0/)
-
-After installing Boost, set the BOOST_INSTALLED flag to TRUE in the top-level CMakelists.txt file
-if you want to build the Boost examples in [boost](./examples/boost) and [corolab](./studies/corolab).
-
-#### Qt
-
-Starting points: https://www.qt.io/download, https://www.qt.io/download-open-source
-
-Download the Qt Online Installer for your operating system (macOS, Windows, Linux) 
-(e.g., for Windows: qt-unified-windows-x64-4.5.2-online.exe).
-
-Run the installer. I installed Qt in C:\Qt.
-
-Edit the Environment Variables and add the following directory to the Path variable:
-
-    C:\Qt\5.15.2\msvc2019_64\bin
-
-The version (5.15.2 in my case) will depend on your installation.
-
-After installing Qt5, set the QT5_INSTALLED flag to TRUE in the top-level CMakelists.txt file
-if you want to build the Qt5 examples in [qt5](./examples/qt5).
-
-You can build the Qt examples from the top-level CMakeLists.txt file.
-In addition, you can also build them from the qt5.pro file in the top-level directory.
-
-#### gRPC
-
-Starting points: https://github.com/grpc/grpc, https://github.com/grpc/grpc/tree/master/src/cpp
-
-Building gRPC using CMake with FetchContent, see https://github.com/grpc/grpc/tree/master/src/cpp#fetchcontent, did not work on my computer.
-
-Rather, I used the instructions under https://github.com/grpc/grpc/tree/master/src/cpp#install-using-vcpkg-package
-
-	git clone https://github.com/Microsoft/vcpkg.git
-	cd vcpkg
-
-I cloned vcpkg.git into C:\local, giving C:\local\vcpkg.
-
-Note: this, of course, requires the installation of Git. If this is not yet the case, see https://gitforwindows.org/
-
-	./bootstrap-vcpkg.bat
-	
-	./vcpkg install grpc
-	
-The execution of this last command may take 0.5 hour to 1.5 hours or even more, depending on your computer.
-
-Finally, I added the following folders to my PATH:
-
-	C:\local\vcpkg\installed\x64-windows\tools\protobuf
-	C:\local\vcpkg\installed\x64-windows\tools\grpc
-
-After installing gRPC, set the GRPC_INSTALLED flag to TRUE in the top-level CMakelists.txt file
-if you want to build the gRPC examples in [grpc](./examples/grpc).
-
-#### ROS 2
-
-I did not manage to install ROS 2 on Windows 11.
-I tried to follow the instructions at https://docs.ros.org/en/humble/Installation/Windows-Install-Binary.html.
-According to https://docs.ros.org/en/humble/Installation/Windows-Install-Binary.html#system-requirements, only Windows 10 is supported.
-
-See below for an installation on Ubuntu 22.04 LTS.
-
-#### TAO
-
-Starting point: https://download.dre.vanderbilt.edu/
-
-Download the file ACE+TAO-7.1.1.zip and place it in a directory (e.g.) C:\local. 
-This is the directory that already contains boost and vcpkg, see above.
-
-Unzip the file. This will produce a directory ACE_wrappers.
-Consequently, the full path is C:\local\ACE_wrappers.
-I will refer to this directory as ...\ACE_wrappers from now on.
-
-Open the file ...\ACE_wrappers\ACE-INSTALL.html in a web browser and navigate to the section 
-"Building and Installing ACE on Windows" and, in case of the use of Visual Studio, to 
-"Building and Installing ACE on Windows with Microsoft Visual Studio".
-
-Follow the instructions in that section. In short:
-
-In directory ...\ACE_wrappers\ace, create a file called config.h and enter the following line in this file:
-
-    #include "ace/config-win32.h"
-
-Open the file ...\ACE_wrappers\ACE_vs2019.sln with Visual Studio 2019 or 2022 (or ACE_vs2017.sln with Visual Studio 2017).
-
-Visual Studio 2022 reports the use of an earlier version of the Visual Studio platform toolset 
-and proposes to upgrade the projects to target the latest Microsoft toolset. I upgraded to the latest toolset.
-
-Build the solution. This builds ACE (The ADAPTIVE Communication Environment). We still have to build TAO (The ACE ORB).
-
-Open the file ...\ACE_wrappers\TAO\TAO-INSTALL.html in a web browser and follow the instructions in section 
-"On Windows NT and Windows 2000 and Windows XP". In short:
-
-Open the file ...\ACE_wrappers\TAO\TAO_vs2019.sln with Visual Studio and build the solution.
-
-Edit the Environment Variables and add the following directories to the Path variable:
-
-	C:\local\ACE_wrappers\lib
-	C:\local\ACE_wrappers\bin
-	C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\<VERSION>\bin\Hostx64\x64
-
-The VERSION changes with every upgrade of Visual Studio (2022).
-
-The last line is needed if you want to run the TAO IDL compiler (tao_idl in C:\local\ACE_wrappers\bin) from the command line.
-If the last line is not present, running tao_idl will fail with the message that CL.exe is not found.
-
-After installing TAO, set the TAO_INSTALLED flag to TRUE in the top-level CMakelists.txt file
-if you want to build the TAO examples in [tao](./examples/tao).
-
-#### libevent
-
-The build instructions can be found here: https://github.com/libevent/libevent/blob/master/Documentation/Building.md#building-on-windows
-
-Clone or download the source code for libevent from https://github.com/libevent/libevent.
-I placed libevent in folder C:\local, leading to C:\local\libevent.
-
-    cd C:\local\libevent
-    md build
-    cd build
-    cmake -G "Visual Studio 17" ..
-    cmake --build . --config Release
-
-Visual Studio 17 corresponds to Visual Studio 2022.
-
-Edit the Environment Variables and add the following directory to the Path variable:
-
-    C:\local\libevent\build\bin\Release
-
-After installing libevent, set the LIBEVENT_INSTALLED flag to TRUE in the top-level CMakelists.txt file
-if you want to build the libevent examples in examples/libevent.
-
-#### curl
-
-Download the source code of the latest release of curl from https://curl.se/download.html.
-Early September 2024, I downloaded curl-8.9.1.zip.
-
-I placed curl-8.9.1.zip in folder C:\local and unzipped it, leading to C:\local\curl-8.9.1.
-
-Build curl as follows:
-
-    cd C:\local\curl-8.9.1
-    md build
-    cd build
-    cmake -G "Visual Studio 17" ..
-    cmake --build . --config Release
-
-Visual Studio 17 corresponds to Visual Studio 2022.
-
-Edit the Environment Variables and add the following directory to the Path variable:
-
-    C:\local\curl-8.9.1\build\bin\Release
-
-After installing curl, set the CURL_INSTALLED flag to TRUE in the top-level CMakelists.txt file 
-if you want to build the curl examples in [curl](./examples/curl).
-
-### On Ubuntu 22.04 LTS or Ubuntu 24.04 LTS
-
-I tested corolib originally on an Ubuntu MATE 22.04 installation in VirtualBox. 
-The g++ version was 11.2.0.
-
-Currently, I am using Ubuntu 22.04 LTS and Ubuntu 24.04 LTS in WSL (Windows Subsystem for Linux) on a Windows 11 laptop.
-The current g++ version is 11.4.0 on Ubuntu 22.04 LTS and 13.3.0 on Ubuntu 24.04 LTS.
-
-The g++ version should be >= 10 to have coroutine support.
-
-#### Install Ubuntu on WSL on Windows 11
-
-Open a Windows Terminal or PowerShell window. The Terminal opens with a PowerShell tab.
-
-To install Ubuntu 24.04 LTS, enter on the command line:
-
-    wsl --install -d Ubuntu-24.04
-
-See https://documentation.ubuntu.com/wsl/en/latest/guides/install-ubuntu-wsl2/ 
-and https://learn.microsoft.com/en-us/windows/wsl/install for more information.
-
-The installation script asks for a Unix username and a password.
-
-After installation, open a new Terminal window.
-In the drop-down menu, you will find an entry "Ubuntu 24.04.1 LTS" (the minor version may change over time).
-Select this menu item. It will open a tab running Ubuntu.
-
-To verify the installed Ubuntu version, type on the command line:
-
-    lsb_release -a
-    
-The first thing to do, is to update and upgrade the Ubuntu installation:
-
-    sudo apt update
-    sudo apt upgrade
-    
-The first command will ask for the password you entered during the installation.
-
-There are a few things to install to be able to build corolib. These are described next.
-
-#### gcc
-
-If gcc is not installed:
-
-    prompt$ gcc
-    Command 'gcc' not found, but can be installed with:
-    sudo apt install gcc
-    prompt$
-
-Solution:
-
-    sudo apt install gcc
-
-#### CMake
-
-If cmake is not installed:
-
-    prompt$ cmake
-    Command 'cmake' not found, but can be installed with:
-    sudo snap install cmake  # version 3.31.4, or
-    sudo apt  install cmake  # version 3.27.8-1build1
-    See 'snap info cmake' for additional versions.
-    prompt$
-
-Solution:
-
-    sudo apt install cmake
-
-or, using -y to provide an automatic yes to prompts:
-
-	sudo apt install -y cmake
-
-#### build-essential
-
-Also install build-essential (otherwise you will have to do it later anyway):
-
-    sudo apt-get install build-essential
-
-#### corolib
-
-Copy or clone corolib.git to your computer.
-
-I propose to build corolib as follows:
-
-	cd <path>/corolib
-	mkdir build
-	cd build
-	cmake ../
-	make -j 4
-
-or (better)
-
-    cd <path>/corolib
-    cd ..
-    mkdir corolib-build
-    cd corolib-build
-    cmake ../corolib
-    make -j 4
-
-This second alternative keeps your build directory completely apart from the source code.
-
-When using the same corolib source code directory to build corolib both on Windows and on WSL Ubuntu (using /mnt/...),
-it occurred that Visual Studio got confused by the content of the Ubuntu build directory.
-
-Go to [tutorial](./examples/tutorial) or any of the [studies](./studies) subdirectories and start the executables.
-(See the README.md files in these directories.)
-
-#### Boost
-
-Install Boost:
-
-	sudo apt-get update
-	sudo apt-get -y install libboost-dev
-
-The Boost include files are in
-
-	/usr/include/boost
-	
-On my computer, the Boost libraries (version 1.74.0) are located in
-
-	/usr/lib/x86_64-linux-gnu/
-
-After installing Boost ASIO, set the BOOST_INSTALLED flag to TRUE in the top-level CMakelists.txt file
-if you want to build the Boost examples in [boost](./examples/boost) and [corolab](./studies/corolab).
-
-#### Qt
-
-To install and configure qtcreator on Ubuntu 22.04, follow the instructions described in
-https://askubuntu.com/questions/1404263/how-do-you-install-qt-on-ubuntu22-04:
-
-	sudo apt install -y qtcreator qtbase5-dev qt5-qmake cmake
-
-After installing Qt5, set the QT5_INSTALLED flag to TRUE in the top-level CMakelists.txt file
-if you want to build the Qt5 examples in [qt5](./examples/qt5).
-
-You can build the Qt examples from the top-level CMakeLists.txt file.
-In addition, you can also build them from the qt5.pro file in the top-level directory.
-
-#### gRPC
-
-Starting points: https://github.com/grpc/grpc, https://github.com/grpc/grpc/tree/master/src/cpp
-
-Building gRPC using CMake with FetchContent, see https://github.com/grpc/grpc/tree/master/src/cpp#fetchcontent, did not work on my computer.
-
-Rather, I used the instructions under https://grpc.io/docs/languages/cpp/quickstart/#install-grpc
-
-	export MY_INSTALL_DIR=$HOME/.local
-	mkdir -p $MY_INSTALL_DIR
-	export PATH="$MY_INSTALL_DIR/bin:$PATH"
-	
-	sudo apt install -y build-essential autoconf libtool pkg-config
-
-Note: I used MY_INSTALL_DIR=$HOME/grpcbin as installation directory.
-
-Clone the grpc repo and its submodules to a local directory:
-
-	git clone --recurse-submodules -b v1.55.0 --depth 1 --shallow-submodules https://github.com/grpc/grpc
-	
-	cd grpc
-	mkdir -p cmake/build
-	pushd cmake/build
-	cmake -DgRPC_INSTALL=ON \
-      -DgRPC_BUILD_TESTS=OFF \
-      -DCMAKE_INSTALL_PREFIX=$MY_INSTALL_DIR \
-      ../..
-	make -j 4
-	make install
-	popd
-
-Note: I cloned grpc to $HOME/grpcsrc.
-
-Add the following lines to .bashrc for future use:
-
-    export PATH=$HOME/.local/bin:$PATH
-
-or, in my setup:
-
-    export PATH=$HOME/grpcbin/bin:$PATH
-
-After installing gRPC, set the GRPC_INSTALLED flag to TRUE in the top-level CMakelists.txt file
-if you want to build the gRPC examples in [grpc](./examples/grpc).
-
-#### ROS 2
-
-Please follow the instructions at https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html
-
-#### TAO
-
-Starting point: https://download.dre.vanderbilt.edu/
-
-Download the file ACE+TAO-7.1.1.tar.gz and place it in (e.g.) your home directory, $HOME.
-
-Unzip the file:
-
-    tar xvf ACE+TAO-7.1.1.tar.gz
-
-This will produce a directory ACE_wrappers.
-Consequently, the full path is $HOME\ACE_wrappers.
-
-Open the file $HOME\ACE_wrappers\ACE-INSTALL.html in a web browser and navigate to the section 
-"Building and Installing ACE on UNIX".
-
-Follow the instructions in that section. In short:
-
-Define the ACE_ROOT environment variable:
-
-    export ACE_ROOT=$HOME/ACE_wrappers 
-
-Create a configuration file, $ACE_ROOT/ace/config.h, 
-that includes the appropriate platform/compiler-specific header configurations from the ACE source directory:
-
-    #include "ace/config-linux.h"
-
-Create a build configuration file, $ACE_ROOT/include/makeinclude/platform_macros.GNU,
-that contains the appropriate platform/compiler-specific Makefile configurations, e.g.,
-
-    include $(ACE_ROOT)/include/makeinclude/platform_linux.GNU
-
-Set LD_LIBRARY_PATH to the directory where the binary version of the ACE library will be built into:
-
-    export LD_LIBRARY_PATH=$ACE_ROOT/lib:$LD_LIBRARY_PATH
-
-In a terminal window, navigate to $ACE_ROOT and build ACE:
-
-    cd $ACE_ROOT
-    make
-
-Building ACE in my WSL environment took about 10 minutes.
-
-Open the file ...\ACE_wrappers\TAO\TAO-INSTALL.html in a web browser and follow the instructions in section 
-"On UNIX platforms". In short:
-
-Build GPERF as follows:
-
-    cd $ACE_ROOT/apps/gperf/src
-    make
-
-Set the TAO_ROOT environment variable to $ACE_ROOT/TAO:
-
-    export TAO_ROOT=$ACE_ROOT/TAO
-
-Build TAO:
-
-    cd $TAO_ROOT
-    make
-
-Building TAO takes a long time (about 2 hours in my WSL environment). I did not use e.g. make -j 4.
-
-Add the following lines to .bashrc:
-
-    export ACE_ROOT=$HOME/ACE_wrappers
-    export TAO_ROOT=$ACE_ROOT/TAO
-    export PATH=$ACE_ROOT/bin:$PATH
-    export LD_LIBRARY_PATH=$ACE_ROOT/lib:$LD_LIBRARY_PATH
-
-After installing TAO, set the TAO_INSTALLED flag to TRUE in the top-level CMakelists.txt file
-if you want to build the TAO examples in [tao](./examples/tao).
-
-#### libevent
-
-The installation instructions can be found here: https://github.com/libevent/libevent/blob/master/Documentation/Building.md#linux-deb-like-ubuntudebian
-
-libevent was already installed on my Ubuntu installation, so I did not have to do anything.
-
-Set the LIBEVENT_INSTALLED flag to TRUE in the top-level CMakelists.txt file
-if you want to build the libevent examples in [libevent](./examples/libevent).
-
-#### curl
-
-curl is by default installed on Ubuntu (and other Linux) distributions, so I did not have to do anything.
-
-Set the CURL_INSTALLED flag to TRUE in the top-level CMakelists.txt file 
-if you want to build the curl examples in [curl](./examples/curl).
+After having built one or more communication frameworks,
+run scripts/copy.bat (on Windows)
+or scripts/copy.sh (on Ubuntu)
+to copy configuration and run files to the folders with the executables.
 
 ## Organization of corolib
 
@@ -577,7 +113,6 @@ Yet everything runs on the same thread, with coroutines proceding in an interlea
 ## Coding style
 
 I will use the following coding style in almost all example applications:
-
 ```c++
 	// Start an asynchronous operation on a (remote) object.
 	async_operation<aType> retObj = proxy_to_object.start_operation(in1, in2);
@@ -585,13 +120,10 @@ I will use the following coding style in almost all example applications:
 	// Finally co_await the result if nothing else can be done in this coroutine.
 	aType returnVal = co_await retObj; 
 ```
-
 instead of using only a single line:
-
 ```c++
 	aType returnVal = co_await proxy_to_object.start_operation(in1, in2);
 ```
-
 There are several reasons:
 
 1. Because we are dealing with distributed systems,
@@ -642,6 +174,10 @@ An updated version of the code samples can be found in examples/corolab.
 * Belgian C++ Users Group, 15 January 2025: "Why use coroutines for asynchronous applications?" Slides: https://becpp.org/blog/wp-content/uploads/2025/01/Johan-Vanslembrouck-Why-Use-Coroutines-For-Asynchronous-Applications.pdf
 * Meeting C++ 2025, 8 November 2025: "Why use coroutines for asynchronous applications?" Slides: https://meetingcpp.com/mcpp/slides/2025/WhyUseCoroutinesForAsynchronousApplications564642.pdf
 * Belgian C++ Users Group, 2 December 2025: "Distributed programming with coroutines and asynchronous communication frameworks" Slides: https://becpp.org/blog/wp-content/uploads/2025/12/Johan-Vanslembrouck-DistributedProgrammingWithCoroutinesAndACFs.pdf
+
+## License
+
+Please read [License](LICENSE.md).
 
 ## Contact
 
