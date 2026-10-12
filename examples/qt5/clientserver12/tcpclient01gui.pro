@@ -4,15 +4,9 @@ QT += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-CONFIG += c++20
-CONFIG += console
+CONFIG += c++20 console
 
-win32 {
-QMAKE_CXXFLAGS += /await:strict
-}
-unix {
-QMAKE_CXXFLAGS += -fcoroutines
-}
+include(../../../qt5.pri)
 
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings

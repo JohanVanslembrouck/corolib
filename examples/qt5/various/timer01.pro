@@ -6,12 +6,8 @@ QT += network
 CONFIG += c++20 console
 CONFIG -= app_bundle
 
-win32 {
-QMAKE_CXXFLAGS += /await:strict
-}
-unix {
-QMAKE_CXXFLAGS += -fcoroutines
-}
+include(../../qt5.pri)
+
 SOURCES += \
         timer01.cpp \
         timermain01.cpp
