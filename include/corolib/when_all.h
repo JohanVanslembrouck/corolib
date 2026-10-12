@@ -331,7 +331,7 @@ namespace corolib
         };
 #endif
 
-        //template<>      // g++: error: explicit specialization in non-namespace scope ‘class corolib::when_all’
+        //template<>      // g++: error: explicit specialization in non-namespace scope 'class corolib::when_all'
         void make_when_all() {
         };
 

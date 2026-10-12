@@ -449,7 +449,7 @@ namespace corolib
 #endif
     {
     public:
-        friend class promise_task_type<TYPE>;
+        friend struct promise_task_type<TYPE>;
 
         using promise_type = promise_task_type<TYPE>;
         using handle_type = std::coroutine_handle<promise_type>;
