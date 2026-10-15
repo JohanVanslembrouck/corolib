@@ -6,7 +6,7 @@ QT += network
 CONFIG += c++20 console
 CONFIG -= app_bundle
 
-include(../../qt5.pri)
+include(../../../qt5.pri)
 
 SOURCES += \
         timer03.cpp \

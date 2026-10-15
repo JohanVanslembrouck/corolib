@@ -132,16 +132,44 @@ if you want to build the Boost examples in [boost](./examples/boost) and [corola
 
 ## Qt
 
-To install and configure qtcreator on Ubuntu 22.04, follow the instructions described in
+To install and configure qtcreator on Ubuntu 22.04 or Ubuntu 24.04, follow the instructions described in
 https://askubuntu.com/questions/1404263/how-do-you-install-qt-on-ubuntu22-04:
 ```
 sudo apt install -y qtcreator qtbase5-dev qt5-qmake cmake
 ```
-After installing Qt5, set the QT5_INSTALLED flag to TRUE in the top-level CMakelists.txt file
-if you want to build the Qt5 examples in [qt5](./examples/qt5).
 
-You can build the Qt examples from the top-level CMakeLists.txt file.
-In addition, you can also build them from the qt5.pro file in the top-level directory.
+### Building with cmake
+
+Set the QT5_INSTALLED flag to TRUE in the top-level CMakelists.txt file
+to build the Qt5 examples in [qt5](./examples/qt5).
+
+Because Qt6 is not installed, in file examples/qt5/CMakeLists.txt change
+```
+set(USE_QT5 FALSE)
+set(USE_QT6 TRUE)
+```
+to
+```
+set(USE_QT5 TRUE)
+set(USE_QT6 FALSE)
+```
+
+### Building with QtCreator
+
+Alternatively, you can use QtCreator. Select the qt5.pro file in the top-level directory.
+
+Because the compiler used by QtCreator does not support C++ concepts, a modification is necessary
+in file include/corolib/config.h. Change
+```
+#define USE_ASYNC_BASE 0
+#define USE_WHEN_TYPE 1
+```
+to
+```
+#define USE_ASYNC_BASE 1
+#define USE_WHEN_TYPE 0
+```
+Although optional, you can also make this change when building with cmake to use the same settings.
 
 ## gRPC
 

@@ -58,7 +58,9 @@ The example code for Qt has been developed with Qt5.
 Originally, the Qt examples were built using QtCreator only, using .pro files.
 Afterwards, I added CMakeLists.txt files so that the Qt examples can also be built from Visual Studio.
 
-I will describe 2 installations, because they involved some different actions.
+I will describe two installations (one from May 2023 and one from October 2026),
+because they involve different actions.
+The version depends on the time you make the installation.
 
 ### Qt5 installation (May 2023)
 
@@ -78,15 +80,15 @@ This directory contains the .dll files the applications need at run-time.
 The version (5.15.2 in my case) will depend on your installation.
 
 In contract to Visual Studio 2026, I did not have to configure Qt 5.12.0
-in Visual Studio 2022 (see next section).
-
-After installing Qt5, set the QT5_INSTALLED flag to TRUE in the top-level CMakelists.txt file
-if you want to build the Qt5 examples in [qt5](./examples/qt5).
+in Visual Studio 2022 (see the section describing the Qt6 installation).
 
 You can build the Qt examples from the top-level CMakeLists.txt file.
 In addition, you can also build them from the qt5.pro file in the top-level directory.
 
-#### Building with Visual Studio 2022 or 2026
+#### Building with Visual Studio 2022 or 2026 using cmake
+
+After installing Qt5, set the QT5_INSTALLED flag to TRUE in the top-level CMakelists.txt file
+if you want to build the Qt5 examples in [qt5](./examples/qt5).
 
 To use the Qt5 libraries, change the following settings in examples\Qt5\CMakeLists.txt from
 ```
@@ -102,9 +104,9 @@ set(USE_QT6 FALSE)
 #### Building with Qt Creator 10.0.1
 
 Because Qt Creator 10.0.1 uses MSVC 2019 and because of the use of C++ 20 concepts
-in some files in include/corolib, a modification is necessary in file include\corolib\config.h
+in some files in include\corolib, a modification is necessary in file include\corolib\config.h
 to use the original implementation using inheritance instead of concepts
-(which seem to be not supported by the MSVC 2019).
+(which seem to be not supported by MSVC 2019).
 
 Change the following lines ...
 ```
@@ -132,6 +134,7 @@ The installer installs only MinGW 13.1.0 64-bit as compiler.
 
 If you also want to build the Qt examples with Visual Studio, an MSVC compiler
 must be installed. This compiler can also be used from Qt Creator.
+
 This requires 3 steps:
 
 1. Add MSVC 2022 64-bit to Qt 6.12
@@ -187,7 +190,7 @@ In Visual Studio 2026:
 2.	Click Add.
 3.	For Location, point it at folder with the qmake.exe belonging to your Qt installation. 
 
-For example, it might be:
+For example, this might be:
 ```
 C:\Qt\6.12.0\msvc2022_64\bin\
 ```
@@ -205,16 +208,19 @@ C:\Qt\6.12.0\msvc2022_64\bin
 ```
 This directory contains the .dll files the applications need at run-time.
 
-#### Building with Visual Studio 2022 or 2026
+#### Building with Visual Studio 2022 or 2026 using cmake
+
+After installing Qt6, set the QT5_INSTALLED flag to TRUE in the top-level CMakelists.txt file
+if you want to build the Qt5 examples in [qt5](./examples/qt5).
 
 No changes are necessary to build the Qt examples using Visual Studio.
 
 #### Building with Qt Creator 20.0.2
 
-QtCreator allows building the examples using minGW (default) or MSVC.
-Deselect minGW and select MSVC instead.
+QtCreator allows building the examples using MinGW (default) or MSVC.
+Deselect MinGW and select MSVC instead.
 
-To use minGW, a change is necessary to the qt5.pri file in the home directory:
+To use MinGW, a change is necessary to the qt5.pri file in the home directory:
 
 Change
 ```
@@ -234,7 +240,7 @@ unix {
 QMAKE_CXXFLAGS += -fcoroutines
 }
 ```
-In other words, when using minGW, QMAKE_CXXFLAGS is the same on Windows and on Ubuntu.
+In other words, when using MinGW, QMAKE_CXXFLAGS is the same on Windows and on Ubuntu.
 
 ## gRPC
 
