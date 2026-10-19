@@ -1,6 +1,6 @@
 /**
  * @file p1922-async_queue_eq-async_file.cpp
- * @brief
+ * @brief Variant of p1920-async_queue-async_file.cpp using an async_queue_eq instead of an async_queue.
  *
  * @author Johan Vanslembrouck
  */
@@ -9,7 +9,7 @@
 
 #include <corolib/async_task.h>
 #include <corolib/when_all.h>
-#include <corolib/async_queue_eq.h>
+#include <corolib/async_queue_eq.h>		// difference with p1920-async_queue-async_file.cpp
 #include <corolib/print.h>
 
 using namespace corolib;
@@ -19,7 +19,7 @@ using namespace corolib;
 EventQueueFunctionVoidVoid eventQueue;
 
 const int QUEUESIZE = 4;
-async_queue_eq<std::string, EventQueueFunctionVoidVoid, QUEUESIZE> queue(eventQueue, false);
+async_queue_eq<std::string, EventQueueFunctionVoidVoid, QUEUESIZE> queue(eventQueue, false);	// difference with p1920-async_queue-async_file.cpp
 
 async_file file(eventQueue);
 

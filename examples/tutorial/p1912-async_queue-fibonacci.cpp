@@ -1,10 +1,9 @@
-
 /**
  * @file p1912-async_queue-fibonacci.cpp
  * @brief This example shows how to generate the Fibonacci sequence without C++ generators (co_yield)
  * but with an async_queue containing 1 element.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <corolib/async_task.h>

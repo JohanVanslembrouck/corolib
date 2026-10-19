@@ -168,6 +168,7 @@ set -x
 
 ./p2200-serial
 ./p2200-future
+./p2200-future2
 
 ./p2200-async_operation
 ./p2202-async_operation-eventqueue
@@ -180,9 +181,10 @@ set -x
 ./p2202-async_operation-eventqueue_lso
 ./p2204-async_operation-thread_lso
 ./p2205-async_operation-thread-queue_lso
-./p2206-async_operation-
+./p2206-async_operation-immediate
 
 ./p2210-future
+./p2210-future2
 ./p2210-no-coroutines
 
 ./p2210-async_operation

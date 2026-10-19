@@ -37,30 +37,37 @@ async_task<bool> sortRandomNumberVector(int size)
 
     co_await result;
 
-    auto t1 = std::chrono::high_resolution_clock::now();
-    auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
-
     print(PRI1, "sortRandomNumberVector(): confirming that vector is sorted\n");
     bool sorted = std::ranges::is_sorted(values);
     print(PRI1, "sortRandomNumberVector(): values is %s sorted\n", sorted ? "" : " not");
 
+    auto t1 = std::chrono::high_resolution_clock::now();
+    auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
     print(PRI1, "sortRandomNumberVector(): took %dms\n", int(dt));
+
     co_return sorted;
 }
 
 async_task<bool> sort3RandomNumberVectors()
 {
+    auto t0 = std::chrono::high_resolution_clock::now();
+
     print(PRI1, "sort3RandomNumberVectors(): async_task<bool> t1 = sortRandomNumberVector(9'000'000);\n");
-    async_task<bool> t1 = sortRandomNumberVector(9'000'000);
+    async_task<bool> task1 = sortRandomNumberVector(9'000'000);
     print(PRI1, "sort3RandomNumberVectors(): async_task<bool> t2 = sortRandomNumberVector(10'000'000);\n");
-    async_task<bool> t2 = sortRandomNumberVector(10'000'000);
+    async_task<bool> task2 = sortRandomNumberVector(10'000'000);
     print(PRI1, "sort3RandomNumberVectors(): async_task<bool> t3 = sortRandomNumberVector(11'000'000);\n");
-    async_task<bool> t3 = sortRandomNumberVector(11'000'000);
+    async_task<bool> task3 = sortRandomNumberVector(11'000'000);
 
-    print(PRI1, "sort3RandomNumberVectors(): co_await when_all(t1, t2, t3);\n");
-    co_await when_all(t1, t2, t3);
+    print(PRI1, "sort3RandomNumberVectors(): co_await when_all(task1, task2, task3);\n");
+    co_await when_all(task1, task2, task3);
 
-    bool res = t1.get_result() & t2.get_result() & t3.get_result();
+    bool res = task1.get_result() && task2.get_result() && task3.get_result();
+
+    auto t1 = std::chrono::high_resolution_clock::now();
+    auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
+    print(PRI1, "sort3RandomNumberVectors(): took %dms\n", int(dt));
+
     print(PRI1, "sort3RandomNumberVectors(): res = %d\n", res);
     co_return res;
 }

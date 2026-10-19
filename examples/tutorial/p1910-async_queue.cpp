@@ -1,9 +1,8 @@
-
 /**
  * @file p1910-async_queue.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <corolib/async_task.h>

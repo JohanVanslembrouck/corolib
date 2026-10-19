@@ -8,8 +8,7 @@ set(BOOST_INSTALLED FALSE)
 set(QT5_INSTALLED FALSE)
 # If you have installed gRPC and you want to use it, set the following variable to TRUE:
 set(GRPC_INSTALLED FALSE)
-
-# If you want to use cppcoro (Windows only), set the following variable to TRUE:
+# If you want to use cppcoro, set the following variable to TRUE:
 set(CPPCORO_INSTALLED FALSE)
 
 # If you have installed TAO and you want to use it, set the following variable to TRUE:

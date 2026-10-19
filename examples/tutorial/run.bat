@@ -162,6 +162,7 @@ p2112-async_operation-eventqueue.exe
 
 p2200-serial.exe
 p2200-future.exe
+p2200-future2.exe
 
 p2200-async_operation.exe
 p2202-async_operation-eventqueue.exe
@@ -177,6 +178,7 @@ p2205-async_operation-thread-queue_lso.exe
 p2206-async_operation-immediate_lso.exe
 
 p2210-future.exe
+p2210-future2.exe
 p2210-no-coroutines.exe
 
 p2210-async_operation.exe

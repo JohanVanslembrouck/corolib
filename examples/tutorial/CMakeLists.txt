@@ -290,6 +290,7 @@ add_executable(p2200-serial p2200-serial.cpp p2200.cpp)
 target_link_libraries(p2200-serial corolib)
 
 add_executable(p2200-future p2200-future.cpp)
+add_executable(p2200-future2 p2200-future2.cpp)
 
 add_executable(p2200-async_operation p2200-async_operation.cpp p2200.cpp)
 target_compile_definitions(p2200-async_operation PRIVATE USE_LAZY_START_OPS=0)
@@ -324,6 +325,7 @@ target_compile_definitions(p2206-async_operation-immediate_lso PRIVATE USE_LAZY_
 target_link_libraries(p2206-async_operation-immediate_lso corolib)
 
 add_executable(p2210-future p2210-future.cpp)
+add_executable(p2210-future2 p2210-future2.cpp)
 
 add_executable(p2210-no-coroutines p2210-no-coroutines.cpp p2210-sort.cpp)
 target_link_libraries(p2210-no-coroutines corolib)

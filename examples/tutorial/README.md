@@ -247,9 +247,16 @@ The following describes implementation of the examples per group.
   The completionflow() function completes op1. On its turn, coroutine1 completes op2
   and coroutine2 completes op3.
 
-* p1900.cpp: Instead of resuming nicely from the top of the call stack (coroutine6),
+* p1900-resume_in_middle.cpp: Instead of resuming nicely from the top of the call stack (coroutine6),
   this example resumes at coroutine4 by using the coroutine_handle to this coroutine.
   This is not the way to do, of course.
+
+* p1910_async_queue.cpp and p1912-async_queue-fibonacci.cpp use an asynchronous queue to connect a producer
+  and a consumer. In the latter example the producer generates part of the fibonacci sequence that is 
+  read by the consumer.
+
+* p1920-async_queue-async_file.cpp and p1922-async_queue_eq-async_file.cpp also use an asynchronous queue
+  in combination with an asynchronous file writer and reader coroutine.
 
 The p2000 series combines the use of coroutines with threads or futures.
 Several threads start one or more coroutines. Nevertheless, there is interaction between

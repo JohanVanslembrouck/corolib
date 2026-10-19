@@ -31,14 +31,14 @@ bool sortRandomNumberVector(int size)
 
     sortVector(values);
 
-    auto t1 = std::chrono::high_resolution_clock::now();
-    auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
-
     print(PRI1, "sortRandomNumberVector(): confirming that vector is sorted\n");
     bool sorted = std::ranges::is_sorted(values);
     print(PRI1, "sortRandomNumberVector(): values is %s sorted\n", sorted ? "" : " not");
 
+    auto t1 = std::chrono::high_resolution_clock::now();
+    auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
     print(PRI1, "sortRandomNumberVector(): took %dms\n", int(dt));
+
     return sorted;
 }
 

@@ -6,8 +6,7 @@
  */
 
 #include <random>
-#include <string>
-#include <thread>
+#include <chrono>
 #include <vector>
 #include <future>
 #include <algorithm>
@@ -118,17 +117,25 @@ bool sortRandomNumberVector(int size)
     std::vector<int> values(size);
     std::ranges::generate(values, [&]() {return ints(engine); });
 
+    auto t0 = std::chrono::high_resolution_clock::now();
+
     sortVector(values);
 
     printf("sortRandomNumberVector(): confirming that vector is sorted\n");
     bool sorted = std::ranges::is_sorted(values);
     printf("sortRandomNumberVector(): values is %s sorted\n", sorted ? "" : " not");
 
+    auto t1 = std::chrono::high_resolution_clock::now();
+    auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
+    printf("sortRandomNumberVector(): took %dms\n", int(dt));
+
     return sorted;
 }
 
 bool sort3RandomNumberVectors()
 {
+    auto t0 = std::chrono::high_resolution_clock::now();
+
     printf("sort3RandomNumberVectors(): bool res1 = sortRandomNumberVector(9'000'000);\n");
     bool res1 = sortRandomNumberVector(9'000'000);
     printf("sort3RandomNumberVectors(): bool res2 = sortRandomNumberVector(10'000'000);\n");
@@ -137,6 +144,11 @@ bool sort3RandomNumberVectors()
     bool res3 = sortRandomNumberVector(11'000'000);
 
     bool res = res1 && res2 && res3;
+
+    auto t1 = std::chrono::high_resolution_clock::now();
+    auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
+    printf("sort3RandomNumberVectors(): took %dms\n", int(dt));
+
     printf("sort3RandomNumberVectors(): res = %d\n", res);
     return res;
 }
