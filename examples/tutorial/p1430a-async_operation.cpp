@@ -2,7 +2,7 @@
  * @file p1430a-async_operation.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <corolib/print.h>
@@ -18,24 +18,24 @@ void completionflow(Class1430a& obj)
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(0));
 
-    print(PRI1, "completionflow(): before obj.m_object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow(): 1. before obj.m_object01.runEventHandler(10);\n");
     obj.m_object01.runEventHandler(10);
-    print(PRI1, "completionflow(): after obj.m_object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow(): 1. after obj.m_object01.runEventHandler(10);\n");
 
-    print(PRI1, "completionflow(): before obj.m_object02.runEventHandler(10);\n");
+    print(PRI1, "completionflow(): 2. before obj.m_object02.runEventHandler(10);\n");
     obj.m_object02.runEventHandler(10);
-    print(PRI1, "completionflow(): after obj.m_object02.runEventHandler(10);\n");
+    print(PRI1, "completionflow(): 2. after obj.m_object02.runEventHandler(10);\n");
 
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(0));
 
-    print(PRI1, "completionflow(): before obj.m_object02.runEventHandler(10);\n");
+    print(PRI1, "completionflow(): 3. before obj.m_object02.runEventHandler(10);\n");
     obj.m_object02.runEventHandler(10);
-    print(PRI2, "completionflow(): after obj.m_object02.runEventHandler(10);\n");
+    print(PRI2, "completionflow(): 3. after obj.m_object02.runEventHandler(10);\n");
 
-    print(PRI1, "completionflow(): before obj.m_object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow(): 4. before obj.m_object01.runEventHandler(10);\n");
     obj.m_object01.runEventHandler(10);
-    print(PRI1, "completionflow(): after obj.m_object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow(): 4. after obj.m_object01.runEventHandler(10);\n");
 
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(0));
@@ -48,9 +48,12 @@ int main()
 
     for (int i = 0; i < 10; ++i)
     {
+		print(PRI1, "main(): ---------- iteration %d ----------\n", i);
+		
         Class01 object01;
         Class01 object02;
         Class1430a obj{ object01, object02 };
+		print(PRI1, "main(): async_task<int> a = obj.coroutine1();\n");
         async_task<int> a = obj.coroutine1();
 
         print(PRI1, "main(): completionflow(obj);\n");

@@ -35,6 +35,7 @@ int main()
         Class01 object01(UseMode::USE_THREAD_QUEUE, nullptr, &eventQueueThr);
         Class01 object02(UseMode::USE_THREAD_QUEUE, nullptr, &eventQueueThr);
         Class1430 obj{ object01, object02 };
+		print(PRI1, "main(): async_task<int> a = obj.coroutine1();\n");
         async_task<int> a = obj.coroutine1();
 
         print(PRI1, "main(): completionflow();\n");

@@ -9,7 +9,7 @@
  * coroutine5a starts an asynchronous operation on object01 and awaits its completion.
  * coroutine5b starts an asynchronous operation on object02 and awaits its completion.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <corolib/print.h>
@@ -20,8 +20,6 @@
 using namespace corolib;
 
 #include "p1730a.h"
-
-#include "class01.h"
 
 async_ltask<int> Class1730a::coroutine5a()
 {

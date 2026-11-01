@@ -2,7 +2,7 @@
  * @file p1730-async_operation.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <corolib/print.h>
@@ -55,13 +55,14 @@ int main()
         Class1730 obj{ object01, object02 };
         print(PRI1, "main(): async_ltask<int> a = obj.coroutine1();\n");
         async_ltask<int> a = obj.coroutine1();
+		
         print(PRI1, "main(): a.start();\n");
         a.start();
 
         print(PRI1, "main(): completionflow(obj);\n");
         completionflow(obj);
 
-        print(PRI1, "main(): int v = a.get_result();\n");
+        print(PRI1, "main(): int v = a.get_result(false);\n");
         int v = a.get_result(false); // otherwise, hangs on async_task_base::get_result(): m_coro_handle.promise().m_sema.wait()
                                      // application is single-threaded and result is not known here
         print(PRI1, "main(): v = %d\n", v);

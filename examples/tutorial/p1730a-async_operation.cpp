@@ -2,7 +2,7 @@
  * @file p1730a-async_operation.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <corolib/print.h>
@@ -55,6 +55,7 @@ int main()
         Class1730a obj{ object01, object02 };
         print(PRI1, "main(): async_ltask<int> a = obj.coroutine1();\n");
         async_ltask<int> a = obj.coroutine1();
+		
         print(PRI1, "main(): a.start();\n");
         a.start();
 

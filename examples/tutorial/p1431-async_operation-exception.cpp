@@ -2,7 +2,7 @@
  * @file p1430-async_operation.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <corolib/print.h>
@@ -18,24 +18,38 @@ void completionflow(Class1430& obj)
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(0));
 
-    print(PRI1, "completionflow(): before obj.m_object01.runEventHandler(-1);\n");
-    obj.m_object01.runEventHandler(-1);
-    print(PRI1, "completionflow(): after obj.m_object01.runEventHandler(-1);\n");
-
-    print(PRI1, "completionflow(): before obj.m_object02.runEventHandler(10);\n");
+    print(PRI1);
+	print(PRI1, "completionflow(): 1. before object02.runEventHandler(10);\n");
     obj.m_object02.runEventHandler(10);
-    print(PRI1, "completionflow(): after obj.m_object02.runEventHandler(10);\n");
-
-    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
+    print(PRI1, "completionflow(): 1. after object02.runEventHandler(10);\n");
+	
+    print(PRI1);
+	try {
+		print(PRI1, "completionflow(): 2. before obj.m_object01.runEventHandler(-1);\n");
+		obj.m_object01.runEventHandler(-1);
+		print(PRI1, "completionflow(): 2. after obj.m_object01.runEventHandler(-1);\n");
+	}
+    catch (...) {
+        print(PRI1, "completionflow(): 2. caught exception after object01.runEventHandler(-1);\n");
+    }
+	
+	print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(0));
 
-    print(PRI1, "completionflow(): before obj.m_object02.runEventHandler(10);\n");
+    print(PRI1);
+    print(PRI1, "completionflow(): 3. before obj.m_object02.runEventHandler(10);\n");
     obj.m_object02.runEventHandler(10);
-    print(PRI2, "completionflow(): after obj.m_object02.runEventHandler(10);\n");
+    print(PRI1, "completionflow(): 3. after obj.m_object02.runEventHandler(10);\n");
 
-    print(PRI1, "completionflow(): before obj.m_object01.runEventHandler(10);\n");
+    print(PRI1);
+    print(PRI1, "completionflow(): 4. before obj.m_object02.runEventHandler(10);\n");
+    obj.m_object02.runEventHandler(10);
+    print(PRI2, "completionflow(): 4. after obj.m_object02.runEventHandler(10);\n");
+
+    print(PRI1);
+    print(PRI1, "completionflow(): 5. before obj.m_object01.runEventHandler(10);\n");
     obj.m_object01.runEventHandler(10);
-    print(PRI1, "completionflow(): after obj.m_object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow(): 5. after obj.m_object01.runEventHandler(10);\n");
 
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(0));
@@ -46,23 +60,7 @@ int main()
 {
     set_print_level(0x01);        // Use 0x03 to follow the flow in corolib
 
-    /**
-     *
-     * The following hangs:
-     * Example:
-       00: completionflow(): after obj.m_object02.runEventHandler(10);
-       00: completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));
-       00: completionflow(): before obj.m_object02.runEventHandler(10);
-       00: Class01::eventHandler[000000AD74B3F0C0, 0000026201BFC6C0](10)
-       00: Class01::eventHandler[000000AD74B3F0C0, 0000026201BFC6C0](10): om_async_operation_t->set_result(10);
-       00: completionflow(): before obj.m_object01.runEventHandler(10);
-       00: Class01::eventHandler[000000AD74B3E820, 0000026201BFC4F0](10)
-       00: Class01::eventHandler[000000AD74B3E820, 0000026201BFC4F0](10): om_async_operation_t->set_result(10);
-       00: completionflow(): after obj.m_object01.runEventHandler(10);
-       00: completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));
-       00: main(): int v = a.get_result();
-    */
-    for (int i = 0; i < 1; ++i)
+    for (int i = 0; i < 10; ++i)
     {
         print(PRI1, "main(): ---------- iteration %d ----------\n", i);
 

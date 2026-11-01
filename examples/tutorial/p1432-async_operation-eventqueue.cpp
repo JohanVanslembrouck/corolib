@@ -3,7 +3,7 @@
  * @brief
  *
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <corolib/print.h>
@@ -32,6 +32,7 @@ int main()
         Class01 object01(UseMode::USE_EVENTQUEUE, &eventQueue);
         Class01 object02(UseMode::USE_EVENTQUEUE, &eventQueue);
         Class1430 obj{ object01, object02 };
+		print(PRI1, "main(): async_task<int> a = obj.coroutine1();\n");
         async_task<int> a = obj.coroutine1();
 
         print(PRI1, "main(): completionflow();\n");

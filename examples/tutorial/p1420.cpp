@@ -6,7 +6,7 @@
  * coroutine3 calls coroutine4 twice.
  * coroutine5 starts an asynchronous operation on object01 and on object02 and awaits their completion.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <corolib/print.h>
@@ -28,17 +28,18 @@ async_task<int> Class1420::coroutine5()
     async_operation<int> op1 = m_object01.start_operation();
     print(PRI1, "coroutine5(): async_operation<int> op2 = object02.start_operation();\n");
     async_operation<int> op2 = m_object02.start_operation();
+
     print(PRI1, "coroutine5(): when_all wa(op1, op2);\n");
     when_all wa(op1, op2);
-    int v = 0;
     print(PRI1, "coroutine5(): co_await wa;\n");
     co_await wa;
+
 #if !CATCH_EXCEPTION_IN_COROUTINE5
     print(PRI1, "coroutine5(): int v = op1.get_result() + op2.get_result();\n");
-    v = op1.get_result() + op2.get_result();
+    int v = op1.get_result() + op2.get_result();
 #else
+    int v = 0;
     try {
-
         print(PRI1, "coroutine5(): int v = op1.get_result() + op2.get_result();\n");
         v = op1.get_result() + op2.get_result();
     }

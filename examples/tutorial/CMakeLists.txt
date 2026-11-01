@@ -195,8 +195,12 @@ add_executable(p1730-async_operation p1730-async_operation.cpp class01.cpp p1730
 target_link_libraries(p1730-async_operation corolib)
 add_executable(p1730a-async_operation p1730a-async_operation.cpp class01.cpp p1730a.cpp)
 target_link_libraries(p1730a-async_operation corolib)
+add_executable(p1732-async_operation-eventqueue p1732-async_operation-eventqueue.cpp class01.cpp p1730.cpp eventqueue.cpp)
+target_link_libraries(p1732-async_operation-eventqueue corolib)
 add_executable(p1734-async_operation-thread p1734-async_operation-thread.cpp class01.cpp p1730.cpp)
 target_link_libraries(p1734-async_operation-thread corolib)
+add_executable(p1735-async_operation-thread-queue p1735-async_operation-thread-queue.cpp class01.cpp p1730.cpp eventqueuethr.cpp)
+target_link_libraries(p1735-async_operation-thread-queue corolib)
 add_executable(p1736-async_operation-immediate p1736-async_operation-immediate.cpp class01.cpp p1730.cpp)
 target_link_libraries(p1736-async_operation-immediate corolib)
 

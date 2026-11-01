@@ -68,6 +68,7 @@ set -x
 
 ./p1430-async_operation
 ./p1430a-async_operation
+./p1431-async_operation-exception
 ./p1432-async_operation-eventqueue
 ./p1434-async_operation-thread
 ./p1435-async_operation-thread-queue
@@ -112,11 +113,13 @@ set -x
 ./p1700-async_operation
 ./p1700a-async_operation
 ./p1706-async_operation-immediate
-# FFS: async_task_base::destroy_coroutine_frame(): m_coro_handle.done() returned false:
 ./p1706a-async_operation-immediate
+
 ./p1730-async_operation
 ./p1730a-async_operation
+./p1732-async_operation-eventqueue
 ./p1734-async_operation-thread
+./p1735-async_operation-thread-queue
 ./p1736-async_operation-immediate
 
 ./p1800-async_operation

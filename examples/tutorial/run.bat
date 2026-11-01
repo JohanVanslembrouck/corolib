@@ -64,6 +64,7 @@ p1429-async_operation-thread-imm.exe
 
 p1430-async_operation.exe
 p1430a-async_operation.exe
+p1431-async_operation-exception.exe
 p1432-async_operation-eventqueue.exe
 p1434-async_operation-thread.exe
 p1435-async_operation-thread-queue.exe
@@ -108,11 +109,13 @@ p1610-async_operation.exe
 p1700-async_operation.exe
 p1700a-async_operation.exe
 p1706-async_operation-immediate.exe
-REM FFS: async_task_base::destroy_coroutine_frame(): m_coro_handle.done() returned false:
 p1706a-async_operation-immediate.exe
+
 p1730-async_operation.exe
 p1730a-async_operation.exe
+p1732-async_operation-eventqueue.exe
 p1734-async_operation-thread.exe
+p1735-async_operation-thread-queue.exe
 p1736-async_operation-immediate.exe
 
 p1800-async_operation.exe

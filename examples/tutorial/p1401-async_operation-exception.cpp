@@ -3,7 +3,7 @@
  * @brief
  * Starts an asynchronous operation that will be completed from the main() function.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <functional>
@@ -23,20 +23,20 @@ void completionflow()
     std::this_thread::sleep_for(std::chrono::milliseconds(0));
 
     try {
-        print(PRI1, "completionflow(): before eventHandler(-1);\n");
+        print(PRI1, "completionflow(): 1. before eventHandler(-1);\n");
         eventHandler(-1);
-        print(PRI1, "completionflow(): after eventHandler(-1);\n");
+        print(PRI1, "completionflow(): 1. after eventHandler(-1);\n");
     }
     catch(...) {
-        print(PRI1, "completionflow(): caught exception after eventHandler(-1);\n");
+        print(PRI1, "completionflow(): 1. caught exception after eventHandler(-1);\n");
     }
 
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(0));
 
-    print(PRI1, "completionflow(): before eventHandler(10);\n");
+    print(PRI1, "completionflow(): 2. before eventHandler(10);\n");
     eventHandler(10);
-    print(PRI1, "completionflow(): after eventHandler(10);\n");
+    print(PRI1, "completionflow(): 2. after eventHandler(10);\n");
 
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(0));

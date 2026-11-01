@@ -44,7 +44,6 @@ int main()
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
     print(PRI1);
-#if 0
 	reinit();
     {
         print(PRI1, "main(): async_ltask<void> a = coroutine0();\n");
@@ -61,7 +60,7 @@ int main()
         print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-#endif
+
     print(PRI1, "main(): return 0;\n");
     return 0;
 }

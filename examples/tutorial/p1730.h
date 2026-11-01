@@ -8,7 +8,7 @@
  * coroutine5a starts an asynchronous operation on object01 and awaits its completion.
  * coroutine5b starts an asynchronous operation on object02 and awaits its completion.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #ifndef _P1730_H_
