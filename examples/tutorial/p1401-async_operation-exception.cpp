@@ -10,11 +10,10 @@
 #include <thread>
 
 #include "p1400.h"
-#include "eventqueue.h"
 
 using namespace corolib;
 
-extern std::function<void(int)> eventHandler;       // p1400.cpp
+extern std::function<void(int)> eventHandler;
 
 void completionflow()
 {
@@ -22,14 +21,9 @@ void completionflow()
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(0));
 
-    try {
-        print(PRI1, "completionflow(): 1. before eventHandler(-1);\n");
-        eventHandler(-1);
-        print(PRI1, "completionflow(): 1. after eventHandler(-1);\n");
-    }
-    catch(...) {
-        print(PRI1, "completionflow(): 1. caught exception after eventHandler(-1);\n");
-    }
+    print(PRI1, "completionflow(): 1. before eventHandler(-1);\n");
+    eventHandler(-1);
+    print(PRI1, "completionflow(): 1. after eventHandler(-1);\n");
 
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(0));

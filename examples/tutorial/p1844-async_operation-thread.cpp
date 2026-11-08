@@ -1,19 +1,19 @@
 /**
  * @file p1844-async_operation-thread.cpp
  * @brief
+ * 
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
-#include <functional>
 #include <thread>
-
-#include "p1840.h"
-#include "eventqueue.h"
 
 #include <corolib/when_all.h>
 
 using namespace corolib;
+
+#include "p1840.h"
+#include "class00.h"
 
 async_task<void> completionflow(async_task<int>& a1, async_task<int>& a2, async_task<int>& a3)
 {
@@ -48,6 +48,8 @@ int main()
     useMode = UseMode::USE_THREAD;
 
     set_priority(0x01);        // Use 0x03 to follow the flow in corolib
+
+    delay = 0;
 
     for (int i = 0; i < 10; ++i)
     {

@@ -3,15 +3,13 @@
  * @brief
  * Starts an asynchronous operation that will be completed from the main() function.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <functional>
 #include <thread>
 
 #include "p1700.h"
-
-using namespace corolib;
 
 extern std::function<void(int)> eventHandler;       // p1700.cpp
 

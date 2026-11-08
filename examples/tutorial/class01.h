@@ -13,7 +13,6 @@
 
 #include <corolib/commservice.h>
 #include <corolib/async_operation.h>
-#include <corolib/semaphore.h>
 #include <corolib/threadawaker.h>
 
 #include "eventqueue.h"

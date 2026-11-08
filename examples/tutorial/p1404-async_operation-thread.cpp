@@ -3,15 +3,18 @@
  * @brief
  * Starts an asynchronous operation that will be completed after one second from a thread.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <thread>
 
-#include "p1400.h"
-#include "eventqueue.h"
+#include <corolib/threadawaker.h>
 
 using namespace corolib;
+
+#include "p1400.h"
+
+extern ThreadAwaker* awaker;
 
 void completionflow()
 {

@@ -2,6 +2,7 @@
  * @file p1820.h
  * @brief
  *
+ * 
  * @author Johan Vanslembrouck
  */
 
@@ -10,7 +11,6 @@
 
 #include <optional>
 
-#include <corolib/print.h>
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
 
@@ -19,8 +19,10 @@
 using namespace corolib;
 
 extern UseMode useMode;
+
 extern async_operation<std::optional<int>> op;
 void start_operation_impl(async_operation<std::optional<int>>& op);
+
 async_task<int> coroutine1();
 
 #endif

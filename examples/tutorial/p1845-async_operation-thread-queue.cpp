@@ -2,19 +2,18 @@
  * @file p1845-async_operation-thread-queue.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * 
+ * @author Johan Vanslembrouck
  */
-
-#include <functional>
-
-#include "p1840.h"
-#include "eventqueuethr.h"
 
 #include <corolib/when_all.h>
 
 using namespace corolib;
 
-extern EventQueueThrFunctionVoidInt eventQueueThr;                       // p1840.cpp
+#include "p1840.h"
+#include "eventqueuethr.h"
+
+extern EventQueueThrFunctionVoidInt eventQueueThr;
 
 async_task<void> completionflow(async_task<int>& a1, async_task<int>& a2, async_task<int>& a3)
 {

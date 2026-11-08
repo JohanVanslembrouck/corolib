@@ -8,7 +8,7 @@
  * coroutine5a starts twice two asynchronous operations on object01 and awaits their completion.
  * coroutine5b starts twice two asynchronous operations on object02 and awaits their completion.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <corolib/print.h>

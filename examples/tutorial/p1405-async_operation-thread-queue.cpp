@@ -9,9 +9,9 @@
 #include "p1400.h"
 #include "eventqueuethr.h"
 
-extern EventQueueThrFunctionVoidInt eventQueueThr;      // p1400.cpp
-
 using namespace corolib;
+
+extern EventQueueThrFunctionVoidInt eventQueueThr;
 
 void completionflow()
 {

@@ -3,17 +3,15 @@
  * @brief
  * Starts an asynchronous operation that will be completed from the main() function.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
-
-#include <functional>
 
 #include "p1800.h"
 #include "eventqueuethr.h"
 
 using namespace corolib;
 
-extern EventQueueThrFunctionVoidInt eventQueueThr;                       // p1800.cpp
+extern EventQueueThrFunctionVoidInt eventQueueThr;
 
 void completionflow()
 {

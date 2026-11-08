@@ -1,0 +1,76 @@
+/**
+ * @file p1731-async_operation-exception.cpp
+ * @brief
+ *
+ * @author Johan Vanslembrouck
+ */
+
+#include <corolib/print.h>
+#include <corolib/async_task.h>
+
+using namespace corolib;
+
+#include "p1730.h"
+
+void completionflow(Class1730& obj)
+{
+    // Begin manual event completion
+    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(0));
+
+    print(PRI1, "completionflow(): 1a. before obj.m_object01.runEventHandler(10);\n");
+    obj.m_object01.runEventHandler(10);
+    print(PRI1, "completionflow(): 1a. after obj.m_object01.runEventHandler(10);\n");
+
+    print(PRI1, "completionflow(): 1b. before obj.m_object02.runEventHandler(-1);\n");
+    obj.m_object02.runEventHandler(-1);
+    print(PRI1, "completionflow(): 1b. after obj.m_object02.runEventHandler(-1);\n");
+
+    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(0));
+
+    print(PRI1, "completionflow(): 2a. before obj.m_object02.runEventHandler(10);\n");
+    obj.m_object02.runEventHandler(10);
+    print(PRI1, "completionflow(): 2a. after obj.m_object02.runEventHandler(10);\n");
+
+    print(PRI1, "completionflow(): 2b. before obj.m_object01.runEventHandler(10);\n");
+    obj.m_object01.runEventHandler(10);
+    print(PRI1, "completionflow(): 2b. after obj.m_object01.runEventHandler(10);\n");
+
+    print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(0));
+    // End manual event completion
+}
+
+int main()
+{
+    set_print_level(0x01);        // Use 0x03 to follow the flow in corolib
+
+    for (int i = 0; i < 1; ++i)
+    {
+        print(PRI1, "main(): ---------- iteration %d ----------\n", i);
+
+        Class01 object01;
+        Class01 object02;
+        Class1730 obj{ object01, object02 };
+        print(PRI1, "main(): async_ltask<int> a = obj.coroutine1();\n");
+        async_ltask<int> a = obj.coroutine1();
+		
+        print(PRI1, "main(): a.start();\n");
+        a.start();
+
+        print(PRI1, "main(): completionflow(obj);\n");
+        completionflow(obj);
+
+        print(PRI1, "main(): int v = a.get_result(false);\n");
+        int v = a.get_result(false); // otherwise, hangs on async_task_base::get_result(): m_coro_handle.promise().m_sema.wait()
+                                     // application is single-threaded and result is not known here
+        print(PRI1, "main(): v = %d\n", v);
+
+        print(PRI1, "main(): std::this_thread::sleep_for(std::chrono::milliseconds(100));\n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+    print(PRI1, "main(): return 0;\n");
+    return 0;
+}

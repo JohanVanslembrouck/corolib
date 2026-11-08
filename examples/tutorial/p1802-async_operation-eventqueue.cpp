@@ -3,10 +3,9 @@
  * @brief
  * Starts an asynchronous operation that will be completed from the main() function.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
-#include <functional>
 #include <thread>
 
 #include "p1800.h"
@@ -14,7 +13,7 @@
 
 using namespace corolib;
 
-extern EventQueueFunctionVoidInt eventQueue;                       // p1800.cpp
+extern EventQueueFunctionVoidInt eventQueue;
 
 void completionflow()
 {

@@ -41,6 +41,8 @@ p1220-mini1-oneway_task-thread.exe
 REM p1300-future.exe
 
 p1400-async_operation.exe
+p1401-async_operation-exception.exe
+p1401x-async_operation-exception.exe
 p1402-async_operation-eventqueue.exe
 p1404-async_operation-thread.exe
 p1405-async_operation-thread-queue.exe
@@ -48,6 +50,7 @@ p1406-async_operation-immediate.exe
 
 p1410-async_operation.exe
 p1411-async_operation-exception.exe
+p1411x-async_operation-exception.exe
 p1412-async_operation-eventqueue.exe
 p1414-async_operation-thread.exe
 p1415-async_operation-thread-queue.exe
@@ -55,6 +58,7 @@ p1416-async_operation-immediate.exe
 
 p1420-async_operation.exe
 p1421-async_operation-exception.exe
+p1421x-async_operation-exception.exe
 p1422-async_operation-eventqueue.exe
 p1424-async_operation-thread.exe
 p1425-async_operation-thread-queue.exe
@@ -65,6 +69,9 @@ p1429-async_operation-thread-imm.exe
 p1430-async_operation.exe
 p1430a-async_operation.exe
 p1431-async_operation-exception.exe
+p1431x-async_operation-exception.exe
+p1431a-async_operation-exception.exe
+p1431ax-async_operation-exception.exe
 p1432-async_operation-eventqueue.exe
 p1434-async_operation-thread.exe
 p1435-async_operation-thread-queue.exe
@@ -108,11 +115,15 @@ p1610-async_operation.exe
 
 p1700-async_operation.exe
 p1700a-async_operation.exe
+p1701-async_operation-exception.exe
+p1701x-async_operation-exception.exe
 p1706-async_operation-immediate.exe
 p1706a-async_operation-immediate.exe
 
 p1730-async_operation.exe
 p1730a-async_operation.exe
+p1731-async_operation-exception.exe
+p1731x-async_operation-exception.exe
 p1732-async_operation-eventqueue.exe
 p1734-async_operation-thread.exe
 p1735-async_operation-thread-queue.exe
@@ -131,10 +142,12 @@ p1815-async_operation-thread-queue.exe
 p1820-async_operation.exe
 p1822-async_operation-eventqueue.exe
 p1824-async_operation-thread.exe
+p1825-async_operation-thread-queue.exe
 
 p1830-async_operation.exe
 p1832-async_operation-eventqueue.exe
 p1834-async_operation-thread.exe
+p1835-async_operation-thread-queue.exe
 
 p1840-async_operation.exe
 p1842-async_operation-eventqueue.exe

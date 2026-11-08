@@ -8,15 +8,11 @@
 #ifndef _P1700_H_
 #define _P1700_H_
 
-#include <corolib/print.h>
 #include <corolib/async_task.h>
-#include <corolib/async_operation.h>
-
-#include "use_mode.h"
 
 using namespace corolib;
 
-void start_operation_impl(UseMode useMode, async_operation<int>& op);
+#include "use_mode.h"
 
 extern UseMode useMode;
 

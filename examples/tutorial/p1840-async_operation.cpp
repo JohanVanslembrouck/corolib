@@ -2,17 +2,17 @@
  * @file p1840-async_operation.cpp
  * @brief
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * 
+ * @author Johan Vanslembrouck
  */
 
-#include <functional>
 #include <thread>
-
-#include "p1840.h"
 
 #include <corolib/when_all.h>
 
 using namespace corolib;
+
+#include "p1840.h"
 
 async_task<void> completionflow(async_task<int>& a1, async_task<int>& a2, async_task<int>& a3)
 {

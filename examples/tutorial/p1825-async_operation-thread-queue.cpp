@@ -6,14 +6,12 @@
  * @author Johan Vanslembrouck
  */
 
-#include <functional>
-
 #include "p1820.h"
 #include "eventqueuethr.h"
 
 using namespace corolib;
 
-extern EventQueueThrFunctionVoidInt eventQueueThr;                       // p1820.cpp
+extern EventQueueThrFunctionVoidInt eventQueueThr;
 
 void completionflow()
 {

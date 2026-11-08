@@ -25,8 +25,19 @@ async_task<int> Class1430a::coroutine5a()
 {
     print(PRI1, "coroutine5a(): async_operation<int> op = m_object01.start_operation();\n");
     async_operation<int> op = m_object01.start_operation();
-    print(PRI1, "coroutine5a(): int v = co_await op;\n");
-    int v = co_await op;
+
+    int v = 0;
+    try {
+        print(PRI1, "coroutine5a(): v = co_await op;\n");
+        v = co_await op;
+    }
+    catch (const std::system_error& ex) {
+        print(PRI1, "coroutine5a(): v = co_await op; raised system_error exception!\n");
+    }
+    catch (...) {
+        print(PRI1, "coroutine5a(): v = co_await op; raised ... exception!\n");
+    }
+
     print(PRI1, "coroutine5a(): co_return v+1 = %d;\n", v + 1);
     co_return v + 1;
 }
@@ -35,8 +46,19 @@ async_task<int> Class1430a::coroutine5b()
 {
     print(PRI1, "coroutine5b(): async_operation<int> op = m_object02.start_operation();\n");
     async_operation<int> op = m_object02.start_operation();
-    print(PRI1, "coroutine5b(): int v = co_await op;\n");
-    int v = co_await op;
+
+    int v = 0;
+    try {
+        print(PRI1, "coroutine5b(): v = co_await op;\n");
+        v = co_await op;
+    }
+    catch (const std::system_error& ex) {
+        print(PRI1, "coroutine5b(): v = co_await op; raised system_error exception!\n");
+    }
+    catch (...) {
+        print(PRI1, "coroutine5b(): v = co_await op; raised ... exception!\n");
+    }
+
     print(PRI1, "coroutine5b(): co_return v+1 = %d;\n", v + 1);
     co_return v + 1;
 }

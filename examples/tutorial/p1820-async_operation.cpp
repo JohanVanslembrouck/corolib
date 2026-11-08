@@ -3,10 +3,9 @@
  * @brief
  * Starts an asynchronous operation that will be completed from the main() function.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
-#include <functional>
 #include <thread>
 
 #include "p1820.h"
@@ -25,7 +24,7 @@ void completionflow()
 
         print(PRI1, "completionflow(): before op.set_result_and_complete(10);\n");
         op.set_result_and_complete(10);
-        print(PRI1, "completionflow(): afterop.set_result_and_complete(10)\n");
+        print(PRI1, "completionflow(): after op.set_result_and_complete(10)\n");
     }
 
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");

@@ -3,14 +3,13 @@
  * @brief
  * Starts an asynchronous operation that will be completed from the main() function.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
-#include <functional>
 #include <thread>
 
 #include "p1800.h"
-#include "eventqueue.h"
+#include "class00.h"
 
 using namespace corolib;
 
@@ -42,6 +41,8 @@ int main()
     useMode = UseMode::USE_THREAD;
 
     set_priority(0x01);                     // Use 0x03 to follow the flow in corolib
+
+    delay = 10;
 
     for (int i = 0; i < 1; ++i)
     {

@@ -13,7 +13,7 @@
 
 using namespace corolib;
 
-extern std::function<void(int)> eventHandler;       // p1700.cpp
+extern std::function<void(int)> eventHandler;
 
 void completionflow()
 {
@@ -21,16 +21,16 @@ void completionflow()
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(0));
 
-    print(PRI1, "completionflow(): before eventHandler(10);\n");
+    print(PRI1, "completionflow(): 1. before eventHandler(10);\n");
     eventHandler(10);
-    print(PRI1, "completionflow(): after eventHandler(10);\n");
+    print(PRI1, "completionflow(): 1. after eventHandler(10);\n");
 
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds());\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(0));
 
-    print(PRI1, "completionflow(): before eventHandler(10);\n");
+    print(PRI1, "completionflow(): 2. before eventHandler(10);\n");
     eventHandler(10);
-    print(PRI1, "completionflow(): after eventHandler(10);\n");
+    print(PRI1, "completionflow(): 2. after eventHandler(10);\n");
 
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(0));

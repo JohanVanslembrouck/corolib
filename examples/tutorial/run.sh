@@ -45,6 +45,8 @@ set -x
 # ./p1300-future
 
 ./p1400-async_operation
+./p1401-async_operation-exception
+./p1401x-async_operation-exception
 ./p1402-async_operation-eventqueue
 ./p1404-async_operation-thread
 ./p1405-async_operation-thread-queue
@@ -52,6 +54,7 @@ set -x
 
 ./p1410-async_operation
 ./p1411-async_operation-exception
+./p1411x-async_operation-exception
 ./p1412-async_operation-eventqueue
 ./p1414-async_operation-thread
 ./p1415-async_operation-thread-queue
@@ -59,6 +62,7 @@ set -x
 
 ./p1420-async_operation
 ./p1421-async_operation-exception
+./p1421x-async_operation-exception
 ./p1422-async_operation-eventqueue
 ./p1424-async_operation-thread
 ./p1425-async_operation-thread-queue
@@ -69,6 +73,9 @@ set -x
 ./p1430-async_operation
 ./p1430a-async_operation
 ./p1431-async_operation-exception
+./p1431x-async_operation-exception
+./p1431a-async_operation-exception
+./p1431ax-async_operation-exception
 ./p1432-async_operation-eventqueue
 ./p1434-async_operation-thread
 ./p1435-async_operation-thread-queue
@@ -112,11 +119,15 @@ set -x
 
 ./p1700-async_operation
 ./p1700a-async_operation
+./p1701-async_operation-exception
+./p1701x-async_operation-exception
 ./p1706-async_operation-immediate
 ./p1706a-async_operation-immediate
 
 ./p1730-async_operation
 ./p1730a-async_operation
+./p1731-async_operation-exception
+./p1731x-async_operation-exception
 ./p1732-async_operation-eventqueue
 ./p1734-async_operation-thread
 ./p1735-async_operation-thread-queue

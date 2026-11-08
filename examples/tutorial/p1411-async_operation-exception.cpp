@@ -19,15 +19,10 @@ void completionflow(Class1410& obj)
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(0));
 
-    try {
-        print(PRI1, "completionflow(): 1. before obj.m_object01.runEventHandler(-1);\n");
-        obj.m_object01.runEventHandler(-1);
-        print(PRI1, "completionflow(): 1. after obj.m_object01.runEventHandler(-1);\n");
-    }
-    catch (...) {
-        print(PRI1, "completionflow(): 1. caught exception after object01.runEventHandler(-1);\n");
-    }
-
+    print(PRI1, "completionflow(): 1. before obj.m_object01.runEventHandler(-1);\n");
+    obj.m_object01.runEventHandler(-1);
+    print(PRI1, "completionflow(): 1. after obj.m_object01.runEventHandler(-1);\n");
+   
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(0));
 

@@ -7,7 +7,8 @@
  * coroutine4 calls coroutine5a and coroutine5b and awaits the completion of both coroutines.
  * coroutine5a starts an asynchronous operation on object01 and awaits its completion.
  * coroutine5b starts an asynchronous operation on object02 and awaits its completion.
- *
+ * coroutine5a and coroutine5b catch exceptions.
+ * 
  * @author Johan Vanslembrouck
  */
 
@@ -20,19 +21,11 @@ using namespace corolib;
 
 #include "p1430.h"
 
-#define CATCH_EXCEPTION_IN_COROUTINE5A 1
-#define CATCH_EXCEPTION_IN_COROUTINE5B 1
-#define CATCH_EXCEPTION_IN_COROUTINE4 0
-
 async_task<int> Class1430::coroutine5a()
 {
     print(PRI1, "coroutine5a(): async_operation<int> op = m_object01.start_operation();\n");
     async_operation<int> op = m_object01.start_operation();
     
-#if !CATCH_EXCEPTION_IN_COROUTINE5A
-    print(PRI1, "coroutine5a(): int v = co_await op;\n");
-    int v = co_await op;
-#else
     int v = 0;
     try {
         print(PRI1, "coroutine5a(): v = co_await op;\n");
@@ -44,7 +37,6 @@ async_task<int> Class1430::coroutine5a()
     catch (...) {
         print(PRI1, "coroutine5a(): v = co_await op; raised ... exception!\n");
     }
-#endif
     
     print(PRI1, "coroutine5a(): co_return v+1 = %d;\n", v + 1);
     co_return v + 1;
@@ -55,10 +47,6 @@ async_task<int> Class1430::coroutine5b()
     print(PRI1, "coroutine5b(): async_operation<int> op = m_object02.start_operation();\n");
     async_operation<int> op = m_object02.start_operation();
 
-#if !CATCH_EXCEPTION_IN_COROUTINE5B
-    print(PRI1, "coroutine5b(): int v = co_await op;\n");
-    int v = co_await op;
-#else
     int v = 0;
     try {
         print(PRI1, "coroutine5b(): v = co_await op;\n");
@@ -70,7 +58,6 @@ async_task<int> Class1430::coroutine5b()
     catch (...) {
         print(PRI1, "coroutine5b(): v = co_await op; raised ... exception!\n");
     }
-#endif
 
     print(PRI1, "coroutine5b(): co_return v+1 = %d;\n", v + 1);
     co_return v + 1;
@@ -88,22 +75,9 @@ async_task<int> Class1430::coroutine4()
     print(PRI1, "coroutine4(): co_await wa;\n");
     co_await wa;
 	
-#if !CATCH_EXCEPTION_IN_COROUTINE4
     print(PRI1, "coroutine4(): int v = a.get_result() + b.get_result();\n");
     int v = a.get_result() + b.get_result();
-#else
-    int v = 0;
-    try {
-        print(PRI1, "coroutine4(): int v = a.get_result() + b.get_result();\n");
-        v = a.get_result() + b.get_result();
-    }
-    catch (const std::system_error& ex) {
-        print(PRI1, "coroutine4(): v = a.get_result() + b.get_result(); raised system_error exception!\n");
-    }
-    catch (...) {
-        print(PRI1, "coroutine4(): v = a.get_result() + b.get_result(); raised ... exception!\n");
-    }
-#endif
+
     print(PRI1, "coroutine4(): co_return v+1 = %d;\n", v + 1);
     co_return v + 1;
 }

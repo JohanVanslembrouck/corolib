@@ -3,7 +3,7 @@
  * @brief
  *
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <corolib/print.h>
@@ -11,7 +11,6 @@
 
 using namespace corolib;
 
-#include "class01.h"
 #include "p1430.h"
 
 void completionflow(ThreadAwaker* awaker)

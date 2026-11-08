@@ -3,7 +3,7 @@
  * @brief
  * Starts an asynchronous operation that will be completed from the main() function running the event queue.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <thread>
@@ -13,7 +13,7 @@
 
 using namespace corolib;
 
-extern EventQueueFunctionVoidInt eventQueue;           // p1400.cpp
+extern EventQueueFunctionVoidInt eventQueue;
 
 void completionflow()
 {

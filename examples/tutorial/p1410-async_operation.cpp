@@ -3,7 +3,7 @@
  * @author
  *
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <corolib/print.h>
@@ -11,7 +11,7 @@
 
 using namespace corolib;
 
-#include "p1410.H"
+#include "p1410.h"
 
 void completionflow(Class1410& obj)
 {
@@ -19,16 +19,16 @@ void completionflow(Class1410& obj)
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(0));
 
-    print(PRI1, "completionflow(): before obj.m_object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow(): 1. before obj.m_object01.runEventHandler(10);\n");
     obj.m_object01.runEventHandler(10);
-    print(PRI1, "completionflow(): after obj.m_object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow(): 1. after obj.m_object01.runEventHandler(10);\n");
 
     print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(0));
 
-    print(PRI1, "completionflow(): before obj.m_object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow(): 2. before obj.m_object01.runEventHandler(10);\n");
     obj.m_object01.runEventHandler(10);
-    print(PRI1, "completionflow(): after obj.m_object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow(): 2. after obj.m_object01.runEventHandler(10);\n");
     // End manual event completion
 }
 

@@ -8,65 +8,10 @@
  * @author Johan Vanslembrouck
  */
 
-#include <functional>
 #include <corolib/when_all.h>
 
 #include "p1800.h"
-#include "eventqueue.h"
-#include "eventqueuethr.h"
-
-using namespace corolib;
-
-EventQueueFunctionVoidInt eventQueue;
-EventQueueThrFunctionVoidInt eventQueueThr;
-
-UseMode useMode;
-
-/**
- * @brief async_op
- * 
- */
-void async_op(std::function<void(int)>&& completionHandler)
-{
-    switch (useMode)
-    {
-    case UseMode::USE_NONE:
-        // Nothing to be done here: completionHandler should be called "manually" by the application
-        break;
-    case UseMode::USE_EVENTQUEUE:
-        eventQueue.push(std::move(completionHandler));
-        break;
-    case UseMode::USE_THREAD:
-    {
-        std::thread thread1([completionHandler]() {
-            print(PRI1, "async_op(): thread1: completionHandler(10);\n");
-            completionHandler(10);
-            print(PRI1, "async_op(): thread1: return;\n");
-            });
-        thread1.detach();
-        break;
-    }
-    case UseMode::USE_THREAD_QUEUE:
-    {
-        eventQueueThr.incrementPushCounter();
-
-        std::thread thread1([completionHandler]() {
-            print(PRI1, "async_op(): thread1: std::this_thread::sleep_for(std::chrono::milliseconds(1000));\n");
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-
-            std::function<void(int)> completionHandler1 = completionHandler;
-            print(PRI1, "async_op(): thread1: eventQueueThr.push(std::move(completionHandler1));\n");
-            eventQueueThr.push(std::move(completionHandler1));
-            print(PRI1, "async_op(): thread1: return;\n");
-            });
-        thread1.detach();
-        break;
-    }
-    case UseMode::USE_IMMEDIATE_COMPLETION:
-        completionHandler(10);
-        break;
-    }
-}
+#include "class00.h"
 
 /**
  * @brief start_operation_impl simulates starting an asynchronous operation
@@ -75,6 +20,8 @@ void async_op(std::function<void(int)>&& completionHandler)
  */
 void start_operation_impl(async_operation_rmc<int>& op)
 {
+    delay = 0;
+
     print(PRI1, "start_operation_impl()\n");
     async_op(
         [&op](int i)
