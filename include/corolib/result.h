@@ -56,12 +56,12 @@ namespace corolib
             , m_ready{ completion_status::INITIAL }
             , m_wait_for_semaphore_release{ false }
         {
-            clprint(PRI2, "%p: result_base_t::result_base_t();\n", this);
+            clprint(PRI2, "%p: result_base_t::result_base_t()\n", this);
         }
 
         ~result_base_t()
         {
-            clprint(PRI2, "%p: result_base_t::~result_base_t();\n", this);
+            clprint(PRI2, "%p: result_base_t::~result_base_t()\n", this);
 
             m_exception = nullptr;
             m_ready = completion_status::INITIAL;
@@ -78,7 +78,7 @@ namespace corolib
 #endif
             , m_wait_for_semaphore_release{ other.m_wait_for_semaphore_release }
         {
-            clprint(PRI2, "%p: result_base_t::result_base_t(result_base_t&& other);\n", this);
+            clprint(PRI2, "%p: result_base_t::result_base_t(result_base_t&& other)\n", this);
 #if USE_IN_MT_APPS
             m_ready.store(other.m_ready.load());
 #endif
@@ -95,7 +95,7 @@ namespace corolib
 #if USE_RESULT_FROM_COROUTINE_OBJECT
         result_base_t& operator = (result_base_t&& other) noexcept
         {
-            clprint(PRI2, "%p: result_base_t::operator = (result_base_t&& other);\n", this);
+            clprint(PRI2, "%p: result_base_t::operator = (result_base_t&& other)\n", this);
             m_exception = other.m_exception;
 #if USE_IN_MT_APPS
             m_ready.store(other.m_ready.load());
@@ -116,7 +116,7 @@ namespace corolib
         // and as an auxiliary function also from result_t<TYPE>::set_value(const TYPE& value)
         void set_value()
         {
-            clprint(PRI2, "%p: result_base_t::set_value();\n", this);
+            clprint(PRI2, "%p: result_base_t::set_value()\n", this);
 
 #if USE_IN_MT_APPS
             completion_status expected = completion_status::INITIAL;
@@ -142,6 +142,7 @@ namespace corolib
         // and from promise_task_type<void>::unhandled_exception().
         void set_exception(std::exception_ptr exception)
         {
+            clprint(PRI1, "%p: result_base_t::set_exception(std::exception_ptr exception)\n", this);
             m_exception = exception;
 #if USE_IN_MT_APPS
             completion_status expected = completion_status::INITIAL;
@@ -232,12 +233,12 @@ namespace corolib
             : result_base_t{}
             , m_value{}
         {
-            clprint(PRI2, "%p: result_t<TYPE>::result_t();\n", this);
+            clprint(PRI2, "%p: result_t<TYPE>::result_t()\n", this);
         }
 
         ~result_t()
         {
-            clprint(PRI2, "%p: result_t<TYPE>::~result_t();\n", this);
+            clprint(PRI2, "%p: result_t<TYPE>::~result_t()\n", this);
             m_value = {};
         }
 
@@ -248,7 +249,7 @@ namespace corolib
             : result_base_t{ std::move(other) }
             , m_value{ other.value }
         {
-            clprint(PRI2, "%p: result_t<TYPE>::result_t(result_t&& other);\n", this);
+            clprint(PRI2, "%p: result_t<TYPE>::result_t(result_t&& other)\n", this);
         }
 #else
         result_t(result_t&& other) = delete;
@@ -259,7 +260,7 @@ namespace corolib
 #if USE_RESULT_FROM_COROUTINE_OBJECT
         result_t& operator = (result_t&& other) noexcept
         {
-            clprint(PRI2, "%p: result_t<TYPE>::operator = (result_t&& other);\n", this);
+            clprint(PRI2, "%p: result_t<TYPE>::operator = (result_t&& other)\n", this);
             result_base_t::operator=(std::move(other));
             m_value = other.m_value;
             return *this;
@@ -271,7 +272,7 @@ namespace corolib
         // set_value(const TYPE& value) is called from promise_task_type<TYPE>::return_value(TYPE v)
         void set_value(const TYPE& value)
         {
-            clprint(PRI2, "%p: result_t<TYPE>::set_value(const TYPE& value);\n", this);
+            clprint(PRI2, "%p: result_t<TYPE>::set_value(const TYPE& value)\n", this);
             m_value = value;
             result_base_t::set_value();
         }

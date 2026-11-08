@@ -380,6 +380,7 @@ namespace corolib
                 m_coroutine_object->m_result.set_exception(std::current_exception());
             }
 #endif
+            inform_interested_parties();
         }
 
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
@@ -1107,6 +1108,7 @@ namespace corolib
                 m_coroutine_object->m_result.set_exception(std::current_exception());
             }
 #endif
+            inform_interested_parties();
         }
 
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
@@ -1231,6 +1233,12 @@ namespace corolib
                 void await_resume()
                 {
                     clprint(PRI2, "%p: async_task<void>::await_resume()\n", this);
+                    // Could 'retrieve' an exception
+#if !USE_RESULT_FROM_COROUTINE_OBJECT
+                    m_async_task.m_coro_handle.promise().get_result_promise();
+#else
+                    m_async_task.m_result.retrieve_result();
+#endif
                 }
 
             private:
@@ -1352,6 +1360,12 @@ namespace corolib
                 void await_resume()
                 {
                     clprint(PRI2, "%p: async_ltask<void>::await_resume()\n", this);
+                    // Could 'retrieve' an exception
+#if !USE_RESULT_FROM_COROUTINE_OBJECT
+                    m_async_ltask.m_coro_handle.promise().get_result_promise();
+#else
+                    m_async_ltask.m_result.retrieve_result();
+#endif
                 }
 
             private:
