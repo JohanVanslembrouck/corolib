@@ -14,6 +14,7 @@ set(target_sources
     p1440.cpp
     p1450.cpp
     p1460.cpp
+    class00.cpp
     class01.cpp
     class02.cpp
     eventqueue.cpp
