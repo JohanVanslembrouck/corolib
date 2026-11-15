@@ -50,9 +50,6 @@ namespace corolib
         int nr_currently_present_final_awaiters = 0;
         int nr_max_simultaneously_present_final_awaiters = 0;
 
-        int nr_final_awaiters_await_suspend_returning_true = 0;
-        int nr_final_awaiters_await_suspend_returning_false = 0;
-
         static void setDelay(int delay) { m_delay = delay; }
         static int m_delay;
     };
