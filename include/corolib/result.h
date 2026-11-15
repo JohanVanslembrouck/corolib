@@ -269,7 +269,7 @@ namespace corolib
         result_t& operator = (result_t&& other) noexcept = delete;
 #endif
 
-        // set_value(const TYPE& value) is called from promise_task_type<TYPE>::return_value(TYPE v)
+        // set_value(const TYPE& value) is called from promise_task_type<TYPE>::return_value(const TYPE& v)
         void set_value(const TYPE& value)
         {
             clprint(PRI2, "%p: result_t<TYPE>::set_value(const TYPE& value)\n", this);
@@ -277,17 +277,37 @@ namespace corolib
             result_base_t::set_value();
         }
 
+        void set_value(TYPE&& value)
+        {
+            clprint(PRI2, "%p: result_t<TYPE>::set_value(TYPE&& value)\n", this);
+            m_value = std::move(value);
+            result_base_t::set_value();
+        }
+
         TYPE retrieve_result()
         {
             if (m_ready == completion_status::INITIAL)
-                clprint(PRI1, "%p: result_t<TYPE>::retrieve_result(): m_ready == INITIAL!!!\n", this);
+                clprint(PRI1, "%p: TYPE result_t<TYPE>::retrieve_result(): m_ready == INITIAL!!!\n", this);
             if (m_exception != nullptr)
             {
-                clprint(PRI1, "%p: result_t<TYPE>::retrieve_result(): std::rethrow_exception(m_exception);\n", this);
+                clprint(PRI1, "%p: TYPE result_t<TYPE>::retrieve_result(): std::rethrow_exception(m_exception);\n", this);
                 std::rethrow_exception(m_exception);
             }
-            clprint(PRI2, "%p: result_t<TYPE>::retrieve_result(): return m_value;\n", this);
+            clprint(PRI2, "%p: TYPE result_t<TYPE>::retrieve_result(): return m_value;\n", this);
             return m_value;
+        }
+
+        TYPE&& retrieve_result_move()
+        {
+            if (m_ready == completion_status::INITIAL)
+                clprint(PRI1, "%p: TYPE&& result_t<TYPE>::retrieve_result(): m_ready == INITIAL!!!\n", this);
+            if (m_exception != nullptr)
+            {
+                clprint(PRI1, "%p: TYPE&& result_t<TYPE>::retrieve_result(): std::rethrow_exception(m_exception);\n", this);
+                std::rethrow_exception(m_exception);
+            }
+            clprint(PRI2, "%p: TYPE&& result_t<TYPE>::retrieve_result(): return m_value;\n", this);
+            return std::move(m_value);
         }
 
     private:

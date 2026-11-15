@@ -21,46 +21,90 @@ namespace corolib
     struct async_operation_access
     {
         template<typename TYPE>
-        static void completionHandler(async_operation_base* om_async_operation, TYPE in)
+        static void completionHandler(async_operation_base* om_async_operation, const TYPE& in)
         {
-            clprint(PRI2, "async_operation_access::completionHandler(om_async_operation = %p)\n", om_async_operation);
+            clprint(PRI2, "async_operation_access::completionHandler(om_async_operation = %p, const TYPE& )\n", om_async_operation);
 
             async_operation<TYPE>* om_async_operation_t =
                 static_cast<async_operation<TYPE>*>(om_async_operation);
 
             if (om_async_operation_t)
             {
-                clprint(PRI2, "async_operation_access::completionHandler(om_async_operation = %p): om_async_operation_t->set_result(in)\n", om_async_operation_t);
+                clprint(PRI2, "async_operation_access::completionHandler(om_async_operation = %p, const TYPE& ): om_async_operation_t->set_result(in)\n", om_async_operation_t);
                 om_async_operation_t->set_result(in);
-                clprint(PRI2, "async_operation_access::completionHandler(om_async_operation = %p): om_async_operation_t->completed()\n", om_async_operation_t);
+                clprint(PRI2, "async_operation_access::completionHandler(om_async_operation = %p, const TYPE& ): om_async_operation_t->completed()\n", om_async_operation_t);
                 om_async_operation_t->completed();
             }
             else
             {
                 // This can occur when the async_operation_base has gone out of scope.
-                clprint(PRI1, "async_operation_access::completionHandler(om_async_operation = %p): Warning: om_async_operation_t == nullptr\n", om_async_operation_t);
+                clprint(PRI1, "async_operation_access::completionHandler(om_async_operation = %p, const TYPE& ): Warning: om_async_operation_t == nullptr\n", om_async_operation_t);
             }
         }
 
         template<typename TYPE>
-        static void completionHandler_rmc(async_operation_base* om_async_operation, TYPE in)
+        static void completionHandler(async_operation_base* om_async_operation, TYPE&& in)
         {
-            clprint(PRI2, "async_operation_access::completionHandler_rmc(om_async_operation = %p)\n", om_async_operation);
+            clprint(PRI2, "async_operation_access::completionHandler(om_async_operation = %p, TYPE&& )\n", om_async_operation);
+
+            async_operation<TYPE>* om_async_operation_t =
+                static_cast<async_operation<TYPE>*>(om_async_operation);
+
+            if (om_async_operation_t)
+            {
+                clprint(PRI2, "async_operation_access::completionHandler(om_async_operation = %p, TYPE&& ): om_async_operation_t->set_result(in)\n", om_async_operation_t);
+                om_async_operation_t->set_result(std::forward<TYPE>(in));
+                clprint(PRI2, "async_operation_access::completionHandler(om_async_operation = %p, TYPE&& ): om_async_operation_t->completed()\n", om_async_operation_t);
+                om_async_operation_t->completed();
+            }
+            else
+            {
+                // This can occur when the async_operation_base has gone out of scope.
+                clprint(PRI1, "async_operation_access::completionHandler(om_async_operation = %p, TYPE&& ): Warning: om_async_operation_t == nullptr\n", om_async_operation_t);
+            }
+        }
+
+        template<typename TYPE>
+        static void completionHandler_rmc(async_operation_base* om_async_operation, const TYPE& in)
+        {
+            clprint(PRI2, "async_operation_access::completionHandler_rmc(om_async_operation = %p, const TYPE& )\n", om_async_operation);
 
             async_operation_rmc<TYPE>* om_async_operation_t =
                 static_cast<async_operation_rmc<TYPE>*>(om_async_operation);
 
             if (om_async_operation_t)
             {
-                clprint(PRI2, "async_operation_access::completionHandler_rmc(om_async_operation = %p): om_async_operation_t->set_result(in)\n", om_async_operation_t);
+                clprint(PRI2, "async_operation_access::completionHandler_rmc(om_async_operation = %p, const TYPE& ): om_async_operation_t->set_result(in)\n", om_async_operation_t);
                 om_async_operation_t->set_result(in);
-                clprint(PRI2, "async_operation_access::completionHandler_rmc(om_async_operation = %p): om_async_operation_t->completed()\n", om_async_operation_t);
+                clprint(PRI2, "async_operation_access::completionHandler_rmc(om_async_operation = %p, const TYPE& ): om_async_operation_t->completed()\n", om_async_operation_t);
                 om_async_operation_t->completed();
             }
             else
             {
                 // This can occur when the async_operation_base has gone out of scope.
-                clprint(PRI1, "async_operation_access::completionHandler_rmc(om_async_operation = %p): Warning: om_async_operation_t == nullptr\n", om_async_operation_t);
+                clprint(PRI1, "async_operation_access::completionHandler_rmc(om_async_operation = %p, const TYPE& ): Warning: om_async_operation_t == nullptr\n", om_async_operation_t);
+            }
+        }
+
+        template<typename TYPE>
+        static void completionHandler_rmc(async_operation_base* om_async_operation, TYPE&& in)
+        {
+            clprint(PRI2, "async_operation_access::completionHandler_rmc(om_async_operation = %p, TYPE&& )\n", om_async_operation);
+
+            async_operation_rmc<TYPE>* om_async_operation_t =
+                static_cast<async_operation_rmc<TYPE>*>(om_async_operation);
+
+            if (om_async_operation_t)
+            {
+                clprint(PRI2, "async_operation_access::completionHandler_rmc(om_async_operation = %p, TYPE&& ): om_async_operation_t->set_result(in)\n", om_async_operation_t);
+                om_async_operation_t->set_result(std::forward<TYPE>(in));
+                clprint(PRI2, "async_operation_access::completionHandler_rmc(om_async_operation = %p, TYPE&& ): om_async_operation_t->completed()\n", om_async_operation_t);
+                om_async_operation_t->completed();
+            }
+            else
+            {
+                // This can occur when the async_operation_base has gone out of scope.
+                clprint(PRI1, "async_operation_access::completionHandler_rmc(om_async_operation = %p, TYPE&& ): Warning: om_async_operation_t == nullptr\n", om_async_operation_t);
             }
         }
 

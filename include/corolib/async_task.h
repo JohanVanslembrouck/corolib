@@ -106,7 +106,7 @@
 #define DECLARE_MOVE_CONSTRUCTORS_AS_DELETED 0
 #define DECLARE_MOVE_ASSIGMENT_OPERATORS_AS_DELETED 0
 
-#define USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN 1
+#define USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN 0
 #define USE_RESULT_FROM_COROUTINE_OBJECT 0
 
 #define USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL 0
@@ -134,23 +134,50 @@ Combinations: (impossible cases are marked X)            9   X   X   X  13   X  
 #define USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL     0   1   0   1   0   1   0   1
 #define USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_HANDLE   1   1   1   1   1   1   1   1
 
-USE_RESULT_FROM_COROUTINE_OBJECT = 1 requires USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN = 1.
+X = impossible combination
 
+FINAL_AWAITER selection
+-----------------------
 USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL and USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_HANDLE
 cannot be 1 at the same time.
 
 To use symmetric transfer, set USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_HANDLE to 1 
 and USE_FINAL_AWAITER_AWAIT_SUSPEND_RETURNS_BOOL to 0.
 
-In addition, USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN can be set to 1.
-There is no need to set USE_RESULT_FROM_COROUTINE_OBJECT to 1.
+USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN and USE_RESULT_FROM_COROUTINE_OBJECT
+--------------------------------------------------------------------------
+Usually, the result of a coroutine is stored in a variable in the promise_type object.
+
+The result can be accessed from the coroutine return type (async_task or async_ltask in the case of corolib)
+using the std::coroutine_handle<promise_type> membee variable to the promise_type object.
+
+In corolib, it is also possible to store the result in the async_task or async_ltask object.
+To make this possible, the promise_type object must have a "backward link" to the async_task or async_ltask object.
+This link is normally not present: some extra code had to be added.
+To enable this code, set USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN to 1.
+
+To save the result in the async_task or async_ltask object, also set USE_RESULT_FROM_COROUTINE_OBJECT to 1.
+
+USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN = 1 also enables the use of two extra tracking variables.
+In other words, USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN = 1 can be used to enable extra tracking,
+without storing the result in the async_task or async_ltask object.
 
 With USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN = 0, the values in the tracker columns c>p and c<p
 (displayed in the table when leaving an application) are always 0.
+To avoid this, make sure that variable USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN in ../../lib/tracker.cpp
+uses the same value as USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN in this file.
 
-In conclusion: use combinations 9, 13 or 15 only.
+USE_RESULT_FROM_COROUTINE_OBJECT = 1 requires USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN = 1.
 
-The reader is also referred to ../../reading/Avoiding_memory_leaks.md for further info.
+However, for optimal performance, set USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN to 0.
+Consequently, USE_RESULT_FROM_COROUTINE_OBJECT must also be 0.
+
+The reader is also referred to ../../final_suspend/Avoiding_memory_leaks.md,
+section "Pushing the result from the promise_type object to the async_task object," for further information.
+
+Conclusion
+----------
+Use combinations 9, 13 or 15 only, with 9 being the preferred solution.
 
 */
 
@@ -168,7 +195,7 @@ async_task | async_ltask
         await_suspend           void                        async_task: (no resumption from here)
                                                             async_ltask: m_async_ltask.m_coro_handle.resume();
                                 bool                        this variant is not used
-                                std::coroutine_handle<>     this variqnt is not used
+                                std::coroutine_handle<>     this variant is not used
         await_resume            TYPE or void
 
     promise_type
@@ -192,6 +219,8 @@ async_task | async_ltask
 #if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
 #include <assert.h>
 #endif
+
+#define USE_RVALUE_REFERENCE_RETURN_TYPE 1
 
 #include "result.h"
 
@@ -352,13 +381,13 @@ namespace corolib
 #endif
         }
 
-        void return_value(TYPE v)
+        void return_value(const TYPE& v)
         {
-            clprint(PRI2, "%p: promise_task_type<TYPE>::return_value(TYPE v): begin\n", this);
+            clprint(PRI2, "%p: promise_task_type<TYPE>::return_value(const TYPE& v): begin\n", this);
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
             m_result.set_value(v);
 #else
-            clprint(PRI2, "%p: promise_task_type<TYPE>::return_value(TYPE v): m_coroutine_object = %p (m_coroutine_valid = %d)\n",
+            clprint(PRI2, "%p: promise_task_type<TYPE>::return_value(const TYPE& v): m_coroutine_object = %p (m_coroutine_valid = %d)\n",
                 this, m_coroutine_object, m_coroutine_valid);
             if (m_coroutine_valid)
             {
@@ -366,7 +395,24 @@ namespace corolib
             }
 #endif
             inform_interested_parties();
-            clprint(PRI2, "%p: promise_task_type<TYPE>::return_value(TYPE v): end\n", this);
+            clprint(PRI2, "%p: promise_task_type<TYPE>::return_value(const TYPE& v): end\n", this);
+        }
+
+        void return_value(TYPE&& v)
+        {
+            clprint(PRI2, "%p: promise_task_type<TYPE>::return_value(TYPE&& v): begin\n", this);
+#if !USE_RESULT_FROM_COROUTINE_OBJECT
+            m_result.set_value(std::forward<TYPE>(v));
+#else
+            clprint(PRI2, "%p: promise_task_type<TYPE>::return_value(TYPE&& v): m_coroutine_object = %p (m_coroutine_valid = %d)\n",
+                this, m_coroutine_object, m_coroutine_valid);
+            if (m_coroutine_valid)
+            {
+                m_coroutine_object->m_result.set_value(std::forward<TYPE>(v));
+            }
+#endif
+            inform_interested_parties();
+            clprint(PRI2, "%p: promise_task_type<TYPE>::return_value(TYPE&& v): end\n", this);
         }
 
         void unhandled_exception()
@@ -387,6 +433,11 @@ namespace corolib
         TYPE get_result_promise()
         {
             return m_result.retrieve_result();
+        }
+
+        TYPE&& get_result_promise_move()
+        {
+            return m_result.retrieve_result_move();
         }
 #endif
 
@@ -614,6 +665,37 @@ namespace corolib
          * if the promise is not ready.
          * @return
          */
+#if USE_RVALUE_REFERENCE_RETURN_TYPE
+        decltype(auto) get_result(bool waitIfNotReady = true)
+        {
+            clprint(PRI2, "%p: async_task_base<TYPE>::get_result(%d)\n", this, waitIfNotReady);
+#if USE_COROUTINE_PROMISE_TYPE_LINK_ADMIN
+            get_result_admin();
+#endif
+
+            if (waitIfNotReady) {
+#if !USE_RESULT_FROM_COROUTINE_OBJECT
+                clprint(PRI2, "%p: async_task_base<TYPE>::get_result(): m_coro_handle.promise().m_result.wait_for_result()\n", this);
+                if (m_coro_handle.promise().m_result.wait_for_result())
+#else
+                clprint(PRI2, "%p: async_task_base<TYPE>::get_result(): m_result.wait_for_result()\n", this);
+                if (m_result.wait_for_result())
+#endif
+                {
+                    clprint(PRI2, "%p: async_task_base<TYPE>::get_result(): m_coro_handle.promise().m_sema.wait()\n", this);
+                    m_coro_handle.promise().m_sema.wait();
+                }
+            }
+
+#if !USE_RESULT_FROM_COROUTINE_OBJECT
+            clprint(PRI2, "%p: async_task_base<TYPE>::get_result(): return m_coro_handle.promise().m_result.retrieve_result();\n", this);
+            return m_coro_handle.promise().m_result.retrieve_result_move();
+#else
+            clprint(PRI2, "%p: async_task_base<TYPE>::get_result(): return m_result.retrieve_result();\n", this);
+            return m_result.retrieve_result_move();
+#endif
+        }
+#else
         TYPE get_result(bool waitIfNotReady = true)
         {
             clprint(PRI2, "%p: async_task_base<TYPE>::get_result(%d)\n", this, waitIfNotReady);
@@ -643,6 +725,7 @@ namespace corolib
             return m_result.retrieve_result();
 #endif
         }
+#endif
 
         bool is_ready() override_if_async_base
         {
@@ -828,16 +911,27 @@ namespace corolib
                     m_async_task.m_coro_handle.promise().m_continuation = h;
                 }
 
+#if USE_RVALUE_REFERENCE_RETURN_TYPE
+                TYPE&& await_resume()
+                {
+                    clprint(PRI2, "%p: async_task<TYPE>::await_resume()\n", this);
+#if !USE_RESULT_FROM_COROUTINE_OBJECT
+                    return m_async_task.m_coro_handle.promise().get_result_promise_move();
+#else
+                    return m_async_task.m_result.retrieve_result_move();
+#endif
+                }
+#else
                 TYPE await_resume()
                 {
                     clprint(PRI2, "%p: async_task<TYPE>::await_resume()\n", this);
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
-                    const TYPE r = m_async_task.m_coro_handle.promise().get_result_promise();
+                    return m_async_task.m_coro_handle.promise().get_result_promise();
 #else
-                    const TYPE r = m_async_task.m_result.retrieve_result();
+                    return m_async_task.m_result.retrieve_result();
 #endif
-                    return r;
                 }
+#endif
 
             private:
                 async_task& m_async_task;
@@ -956,16 +1050,27 @@ namespace corolib
                     m_async_ltask.m_coro_handle.resume();
                 }
 
+#if USE_RVALUE_REFERENCE_RETURN_TYPE
+                TYPE&& await_resume()
+                {
+                    clprint(PRI2, "%p: m_async_ltask<TYPE>::await_resume()\n", this);
+#if !USE_RESULT_FROM_COROUTINE_OBJECT
+                    return m_async_ltask.m_coro_handle.promise().get_result_promise_move();
+#else
+                    return m_async_ltask.m_result.retrieve_result_move();
+#endif
+                }
+#else
                 TYPE await_resume()
                 {
                     clprint(PRI2, "%p: m_async_ltask<TYPE>::await_resume()\n", this);
 #if !USE_RESULT_FROM_COROUTINE_OBJECT
-                    const TYPE r = m_async_ltask.m_coro_handle.promise().get_result_promise();
+                    return m_async_ltask.m_coro_handle.promise().get_result_promise();
 #else
-                    const TYPE r = m_async_ltask.m_result.retrieve_result();
+                    return m_async_ltask.m_result.retrieve_result();
 #endif
-                    return r;
                 }
+#endif
 
             private:
                 async_ltask& m_async_ltask;
