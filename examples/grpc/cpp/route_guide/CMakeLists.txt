@@ -25,6 +25,9 @@ include(../cmake/common.cmake)
 
 include_directories(../../../../include)
 
+# gRPC executables take a lot of build time and disk space: exclude some variants
+set(BUILD_EL_LE_LL_OTHER_VARIANTS 0)
+
 # Proto file
 get_filename_component(rg_proto "../../protos/route_guide.proto" ABSOLUTE)
 get_filename_component(rg_proto_path "${rg_proto}" PATH)
@@ -96,62 +99,64 @@ foreach(_target
     ${_PROTOBUF_LIBPROTOBUF})
 endforeach()
 
-foreach(_target
-  route_guide_coroutine_client2)
-  add_executable(${_target}_el "${_target}.cc")
-  target_compile_definitions(${_target}_el PRIVATE USE_LAZY_START_TASKS=0 USE_LAZY_START_OPS=1)
-  target_link_libraries(${_target}_el
-    rg_grpc_proto
-    route_guide_helper
-    ${_REFLECTION}
-    ${_GRPC_GRPCPP}
-    ${_PROTOBUF_LIBPROTOBUF})
-endforeach()
+if (BUILD_EL_LE_LL_OTHER_VARIANTS)
+    foreach(_target
+      route_guide_coroutine_client2)
+      add_executable(${_target}_el "${_target}.cc")
+      target_compile_definitions(${_target}_el PRIVATE USE_LAZY_START_TASKS=0 USE_LAZY_START_OPS=1)
+      target_link_libraries(${_target}_el
+        rg_grpc_proto
+        route_guide_helper
+        ${_REFLECTION}
+        ${_GRPC_GRPCPP}
+        ${_PROTOBUF_LIBPROTOBUF})
+    endforeach()
 
-foreach(_target
-  route_guide_coroutine_client2)
-  add_executable(${_target}_le "${_target}.cc")
-  target_compile_definitions(${_target}_le PRIVATE USE_LAZY_START_TASKS=1 USE_LAZY_START_OPS=0)
-  target_link_libraries(${_target}_le
-    rg_grpc_proto
-    route_guide_helper
-    ${_REFLECTION}
-    ${_GRPC_GRPCPP}
-    ${_PROTOBUF_LIBPROTOBUF})
-endforeach()
+    foreach(_target
+      route_guide_coroutine_client2)
+      add_executable(${_target}_le "${_target}.cc")
+      target_compile_definitions(${_target}_le PRIVATE USE_LAZY_START_TASKS=1 USE_LAZY_START_OPS=0)
+      target_link_libraries(${_target}_le
+        rg_grpc_proto
+        route_guide_helper
+        ${_REFLECTION}
+        ${_GRPC_GRPCPP}
+        ${_PROTOBUF_LIBPROTOBUF})
+    endforeach()
 
-foreach(_target
-  route_guide_coroutine_client2)
-  add_executable(${_target}_ll "${_target}.cc")
-  target_compile_definitions(${_target}_ll PRIVATE USE_LAZY_START_TASKS=1 USE_LAZY_START_OPS=1)
-  target_link_libraries(${_target}_ll
-    rg_grpc_proto
-    route_guide_helper
-    ${_REFLECTION}
-    ${_GRPC_GRPCPP}
-    ${_PROTOBUF_LIBPROTOBUF})
-endforeach()
+    foreach(_target
+      route_guide_coroutine_client2)
+      add_executable(${_target}_ll "${_target}.cc")
+      target_compile_definitions(${_target}_ll PRIVATE USE_LAZY_START_TASKS=1 USE_LAZY_START_OPS=1)
+      target_link_libraries(${_target}_ll
+        rg_grpc_proto
+        route_guide_helper
+        ${_REFLECTION}
+        ${_GRPC_GRPCPP}
+        ${_PROTOBUF_LIBPROTOBUF})
+    endforeach()
 
-foreach(_target
-  route_guide_coroutine_client)
-  add_executable(${_target} "${_target}.cc")
-  target_compile_definitions(${_target} PRIVATE USE_START_FROM_GRPC_OBJECT=0)
-  target_link_libraries(${_target}
-    rg_grpc_proto
-    route_guide_helper
-    ${_REFLECTION}
-    ${_GRPC_GRPCPP}
-    ${_PROTOBUF_LIBPROTOBUF})
-endforeach()
+    foreach(_target
+      route_guide_coroutine_client)
+      add_executable(${_target} "${_target}.cc")
+      target_compile_definitions(${_target} PRIVATE USE_START_FROM_GRPC_OBJECT=0)
+      target_link_libraries(${_target}
+        rg_grpc_proto
+        route_guide_helper
+        ${_REFLECTION}
+        ${_GRPC_GRPCPP}
+        ${_PROTOBUF_LIBPROTOBUF})
+    endforeach()
 
-foreach(_target
-  route_guide_coroutine_client)
-  add_executable(${_target}_a "${_target}.cc")
-  target_compile_definitions(${_target}_a PRIVATE USE_START_FROM_GRPC_OBJECT=1)
-  target_link_libraries(${_target}_a
-    rg_grpc_proto
-    route_guide_helper
-    ${_REFLECTION}
-    ${_GRPC_GRPCPP}
-    ${_PROTOBUF_LIBPROTOBUF})
-endforeach()
+    foreach(_target
+      route_guide_coroutine_client)
+      add_executable(${_target}_a "${_target}.cc")
+      target_compile_definitions(${_target}_a PRIVATE USE_START_FROM_GRPC_OBJECT=1)
+      target_link_libraries(${_target}_a
+        rg_grpc_proto
+        route_guide_helper
+        ${_REFLECTION}
+        ${_GRPC_GRPCPP}
+        ${_PROTOBUF_LIBPROTOBUF})
+    endforeach()
+endif()

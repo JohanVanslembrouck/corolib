@@ -25,6 +25,9 @@ include(../cmake/common.cmake)
 
 include_directories(../../../../include)
 
+# gRPC executables take a lot of build time and disk space: exclude some variants
+set(BUILD_EL_LE_LL_NC_VARIANTS 0)
+
 # Proto file
 get_filename_component(hsw_proto "../../protos/hellostreamingworld.proto" ABSOLUTE)
 get_filename_component(hsw_proto_path "${hsw_proto}" PATH)
@@ -85,55 +88,58 @@ foreach(_target
     ${_PROTOBUF_LIBPROTOBUF})
 endforeach()
 
-foreach(_target
-  multigreeter_coroutine_client
-  multigreeter_coroutine_client2
-  multigreeter_coroutine_client3)
-  add_executable(${_target}_el "${_target}.cc")
-  target_compile_definitions(${_target}_el PRIVATE USE_COROUTINES=1 USE_LAZY_START_TASKS=0 USE_LAZY_START_OPS=1)
-  target_link_libraries(${_target}_el
-    hsw_grpc_proto
-    ${_REFLECTION}
-    ${_GRPC_GRPCPP}
-    ${_PROTOBUF_LIBPROTOBUF})
-endforeach()
+if (BUILD_EL_LE_LL_NC_VARIANTS)
+    foreach(_target
+      multigreeter_coroutine_client
+      multigreeter_coroutine_client2
+      multigreeter_coroutine_client3)
+      add_executable(${_target}_el "${_target}.cc")
+      target_compile_definitions(${_target}_el PRIVATE USE_COROUTINES=1 USE_LAZY_START_TASKS=0 USE_LAZY_START_OPS=1)
+      target_link_libraries(${_target}_el
+        hsw_grpc_proto
+        ${_REFLECTION}
+        ${_GRPC_GRPCPP}
+        ${_PROTOBUF_LIBPROTOBUF})
+    endforeach()
 
-foreach(_target
-  multigreeter_coroutine_client
-  multigreeter_coroutine_client2
-  multigreeter_coroutine_client3)
-  add_executable(${_target}_le "${_target}.cc")
-  target_compile_definitions(${_target}_le PRIVATE USE_COROUTINES=1 USE_LAZY_START_TASKS=1 USE_LAZY_START_OPS=0)
-  target_link_libraries(${_target}_le
-    hsw_grpc_proto
-    ${_REFLECTION}
-    ${_GRPC_GRPCPP}
-    ${_PROTOBUF_LIBPROTOBUF})
-endforeach()
+    foreach(_target
+      multigreeter_coroutine_client
+      multigreeter_coroutine_client2
+      multigreeter_coroutine_client3)
+      add_executable(${_target}_le "${_target}.cc")
+      target_compile_definitions(${_target}_le PRIVATE USE_COROUTINES=1 USE_LAZY_START_TASKS=1 USE_LAZY_START_OPS=0)
+      target_link_libraries(${_target}_le
+        hsw_grpc_proto
+        ${_REFLECTION}
+        ${_GRPC_GRPCPP}
+        ${_PROTOBUF_LIBPROTOBUF})
+    endforeach()
 
-foreach(_target
-  multigreeter_coroutine_client
-  multigreeter_coroutine_client2
-  multigreeter_coroutine_client3)
-  add_executable(${_target}_ll "${_target}.cc")
-  target_compile_definitions(${_target}_ll PRIVATE USE_COROUTINES=1 USE_LAZY_START_TASKS=1 USE_LAZY_START_OPS=1)
-  target_link_libraries(${_target}_ll
-    hsw_grpc_proto
-    ${_REFLECTION}
-    ${_GRPC_GRPCPP}
-    ${_PROTOBUF_LIBPROTOBUF})
-endforeach()
+    foreach(_target
+      multigreeter_coroutine_client
+      multigreeter_coroutine_client2
+      multigreeter_coroutine_client3)
+      add_executable(${_target}_ll "${_target}.cc")
+      target_compile_definitions(${_target}_ll PRIVATE USE_COROUTINES=1 USE_LAZY_START_TASKS=1 USE_LAZY_START_OPS=1)
+      target_link_libraries(${_target}_ll
+        hsw_grpc_proto
+        ${_REFLECTION}
+        ${_GRPC_GRPCPP}
+        ${_PROTOBUF_LIBPROTOBUF})
+    endforeach()
 
-# Targets greeter_[async_](client|server)
-foreach(_target
-  multigreeter_coroutine_client
-  multigreeter_coroutine_client2
-  multigreeter_coroutine_client3)
-  add_executable(${_target}_nc "${_target}.cc")
-  target_compile_definitions(${_target}_nc PRIVATE USE_COROUTINES=0)
-  target_link_libraries(${_target}_nc
-    hsw_grpc_proto
-    ${_REFLECTION}
-    ${_GRPC_GRPCPP}
-    ${_PROTOBUF_LIBPROTOBUF})
-endforeach()
+    # Targets greeter_[async_](client|server)
+    foreach(_target
+      multigreeter_coroutine_client
+      multigreeter_coroutine_client2
+      multigreeter_coroutine_client3)
+      add_executable(${_target}_nc "${_target}.cc")
+      target_compile_definitions(${_target}_nc PRIVATE USE_COROUTINES=0)
+      target_link_libraries(${_target}_nc
+        hsw_grpc_proto
+        ${_REFLECTION}
+        ${_GRPC_GRPCPP}
+        ${_PROTOBUF_LIBPROTOBUF})
+    endforeach()
+endif()
+

@@ -25,6 +25,9 @@ include(../cmake/common.cmake)
 
 include_directories(../../../../include)
 
+# gRPC executables take a lot of build time and disk space: exclude some variants
+set(BUILD_EE_EL_LE_LL_VARIANTS 0)
+
 # Proto file
 get_filename_component(hw_proto "../../protos/helloworld.proto" ABSOLUTE)
 get_filename_component(hw_proto_path "${hw_proto}" PATH)
@@ -102,54 +105,56 @@ foreach(_target
     ${_PROTOBUF_LIBPROTOBUF})
 endforeach()
 
-foreach(_target
-  greeter_coroutine_client
-  greeter_coroutine_client2
-  greeter_coroutine_client2a)
-  add_executable(${_target}_ee "${_target}.cc")
-  target_compile_definitions(${_target}_ee PRIVATE USE_LAZY_START_TASKS=0 USE_LAZY_START_OPS=0)
-  target_link_libraries(${_target}_ee
-    hw_grpc_proto
-    ${_REFLECTION}
-    ${_GRPC_GRPCPP}
-    ${_PROTOBUF_LIBPROTOBUF})
-endforeach()
+if (BUILD_EE_EL_LE_LL_VARIANTS)
+    foreach(_target
+      greeter_coroutine_client
+      greeter_coroutine_client2
+      greeter_coroutine_client2a)
+      add_executable(${_target}_ee "${_target}.cc")
+      target_compile_definitions(${_target}_ee PRIVATE USE_LAZY_START_TASKS=0 USE_LAZY_START_OPS=0)
+      target_link_libraries(${_target}_ee
+        hw_grpc_proto
+        ${_REFLECTION}
+        ${_GRPC_GRPCPP}
+        ${_PROTOBUF_LIBPROTOBUF})
+    endforeach()
 
-foreach(_target
-  greeter_coroutine_client
-  greeter_coroutine_client2
-  greeter_coroutine_client2a)
-  add_executable(${_target}_el "${_target}.cc")
-  target_compile_definitions(${_target}_el PRIVATE USE_LAZY_START_TASKS=0 USE_LAZY_START_OPS=1)
-  target_link_libraries(${_target}_el
-    hw_grpc_proto
-    ${_REFLECTION}
-    ${_GRPC_GRPCPP}
-    ${_PROTOBUF_LIBPROTOBUF})
-endforeach()
+    foreach(_target
+      greeter_coroutine_client
+      greeter_coroutine_client2
+      greeter_coroutine_client2a)
+      add_executable(${_target}_el "${_target}.cc")
+      target_compile_definitions(${_target}_el PRIVATE USE_LAZY_START_TASKS=0 USE_LAZY_START_OPS=1)
+      target_link_libraries(${_target}_el
+        hw_grpc_proto
+        ${_REFLECTION}
+        ${_GRPC_GRPCPP}
+        ${_PROTOBUF_LIBPROTOBUF})
+    endforeach()
 
-foreach(_target
-  greeter_coroutine_client
-  greeter_coroutine_client2
-  greeter_coroutine_client2a)
-  add_executable(${_target}_le "${_target}.cc")
-  target_compile_definitions(${_target}_le PRIVATE USE_LAZY_START_TASKS=1 USE_LAZY_START_OPS=0)
-  target_link_libraries(${_target}_le
-    hw_grpc_proto
-    ${_REFLECTION}
-    ${_GRPC_GRPCPP}
-    ${_PROTOBUF_LIBPROTOBUF})
-endforeach()
+    foreach(_target
+      greeter_coroutine_client
+      greeter_coroutine_client2
+      greeter_coroutine_client2a)
+      add_executable(${_target}_le "${_target}.cc")
+      target_compile_definitions(${_target}_le PRIVATE USE_LAZY_START_TASKS=1 USE_LAZY_START_OPS=0)
+      target_link_libraries(${_target}_le
+        hw_grpc_proto
+        ${_REFLECTION}
+        ${_GRPC_GRPCPP}
+        ${_PROTOBUF_LIBPROTOBUF})
+    endforeach()
 
-foreach(_target
-  greeter_coroutine_client
-  greeter_coroutine_client2
-  greeter_coroutine_client2a)
-  add_executable(${_target}_ll "${_target}.cc")
-  target_compile_definitions(${_target}_ll PRIVATE USE_LAZY_START_TASKS=1 USE_LAZY_START_OPS=1)
-  target_link_libraries(${_target}_ll
-    hw_grpc_proto
-    ${_REFLECTION}
-    ${_GRPC_GRPCPP}
-    ${_PROTOBUF_LIBPROTOBUF})
-endforeach()
+    foreach(_target
+      greeter_coroutine_client
+      greeter_coroutine_client2
+      greeter_coroutine_client2a)
+      add_executable(${_target}_ll "${_target}.cc")
+      target_compile_definitions(${_target}_ll PRIVATE USE_LAZY_START_TASKS=1 USE_LAZY_START_OPS=1)
+      target_link_libraries(${_target}_ll
+        hw_grpc_proto
+        ${_REFLECTION}
+        ${_GRPC_GRPCPP}
+        ${_PROTOBUF_LIBPROTOBUF})
+    endforeach()
+endif()
