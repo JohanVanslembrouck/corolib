@@ -20,11 +20,22 @@ using namespace corolib;
 
 extern UseMode useMode;
 
-extern async_operation<std::optional<int>> op1;
-void start_operation_impl(async_operation<std::optional<int>>& op);
+class Class1840
+{
+public:
+    async_task<int> coroutine1();
+    async_task<int> coroutine2();
+    async_task<int> coroutine3();
 
-async_task<int> coroutine1();
-async_task<int> coroutine2();
-async_task<int> coroutine3();
+    void start_operation_impl();
+
+public:
+    async_operation<std::optional<int>> op1;
+
+private:
+    async_operation<std::optional<int>> op2;
+    async_operation<std::optional<int>> op3;
+    async_operation<std::optional<int>> op4;
+};
 
 #endif

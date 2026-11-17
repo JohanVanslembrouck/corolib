@@ -6,39 +6,29 @@
  * @author Johan Vanslembrouck
  */
 
-#include "p1820.h"
+#include "p1830.h"
 #include "class00.h"
 
 using namespace corolib;
 
-/**
- * @brief start_operation_impl simulates starting an asynchronous operation
- * 
- * @param op is a reference to an async_operation<int> object.
- */
-void start_operation_impl(async_operation<std::optional<int>>& op)
+void Class1830::start_operation_impl()
 {
     print(PRI1, "start_operation_impl()\n");
     async_op(
-        [&op](int i)
+        [this](int i)
         {
             print(PRI1, "completionHandler(): op.set_result_and_complete(%d)\n", i);
             op.set_result_and_complete(i);
         });
 }
 
-async_operation<std::optional<int>> op4;
-async_operation<std::optional<int>> op3;
-async_operation<std::optional<int>> op2;
-async_operation<std::optional<int>> op;
-
-async_task<int> coroutine3()
+async_task<int> Class1830::coroutine3()
 {
     print(PRI1, "coroutine3()\n");
     op3.auto_reset(true);
     std::optional<int> v1 = 0;
     int v = 0;
-    
+
     do
     {
         print(PRI1, "coroutine3(): v1 = co_await op3;\n");
@@ -47,23 +37,25 @@ async_task<int> coroutine3()
         // Nothing ever co_awaits op4!
         op4.set_result_and_complete(v1);
         if (v1 != std::nullopt)
+        {
+            print(PRI1, "coroutine1(): v1 = %d\n", v1);
             v += *v1;
+        }
         else
             break;
-    }
-    while (true);
-    
+    } while (true);
+
     print(PRI1, "coroutine3(): co_return v + 1 = %d;\n", v + 1);
     co_return v + 1;
 }
 
-async_task<int> coroutine2()
+async_task<int> Class1830::coroutine2()
 {
     print(PRI1, "coroutine2()\n");
     op2.auto_reset(true);
     std::optional<int> v1 = 0;
     int v = 0;
-    
+
     async_task<int> a3 = coroutine3();
 
     do
@@ -76,16 +68,15 @@ async_task<int> coroutine2()
             v += *v1;
         else
             break;
-    }
-    while (true);
-    
+    } while (true);
+
     int v2 = co_await a3;
 
     print(PRI1, "coroutine2(): co_return v + v2 + 1 = %d;\n", v + v2 + 1);
     co_return v + v2 + 1;
 }
 
-async_task<int> coroutine1()
+async_task<int> Class1830::coroutine1()
 {
     print(PRI1, "coroutine1()\n");
     op.auto_reset(true);
@@ -93,7 +84,7 @@ async_task<int> coroutine1()
     int v = 0;
 
     async_task<int> a2 = coroutine2();
-    
+
     do
     {
         print(PRI1, "coroutine1(): v1 = co_await op;\n");
@@ -104,9 +95,8 @@ async_task<int> coroutine1()
             v += *v1;
         else
             break;
-    }
-    while (true);
-    
+    } while (true);
+
     int v2 = co_await a2;
 
     print(PRI1, "coroutine1(): co_return v + v2 + 1 = %d;\n", v + v2 + 1);

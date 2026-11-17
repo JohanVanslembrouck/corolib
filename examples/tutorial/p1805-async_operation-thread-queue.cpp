@@ -6,14 +6,21 @@
  * @author Johan Vanslembrouck
  */
 
+#if !USE_1810
 #include "p1800.h"
+#define Class18XX Class1800
+#else
+#include "p1810.h"
+#define Class18XX Class1810
+#endif
+
 #include "eventqueuethr.h"
 
 using namespace corolib;
 
 extern EventQueueThrFunctionVoidInt eventQueueThr;
 
-void completionflow()
+void completionflow(Class18XX& obj)
 {
     print(PRI1, "completionflow()\n");
 
@@ -22,8 +29,8 @@ void completionflow()
         print(PRI1, "completionflow(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-        print(PRI1, "completionflow(): start_operation_impl(op);\n");
-        start_operation_impl(op);
+        print(PRI1, "completionflow(): obj.start_operation_impl();\n");
+        obj.start_operation_impl();
     }
 
     print(PRI1, "completionflow(): runEventQueueThr(eventQueueThr, %d);\n", defaultCompletionValue);
@@ -33,9 +40,9 @@ void completionflow()
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     // Begin manual event completion to make coroutine1 co_return
-    print(PRI1, "completionflow(): before op.set_result_and_complete(0);\n");
-    op.set_result_and_complete(0);
-    print(PRI1, "completionflow(): after op.set_result_and_complete(0);\n");
+    print(PRI1, "completionflow(): before obj.op.set_result_and_complete(0);\n");
+    obj.op.set_result_and_complete(0);
+    print(PRI1, "completionflow(): after obj.op.set_result_and_complete(0);\n");
     // End manual event completion
 }
 
@@ -45,15 +52,17 @@ int main()
 
     set_priority(0x01);                     // Use 0x03 to follow the flow in corolib
 
-    for (int i = 0; i < 1; ++i)
+    Class18XX obj;
+
+    for (int i = 0; i < 10; ++i)
     {
         print(PRI1, "main(): ---------- iteration %d ----------\n", i);
 
-        print(PRI1, "main(): async_ltask<int> a = coroutine1();\n");
-        async_task<int> a = coroutine1();
+        print(PRI1, "main(): async_task<int> a = obj.coroutine1();\n");
+        async_task<int> a = obj.coroutine1();
 
-        print(PRI1, "main(): completionflow();\n");
-        completionflow();
+        print(PRI1, "main(): completionflow(obj);\n");
+        completionflow(obj);
 
         print(PRI1, "main(): int v = a.get_result();\n");
         int v = a.get_result();
