@@ -60,6 +60,11 @@
 
 #define REPORT_OUT_OF_SCOPE 1
 
+#define USE_RVALUE_REFERENCE_RETURN_TYPE 1
+// Do not use move for RMC (resume multiple coroutines) because the same value is used multiple times
+// (i.e., for every coroutine that will be resumed):
+#define USE_RVALUE_REFERENCE_RETURN_TYPE_RMC 0
+
 namespace corolib
 {
     class async_operation_register;
@@ -203,9 +208,11 @@ namespace corolib
             clprint(PRI2, "%p: async_operation<TYPE>::completed(): m_index = %d = 0x%x\n", this, m_index, m_index);
 
             bool hasCompleted = false;
+
             if (m_awaiting)
             {
                 clprint(PRI2, "%p: async_operation<TYPE>::completed(): m_index = %d, before m_awaiting.resume();\n", this, m_index);
+
                 m_awaiting.resume();
 #if REPORT_OUT_OF_SCOPE
                 // async_operations are usually (always) created as local variables in a coroutine,
@@ -242,10 +249,16 @@ namespace corolib
          * (The callback function is typically called from a communication framework.)
          * @param result
          */
-        void set_result(TYPE result)
+        void set_result(const TYPE& result)
         {
-            clprint(PRI2, "%p: async_operation<TYPE>::set_result(...)\n", this);
+            clprint(PRI2, "%p: async_operation<TYPE>::set_result(const TYPE& )\n", this);
             m_result = result;
+        }
+
+        void set_result(TYPE&& result)
+        {
+            clprint(PRI2, "%p: async_operation<TYPE>::set_result(TYPE&&)\n", this);
+            m_result = std::move(result);
         }
 
         /**
@@ -254,6 +267,7 @@ namespace corolib
          */
         void reset()
         {
+            clprint(PRI2, "%p: async_operation<TYPE>::reset()\n", this);
             m_ready = false;
             m_awaiting = nullptr;
         }
@@ -267,10 +281,17 @@ namespace corolib
         /**
          * @brief set_result_and_complete combines set_result and completed
          */
-        void set_result_and_complete(TYPE result)
+        void set_result_and_complete(const TYPE& result)
         {
-            clprint(PRI2, "%p: async_operation<TYPE>::set_result_and_complete(...)\n", this);
+            clprint(PRI2, "%p: async_operation<TYPE>::set_result_and_complete(const TYPE& )\n", this);
             set_result(result);
+            completed();
+        }
+
+        void set_result_and_complete(TYPE&& result)
+        {
+            clprint(PRI2, "%p: async_operation<TYPE>::set_result_and_complete(TYPE&& )\n", this);
+            this->set_result(std::forward<TYPE>(result));
             completed();
         }
 
@@ -284,16 +305,29 @@ namespace corolib
          * their contained asynchronous operations.
          * @return
          */
-        TYPE get_result()
+#if USE_RVALUE_REFERENCE_RETURN_TYPE
+        TYPE&& get_result()
         {
-            clprint(PRI2, "%p: async_operation<TYPE>::get_result()\n", this);
+            clprint(PRI2, "%p: TYPE&& async_operation<TYPE>::get_result()\n", this);
             if (m_errorCode != 0)
             {
-                clprint(PRI1, "%p: async_operation<TYPE>::get_result(): m_errorCode = %d: throw exception!\n", this, m_errorCode);
+                clprint(PRI1, "%p: TYPE&& async_operation<TYPE>::get_result(): m_errorCode = %d: throw exception!\n", this, m_errorCode);
+                throw std::system_error{ m_errorCode, std::system_category() };
+            }
+            return std::move(m_result);
+        }
+#else
+        TYPE get_result()
+        {
+            clprint(PRI2, "%p: TYPE async_operation<TYPE>::get_result()\n", this);
+            if (m_errorCode != 0)
+            {
+                clprint(PRI1, "%p: TYPE async_operation<TYPE>::get_result(): m_errorCode = %d: throw exception!\n", this, m_errorCode);
                 throw std::system_error{ m_errorCode, std::system_category() };
             }
             return m_result;
         }
+#endif
 
         /**
          * @brief operator co_await allows to use async_operation as an awaitable.
@@ -325,14 +359,23 @@ namespace corolib
                     m_async.m_awaiting = awaiting;
                 }
 
-                TYPE await_resume()
+#if USE_RVALUE_REFERENCE_RETURN_TYPE
+                TYPE&& await_resume()
                 {
-                    clprint(PRI2, "%p: m_async = %p: async_operation<TYPE>::await_resume()\n", this, &m_async);
+                    clprint(PRI2, "%p: m_async = %p: async_operation<TYPE>::awaiter::await_resume()\n", this, &m_async);
                     if (m_async.m_autoreset)
                         m_async.reset();
                     return m_async.get_result();
                 }
-
+#else
+                TYPE await_resume()
+                {
+                    clprint(PRI2, "%p: m_async = %p: async_operation<TYPE>::awaiter::await_resume()\n", this, &m_async);
+                    if (m_async.m_autoreset)
+                        m_async.reset();
+                    return m_async.get_result();
+                }
+#endif
             private:
                 async_operation& m_async;
             };
@@ -386,6 +429,7 @@ namespace corolib
         {
             clprint(PRI2, "%p: async_operation<void>::completed(): m_index = %d = 0x%x\n", this, m_index, m_index);
             bool hasCompleted = false;
+
             if (m_awaiting)
             {
                 clprint(PRI2, "%p: async_operation<void>::completed(): m_index = %d, before m_awaiting.resume();\n", this, m_index);
@@ -424,6 +468,7 @@ namespace corolib
          */
         void reset()
         {
+            clprint(PRI2, "%p: async_operation<void>::reset()\n", this);
             m_ready = false;
             m_awaiting = nullptr;
         }
@@ -440,22 +485,22 @@ namespace corolib
                 bool await_ready()
                 {
 #if USE_IN_MT_APPS
-                    clprint(PRI2, "%p: m_async = %p: async_operation<void>::await_ready(): return %d;\n", this, &m_async, m_async.m_ready.load());
+                    clprint(PRI2, "%p: m_async = %p: async_operation<void>::awaiter::await_ready(): return %d;\n", this, &m_async, m_async.m_ready.load());
 #else
-                    clprint(PRI2, "%p: m_async = %p: async_operation<void>::await_ready(): return %d;\n", this, &m_async, m_async.m_ready);
+                    clprint(PRI2, "%p: m_async = %p: async_operation<void>::awaiter::await_ready(): return %d;\n", this, &m_async, m_async.m_ready);
 #endif
                     return m_async.m_ready;
                 }
 
                 void await_suspend(std::coroutine_handle<> awaiting)
                 {
-                    clprint(PRI2, "%p: m_async = %p: async_operation<void>::await_suspend(...)\n", this, &m_async);
+                    clprint(PRI2, "%p: m_async = %p: async_operation<void>::awaiter::await_suspend(...)\n", this, &m_async);
                     m_async.m_awaiting = awaiting;
                 }
 
                 void await_resume()
                 {
-                    clprint(PRI2, "%p: m_async = %p: async_operation<void>::await_resume()\n", this, &m_async);
+                    clprint(PRI2, "%p: m_async = %p: async_operation<void>::awaiter::await_resume()\n", this, &m_async);
                     if (m_async.m_autoreset)
                         m_async.reset();
                 }
@@ -524,6 +569,8 @@ namespace corolib
 
             bool hasCompleted = false;
             
+            m_ready = true;
+
             if (m_awaitings.size())
             {
                 std::vector<std::coroutine_handle<>> tmp;
@@ -556,8 +603,7 @@ namespace corolib
                     }
 #endif
                 }
-                m_ready = true;
-
+                
                 hasCompleted = true;
             }
 
@@ -569,6 +615,7 @@ namespace corolib
 
         void reset()
         {
+            clprint(PRI2, "%p: async_operation_rmc<TYPE>::reset()\n", this);
             m_ready = false;
         }
 
@@ -579,7 +626,7 @@ namespace corolib
          * (The callback function is typically called from a communication framework.)
          * @param result
          */
-        void set_result(TYPE result)
+        void set_result(const TYPE& result)
         {
             clprint(PRI2, "%p: async_operation_rmc<TYPE>::set_result(...)\n", this);
             m_result = result;
@@ -594,13 +641,19 @@ namespace corolib
         /**
          * @brief set_result_and_complete combines set_result and completed
          */
-        void set_result_and_complete(TYPE result)
+        void set_result_and_complete(const TYPE& result)
         {
-            clprint(PRI2, "%p: async_operation_rmc<TYPE>::set_result_and_complete(...)\n", this);
+            clprint(PRI2, "%p: async_operation_rmc<TYPE>::set_result_and_complete(const TYPE& )\n", this);
             set_result(result);
             completed();
         }
 
+        void set_result_and_complete(TYPE&& result)
+        {
+            clprint(PRI2, "%p: async_operation_rmc<TYPE>::set_result_and_complete(TYPE&& )\n", this);
+            this->set_result(std::forward<TYPE>(result));
+            completed();
+        }
         /**
          * @brief get_result allows retrieving the result of the asynchronous operation.
          * It can be used as an alternative to co_await and after co_await was called:
@@ -611,16 +664,29 @@ namespace corolib
          * their contained asynchronous operations.
          * @return
          */
-        TYPE get_result()
+#if USE_RVALUE_REFERENCE_RETURN_TYPE_RMC
+        TYPE&& get_result()
         {
-            clprint(PRI2, "%p: async_operation_rmc<TYPE>::get_result()\n", this);
+            clprint(PRI2, "%p: TYPE&& async_operation_rmc<TYPE>::get_result()\n", this);
             if (m_errorCode != 0)
             {
-                clprint(PRI1, "%p: async_operation_rmc<TYPE>::get_result(): m_errorCode = %d: throw exception!\n", this, m_errorCode);
+                clprint(PRI1, "%p: TYPE&& async_operation_rmc<TYPE>::get_result(): m_errorCode = %d: throw exception!\n", this, m_errorCode);
+                throw std::system_error{ m_errorCode, std::system_category() };
+            }
+            return std::move(m_result);
+        }
+#else
+        TYPE get_result()
+        {
+            clprint(PRI2, "%p: TYPE async_operation_rmc<TYPE>::get_result()\n", this);
+            if (m_errorCode != 0)
+            {
+                clprint(PRI1, "%p: TYPE async_operation_rmc<TYPE>::get_result(): m_errorCode = %d: throw exception!\n", this, m_errorCode);
                 throw std::system_error{ m_errorCode, std::system_category() };
             }
             return m_result;
         }
+#endif
 
         /**
          * @brief operator co_await allows to use async_operation as an awaitable.
@@ -652,15 +718,25 @@ namespace corolib
                     m_async.m_awaitings.push_back(awaiting);
                 }
 
-                TYPE await_resume()
+#if USE_RVALUE_REFERENCE_RETURN_TYPE_RMC
+                TYPE&& await_resume()
                 {
-                    clprint(PRI2, "%p: m_async = %p: async_operation_rmc<TYPE>::await_resume()\n", this, &m_async);
+                    clprint(PRI2, "%p: m_async = %p: async_operation_rmc<TYPE>::awaiter::await_resume()\n", this, &m_async);
                     // To be placed in void async_operation_base::completed(); // ???
                     if (m_async.m_autoreset)
                         m_async.reset();
                     return m_async.get_result();
                 }
-
+#else
+                TYPE await_resume()
+                {
+                    clprint(PRI2, "%p: m_async = %p: async_operation_rmc<TYPE>::awaiter::await_resume()\n", this, &m_async);
+                    // To be placed in void async_operation_base::completed(); // ???
+                    if (m_async.m_autoreset)
+                        m_async.reset();
+                    return m_async.get_result();
+                }
+#endif
             private:
                 async_operation_rmc& m_async;
             };
@@ -691,6 +767,8 @@ namespace corolib
             clprint(PRI2, "%p: async_operation_rmc<void>::completed(): m_index = %d = 0x%x\n", this, m_index, m_index);
 
             bool hasCompleted = false;
+
+            m_ready = true;
 
             if (m_awaitings.size())
             {
@@ -724,7 +802,6 @@ namespace corolib
                     }
 #endif
                 }
-                m_ready = true;
 
                 hasCompleted = true;
             }
@@ -737,6 +814,7 @@ namespace corolib
 
         void reset()
         {
+            clprint(PRI2, "%p: async_operation_rmc<void>::reset()\n", this);
             m_ready = false;
         }
 
@@ -753,22 +831,22 @@ namespace corolib
                 bool await_ready()
                 {
 #if USE_IN_MT_APPS
-                    clprint(PRI2, "%p: m_async = %p: async_operation_rmc<void>::await_ready(): return %d;\n", this, &m_async, m_async.m_ready.load());
+                    clprint(PRI2, "%p: m_async = %p: async_operation_rmc<void>::awaiter::await_ready(): return %d;\n", this, &m_async, m_async.m_ready.load());
 #else
-                    clprint(PRI2, "%p: m_async = %p: async_operation_rmc<void>::await_ready(): return %d;\n", this, &m_async, m_async.m_ready);
+                    clprint(PRI2, "%p: m_async = %p: async_operation_rmc<void>::awaiter::await_ready(): return %d;\n", this, &m_async, m_async.m_ready);
 #endif
                     return m_async.m_ready;
                 }
 
                 void await_suspend(std::coroutine_handle<> awaiting)
                 {
-                    clprint(PRI2, "%p: m_async = %p: async_operation_rmc<void>::await_suspend(...)\n", this, &m_async);
+                    clprint(PRI2, "%p: m_async = %p: async_operation_rmc<void>::awaiter::await_suspend(...)\n", this, &m_async);
                     m_async.m_awaitings.push_back(awaiting);
                 }
 
                 void await_resume()
                 {
-                    clprint(PRI2, "%p: m_async = %p: async_operation_rmc<void>::await_resume()\n", this, &m_async);
+                    clprint(PRI2, "%p: m_async = %p: async_operation_rmc<void>::awaiter::await_resume()\n", this, &m_async);
                     if (m_async.m_autoreset)
                         m_async.reset();
                 }
@@ -843,7 +921,7 @@ namespace corolib
 
                 decltype(auto) await_resume()
                 {
-                    clprint(PRI2, "%p: async_operation_ls<OPERATION>::await_resume()\n", this);
+                    clprint(PRI2, "%p: async_operation_ls<OPERATION>::awaiter::await_resume()\n", this);
                     return static_cast<OPERATION*>(&m_async)->get_result();
                 }
 
