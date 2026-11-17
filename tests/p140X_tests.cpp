@@ -5,8 +5,6 @@
  * @author Johan Vanslembrouck
  */
 
-#include <corolib/tracker.h>
-
 #include "gtest/gtest.h"
 
  // -------------------------------------------------------------------------------------
@@ -27,16 +25,16 @@ void completionflow1400()
     print(PRI1, "completionflow1400(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1400(): before eventHandler(10);\n");
+    print(PRI1, "completionflow1400(): 1. before eventHandler(10);\n");
     eventHandler(10);
-    print(PRI1, "completionflow1400(): after eventHandler(10);\n");
+    print(PRI1, "completionflow1400(): 1. after eventHandler(10);\n");
 
     print(PRI1, "completionflow1400(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1400(): before eventHandler(10);\n");
+    print(PRI1, "completionflow1400(): 2. before eventHandler(10);\n");
     eventHandler(10);
-    print(PRI1, "completionflow1400(): after eventHandler(10);\n");
+    print(PRI1, "completionflow1400(): 2. after eventHandler(10);\n");
 
     print(PRI1, "completionflow1400(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -49,15 +47,15 @@ TEST(TutorialTest, p1400)
 
     set_print_level(0x00);
 
-    print(PRI1, "p1400: async_task<int> a = coroutine1();\n");
+    print(PRI1, "p1400(): async_task<int> a = coroutine1();\n");
     async_task<int> a = coroutine1();
 
-    print(PRI1, "p1400: completionflow1400();\n");
+    print(PRI1, "p1400(): completionflow1400();\n");
     completionflow1400();
 
-    print(PRI1, "p1400: int v = a.get_result();\n");
+    print(PRI1, "p1400(): int v = a.get_result();\n");
     int v = a.get_result();
-    print(PRI1, "p1400: v = %d\n", v);
+    print(PRI1, "p1400(): v = %d\n", v);
 
     ASSERT_EQ(v, 27);
 }
@@ -70,21 +68,16 @@ void completionflow1401()
     print(PRI1, "completionflow1401(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    try {
-        print(PRI1, "completionflow1401(): before eventHandler(-1);\n");
-        eventHandler(-1);
-        print(PRI1, "completionflow1401(): after eventHandler(-1);\n");
-    }
-    catch (...) {
-        print(PRI1, "completionflow1401(): caught exception after eventHandler(-1);\n");
-    }
+    print(PRI1, "completionflow1401(): 1. before eventHandler(-1);\n");
+    eventHandler(-1);
+    print(PRI1, "completionflow1401(): 1. after eventHandler(-1);\n");
 
     print(PRI1, "completionflow1401(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1401(): before eventHandler(10);\n");
+    print(PRI1, "completionflow1401(): 2. before eventHandler(10);\n");
     eventHandler(10);
-    print(PRI1, "completionflow1401(): after eventHandler(10);\n");
+    print(PRI1, "completionflow1401(): 2. after eventHandler(10);\n");
 
     print(PRI1, "completionflow1401(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -124,15 +117,15 @@ TEST(TutorialTest, p1402)
 
     set_print_level(0x00);
 
-    print(PRI1, "p1402: async_task<int> a = coroutine1();\n");
+    print(PRI1, "p1402(): async_task<int> a = coroutine1();\n");
     async_task<int> a = coroutine1();
 
-    print(PRI1, "p1402: completionflow1402();\n");
+    print(PRI1, "p1402(): completionflow1402();\n");
     completionflow1402();
 
-    print(PRI1, "p1402: int v = a.get_result();\n");
+    print(PRI1, "p1402(): int v = a.get_result();\n");
     int v = a.get_result();
-    print(PRI1, "p1402: v = %d\n", v);
+    print(PRI1, "p1402(): v = %d\n", v);
 
     ASSERT_EQ(v, 27);
 }
@@ -151,15 +144,15 @@ TEST(TutorialTest, p1404)
 
     set_print_level(0x00);
 
-    print(PRI1, "p1404: async_task<int> a = coroutine1();\n");
+    print(PRI1, "p1404(): async_task<int> a = coroutine1();\n");
     async_task<int> a = coroutine1();
 
-    print(PRI1, "p1404: completionflow1404();\n");
+    print(PRI1, "p1404(): completionflow1404();\n");
     completionflow1404();
 
-    print(PRI1, "p1404: int v = a.get_result();\n");
+    print(PRI1, "p1404(): int v = a.get_result();\n");
     int v = a.get_result();
-    print(PRI1, "p1404: v = %d\n", v);
+    print(PRI1, "p1404(): v = %d\n", v);
 
     ASSERT_EQ(v, 27);
 }
@@ -168,7 +161,7 @@ TEST(TutorialTest, p1404)
 
 #include "eventqueuethr.h"
 
-extern EventQueueThrFunctionVoidInt eventQueueThr;      // p1400.cpp
+extern EventQueueThrFunctionVoidInt eventQueueThr;
 
 // ---------------------------------
 
@@ -187,15 +180,15 @@ TEST(TutorialTest, p1405)
 
     set_print_level(0x00);
 
-    print(PRI1, "p1405: async_task<int> a = coroutine1();\n");
+    print(PRI1, "p1405(): async_task<int> a = coroutine1();\n");
     async_task<int> a = coroutine1();
 
-    print(PRI1, "p1405: completionflow1405();\n");
+    print(PRI1, "p1405(): completionflow1405();\n");
     completionflow1405();
 
-    print(PRI1, "p1405: int v = a.get_result();\n");
+    print(PRI1, "p1405(): int v = a.get_result();\n");
     int v = a.get_result();
-    print(PRI1, "p1405: v = %d\n", v);
+    print(PRI1, "p1405(): v = %d\n", v);
 
     ASSERT_EQ(v, 27);
 }
@@ -214,15 +207,15 @@ TEST(TutorialTest, p1406)
 
     set_print_level(0x00);
 
-    print(PRI1, "p1406: async_task<int> a = coroutine1();\n");
+    print(PRI1, "p1406(): async_task<int> a = coroutine1();\n");
     async_task<int> a = coroutine1();
 
-    print(PRI1, "p1406: completionflow1406();\n");
+    print(PRI1, "p1406(): completionflow1406();\n");
     completionflow1406();
 
-    print(PRI1, "p1406: int v = a.get_result();\n");
+    print(PRI1, "p1406(): int v = a.get_result();\n");
     int v = a.get_result();
-    print(PRI1, "p1406: v = %d\n", v);
+    print(PRI1, "p1406(): v = %d\n", v);
 
     ASSERT_EQ(v, 27);
 }
@@ -237,16 +230,16 @@ void completionflow1410(Class1410& obj)
     print(PRI1, "completionflow1410(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1410(): before object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow1410(): 1. before object01.runEventHandler(10);\n");
     obj.m_object01.runEventHandler(10);
-    print(PRI1, "completionflow1410(): after object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow1410(): 1. after object01.runEventHandler(10);\n");
 
     print(PRI1, "completionflow1410(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1410(): before object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow1410(): 2. before object01.runEventHandler(10);\n");
     obj.m_object01.runEventHandler(10);
-    print(PRI1, "completionflow1410(): after object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow1410(): 2. after object01.runEventHandler(10);\n");
     // End manual event completion
 }
 
@@ -276,21 +269,16 @@ void completionflow1411(Class1410& obj)
     print(PRI1, "completionflow1411(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    try {
-        print(PRI1, "completionflow1411(): before obj.m_object01.runEventHandler(-1);\n");
-        obj.m_object01.runEventHandler(-1);
-        print(PRI1, "completionflow1411(): after obj.m_object01.runEventHandler(-1);\n");
-    }
-    catch (...) {
-        print(PRI1, "completionflow1411: caught exception after obj.m_object01.runEventHandler(-1);\n");
-    }
+    print(PRI1, "completionflow1411(): 1. before obj.m_object01.runEventHandler(-1);\n");
+    obj.m_object01.runEventHandler(-1);
+    print(PRI1, "completionflow1411(): 1. after obj.m_object01.runEventHandler(-1);\n");
 
     print(PRI1, "completionflow1411(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1411(): before obj.m_object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow1411(): 2. before obj.m_object01.runEventHandler(10);\n");
     obj.m_object01.runEventHandler(10);
-    print(PRI1, "completionflow1411(): after obj.m_object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow1411(): 2. after obj.m_object01.runEventHandler(10);\n");
     // End manual event completion
 }
 
@@ -453,24 +441,24 @@ void completionflow1420(Class1420& obj)
     print(PRI1, "completionflow1420(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1420(): before obj.m_object02.runEventHandler(10);\n");
+    print(PRI1, "completionflow1420(): 1a. before obj.m_object02.runEventHandler(10);\n");
     obj.m_object02.runEventHandler(10);
-    print(PRI1, "completionflow1420(): after obj.m_object02.runEventHandler(10);\n");
+    print(PRI1, "completionflow1420(): 1a. after obj.m_object02.runEventHandler(10);\n");
 
-    print(PRI1, "completionflow1420(): before obj.m_object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow1420(): 1b. before obj.m_object01.runEventHandler(10);\n");
     obj.m_object01.runEventHandler(10);
-    print(PRI1, "completionflow1420(): after obj.m_object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow1420(): 1b. after obj.m_object01.runEventHandler(10);\n");
 
     print(PRI1, "completionflow1420(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1420(): before obj.m_object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow1420(): 2a. before obj.m_object01.runEventHandler(10);\n");
     obj.m_object01.runEventHandler(10);
-    print(PRI1, "completionflow1420(): after obj.m_object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow1420(): 2a. after obj.m_object01.runEventHandler(10);\n");
 
-    print(PRI1, "completionflow1420(): before obj.m_object02.runEventHandler(10);\n");
+    print(PRI1, "completionflow1420(): 2b. before obj.m_object02.runEventHandler(10);\n");
     obj.m_object02.runEventHandler(10);
-    print(PRI1, "completionflow1420(): after obj.m_object02.runEventHandler(10);\n");
+    print(PRI1, "completionflow1420(): 2b. after obj.m_object02.runEventHandler(10);\n");
 
     print(PRI1, "completionflow1420(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -504,29 +492,24 @@ void completionflow1421(Class1420& obj)
     print(PRI1, "completionflow1421(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1421(): before object02.runEventHandler(10);\n");
+    print(PRI1, "completionflow1421(): 1a. before object02.runEventHandler(10);\n");
     obj.m_object02.runEventHandler(10);
-    print(PRI1, "completionflow1421(): after object02.runEventHandler(10);\n");
+    print(PRI1, "completionflow1421(): 1a. after object02.runEventHandler(10);\n");
 
-    try {
-        print(PRI1, "completionflow1421(): before object01.runEventHandler(-1);\n");
-        obj.m_object01.runEventHandler(-1);
-        print(PRI1, "completionflow1421(): after object01.runEventHandler(-1);\n");
-    }
-    catch (...) {
-        print(PRI1, "completionflow1421: caught exception after object01.eventHandler(-1);\n");
-    }
+    print(PRI1, "completionflow1421(): 1b. before object01.runEventHandler(-1);\n");
+    obj.m_object01.runEventHandler(-1);
+    print(PRI1, "completionflow1421(): 1b. after object01.runEventHandler(-1);\n");
 
     print(PRI1, "completionflow1421(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1421(): before object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow1421(): 2a. before object01.runEventHandler(10);\n");
     obj.m_object01.runEventHandler(10);
-    print(PRI1, "completionflow1421(): after object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow1421(): 2a. after object01.runEventHandler(10);\n");
 
-    print(PRI1, "completionflow1421(): before object02.runEventHandler(10);\n");
+    print(PRI1, "completionflow1421(): 2b. before object02.runEventHandler(10);\n");
     obj.m_object02.runEventHandler(10);
-    print(PRI1, "completionflow1421(): after object02.runEventHandler(10);\n");
+    print(PRI1, "completionflow1421(): 2b. after object02.runEventHandler(10);\n");
 
     print(PRI1, "completionflow1421(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -790,24 +773,24 @@ void completionflow1430(Class1430& obj)
     print(PRI1, "completionflow1430(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1430(): before obj.m_object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow1430(): 1a. before obj.m_object01.runEventHandler(10);\n");
     obj.m_object01.runEventHandler(10);
-    print(PRI1, "completionflow1430(): after obj.m_object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow1430(): 1a. after obj.m_object01.runEventHandler(10);\n");
 
-    print(PRI1, "completionflow1430(): before obj.m_object02.runEventHandler(10);\n");
+    print(PRI1, "completionflow1430(): 1b. before obj.m_object02.runEventHandler(10);\n");
     obj.m_object02.runEventHandler(10);
-    print(PRI1, "completionflow1430(): after obj.m_object02.runEventHandler(10);\n");
+    print(PRI1, "completionflow1430(): 1b. after obj.m_object02.runEventHandler(10);\n");
 
     print(PRI1, "completionflow1430(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1430(): before obj.m_object02.runEventHandler(10);\n");
+    print(PRI1, "completionflow1430(): 2a. before obj.m_object02.runEventHandler(10);\n");
     obj.m_object02.runEventHandler(10);
-    print(PRI2, "completionflow1430(): after obj.m_object02.runEventHandler(10);\n");
+    print(PRI2, "completionflow1430(): 2a. after obj.m_object02.runEventHandler(10);\n");
 
-    print(PRI1, "completionflow1430(): before obj.m_object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow1430(): 2b. before obj.m_object01.runEventHandler(10);\n");
     obj.m_object01.runEventHandler(10);
-    print(PRI1, "completionflow1430(): after obj.m_object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow1430(): 2b. after obj.m_object01.runEventHandler(10);\n");
 
     print(PRI1, "completionflow1430(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -843,24 +826,24 @@ void completionflow1430a(Class1430a& obj)
     print(PRI1, "completionflow1430a(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1430a(): before obj.m_object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow1430a(): 1a. before obj.m_object01.runEventHandler(10);\n");
     obj.m_object01.runEventHandler(10);
-    print(PRI1, "completionflow1430a(): after obj.m_object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow1430a(): 1a. after obj.m_object01.runEventHandler(10);\n");
 
-    print(PRI1, "completionflow1430a(): before obj.m_object02.runEventHandler(10);\n");
+    print(PRI1, "completionflow1430a(): 1b. before obj.m_object02.runEventHandler(10);\n");
     obj.m_object02.runEventHandler(10);
-    print(PRI1, "completionflow1430a(): after obj.m_object02.runEventHandler(10);\n");
+    print(PRI1, "completionflow1430a(): 1b. after obj.m_object02.runEventHandler(10);\n");
 
     print(PRI1, "completionflow1430a(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1430a(): before obj.m_object02.runEventHandler(10);\n");
+    print(PRI1, "completionflow1430a(): 2a. before obj.m_object02.runEventHandler(10);\n");
     obj.m_object02.runEventHandler(10);
-    print(PRI2, "completionflow1430a(): after obj.m_object02.runEventHandler(10);\n");
+    print(PRI2, "completionflow1430a(): 2a. after obj.m_object02.runEventHandler(10);\n");
 
-    print(PRI1, "completionflow1430a(): before obj.m_object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow1430a(): 2b. before obj.m_object01.runEventHandler(10);\n");
     obj.m_object01.runEventHandler(10);
-    print(PRI1, "completionflow1430a(): after obj.m_object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow1430a(): 2b. after obj.m_object01.runEventHandler(10);\n");
 
     print(PRI1, "completionflow1430a(): std::this_thread::sleep_for(std::chrono::milliseconds(00));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -888,18 +871,104 @@ TEST(TutorialTest, p1430a)
 
 // ---------------------------------
 
-void completionflow1431()
+void completionflow1431(Class1430& obj)
 {
+    // Begin manual event completion
+    print(PRI1, "completionflow1431(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(0));
 
+    print(PRI1, "completionflow1431(): 1a. before object02.runEventHandler(10);\n");
+    obj.m_object02.runEventHandler(10);
+    print(PRI1, "completionflow1431(): 1a. after object02.runEventHandler(10);\n");
+
+    print(PRI1, "completionflow1431(): 1b. before obj.m_object01.runEventHandler(-1);\n");
+    obj.m_object01.runEventHandler(-1);
+    print(PRI1, "completionflow1431(): 1b. after obj.m_object01.runEventHandler(-1);\n");
+
+    print(PRI1, "completionflow1431(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(0));
+
+    print(PRI1, "completionflow1431(): 2a. before obj.m_object01.runEventHandler(10);\n");
+    obj.m_object01.runEventHandler(10);
+    print(PRI1, "completionflow1431(): 2a. after obj.m_object01.runEventHandler(10);\n");
+
+    print(PRI1, "completionflow1431(): 2b. before obj.m_object02.runEventHandler(10);\n");
+    obj.m_object02.runEventHandler(10);
+    print(PRI1, "completionflow1431(): 2b. after obj.m_object02.runEventHandler(10);\n");
+
+    print(PRI1, "completionflow1431(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(0));
+    // End manual event completion
 }
 
 TEST(TutorialTest, p1431)
 {
     set_print_level(0x00);
 
-    int v = 0;
+    Class01 object01;
+    Class01 object02;
+    Class1430 obj{ object01, object02 };
+    async_task<int> a = obj.coroutine1();
 
-    ASSERT_EQ(v, 0);
+    print(PRI1, "p1431(): completionflow1431(obj);\n");
+    completionflow1431(obj);
+
+    print(PRI1, "p1431(): int v = a.get_result();\n");
+    int v = a.get_result();
+    print(PRI1, "p1431(): v = %d\n", v);
+
+    ASSERT_EQ(v, 39);
+}
+
+// ---------------------------------
+
+void completionflow1431a(Class1430a& obj)
+{
+    // Begin manual event completion
+    print(PRI1, "completionflow1431a(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(0));
+
+    print(PRI1, "completionflow1431a(): 1a. before object02.runEventHandler(10);\n");
+    obj.m_object02.runEventHandler(10);
+    print(PRI1, "completionflow1431a(): 1a. after object02.runEventHandler(10);\n");
+
+    print(PRI1, "completionflow1431a(): 1b. before obj.m_object01.runEventHandler(-1);\n");
+    obj.m_object01.runEventHandler(-1);
+    print(PRI1, "completionflow1431a(): 1b. after obj.m_object01.runEventHandler(-1);\n");
+
+    print(PRI1, "completionflow1431a(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(0));
+
+    print(PRI1, "completionflow1431a(): 2a. before obj.m_object01.runEventHandler(10);\n");
+    obj.m_object01.runEventHandler(10);
+    print(PRI1, "completionflow1431a(): 2a. after obj.m_object01.runEventHandler(10);\n");
+
+    print(PRI1, "completionflow1431a(): 2b. before obj.m_object02.runEventHandler(10);\n");
+    obj.m_object02.runEventHandler(10);
+    print(PRI1, "completionflow1431a(): 2b. after obj.m_object02.runEventHandler(10);\n");
+
+    print(PRI1, "completionflow1431a(): std::this_thread::sleep_for(std::chrono::milliseconds(0));\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(0));
+    // End manual event completion
+}
+
+TEST(TutorialTest, p1431a)
+{
+    set_print_level(0x00);
+
+    Class01 object01;
+    Class01 object02;
+    Class1430a obj{ object01, object02 };
+    async_task<int> a = obj.coroutine1();
+
+    print(PRI1, "p1431a(): completionflow1431a(obj);\n");
+    completionflow1431a(obj);
+
+    print(PRI1, "p1431a(): int v = a.get_result();\n");
+    int v = a.get_result();
+    print(PRI1, "p1431a(): v = %d\n", v);
+
+    ASSERT_EQ(v, 39);
 }
 
 // ---------------------------------
@@ -1140,24 +1209,24 @@ void completionflow1440(Class1440& obj)
     print(PRI1, "completionflow1440(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1440(): before obj.m_object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow1440(): 1a. before obj.m_object01.runEventHandler(10);\n");
     obj.m_object01.runEventHandler(10);
-    print(PRI1, "completionflow1440(): after obj.m_object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow1440(): 1a. after obj.m_object01.runEventHandler(10);\n");
 
-    print(PRI1, "completionflow1440(): before obj.m_object02.runEventHandler(10);\n");
+    print(PRI1, "completionflow1440(): 1b. before obj.m_object02.runEventHandler(10);\n");
     obj.m_object02.runEventHandler(10);
-    print(PRI1, "completionflow1440(): after obj.m_object02.runEventHandler(10);\n");
+    print(PRI1, "completionflow1440(): 1b. after obj.m_object02.runEventHandler(10);\n");
 
     print(PRI1, "completionflow1440(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
-    print(PRI1, "completionflow1440(): before obj.m_object02.runEventHandler(10);\n");
+    print(PRI1, "completionflow1440(): 2a. before obj.m_object02.runEventHandler(10);\n");
     obj.m_object02.runEventHandler(10);
-    print(PRI2, "completionflow1440(): after obj.m_object02.runEventHandler(10);\n");
+    print(PRI2, "completionflow1440(): 2a. after obj.m_object02.runEventHandler(10);\n");
 
-    print(PRI1, "completionflow1440(): before obj.m_object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow1440(): 2b. before obj.m_object01.runEventHandler(10);\n");
     obj.m_object01.runEventHandler(10);
-    print(PRI1, "completionflow1440(): after obj.m_object01.runEventHandler(10);\n");
+    print(PRI1, "completionflow1440(): 2b. after obj.m_object01.runEventHandler(10);\n");
 
     print(PRI1, "completionflow1440(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -1286,6 +1355,7 @@ void completionflow1445()
     print(PRI1, "completionflow1445():runEventQueueThr(eventQueueThr, %d);\n", defaultCompletionValue);
     runEventQueueThr(eventQueueThr, defaultCompletionValue);
 }
+
 TEST(TutorialTest, p1445)
 {
     set_print_level(0x00);
@@ -1425,13 +1495,13 @@ void completionflow1450(Class1450& obj)
 
     for (int i = 0; i < 4; i++)
     {
-        print(PRI1, "completionflow1450(): before obj.m_object01.runEventHandler(10);\n");
+        print(PRI1, "completionflow1450(): 1a. before obj.m_object01.runEventHandler(10);\n");
         obj.m_object01.runEventHandler(10);
-        print(PRI1, "completionflow1450(): after obj.m_object01.runEventHandler(10);\n");
+        print(PRI1, "completionflow1450(): 1a. after obj.m_object01.runEventHandler(10);\n");
 
-        print(PRI1, "completionflow1450(): before obj.m_object02.runEventHandler(10);\n");
+        print(PRI1, "completionflow1450(): 1b. before obj.m_object02.runEventHandler(10);\n");
         obj.m_object02.runEventHandler(10);
-        print(PRI1, "completionflow1450(): after obj.m_object02.runEventHandler(10);\n");
+        print(PRI1, "completionflow1450(): 1b. after obj.m_object02.runEventHandler(10);\n");
 
         print(PRI1, "completionflow1450(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -1701,13 +1771,13 @@ void completionflow1460(Class1460& obj)
 
     for (int i = 0; i < 12; i++)
     {
-        print(PRI1, "completionflow1460(): before obj.m_object01.eventHandler(%d, 10);\n", i);
+        print(PRI1, "completionflow1460(): 1a. before obj.m_object01.eventHandler(%d, 10);\n", i);
         obj.m_object01.runEventHandler(i, 10);
-        print(PRI1, "completionflow1460(): after obj.m_object01.eventHandler(%d, 10);\n", i);
+        print(PRI1, "completionflow1460(): 1a. after obj.m_object01.eventHandler(%d, 10);\n", i);
 
-        print(PRI1, "completionflow1460(): before obj.m_object02.eventHandler(%d, 10);\n", i);
+        print(PRI1, "completionflow1460(): 1b. before obj.m_object02.eventHandler(%d, 10);\n", i);
         obj.m_object02.runEventHandler(i, 10);
-        print(PRI1, "completionflow1460(): after obj.m_object02.eventHandler(%d, 10);\n", i);
+        print(PRI1, "completionflow1460(): 1b. after obj.m_object02.eventHandler(%d, 10);\n", i);
 
         print(PRI1, "completionflow1460(): std::this_thread::sleep_for(std::chrono::milliseconds(10));\n");
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -1935,7 +2005,6 @@ TEST(TutorialTest, p1469)
 
     ASSERT_EQ(v, 273);
 }
-
 
 // ---------------------------------
 
