@@ -1,9 +1,16 @@
-
 @echo off
 
+if exist ..\out\build\x64-Debug\tests\ (
+    echo copy ..\tests\run.bat ..\out\build\x64-Debug\tests\.
+    copy ..\tests\run.bat ..\out\build\x64-Debug\tests\.
+) else (
+    echo ..\out\build\x64-Debug\tests\ does not exist.
+    echo Please build the project.
+)
+
 if exist ..\out\build\x64-Debug\examples\tutorial\ (
-    echo copy ..\examples\tutorial\run.bat ..\out\build\x64-Debug\examples\tutorial\.
-    copy ..\examples\tutorial\run.bat ..\out\build\x64-Debug\examples\tutorial\.
+    echo copy ..\examples\tutorial\run*.bat ..\out\build\x64-Debug\examples\tutorial\.
+    copy ..\examples\tutorial\run*.bat ..\out\build\x64-Debug\examples\tutorial\.
 ) else (
     echo ..\out\build\x64-Debug\examples\tutorial\ does not exist.
     echo Please build the project.

@@ -1,8 +1,17 @@
 #!/bin/sh
 
+if [ -d "../../corolib-build/tests/" ]; then
+    echo "cp ../tests/run.sh ../../corolib-build/tests/."
+    cp ../tests/run.sh ../../corolib-build/tests/.
+    chmod ug+x ../../corolib-build/tests/run.sh
+else
+    echo "../../corolib-build/tests/ does not exist."
+    echo "Please build the project."
+fi
+
 if [ -d "../../corolib-build/examples/tutorial/" ]; then
-    echo "cp ../examples/tutorial/run.sh ../../corolib-build/examples/tutorial/."
-    cp ../examples/tutorial/run.sh ../../corolib-build/examples/tutorial/.
+    echo "cp ../examples/tutorial/run*.sh ../../corolib-build/examples/tutorial/."
+    cp ../examples/tutorial/run*.sh ../../corolib-build/examples/tutorial/.
     chmod ug+x ../../corolib-build/examples/tutorial/run.sh
 else
     echo "../../corolib-build/examples/tutorial/ does not exist."
