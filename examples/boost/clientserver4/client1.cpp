@@ -110,10 +110,11 @@ public:
 			case 0:
 			{
 				print(PRI1, "performAction: i = %d: reply has arrived\n", i);
-				print(PRI1, "performAction: i = %d: sr.get_result() = %s\n", i, sr.get_result().c_str());
+                std::string res = sr.get_result();
+				print(PRI1, "performAction: i = %d: sr.get_result() = %s\n", i, res.c_str());
 				
 				// Distinguish between feedback and result
-				std::string header = getHeader(sr.get_result());
+				std::string header = getHeader(res);
 				if (header.compare("FBK") == 0)
 				{
 					counter++;

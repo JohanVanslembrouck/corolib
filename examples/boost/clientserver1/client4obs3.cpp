@@ -128,7 +128,6 @@ public:
         int index = get_free_index_ts();
         print(PRI1, "mainflow: async_operation_rmc<std::string> sr{ this, index = %d, true };\n", index);
         async_operation_rmc<std::string> sr{ this, index, true };
-        sr.auto_reset(true);
 
         // Start the observer coroutines
         print(PRI1, "mainflow: async_task<int> sr1 = observer1(sr);\n");
@@ -139,6 +138,8 @@ public:
         async_task<int> sr3 = observer3(sr);
         print(PRI1, "mainflow: async_task<int> sr4 = observer4(sr);\n");
         async_task<int> sr4 = observer4(sr);
+
+        sr.auto_reset(true);
 
         for (int i = 0; i < 100; i++)
         {
@@ -184,10 +185,13 @@ public:
             // after having read the response.
             // Delaying
             steady_timer client_timer(m_ioContext);
-            print(PRI1, "mainflow: async_operation<void> st = start_timer(1000);\n");
-            async_operation<void> st = start_timer(client_timer, 1000);
+            print(PRI1, "mainflow: async_operation<void> st = start_timer(10);\n");
+            async_operation<void> st = start_timer(client_timer, 10);
             print(PRI1, "mainflow: co_await st;\n");
             co_await st;
+
+            // Reset because sr is defined outside the loop.
+            sr.reset();
 
             // Closing
             print(PRI1, "mainflow: stop();\n");

@@ -126,7 +126,6 @@ task<int> mainflowWA1(std::initializer_list<CommClient*> client_il)
     co_return 0;
 }
 
-
 task<int> mainflowWA2(std::initializer_list<CommClient*> client_il)
 {
     print(PRI1, "mainflowWA2: not implemented because lazy start operations do not have a default constructor\n");

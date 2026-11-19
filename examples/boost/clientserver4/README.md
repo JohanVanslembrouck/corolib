@@ -16,7 +16,7 @@ This example has been inspired by actions in ROS (Robot Operating System):
 
 In this example, the action server sends 10 feedback messages to the client, once every second, followed by the result message (again after a delay of a second).
 
-The client preforms N actions and it waits for 5 or 20 seconds (alternatingly) for the action to complete.
+The client performs N actions and it waits for 5 or 20 seconds (alternatingly) for the action to complete.
 In the case the client waits only 5 seconds (action not yet complete), the client sends a stop request to the action server to terminate the action.
 In the case of 20 seconds, the action will have completed, the client stops the timer and it does not send a stop request.
 

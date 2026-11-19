@@ -179,9 +179,6 @@ task<int> mainflowWA1(std::initializer_list<CommClient*> client_il)
     {
         print(PRI1, "mainflowWA1: %d ------------------------------------------------------------------\n", i);
 
-        print(PRI1);
-        print(PRI1, "mainflowWA1: connecting...\n");
-
         // Connecting
         for (int j = 0; j < nrClients; j++) {
             print(PRI1, "mainflowWA1: asyncsc[%d] = clients[%d]->start_connecting();\n", j, j);
@@ -195,9 +192,6 @@ task<int> mainflowWA1(std::initializer_list<CommClient*> client_il)
 
         print(PRI1, "mainflowWA1: co_await wac;\n");
         co_await wac;
-
-        print(PRI1);
-        print(PRI1, "mainflowWA1: writing...\n");
 
         // Writing
         for (int j = 0; j < nrClients; j++) {
@@ -238,6 +232,22 @@ task<int> mainflowWA1(std::initializer_list<CommClient*> client_il)
             clients[j]->stop();
         }
 
+        // USE_RVALUE_REFERENCE_RETURN_TYPE_OP is defined in async_operation.h
+#if !USE_RVALUE_REFERENCE_RETURN_TYPE_OP
+        // Reset
+        // Following 3 variables are defined outside the loop.
+        // To reuse them in a next iteration, we must reset their content.
+        for (int j = 0; j < nrClients; j++) {
+            // Do an explicit reset because we do not co_await asyncsc[j] or asyncsc[j].get_result():
+            // therefore, auto_reset has no effect.
+            asyncsc[j].reset();
+            // Do an explicit reset because we do not co_await asyncsw[j] or asyncsw[j].get_result():
+            // therefore, auto_reset has no effect.
+            asyncsw[j].reset();
+            // asyncsr[j].reset() not necessary because of syncsr[j].get_result()
+            //asyncsr[j].reset();
+        }
+#endif
         print(PRI1, "mainflowWA1: std::this_thread::sleep_for(std::chrono::milliseconds(100))\n");
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
@@ -508,9 +518,6 @@ task<int> mainflowWA5(std::initializer_list<CommClient*> client_il)
     {
         print(PRI1, "mainflowWA5: %d ------------------------------------------------------------------\n", i);
 
-        print(PRI1);
-        print(PRI1, "mainflowWA5: connecting...\n");
-
         // Connecting
         for (int j = 0; j < nrClients; j++) {
             print(PRI1, "mainflowWA5: asyncsc[%d] = clients[%d]->start_connecting();\n", j, j);
@@ -522,9 +529,6 @@ task<int> mainflowWA5(std::initializer_list<CommClient*> client_il)
 
         print(PRI1, "mainflowWA5: co_await wac;\n");
         co_await wac;
-
-        print(PRI1);
-        print(PRI1, "mainflowWA5: writing...\n");
 
         // Writing
         for (int j = 0; j < nrClients; j++) {
@@ -561,6 +565,22 @@ task<int> mainflowWA5(std::initializer_list<CommClient*> client_il)
             clients[j]->stop();
         }
 
+        // USE_RVALUE_REFERENCE_RETURN_TYPE_OP is defined in async_operation.h
+#if !USE_RVALUE_REFERENCE_RETURN_TYPE_OP
+        // Reset
+        // Following 3 variables are defined outside the loop.
+        // To reuse them in a next iteration, we must reset their content.
+        for (int j = 0; j < nrClients; j++) {
+            // Do an explicit reset because we do not co_await asyncsc[j] or asyncsc[j].get_result(): 
+            // therefore, auto_reset has no effect.
+            asyncsc[j].reset();
+            // Do an explicit reset because we do not co_await asyncsw[j] or asyncsw[j].get_result():
+            // therefore, auto_reset has no effect.
+            asyncsw[j].reset();
+            // asyncsr[j].reset() not necessary because of syncsr[j].get_result()
+            //asyncsr[j].reset();
+        }
+#endif
         print(PRI1, "mainflowWA5: std::this_thread::sleep_for(std::chrono::milliseconds(100))\n");
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
