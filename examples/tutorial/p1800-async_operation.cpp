@@ -41,6 +41,8 @@ void completionflow(Class18XX& obj)
     obj.op.set_result_and_complete(0);
     print(PRI1, "completionflow(): after obj.op.set_result_and_complete(0);\n");
     // End manual event completion
+
+    obj.op.reset();
 }
 
 int main()

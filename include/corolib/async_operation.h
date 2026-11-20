@@ -625,8 +625,9 @@ namespace corolib
                 {
                     clprint(PRI2, "%p: async_operation_rmc<TYPE>::completed(): before tmp[%d].resume();\n", this, i);
                     tmp[i].resume();
+                    m_ready = true;             // may be reset in get_result()
 #if REPORT_OUT_OF_SCOPE
-                    // See explanation below
+                    // See explanation above
                     if (m_index == std::make_signed_t<int>(0xdeadbeef) || m_index == std::make_signed_t<int>(0xdddddddd))
                     {
                         clprint(PRI2, "%p: async_operation_rmc<TYPE>::completed(): after tmp[%d].resume();\n"
@@ -638,7 +639,6 @@ namespace corolib
                     }
 #endif
                 }
-                m_ready = true;
 
                 hasCompleted = true;
             }
@@ -826,8 +826,9 @@ namespace corolib
                 {
                     clprint(PRI2, "%p: async_operation_rmc<void>::completed(): before tmp[%d].resume();\n", this, i);
                     tmp[i].resume();
+                    m_ready = true;             // may be reset in get_result()
 #if REPORT_OUT_OF_SCOPE
-                    // See explanation below
+                    // See explanation above
                     if (m_index == std::make_signed_t<int>(0xdeadbeef) || m_index == std::make_signed_t<int>(0xdddddddd))
                     {
                         clprint(PRI2, "%p: async_operation_rmc<void>::completed(): after tmp[%d].resume();\n"
@@ -839,7 +840,6 @@ namespace corolib
                     }
 #endif
                 }
-                m_ready = true;
 
                 hasCompleted = true;
             }
