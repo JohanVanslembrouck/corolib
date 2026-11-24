@@ -5,7 +5,7 @@
  * in combination with Boost ASIO to implement a client application.
  * This example uses 1 CommClient object.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
 
 #include <string>

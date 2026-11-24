@@ -59,7 +59,7 @@ public:
             if (str.compare("EOF") == 0)
                 break;
 
-            print(PRI1, "read_client_request: dispatcher.dispatch(sr);\n");
+            print(PRI1, "read_client_request: dispatcher.dispatch(str);\n");
             // In reality, str will contain the identification and the marshalled arguments
             dispatcher.dispatch(str);
         }

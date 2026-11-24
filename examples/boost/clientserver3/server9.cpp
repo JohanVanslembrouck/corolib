@@ -44,6 +44,8 @@ public:
         print(PRI1, "ServerApp::ServerApp(...)\n");
     }
 
+    // ---------------------------------------------------------------------
+
     class Dispatcher
     {
     public:
@@ -84,7 +86,7 @@ public:
             return "";
         }
 
-        async_task<bool> dispatch(std::string str)
+        async_task<bool> dispatch(std::string str)          // returns bool in server8.cpp
         {
             print(PRI2, "%p. Dispatcher::dispatch(str), m_index = %d, str = %s", this, m_index, str.c_str());
 
@@ -121,9 +123,11 @@ public:
         int m_index;
     public:
         bool m_running;
-    };
+    };  // class Dispatcher
 
-    async_task<bool> callCompletionHandler(int idx, std::string str)
+    // ---------------------------------------------------------------------
+
+    async_task<bool> callCompletionHandler(int idx, std::string str)        // returns void in server8.cpp
     {
         bool success = false;
 
@@ -157,7 +161,7 @@ public:
         static int counter = 0;
 
         int index = get_free_index();
-        async_operation_rmc<std::string> op_str{ this, index };
+        async_operation_rmc<std::string> op_str{ this, index };         // uses async_operation in server8.cpp
         op_str.auto_reset(true);
         dispatcher.registerAsyncOperation("Req1", index);
         
@@ -175,7 +179,7 @@ public:
             }
             counter++;
         }
-        print(PRI1, "request1Observer: coreturn %d;\n", counter);
+        print(PRI1, "request1Observer: co_return %d;\n", counter);
         co_return counter;
     }
     
@@ -185,7 +189,7 @@ public:
         static int counter = 0;
 
         int index = get_free_index();
-        async_operation_rmc<std::string> op_str{ this, index };
+        async_operation_rmc<std::string> op_str{ this, index };         // uses async_operation in server8.cpp
         op_str.auto_reset(true);
         dispatcher.registerAsyncOperation("Req2", index);
         
@@ -203,7 +207,7 @@ public:
             }
             counter++;
         }
-        print(PRI1, "request2Observer: coreturn %d;\n", counter);
+        print(PRI1, "request2Observer: co_return %d;\n", counter);
         co_return counter;
     }
     
@@ -213,7 +217,7 @@ public:
         static int counter = 0;
 
         int index = get_free_index();
-        async_operation_rmc<std::string> op_str{ this, index };
+        async_operation_rmc<std::string> op_str{ this, index };         // uses async_operation in server8.cpp
         op_str.auto_reset(true);
         dispatcher.registerAsyncOperation("Req3", index);
         
@@ -231,7 +235,7 @@ public:
             }
             counter++;
         }
-        print(PRI1, "request3Observer: coreturn %d;\n", counter);
+        print(PRI1, "request3Observer: co_return %d;\n", counter);
         co_return counter;
     }
     
@@ -241,7 +245,7 @@ public:
         static int counter = 0;
 
         int index = get_free_index();
-        async_operation_rmc<std::string> op_str{ this, index };
+        async_operation_rmc<std::string> op_str{ this, index };         // uses async_operation in server8.cpp
         op_str.auto_reset(true);
         dispatcher.registerAsyncOperation("Req4", index);
         
@@ -259,7 +263,7 @@ public:
             }
             counter++;
         }
-        print(PRI1, "request4Observer: coreturn %d;\n", counter);
+        print(PRI1, "request4Observer: co_return %d;\n", counter);
         co_return counter;
     }
     
@@ -281,7 +285,7 @@ public:
         {
             // Reading
             print(PRI1);
-            print(PRI1, "read_client_request: async_operation<std::string> sr = commClient->start_reading_rmc();\n");
+            print(PRI1, "read_client_request: async_operation<std::string> sr = commClient->start_reading();\n");
             async_operation<std::string> sr = commClient->start_reading();
             print(PRI1, "read_client_request: std::string str = co_await sr;\n");
             std::string str = co_await sr;
@@ -321,33 +325,33 @@ public:
      * @param commClient shared pointer to a client object
      * @return oneway_task
      */
-    oneway_task main_one_client(spCommCore commClient)
+    oneway_task mainflow_one_client(spCommCore commClient)
     {
-        print(PRI1, "main_one_client\n");
+        print(PRI1, "mainflow_one_client\n");
 
         Dispatcher dispatcher(this);
         ServerRequest serverRequest(commClient, m_IoContext);
 
         // Start the observer coroutines
-        print(PRI1, "main_one_client: async_task<int> sr1 = request1Observer(dispatcher, serverRequest);\n");
+        print(PRI1, "mainflow_one_client: async_task<int> sr1 = request1Observer(dispatcher, serverRequest);\n");
         async_task<int> sr1 = request1Observer(dispatcher, serverRequest);
-        print(PRI1, "main_one_client: async_task<int> sr2 = request2Observer(dispatcher, serverRequest);\n");
+        print(PRI1, "mainflow_one_client: async_task<int> sr2 = request2Observer(dispatcher, serverRequest);\n");
         async_task<int> sr2 = request2Observer(dispatcher, serverRequest);
-        print(PRI1, "main_one_client: async_task<int> sr3 = request3Observer(dispatcher, serverRequest);\n");
+        print(PRI1, "mainflow_one_client: async_task<int> sr3 = request3Observer(dispatcher, serverRequest);\n");
         async_task<int> sr3 = request3Observer(dispatcher, serverRequest);
-        print(PRI1, "main_one_client: async_task<int> sr4 = request4Observer(dispatcher, serverRequest);\n");
+        print(PRI1, "mainflow_one_client: async_task<int> sr4 = request4Observer(dispatcher, serverRequest);\n");
         async_task<int> sr4 = request4Observer(dispatcher, serverRequest);
         
-        print(PRI1, "main_one_client: async_task<int> rcr = read_client_request(commClient, dispatcher);\n");
+        print(PRI1, "mainflow_one_client: async_task<int> rcr = read_client_request(commClient, dispatcher);\n");
         async_task<int> rcr = read_client_request(commClient, dispatcher);
-        print(PRI1, "main_one_client: int i = co_await rcr;\n");
+        print(PRI1, "mainflow_one_client: int i = co_await rcr;\n");
         int i = co_await rcr;
 
         dispatcher.invokeAll("EOF");
 
-        print(PRI1, "main_one_client: when_all obs(sr1, sr2, sr3, sr4);\n");
+        print(PRI1, "mainflow_one_client: when_all obs(sr1, sr2, sr3, sr4);\n");
         when_all obs(sr1, sr2, sr3, sr4);
-        print(PRI1, "main_one_client: co_await obs;\n");
+        print(PRI1, "mainflow_one_client: co_await obs;\n");
         co_await obs;
         (void)i;
     }
@@ -375,8 +379,8 @@ public:
 
             // Start communicating asynchronously with the new client.
             // Start accepting new connections immediately.
-            print(PRI1, "mainflow: main_one_client(commCore);\n");
-            (void)main_one_client(commCore);
+            print(PRI1, "mainflow: mainflow_one_client(commCore);\n");
+            (void)mainflow_one_client(commCore);
         }
 
         print(PRI1, "mainflow: co_return 0;\n");

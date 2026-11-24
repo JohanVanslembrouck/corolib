@@ -16,7 +16,6 @@
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
 #include <corolib/oneway_task.h>
-#include <corolib/when_any.h>
 
 #include <commserver.h>
 
@@ -109,7 +108,7 @@ public:
             if (str.compare("EOF") == 0)
                 break;
 
-            print(PRI1, "mainflow_one_client: dispatcher.dispatch(sr);\n");
+            print(PRI1, "mainflow_one_client: dispatcher.dispatch(str);\n");
             // In reality, str will contain the identification and the marshalled arguments
             dispatcher.dispatch(str);
         }

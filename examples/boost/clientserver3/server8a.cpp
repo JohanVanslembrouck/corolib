@@ -29,6 +29,12 @@ using namespace corolib;
 
 #include "serverrequest2.h"
 
+//struct dispatch_table             // present in server8.cpp, not in server8a.cpp
+//{
+//    std::string     str;
+//    int             op;
+//};
+
 class ServerApp : public CommServer
 {
 public:
@@ -40,6 +46,8 @@ public:
         print(PRI1, "ServerApp::ServerApp(...)\n");
     }
 
+    // ---------------------------------------------------------------------
+
     class Dispatcher
     {
     public:
@@ -47,7 +55,7 @@ public:
             : m_serverapp(serverapp)
             , m_index(0)
             , m_running(true)
-            , m_handled(false)
+            , m_handled(false)      // m_handled is not present in server8.cpp
         {
             print(PRI1, "%p: Dispatcher::Dispatcher()\n", this);
             for (int i = 0; i < NROPERATIONS; i++)
@@ -66,12 +74,12 @@ public:
             }
         }
 
-        bool dispatch(std::string str)
+        bool dispatch(std::string str)                      // returns async_task<bool> in server9a.cpp
         {
             print(PRI2, "%p. Dispatcher::dispatch(str), m_index = %d, str = %s", this, m_index, str.c_str());
 
-            m_handled = false;
-            for (int i = 0; i < m_index && !m_handled; i++)
+            m_handled = false;                                      // m_handled is not present in server8.cpp
+            for (int i = 0; i < m_index && !m_handled; i++)         // m_handled is not present in server8.cpp
             {
                 print(PRI1, "%p: Dispatcher::dispatch(...): before m_serverapp->callCompletionHandler(%d, str)\n", this, m_dispatch_table[i]);
                 m_serverapp->callCompletionHandler(m_dispatch_table[i], str);
@@ -96,10 +104,12 @@ public:
   
     public:
         bool m_running;
-        bool m_handled;
-    };
+        bool m_handled;         // m_handled is not present in server8.cpp
+    }; // class Dispatcher
 
-    void callCompletionHandler(int i, std::string str)
+    // ---------------------------------------------------------------------
+
+    void callCompletionHandler(int i, std::string str)                      // returns async_task<bool> in server9a.cpp
     {
         completionHandler<std::string>(i, str);
     }
@@ -123,7 +133,7 @@ public:
         static int counter = 0;
 
         int index = get_free_index();
-        async_operation<std::string> op_str{ this, index };
+        async_operation<std::string> op_str{ this, index };             // uses async_operation_rmc in server9a.cpp
         op_str.auto_reset(true);
         dispatcher.registerAsyncOperation(index);
         
@@ -137,16 +147,16 @@ public:
                 std::string header = getHeader(str);
                 if (header.compare("Req1") == 0)
                 {
-                    dispatcher.m_handled = true;
+                    dispatcher.m_handled = true;            // m_handled is not present in server8.cpp
                     // TODO: unmarshal str into Req1
                     Req1 req1;
                     async_task<int> t = serverRequest.operation1(req1);
-                    //co_await t;       // Do not co_await!
+                    co_await t;
                 }
             }
             counter++;
         }
-        print(PRI1, "request1Observer: coreturn %d;\n", counter);
+        print(PRI1, "request1Observer: co_return %d;\n", counter);
         co_return counter;
     }
     
@@ -156,7 +166,7 @@ public:
         static int counter = 0;
 
         int index = get_free_index();
-        async_operation<std::string> op_str{ this, index };
+        async_operation<std::string> op_str{ this, index };             // uses async_operation_rmc in server9a.cpp
         op_str.auto_reset(true);
         dispatcher.registerAsyncOperation(index);
         
@@ -170,16 +180,16 @@ public:
                 std::string header = getHeader(str);
                 if (header.compare("Req2") == 0)
                 {
-                    dispatcher.m_handled = true;
+                    dispatcher.m_handled = true;            // m_handled is not present in server8.cpp
                     // TODO: unmarshal str into Req1
                     Req2 req2;
                     async_task<int> t = serverRequest.operation2(req2);
-                    //co_await t;       // Do not co_await!
+                    co_await t;
                 }
             }
             counter++;
         }
-        print(PRI1, "request2Observer: coreturn %d;\n", counter);
+        print(PRI1, "request2Observer: co_return %d;\n", counter);
         co_return counter;
     }
     
@@ -189,7 +199,7 @@ public:
         static int counter = 0;
 
         int index = get_free_index();
-        async_operation<std::string> op_str{ this, index };
+        async_operation<std::string> op_str{ this, index };             // uses async_operation_rmc in server9a.cpp
         op_str.auto_reset(true);
         dispatcher.registerAsyncOperation(index);
         
@@ -203,16 +213,16 @@ public:
                 std::string header = getHeader(str);
                 if (header.compare("Req3") == 0)
                 {
-                    dispatcher.m_handled = true;
+                    dispatcher.m_handled = true;            // m_handled is not present in server8.cpp
                     // TODO: unmarshal str into Req3
                     Req3 req3;
                     async_task<int> t = serverRequest.operation3(req3);
-                    //co_await t;       // Do not co_await!
+                    co_await t;
                 }
             }
             counter++;
         }
-        print(PRI1, "request3Observer: coreturn %d;\n", counter);
+        print(PRI1, "request3Observer: co_return %d;\n", counter);
         co_return counter;
     }
     
@@ -222,7 +232,7 @@ public:
         static int counter = 0;
 
         int index = get_free_index();
-        async_operation<std::string> op_str{ this, index };
+        async_operation<std::string> op_str{ this, index };             // uses async_operation_rmc in server9a.cpp
         op_str.auto_reset(true);
         dispatcher.registerAsyncOperation(index);
         
@@ -236,16 +246,16 @@ public:
                 std::string header = getHeader(str);
                 if (header.compare("Req4") == 0)
                 {
-                    dispatcher.m_handled = true;
+                    dispatcher.m_handled = true;            // m_handled is not present in server8.cpp
                     // TODO: unmarshal str into Req4
                     Req4 req4;
                     async_task<int> t = serverRequest.operation4(req4);
-                    //co_await t;       // Do not co_await!
+                    co_await t;
                 }
             }
             counter++;
         }
-        print(PRI1, "request4Observer: coreturn %d;\n", counter);
+        print(PRI1, "request4Observer: co_return %d;\n", counter);
         co_return counter;
     }
     
@@ -286,10 +296,10 @@ public:
             print(PRI1, "read_client_request: after dispatcher.dispatch(sr);\n");
         }
 
-        print(PRI1, "mainflow_one_client: commClient->stop();\n");
+        print(PRI1, "read_client_request: commClient->stop();\n");
         commClient->stop();
 
-        print(PRI1, "mainflow_one_client: co_return 0;\n");
+        print(PRI1, "read_client_request: co_return 0;\n");
         co_return 0;
     }
     
@@ -307,33 +317,33 @@ public:
      * @param commClient shared pointer to a client object
      * @return oneway_task
      */
-    oneway_task main_one_client(spCommCore commClient)
+    oneway_task mainflow_one_client(spCommCore commClient)
     {
-        print(PRI1, "main_one_client\n");
+        print(PRI1, "mainflow_one_client\n");
 
         Dispatcher dispatcher(this);
         ServerRequest serverRequest(commClient, m_IoContext);
 
         // Start the observer coroutines
-        print(PRI1, "main_one_client: async_task<int> sr1 = request1Observer(dispatcher, serverRequest);\n");
+        print(PRI1, "mainflow_one_client: async_task<int> sr1 = request1Observer(dispatcher, serverRequest);\n");
         async_task<int> sr1 = request1Observer(dispatcher, serverRequest);
-        print(PRI1, "main_one_client: async_task<int> sr2 = request2Observer(dispatcher, serverRequest);\n");
+        print(PRI1, "mainflow_one_client: async_task<int> sr2 = request2Observer(dispatcher, serverRequest);\n");
         async_task<int> sr2 = request2Observer(dispatcher, serverRequest);
-        print(PRI1, "main_one_client: async_task<int> sr3 = request3Observer(dispatcher, serverRequest);\n");
+        print(PRI1, "mainflow_one_client: async_task<int> sr3 = request3Observer(dispatcher, serverRequest);\n");
         async_task<int> sr3 = request3Observer(dispatcher, serverRequest);
-        print(PRI1, "main_one_client: async_task<int> sr4 = request4Observer(dispatcher, serverRequest);\n");
+        print(PRI1, "mainflow_one_client: async_task<int> sr4 = request4Observer(dispatcher, serverRequest);\n");
         async_task<int> sr4 = request4Observer(dispatcher, serverRequest);
         
-        print(PRI1, "main_one_client: async_task<int> rcr = read_client_request(commClient, dispatcher);\n");
+        print(PRI1, "mainflow_one_client: async_task<int> rcr = read_client_request(commClient, dispatcher);\n");
         async_task<int> rcr = read_client_request(commClient, dispatcher);
-        print(PRI1, "main_one_client: int i = co_await rcr;\n");
+        print(PRI1, "mainflow_one_client: int i = co_await rcr;\n");
         int i = co_await rcr;
 
         dispatcher.invokeAll("EOF");
 
-        print(PRI1, "main_one_client: when_all obs(sr1, sr2, sr3, sr4);\n");
+        print(PRI1, "mainflow_one_client: when_all obs(sr1, sr2, sr3, sr4);\n");
         when_all obs(sr1, sr2, sr3, sr4);
-        print(PRI1, "main_one_client: co_await obs;\n");
+        print(PRI1, "mainflow_one_client: co_await obs;\n");
         co_await obs;
         (void)i;
     }
@@ -361,8 +371,8 @@ public:
 
             // Start communicating asynchronously with the new client.
             // Start accepting new connections immediately.
-            print(PRI1, "mainflow: main_one_client(commCore);\n");
-            (void)main_one_client(commCore);
+            print(PRI1, "mainflow: mainflow_one_client(commCore);\n");
+            (void)mainflow_one_client(commCore);
         }
 
         print(PRI1, "mainflow: co_return 0;\n");

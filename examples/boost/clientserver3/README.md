@@ -1,12 +1,14 @@
 # Two tier client-server application with layer of abstraction
 
+## Introduction
+
 In general, an application may receive inputs from one or more sources and react in a specific way to each input type.
 This can be implemented as a switch in C/C++ or a table that associates each input type with a function or a coroutine
 that will be called when an input arrives.
 The advantage of using coroutines instead of functions is that the application may accept and handle new inputs
 while it is still handling one or more previous inputs.
 A long-running function may block the application from handling new inputs at the moment these inputs arrive,
-unless the function is run on a separate thread.
+unless the function runs on a separate thread.
 With coroutines, several inputs may be processed in an interleaved way on the same thread.
 
 The application may be a server-type application that receives its inputs from one or more clients,
@@ -14,21 +16,39 @@ or it may be a client-type application that first connects to one or more server
 Note that client and server should be seen in the context of a TCP/IP client that connects to a TCP/IP server.
 Once the client has connected to a server, the requests and replies may flow in any direction.
 In the examples we will consider the first type of application,
-i.e. a server application that has to respond to N (4 in our case) input types from its clients.
+i.e., a server application that has to respond to N (4 in our case) input types from its clients.
 
 In the applications the API does not use the received strings directly: 
 a tiny abstraction layer has been added so that the application can use user-defined types that 
 (in a real-life application) have to be marshalled onto or unmarshalled from \n-terminated strings.
 Such real-life applications could use JSON data structures that, when marshalled to a string, do not contain \n inside.
 
-(For the relationship between executables and source files, the reader is referred to CMakeLists.txt in this directory.)
+## Start-up
 
-'cs3-server', 'cs3-server2', ... 'cs3-server9' are server applications with 'cs3-client1' or 'cs3-client2' as their client application.
+'cs3-server', 'cs3-server2', ... 'cs3-server9a' are server applications with 'cs3-client1' or 'cs3-client2' as their client application.
 
 After building, launch the applications in the following order:
 
-* 'cs3-server' or 'cs3-server2' or ... or 'cs3-server9'
+* 'cs3-server' or 'cs3-server2' or ... or 'cs3-server9a'
 * 'cs3-client1' (one or more instances) or 'cs3-client2' (one or more instances)
+
+## Server applications
+
+The following table gives an overview of the server applications:
+
+| source file   | dispatcher        | server request    | when       | oneway_task   | memory leaks? |
+| ------------- | -----------------	| ----------------- | ---------- | ------------- | ------------- |
+| server.cpp	| (defined locally)	|					|            | oneway_task.h | no            |
+| server2.cpp	| dispatcher.h		| serverrequest.h	|            | oneway_task.h | no            |
+| server3.cpp	| dispatcher.h		| serverrequest.h	|            | oneway_task.h | no            |
+| server4.cpp	| dispatcher2.h		| serverrequest.h	| when_any.h | oneway_task.h | yes           |
+| server5.cpp	| dispatcher.h		| serverrequest.h	|            | oneway_task.h | yes           |
+| server6.cpp	| dispatcher3.h		| serverrequest2.h	| when_any.h | oneway_task.h | yes           |
+| server7.cpp	| dispatcher4.h		| serverrequest2.h	|            | oneway_task.h | no            |
+| server8.cpp	| (defined locally)	| serverrequest2.h	| when_all.h | oneway_task.h | no            |
+| server8a.cpp	| (defined locally)	| serverrequest2.h	| when_all.h | oneway_task.h | no            |
+| server9.cpp	| (defined locally)	| serverrequest2.h	| when_all.h | oneway_task.h | no            |
+| server9a.cpp	| (defined locally) | serverrequest2.h	| when_all.h | oneway_task.h | no            |
 
 cs3-server (server.cpp) and cs3-server2 (server2.cpp) are equivalent. 
 The difference is that server.cpp is self-contained, while server2.cpp includes serverrequest.h and dispatcher.h.
@@ -56,8 +76,13 @@ Because we can now co_await the lambda passed to the dispatcher,
 the asynchronous operation that is completed by the dispatcher (in server4.cpp, server5.cpp and server6.cpp) has become obsolete.
 This operation has been removed in server7.cpp.
 
+server8.cpp, server8a.cpp, server9.cpp and server9a.cpp use a locally defined Dispatcher class
+because this class points to a ServerApp object so it can call ServerApp::callCompletionHandler.
+In server8.cpp and server8a.cpp, ServerApp::callCompletionHandler is a function with void as return type,
+in server9.cpp and server9a.cpp, ServerApp::callCompletionHandler is a coroutine with async_task<bool> as return type.
+
 cs3-server8 (server8.cpp) is based on cs3-server7 (server7.cpp).
-server8.cpp uses "observer" couroutines, where one observer couroutine waits for and handles 1 specific request.
+server8.cpp uses "observer" couroutines, where one observer coroutine waits for and handles 1 specific request.
 server8.cpp resumes the observer coroutine that is interested in that request.
 
 cs3-server9 (server9.cpp) is based on cs3-server8 (server8.cpp).
@@ -68,6 +93,8 @@ cs3-server8a (server8a.cpp) and cs3-server9a (server9a.cpp) are variants of cs3-
 The 'a' variant uses the chain of responsibility design pattern, where the observer coroutines decide if they handle a request or not.
 This variant is less efficient than the original implementation because the decision is taken deeper in the call tree.
 The main objective is to illustrate the use of the chain of responsibility design pattern.
+
+## Client applications
 
 cs3-client2 (client2.cpp) is a variant of cs3-client1 (client1.cpp).
 cs3-client2 allows coroutine mainflow() to follow the progress of coroutine mainflow(process_info_t &process_info).

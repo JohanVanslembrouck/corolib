@@ -10,7 +10,7 @@
  * In contrast to server4.cpp, server5.cpp does not use when_any.
  * Therefore, it does not have to save the return value of the dispatcher.registerFunctor calls.
  * 
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
  
 #include <boost/asio/signal_set.hpp>
@@ -73,7 +73,7 @@ public:
             if (str.compare("EOF") == 0)
                 break;
 
-            print(PRI1, "read_client_request: dispatcher.dispatch(sr);\n");
+            print(PRI1, "read_client_request: dispatcher.dispatch(str);\n");
             // In reality, str will contain the identification and the marshalled arguments
             dispatcher.dispatch(str);
         }
@@ -161,7 +161,7 @@ public:
             co_await st;
         }
         
-        print(PRI1, "main_one_client: int i = co_await rcr;\n");
+        print(PRI1, "mainflow_one_client: int i = co_await rcr;\n");
         int i = co_await rcr;
         (void)i;
 

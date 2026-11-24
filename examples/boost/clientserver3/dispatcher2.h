@@ -2,8 +2,9 @@
  * @file dispatcher2.h
  * @brief dispatches a request string onto a registered operation
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
+
 #ifndef _DISPATCHER2_H_
 #define _DISPATCHER2_H_
 

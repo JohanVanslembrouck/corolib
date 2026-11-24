@@ -3,8 +3,9 @@
  * @brief server-side implementation of the 4 operations
  * The operations return oneway_task instead of async_task<int> as in serverrequest2.h
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
+
 #ifndef _SERVERREQUEST_H_
 #define _SERVERREQUEST_H_
 

@@ -6,7 +6,7 @@
  *
  * server.cpp is self-contained: it contains the complete implementation
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
  
 #include <boost/asio/signal_set.hpp>
@@ -15,7 +15,6 @@
 #include <corolib/async_task.h>
 #include <corolib/async_operation.h>
 #include <corolib/oneway_task.h>
-#include <corolib/when_any.h>
 
 #include <commserver.h>
 
@@ -288,7 +287,7 @@ public:
             if (str.compare("EOF") == 0)
                 break;
 
-            print(PRI1, "mainflow_one_client: dispatcher.dispatch(sr);\n");
+            print(PRI1, "mainflow_one_client: dispatch(str);\n");
             // In reality, str will contain the identification and the marshalled arguments
             dispatch(str);
         }

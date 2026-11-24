@@ -65,16 +65,16 @@ public:
             if (str.compare("EOF") == 0)
                 break;
 
-            print(PRI1, "read_client_request: dispatcher.dispatch(sr);\n");
+            print(PRI1, "read_client_request: dispatcher.dispatch(str);\n");
             // In reality, str will contain the identification and the marshalled arguments
             dispatcher.dispatch(str);
         }
 
         done = true;
-        print(PRI1, "mainflow_one_client: commClient->stop();\n");
+        print(PRI1, "read_client_request: commClient->stop();\n");
         commClient->stop();
 
-        print(PRI1, "mainflow_one_client: co_return 0;\n");
+        print(PRI1, "read_client_request: co_return 0;\n");
         co_return 0;
     }
     
@@ -96,7 +96,7 @@ public:
      * @param commClient shared pointer to a client object
      * @return oneway_task
      */
-    oneway_task main_one_client(spCommCore commClient)
+    oneway_task mainflow_one_client(spCommCore commClient)
     {
         Dispatcher dispatcher;
         ServerRequest serverRequest(commClient, m_IoContext);
@@ -147,22 +147,22 @@ public:
                 co_return 0;
             });
 
-        print(PRI1, "main_one_client: when_any wat(reqs);\n");
+        print(PRI1, "mainflow_one_client: when_any wat(reqs);\n");
         when_any wat(reqs);
 
         bool done = false;
-        print(PRI1, "main_one_client: async_task<int> rcr = read_client_request(commClient, dispatcher);\n");
+        print(PRI1, "mainflow_one_client: async_task<int> rcr = read_client_request(commClient, dispatcher);\n");
         async_task<int> rcr = read_client_request(commClient, dispatcher, done);
 
         // Notice the while loops in read_client_request and here.
         while (!done)
         {
-            print(PRI1, "main_one_client: int i = co_await wat;\n");
+            print(PRI1, "mainflow_one_client: int i = co_await wat;\n");
             int i = co_await wat;
-            print(PRI1, "main_one_client: reqs[%d].get_result().c_str().get_result() = %s", i, reqs[i].get_result().c_str());
+            print(PRI1, "mainflow_one_client: reqs[%d].get_result().c_str().get_result() = %s", i, reqs[i].get_result().c_str());
         }
 
-        print(PRI1, "main_one_client: int i = co_await rcr;\n");
+        print(PRI1, "mainflow_one_client: int i = co_await rcr;\n");
         int i = co_await rcr;
         (void)i;
     }
@@ -190,8 +190,8 @@ public:
 
             // Start communicating asynchronously with the new client.
             // Start accepting new connections immediately.
-            print(PRI1, "mainflow: main_one_client(commCore);\n");
-            (void)main_one_client(commCore);
+            print(PRI1, "mainflow: mainflow_one_client(commCore);\n");
+            (void)mainflow_one_client(commCore);
         }
 
         print(PRI1, "mainflow: co_return 0;\n");

@@ -6,8 +6,9 @@
  * The registered functor now returns an async_task<int> instead of void
  * and the function dispatch uses co_await instead of a function call.
  *
- * @author Johan Vanslembrouck (johan.vanslembrouck@capgemini.com, johan.vanslembrouck@gmail.com)
+ * @author Johan Vanslembrouck
  */
+
 #ifndef _DISPATCHER4_H_
 #define _DISPATCHER4_H_
 
