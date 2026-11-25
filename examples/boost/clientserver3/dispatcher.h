@@ -75,12 +75,13 @@ public:
      * It then looks up the header in the dispatch table and calls the registered functor.
      * @param str is the input string
      */
-    void dispatch(std::string str)
+    int dispatch(std::string str)
     {
         print(PRI2, "Dispatcher::dispatch(str), m_index = %d, str = %s", m_index, str.c_str());
 
         std::string header = getHeader(str);
 
+        int res = -1;
         for (int i = 0; i < m_index; i++)
         {
             print(PRI2, "Dispatcher::dispatch(): m_dispatch_table[%d].str = <%s>\n", i, m_dispatch_table[i].str.c_str());
@@ -88,9 +89,12 @@ public:
             {
                 print(PRI1, "Dispatcher::dispatch(): found match at index %d\n", i);
                 m_dispatch_table[i].op(str);
+                res = i;
                 break;
             }
         }
+        print(PRI1, "Dispatcher::dispatch(): return %d\n", res);
+        return res;
     }
     
 protected:

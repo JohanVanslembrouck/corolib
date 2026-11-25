@@ -245,12 +245,13 @@ public:
      * It then looks up the header in the dispatch table and calls the registered functor.
      * @param str is the input string
      */
-    void dispatch(std::string str)
+    int dispatch(std::string str)
     {
         print(PRI2, "ServerApp::dispatch(<%s>), m_index = %d\n", str.c_str(), m_index);
         
         std::string header = getHeader(str);
 
+        int res = -1;
         for (int i = 0; i < m_index; i++)
         {
             print(PRI2, "ServerApp::dispatch(): m_dispatch_table[%d].str = <%s>\n", i, m_dispatch_table[i].str.c_str());
@@ -258,9 +259,12 @@ public:
             {
                 print(PRI1, "ServerApp::dispatch(): found match at index %d\n", i);
                 (void)m_dispatch_table[i].op(str);
+                res = i;
                 break;
             }
         }
+        print(PRI1, "ServerApp::dispatch(): return %d\n", res);
+        return res;
     }
     
     /**
@@ -279,6 +283,7 @@ public:
         while (1)
         {
             // Reading
+            print(PRI1);
             print(PRI1, "mainflow_one_client: async_operation<std::string> sr = commClient->start_reading();\n");
             async_operation<std::string> sr = commClient->start_reading();
             print(PRI1, "mainflow_one_client: std::string str = co_await sr;\n");
@@ -289,7 +294,10 @@ public:
 
             print(PRI1, "mainflow_one_client: dispatch(str);\n");
             // In reality, str will contain the identification and the marshalled arguments
-            dispatch(str);
+            int res = dispatch(str);
+            print(PRI1, "mainflow_one_client: res = %d\n", res);
+            if (res == -1)
+                print(PRI1, "read_client_request: dispatch failed!!!\n");
         }
         
         print(PRI1, "mainflow_one_client: commClient->stop();\n");

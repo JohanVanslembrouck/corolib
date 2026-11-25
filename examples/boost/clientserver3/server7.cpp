@@ -55,6 +55,7 @@ public:
         while (1)
         {
             // Reading
+            print(PRI1);
             print(PRI1, "read_client_request: async_operation<std::string> sr = commClient->start_reading();\n");
             async_operation<std::string> sr = commClient->start_reading();
             print(PRI1, "read_client_request: std::string str = co_await sr;\n");
@@ -67,7 +68,10 @@ public:
             print(PRI1, "read_client_request: dispatcher.dispatch(str);\n");
             // In reality, str will contain the identification and the marshalled arguments
             async_task<int> t = dispatcher.dispatch(str);
-            co_await t;
+            int res = co_await t;
+            print(PRI1, "read_client_request: res = %d\n", res);
+            if (res == -1)
+                print(PRI1, "read_client_request: dispatch failed!!!\n");
         }
 
         print(PRI1, "read_client_request: commClient->stop();\n");

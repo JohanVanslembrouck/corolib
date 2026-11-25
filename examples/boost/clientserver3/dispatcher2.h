@@ -95,7 +95,7 @@ public:
      * dispatch only calls the lambda that registerFunctor created before.
      * @param str is the input string
      */
-    void dispatch(std::string str)
+    int dispatch(std::string str)
     {
         int index = get_table_size();
 
@@ -103,6 +103,7 @@ public:
         
         std::string header = getHeader(str);
 
+        int res = -1;
         for (int i = 0; i < index+1; i++)
         {
             print(PRI2, "Dispatcher::dispatch(): m_dispatch_table[%d].str = <%s>\n", i, m_dispatch_table[i].str.c_str());
@@ -110,9 +111,12 @@ public:
             {
                 print(PRI1, "Dispatcher::dispatch(): found match at index %d\n", i);
                 m_dispatch_table[index].op2(str, i);
+                res = i;
                 break;
             }
         }
+        print(PRI1, "Dispatcher::dispatch(): return %d\n", res);
+        return res;
     }
 
 protected:

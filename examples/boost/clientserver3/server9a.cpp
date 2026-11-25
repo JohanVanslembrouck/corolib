@@ -74,19 +74,28 @@ public:
             }
         }
 
-        async_task<bool> dispatch(std::string str)          // returns bool in server8a.cpp
+        async_task<int> dispatch(std::string str)          // returns int in server8a.cpp
         {
             print(PRI2, "%p. Dispatcher::dispatch(str), m_index = %d, str = %s", this, m_index, str.c_str());
 
-            bool success = false;
+            int res = -1;
             m_handled = false;                                      // m_handled is not present in server9.cpp
             for (int i = 0; i < m_index && !m_handled; i++)         // m_handled is not present in server9.cpp
             {
-                 print(PRI1, "%p: Dispatcher::dispatch(...): before co_await m_serverapp->callCompletionHandler(%d, str)\n", this, m_dispatch_table[i]);
-                 success = co_await m_serverapp->callCompletionHandler(m_dispatch_table[i], str);
-                 print(PRI1, "%p: Dispatcher::dispatch(...): after co_await m_serverapp->callCompletionHandler(%d, str)\n", this, m_dispatch_table[i]);
+                 print(PRI1, "%p: Dispatcher::dispatch(...): before co_await m_serverapp->callCompletionHandler(%d, str)\n",
+					this, m_dispatch_table[i]);
+                 bool success = co_await m_serverapp->callCompletionHandler(m_dispatch_table[i], str);
+                 print(PRI1, "%p: Dispatcher::dispatch(...): after co_await m_serverapp->callCompletionHandler(%d, str): success = %d\n",
+					this, m_dispatch_table[i], success);
+                 print(PRI1, "%p: Dispatcher::dispatch(...): m_handled = %d\n", this, m_handled);
+                 if (m_handled)
+                 {
+                     res = i;
+                     break;
+                 }
             }
-            co_return success;
+            print(PRI1, "%p: Dispatcher::dispatch(...): return res\n", this, res);
+            co_return res;
         }
 
         void invokeAll(std::string str)
@@ -313,11 +322,12 @@ public:
                 break;
             }
 
-            print(PRI1, "read_client_request: before dispatcher.dispatch(sr);\n");
+            print(PRI1, "read_client_request: dispatcher.dispatch(sr);\n");
             // In reality, str will contain the identification and the marshalled arguments
-            if (! co_await dispatcher.dispatch(str))
+            int res = co_await dispatcher.dispatch(str);
+            print(PRI1, "read_client_request: res = %d\n", res);
+            if (res == -1)
                 print(PRI1, "read_client_request: dispatch failed!!!\n");
-            print(PRI1, "read_client_request: after dispatcher.dispatch(sr);\n");
         }
 
         print(PRI1, "read_client_request: commClient->stop();\n");

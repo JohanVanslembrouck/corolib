@@ -5,7 +5,7 @@
  * in combination with Boost ASIO to implement a server application.
  * 
  * server8.cpp is a variant of server7.cpp.
- * server8.cpp uses "observer" couroutines, where one observer waits for and handles 1 specific request.
+ * server8.cpp uses "observer" coroutines, where one observer waits for and handles 1 specific request.
  * server8.cpp resumes the observer coroutine that is interested in that request.
  *
  * @author Johan Vanslembrouck
@@ -86,26 +86,33 @@ public:
             return "";
         }
 
-        bool dispatch(std::string str)                      // returns async_task<bool> in server9.cpp
+        int dispatch(std::string str)                      // returns async_task<int> in server9.cpp
         {
             print(PRI2, "%p. Dispatcher::dispatch(str), m_index = %d, str = %s", this, m_index, str.c_str());
 
             std::string header = getHeader(str);
 
+            int res = -1;
             for (int i = 0; i < m_index; i++)
             {
-                print(PRI2, "%p: Dispatcher::dispatch(): m_dispatch_table[%d].str = <%s>\n", this,  i, m_dispatch_table[i].str.c_str());
+                print(PRI2, "%p: Dispatcher::dispatch(): m_dispatch_table[%d].str = <%s>\n",
+					this, i, m_dispatch_table[i].str.c_str());
                 if (m_dispatch_table[i].str.compare(header) == 0)
                 {
-                    print(PRI1, "%p: Dispatcher::dispatch(...): found match at index %d => %d\n", this, i, m_dispatch_table[i].op);
+                    print(PRI1, "%p: Dispatcher::dispatch(...): found match at index %d => %d\n",
+						this, i, m_dispatch_table[i].op);
                     
-                    print(PRI1, "%p: Dispatcher::dispatch(...): before m_serverapp->callCompletionHandler(%d, %s:...)\n", this, m_dispatch_table[i].op, header.c_str());
+                    print(PRI1, "%p: Dispatcher::dispatch(...): before m_serverapp->callCompletionHandler(%d, %s:...)\n",
+						this, m_dispatch_table[i].op, header.c_str());
                     m_serverapp->callCompletionHandler(m_dispatch_table[i].op, str);
-                    print(PRI1, "%p: Dispatcher::dispatch(...): after m_serverapp->callCompletionHandler(%d, %s:...)\n", this, m_dispatch_table[i].op, header.c_str());
-                    return true;
+                    print(PRI1, "%p: Dispatcher::dispatch(...): after m_serverapp->callCompletionHandler(%d, %s:...)\n",
+						this, m_dispatch_table[i].op, header.c_str());
+                    res = i;
+                    break;
                 }
             }
-            return false;
+            print(PRI1, "%p; Dispatcher::dispatch(): return %d\n", this, res);
+            return res;
         }
 
         void invokeAll(std::string str)
@@ -274,11 +281,12 @@ public:
                 break;
             }
 
-            print(PRI1, "read_client_request: before dispatcher.dispatch(sr);\n");
+            print(PRI1, "read_client_request: dispatcher.dispatch(sr);\n");
             // In reality, str will contain the identification and the marshalled arguments
-            if (!dispatcher.dispatch(str))
+            int res = dispatcher.dispatch(str);
+            print(PRI1, "read_client_request: res = %d\n", res);
+            if (res == -1)
                 print(PRI1, "read_client_request: dispatch failed!!!\n");
-            print(PRI1, "read_client_request: after dispatcher.dispatch(sr);\n");
         }
 
         print(PRI1, "read_client_request: commClient->stop();\n");

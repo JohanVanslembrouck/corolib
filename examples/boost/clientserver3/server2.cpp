@@ -100,6 +100,7 @@ public:
         while (1)
         {
             // Reading
+            print(PRI1);
             print(PRI1, "mainflow_one_client: async_operation<std::string> sr = commClient->start_reading();\n");
             async_operation<std::string> sr = commClient->start_reading();
             print(PRI1, "mainflow_one_client: std::string str = co_await sr;\n");
@@ -110,7 +111,10 @@ public:
 
             print(PRI1, "mainflow_one_client: dispatcher.dispatch(str);\n");
             // In reality, str will contain the identification and the marshalled arguments
-            dispatcher.dispatch(str);
+            int res = dispatcher.dispatch(str);
+            print(PRI1, "mainflow_one_client: res = %d\n", res);
+            if (res == -1)
+                print(PRI1, "read_client_request: dispatch failed!!!\n");
         }
 
         print(PRI1, "mainflow_one_client: commClient->stop();\n");
