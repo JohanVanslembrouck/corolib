@@ -77,7 +77,7 @@ public:
      */
     int dispatch(std::string str)
     {
-        print(PRI2, "Dispatcher::dispatch(str), m_index = %d, str = %s", m_index, str.c_str());
+        print(PRI1, "Dispatcher::dispatch(str): m_index = %d, str = %s", m_index, str.c_str());
 
         std::string header = getHeader(str);
 

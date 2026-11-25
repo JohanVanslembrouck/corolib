@@ -76,25 +76,25 @@ public:
 
         async_task<int> dispatch(std::string str)          // returns int in server8a.cpp
         {
-            print(PRI2, "%p. Dispatcher::dispatch(str), m_index = %d, str = %s", this, m_index, str.c_str());
+            print(PRI1, "%p. Dispatcher::dispatch(str), m_index = %d, str = %s", this, m_index, str.c_str());
 
             int res = -1;
             m_handled = false;                                      // m_handled is not present in server9.cpp
             for (int i = 0; i < m_index && !m_handled; i++)         // m_handled is not present in server9.cpp
             {
-                 print(PRI1, "%p: Dispatcher::dispatch(...): before co_await m_serverapp->callCompletionHandler(%d, str)\n",
+                print(PRI1, "%p: Dispatcher::dispatch(): before co_await m_serverapp->callCompletionHandler(%d, str)\n",
+			        this, m_dispatch_table[i]);
+                co_await m_serverapp->callCompletionHandler(m_dispatch_table[i], str);
+                print(PRI1, "%p: Dispatcher::dispatch(): after co_await m_serverapp->callCompletionHandler(%d, str)\n",
 					this, m_dispatch_table[i]);
-                 bool success = co_await m_serverapp->callCompletionHandler(m_dispatch_table[i], str);
-                 print(PRI1, "%p: Dispatcher::dispatch(...): after co_await m_serverapp->callCompletionHandler(%d, str): success = %d\n",
-					this, m_dispatch_table[i], success);
-                 print(PRI1, "%p: Dispatcher::dispatch(...): m_handled = %d\n", this, m_handled);
-                 if (m_handled)
-                 {
-                     res = i;
-                     break;
-                 }
+                print(PRI1, "%p: Dispatcher::dispatch(): m_handled = %d\n", this, m_handled);
+                if (m_handled)
+                {
+                    res = i;
+                    break;
+                }
             }
-            print(PRI1, "%p: Dispatcher::dispatch(...): return res\n", this, res);
+            print(PRI1, "%p: Dispatcher::dispatch(): co_return %d\n", this, res);
             co_return res;
         }
 
@@ -119,32 +119,11 @@ public:
 
     // ---------------------------------------------------------------------
 
-    async_task<bool> callCompletionHandler(int idx, std::string str)        // returns void in server8a.cpp
+    // Synchronous coroutine: can be replaced with a function
+    async_task<void> callCompletionHandler(int idx, std::string str)        // returns void in server8a.cpp
     {
-        bool success = false;
-
-        async_operation_base* om_async_operation = get_async_operation(idx);
-
-        async_operation_rmc<std::string>* om_async_operation_t =
-            static_cast<async_operation_rmc<std::string>*>(om_async_operation);
-
-        if (om_async_operation_t)
-        {
-            print(PRI2, "%p: Dispatcher::callCompletionHandler(%p): om_async_operation_t->set_result(str)\n", this, om_async_operation_t);
-            om_async_operation_t->set_result(str);
-            print(PRI2, "%p: Dispatcher::callCompletionHandler(%p): om_async_operation_t->completed()\n", this, om_async_operation_t);
-            om_async_operation_t->completed();
-            success = true;
-        }
-        else
-        {
-            // This can occur when the async_operation_base has gone out of scope.
-            print(PRI1, "%p: Dispatcher::callCompletionHandler(%p): Warning: om_async_operation_t == nullptr\n", this, om_async_operation_t);
-        }
-        
-        co_await *om_async_operation_t;
-
-        co_return success;
+        completionHandler<std::string>(idx, str);
+        co_return;
     }
 
     std::string getHeader(std::string str)
@@ -166,7 +145,7 @@ public:
         static int counter = 0;
 
         int index = get_free_index();
-        async_operation_rmc<std::string> op_str{ this, index };         // uses async_operation in server8a.cpp
+        async_operation<std::string> op_str{ this, index };
         op_str.auto_reset(true);
         dispatcher.registerAsyncOperation(index);
         
@@ -199,7 +178,7 @@ public:
         static int counter = 0;
 
         int index = get_free_index();
-        async_operation_rmc<std::string> op_str{ this, index };         // uses async_operation in server8a.cpp
+        async_operation<std::string> op_str{ this, index };
         op_str.auto_reset(true);
         dispatcher.registerAsyncOperation(index);
         
@@ -232,7 +211,7 @@ public:
         static int counter = 0;
 
         int index = get_free_index();
-        async_operation_rmc<std::string> op_str{ this, index };         // uses async_operation in server8a.cpp
+        async_operation<std::string> op_str{ this, index };
         op_str.auto_reset(true);
         dispatcher.registerAsyncOperation(index);
         
@@ -265,7 +244,7 @@ public:
         static int counter = 0;
 
         int index = get_free_index();
-        async_operation_rmc<std::string> op_str{ this, index };         // uses async_operation in server8a.cpp
+        async_operation<std::string> op_str{ this, index };
         op_str.auto_reset(true);
         dispatcher.registerAsyncOperation(index);
         

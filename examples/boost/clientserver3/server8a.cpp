@@ -76,25 +76,25 @@ public:
 
         int dispatch(std::string str)                      // returns async_task<int> in server9a.cpp
         {
-            print(PRI2, "%p. Dispatcher::dispatch(str), m_index = %d, str = %s", this, m_index, str.c_str());
+            print(PRI1, "%p. Dispatcher::dispatch(str): m_index = %d, str = %s", this, m_index, str.c_str());
 
             int res = -1;
             m_handled = false;                                      // m_handled is not present in server8.cpp
             for (int i = 0; i < m_index && !m_handled; i++)         // m_handled is not present in server8.cpp
             {
-                print(PRI1, "%p: Dispatcher::dispatch(...): before m_serverapp->callCompletionHandler(%d, str)\n",
+                print(PRI1, "%p: Dispatcher::dispatch(): before m_serverapp->callCompletionHandler(%d, str)\n",
 					this, m_dispatch_table[i]);
                 m_serverapp->callCompletionHandler(m_dispatch_table[i], str);
-                print(PRI1, "%p: Dispatcher::dispatch(...): after m_serverapp->callCompletionHandler(%d, str)\n",
+                print(PRI1, "%p: Dispatcher::dispatch(): after m_serverapp->callCompletionHandler(%d, str)\n",
 					this, m_dispatch_table[i]);
-                print(PRI1, "%p: Dispatcher::dispatch(...): m_handled = %d\n", this, m_handled);
+                print(PRI1, "%p: Dispatcher::dispatch(): m_handled = %d\n", this, m_handled);
                 if (m_handled)
                 {
                     res = i;
                     break;
                 }
             }
-            print(PRI1, "%p: Dispatcher::dispatch(...): return res\n", this, res);
+            print(PRI1, "%p: Dispatcher::dispatch(): return %d\n", this, res);
             return res;
         }
 
@@ -119,7 +119,7 @@ public:
 
     // ---------------------------------------------------------------------
 
-    void callCompletionHandler(int i, std::string str)                      // returns async_task<bool> in server9a.cpp
+    void callCompletionHandler(int i, std::string str)                      // returns async_task<void> in server9a.cpp
     {
         completionHandler<std::string>(i, str);
     }
@@ -143,7 +143,7 @@ public:
         static int counter = 0;
 
         int index = get_free_index();
-        async_operation<std::string> op_str{ this, index };             // uses async_operation_rmc in server9a.cpp
+        async_operation<std::string> op_str{ this, index };
         op_str.auto_reset(true);
         dispatcher.registerAsyncOperation(index);
         
@@ -176,7 +176,7 @@ public:
         static int counter = 0;
 
         int index = get_free_index();
-        async_operation<std::string> op_str{ this, index };             // uses async_operation_rmc in server9a.cpp
+        async_operation<std::string> op_str{ this, index };
         op_str.auto_reset(true);
         dispatcher.registerAsyncOperation(index);
         
@@ -209,7 +209,7 @@ public:
         static int counter = 0;
 
         int index = get_free_index();
-        async_operation<std::string> op_str{ this, index };             // uses async_operation_rmc in server9a.cpp
+        async_operation<std::string> op_str{ this, index };
         op_str.auto_reset(true);
         dispatcher.registerAsyncOperation(index);
         
@@ -242,7 +242,7 @@ public:
         static int counter = 0;
 
         int index = get_free_index();
-        async_operation<std::string> op_str{ this, index };             // uses async_operation_rmc in server9a.cpp
+        async_operation<std::string> op_str{ this, index };
         op_str.auto_reset(true);
         dispatcher.registerAsyncOperation(index);
         

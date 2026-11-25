@@ -81,7 +81,7 @@ public:
     {
         int index = get_table_size();
 
-        print(PRI2, "Dispatcher::dispatch(str), index = %d, str = %s", index, str.c_str());
+        print(PRI1, "Dispatcher::dispatch(str): index = %d, str = %s", index, str.c_str());
         
         std::string header = getHeader(str);
 

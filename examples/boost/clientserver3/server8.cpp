@@ -88,7 +88,7 @@ public:
 
         int dispatch(std::string str)                      // returns async_task<int> in server9.cpp
         {
-            print(PRI2, "%p. Dispatcher::dispatch(str), m_index = %d, str = %s", this, m_index, str.c_str());
+            print(PRI1, "%p. Dispatcher::dispatch(str): m_index = %d, str = %s", this, m_index, str.c_str());
 
             std::string header = getHeader(str);
 
@@ -99,13 +99,13 @@ public:
 					this, i, m_dispatch_table[i].str.c_str());
                 if (m_dispatch_table[i].str.compare(header) == 0)
                 {
-                    print(PRI1, "%p: Dispatcher::dispatch(...): found match at index %d => %d\n",
+                    print(PRI1, "%p: Dispatcher::dispatch(): found match at index %d => %d\n",
 						this, i, m_dispatch_table[i].op);
                     
-                    print(PRI1, "%p: Dispatcher::dispatch(...): before m_serverapp->callCompletionHandler(%d, %s:...)\n",
+                    print(PRI1, "%p: Dispatcher::dispatch(): before m_serverapp->callCompletionHandler(%d, %s:...)\n",
 						this, m_dispatch_table[i].op, header.c_str());
                     m_serverapp->callCompletionHandler(m_dispatch_table[i].op, str);
-                    print(PRI1, "%p: Dispatcher::dispatch(...): after m_serverapp->callCompletionHandler(%d, %s:...)\n",
+                    print(PRI1, "%p: Dispatcher::dispatch(): after m_serverapp->callCompletionHandler(%d, %s:...)\n",
 						this, m_dispatch_table[i].op, header.c_str());
                     res = i;
                     break;
@@ -134,7 +134,7 @@ public:
 
     // ---------------------------------------------------------------------
 
-    void callCompletionHandler(int i, std::string str)          // returns async_task<bool> in server9.cpp
+    void callCompletionHandler(int i, std::string str)          // returns async_task<void> in server9.cpp
     {
         completionHandler<std::string>(i, str);
     }
@@ -145,7 +145,7 @@ public:
         static int counter = 0;
 
         int index = get_free_index();
-        async_operation<std::string> op_str{ this, index };             // uses async_operation_rmc in server9.cpp
+        async_operation<std::string> op_str{ this, index };
         op_str.auto_reset(true);
         dispatcher.registerAsyncOperation("Req1", index);
         
@@ -173,7 +173,7 @@ public:
         static int counter = 0;
 
         int index = get_free_index();
-        async_operation<std::string> op_str{ this, index };             // uses async_operation_rmc in server9.cpp
+        async_operation<std::string> op_str{ this, index };
         op_str.auto_reset(true);
         dispatcher.registerAsyncOperation("Req2", index);
         
@@ -201,7 +201,7 @@ public:
         static int counter = 0;
 
         int index = get_free_index();
-        async_operation<std::string> op_str{ this, index };             // uses async_operation_rmc in server9.cpp
+        async_operation<std::string> op_str{ this, index };
         op_str.auto_reset(true);
         dispatcher.registerAsyncOperation("Req3", index);
         
@@ -229,7 +229,7 @@ public:
         static int counter = 0;
 
         int index = get_free_index();
-        async_operation<std::string> op_str{ this, index };             // uses async_operation_rmc in server9.cpp
+        async_operation<std::string> op_str{ this, index };
         op_str.auto_reset(true);
         dispatcher.registerAsyncOperation("Req4", index);
         

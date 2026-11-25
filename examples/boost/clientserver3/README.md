@@ -25,11 +25,11 @@ Such real-life applications could use JSON data structures that, when marshalled
 
 ## Start-up
 
-'cs3-server', 'cs3-server2', ... 'cs3-server9a' are server applications with 'cs3-client1' or 'cs3-client2' as their client application.
+'cs3-server', 'cs3-server2', ... 'cs3-server10a' are server applications with 'cs3-client1' or 'cs3-client2' as their client application.
 
 After building, launch the applications in the following order:
 
-* 'cs3-server' or 'cs3-server2' or ... or 'cs3-server9a'
+* 'cs3-server' or 'cs3-server2' or ... or 'cs3-server10a'
 * 'cs3-client1' (one or more instances) or 'cs3-client2' (one or more instances)
 
 ## Server applications
@@ -49,6 +49,9 @@ The following table gives an overview of the server applications:
 | server8a.cpp	| (defined locally)	| serverrequest2.h	| when_all.h | oneway_task.h | no            |
 | server9.cpp	| (defined locally)	| serverrequest2.h	| when_all.h | oneway_task.h | no            |
 | server9a.cpp	| (defined locally) | serverrequest2.h	| when_all.h | oneway_task.h | no            |
+| server10.cpp	| (defined locally)	| serverrequest2.h	| when_all.h | oneway_task.h | no            |
+| server10a.cpp	| (defined locally) | serverrequest2.h	| when_all.h | oneway_task.h | no            |
+
 
 cs3-server (server.cpp) and cs3-server2 (server2.cpp) are equivalent. 
 The difference is that server.cpp is self-contained, while server2.cpp includes serverrequest.h and dispatcher.h.
@@ -89,7 +92,11 @@ cs3-server9 (server9.cpp) is based on cs3-server8 (server8.cpp).
 In contrast to cs3-server8.cpp, cs3-server9.cpp uses a coroutine "chain" from read_client_request to serverRequest.operationX,
 i.e. all functions in between (in server8.cpp) have been turned into coroutines.
 
-cs3-server8a (server8a.cpp) and cs3-server9a (server9a.cpp) are variants of cs3-server8 (server8.cpp) and cs3-server9 (server9.cpp), respectively.
+cs3-server10 (server10.cpp) is based on cs3-server9 (server9.cpp).
+In contrast to cs3-server9.cpp, cs3-server10.cpp uses assync_operation_rmc in some coroutines instead of async_operation.
+
+cs3-server8a (server8a.cpp), cs3-server9a (server9a.cpp) and cs3-server10a (server10a.cpp) are variants of 
+cs3-server8 (server8.cpp), cs3-server9 (server9.cpp) and cs3-server10 (server10.cpp), respectively.
 The 'a' variant uses the chain of responsibility design pattern, where the observer coroutines decide if they handle a request or not.
 This variant is less efficient than the original implementation because the decision is taken deeper in the call tree.
 The main objective is to illustrate the use of the chain of responsibility design pattern.
