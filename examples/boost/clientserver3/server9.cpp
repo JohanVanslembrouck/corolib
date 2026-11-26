@@ -5,8 +5,8 @@
  * in combination with Boost ASIO to implement a server application.
  * 
  * server9.cpp is a variant of server8.cpp.
- * In contrast to cs3-server8.cpp, cs3-server9.cpp uses a coroutine "chain" from read_client_request to serverRequest.operationX,
- * i.e. all functions in between (in server8.cpp) have been turned into coroutines.
+ * In contrast to cs3-server8.cpp, cs3-server9.cpp uses coroutines only from read_client_request to serverRequest.operationX,
+ * i.e., all functions in between (in server8.cpp) have been turned into coroutines.
  * 
  * @author Johan Vanslembrouck
  */
@@ -117,7 +117,7 @@ public:
 
         void invokeAll(std::string str)
         {
-            print(PRI1, "%p: Dispatcher::invokeAll(<%s>), m_index = %d\n", this, str.c_str(), m_index);
+            print(PRI1, "%p: Dispatcher::invokeAll(str): m_index = %d, str = %s", this, m_index, str.c_str());
             for (int i = 0; i < m_index; i++)
             {
                 m_serverapp->callCompletionHandler(m_dispatch_table[i].op, str);
@@ -334,7 +334,7 @@ public:
         print(PRI1, "mainflow_one_client: int i = co_await rcr;\n");
         int i = co_await rcr;
 
-        dispatcher.invokeAll("EOF");
+        dispatcher.invokeAll("EOF\n");
 
         print(PRI1, "mainflow_one_client: when_all obs(sr1, sr2, sr3, sr4);\n");
         when_all obs(sr1, sr2, sr3, sr4);

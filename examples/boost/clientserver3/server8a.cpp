@@ -6,8 +6,11 @@
  * 
  * server8a.cpp is a variant of server8.cpp.
  * 
- * This variant uses the chain of responsibility design pattern, where the observer coroutines decide if they handle a request or not.
- * This variant is less efficient than the original implementation because the decision is taken deeper in the call tree.
+ * This variant uses the "chain of responsibility" design pattern,
+ * where "observer" coroutines (request1Observer, request2Observer, request3Observer, request4Observer) 
+ * decide if they handle a request or not.
+ * 
+ * This variant is less efficient than the implementation in server8.cpp, because the decision is taken deeper in the call tree.
  * The main objective is to illustrate the use of the chain of responsibility design pattern.
  *
  * @author Johan Vanslembrouck
@@ -100,7 +103,7 @@ public:
 
         void invokeAll(std::string str)
         {
-            print(PRI1, "%p: Dispatcher::invokeAll(<%s>), m_index = %d\n", this, str.c_str(), m_index);
+            print(PRI1, "%p: Dispatcher::invokeAll(str): m_index = %d, str = %s", this, m_index, str.c_str());
             for (int i = 0; i < m_index; i++)
             {
                 m_serverapp->callCompletionHandler(m_dispatch_table[i], str);
@@ -155,7 +158,7 @@ public:
             if (dispatcher.m_running)
             {
                 std::string header = getHeader(str);
-                if (header.compare("Req1") == 0)
+                if (header.compare("Req1") == 0)            // In server8.cpp, this test is placed in Dispatcher::dispatch
                 {
                     dispatcher.m_handled = true;            // m_handled is not present in server8.cpp
                     // TODO: unmarshal str into Req1
@@ -188,7 +191,7 @@ public:
             if (dispatcher.m_running)
             {
                 std::string header = getHeader(str);
-                if (header.compare("Req2") == 0)
+                if (header.compare("Req2") == 0)            // In server8.cpp, this test is placed in Dispatcher::dispatch
                 {
                     dispatcher.m_handled = true;            // m_handled is not present in server8.cpp
                     // TODO: unmarshal str into Req1
@@ -221,7 +224,7 @@ public:
             if (dispatcher.m_running)
             {
                 std::string header = getHeader(str);
-                if (header.compare("Req3") == 0)
+                if (header.compare("Req3") == 0)            // In server8.cpp, this test is placed in Dispatcher::dispatch
                 {
                     dispatcher.m_handled = true;            // m_handled is not present in server8.cpp
                     // TODO: unmarshal str into Req3
@@ -254,7 +257,7 @@ public:
             if (dispatcher.m_running)
             {
                 std::string header = getHeader(str);
-                if (header.compare("Req4") == 0)
+                if (header.compare("Req4") == 0)            // In server8.cpp, this test is placed in Dispatcher::dispatch
                 {
                     dispatcher.m_handled = true;            // m_handled is not present in server8.cpp
                     // TODO: unmarshal str into Req4
@@ -350,7 +353,7 @@ public:
         print(PRI1, "mainflow_one_client: int i = co_await rcr;\n");
         int i = co_await rcr;
 
-        dispatcher.invokeAll("EOF");
+        dispatcher.invokeAll("EOF\n");
 
         print(PRI1, "mainflow_one_client: when_all obs(sr1, sr2, sr3, sr4);\n");
         when_all obs(sr1, sr2, sr3, sr4);
