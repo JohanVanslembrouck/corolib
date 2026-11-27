@@ -54,6 +54,15 @@ else
     echo "set(BOOST_INSTALLED TRUE) in CMakeList.txt and rebuild."
 fi
 
+if [ -d "../../corolib-build/examples/boost/clientserver3" ]; then
+    echo "cp ../examples/boost/clientserver3/run.sh ../../corolib-build/examples/boost/clientserver3/."
+    cp ../examples/boost/clientserver3/run.sh ../../corolib-build/examples/boost/clientserver3/.
+    chmod ug+x ../../corolib-build/examples/boost/clientserver3/run.sh
+else
+    echo "../../corolib-build/examples/boost/clientserver3 does not exist."
+    echo "set(BOOST_INSTALLED TRUE) in CMakeList.txt and rebuild."
+fi
+
 if [ -d "../../corolib-build/examples/boost/various" ]; then
     echo "cp ../examples/boost/various/run.sh ../../corolib-build/examples/boost/various/."
     cp ../examples/boost/various/run.sh ../../corolib-build/examples/boost/various/.

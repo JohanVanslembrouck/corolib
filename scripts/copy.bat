@@ -48,6 +48,14 @@ if exist ..\out\build\x64-Debug\examples\boost\clientserver1x\ (
     echo "set(BOOST_INSTALLED TRUE)" in CMakeList.txt and rebuild.
 )
 
+if exist ..\out\build\x64-Debug\examples\boost\clientserver3\ (
+    echo copy ..\examples\boost\clientserver3\run.bat ..\out\build\x64-Debug\examples\boost\clientserver3\.
+    copy ..\examples\boost\clientserver3\run.bat ..\out\build\x64-Debug\examples\boost\clientserver3\.
+) else (
+    echo ..\out\build\x64-Debug\examples\boost\clientserver3\ does not exist.
+    echo "set(BOOST_INSTALLED TRUE)" in CMakeList.txt and rebuild.
+)
+
 if exist ..\out\build\x64-Debug\examples\boost\various\ (
     echo copy ..\examples\boost\various\run.bat ..\out\build\x64-Debug\examples\boost\various\.
     copy ..\examples\boost\various\run.bat ..\out\build\x64-Debug\examples\boost\various\.

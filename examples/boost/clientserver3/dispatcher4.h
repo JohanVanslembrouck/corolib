@@ -81,24 +81,24 @@ public:
     {
         int index = get_table_size();
 
-        print(PRI1, "Dispatcher::dispatch(str): index = %d, str = %s", index, str.c_str());
+        print(PRI1, "Dispatcher::dispatch: index = %d, str = %s", index, str.c_str());
         
         std::string header = getHeader(str);
 
         int res = -1;
         for (int i = 0; i < index+1; i++)
         {
-            print(PRI2, "Dispatcher::dispatch(): m_dispatch_table[%d].str = <%s>\n", i, m_dispatch_table[i].str.c_str());
+            print(PRI2, "Dispatcher::dispatch: m_dispatch_table[%d].str = <%s>\n", i, m_dispatch_table[i].str.c_str());
             if (m_dispatch_table[i].str.compare(header) == 0)
             {
-                print(PRI1, "Dispatcher::dispatch(): found match at index %d\n", i);
+                print(PRI1, "Dispatcher::dispatch: found match at index %d\n", i);
                 async_task<int> t = m_dispatch_table[i].op(str);
                 co_await t;
                 res = i;
                 break;
             }
         }
-        print(PRI1, "Dispatcher::dispatch(): co_return %d\n", res);
+        print(PRI1, "Dispatcher::dispatch: co_return %d\n", res);
         co_return res;
     }
 

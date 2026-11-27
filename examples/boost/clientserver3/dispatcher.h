@@ -77,23 +77,23 @@ public:
      */
     int dispatch(std::string str)
     {
-        print(PRI1, "Dispatcher::dispatch(str): m_index = %d, str = %s", m_index, str.c_str());
+        print(PRI1, "Dispatcher::dispatch: m_index = %d, str = %s", m_index, str.c_str());
 
         std::string header = getHeader(str);
 
         int res = -1;
         for (int i = 0; i < m_index; i++)
         {
-            print(PRI2, "Dispatcher::dispatch(): m_dispatch_table[%d].str = <%s>\n", i, m_dispatch_table[i].str.c_str());
+            print(PRI2, "Dispatcher::dispatch: m_dispatch_table[%d].str = <%s>\n", i, m_dispatch_table[i].str.c_str());
             if (m_dispatch_table[i].str.compare(header) == 0)
             {
-                print(PRI1, "Dispatcher::dispatch(): found match at index %d\n", i);
+                print(PRI1, "Dispatcher::dispatch: found match at index %d\n", i);
                 m_dispatch_table[i].op(str);
                 res = i;
                 break;
             }
         }
-        print(PRI1, "Dispatcher::dispatch(): return %d\n", res);
+        print(PRI1, "Dispatcher::dispatch: return %d\n", res);
         return res;
     }
     

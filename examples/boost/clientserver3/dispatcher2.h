@@ -57,14 +57,7 @@ public:
             print(PRI1, "lambda: idx = %d, str = %s", idx, str.c_str());
             m_dispatch_table[idx].op(str);
 
-            async_operation_base* om_async_operation = get_async_operation(idx);
-            async_operation<std::string>* om_async_operation_t = 
-                static_cast<async_operation<std::string>*>(om_async_operation);
-            if (om_async_operation_t)
-            {
-                om_async_operation_t->set_result(str);
-                om_async_operation_t->completed();
-            }
+            completionHandler<std::string>(idx, str);
         };
         return ret;
     }
@@ -99,23 +92,23 @@ public:
     {
         int index = get_table_size();
 
-        print(PRI1, "Dispatcher::dispatch(str): index = %d, str = %s", index, str.c_str());
+        print(PRI1, "Dispatcher::dispatch: index = %d, str = %s", index, str.c_str());
         
         std::string header = getHeader(str);
 
         int res = -1;
         for (int i = 0; i < index+1; i++)
         {
-            print(PRI2, "Dispatcher::dispatch(): m_dispatch_table[%d].str = <%s>\n", i, m_dispatch_table[i].str.c_str());
+            print(PRI2, "Dispatcher::dispatch: m_dispatch_table[%d].str = <%s>\n", i, m_dispatch_table[i].str.c_str());
             if (m_dispatch_table[i].str.compare(header) == 0)
             {
-                print(PRI1, "Dispatcher::dispatch(): found match at index %d\n", i);
+                print(PRI1, "Dispatcher::dispatch: found match at index %d\n", i);
                 m_dispatch_table[index].op2(str, i);
                 res = i;
                 break;
             }
         }
-        print(PRI1, "Dispatcher::dispatch(): return %d\n", res);
+        print(PRI1, "Dispatcher::dispatch: return %d\n", res);
         return res;
     }
 

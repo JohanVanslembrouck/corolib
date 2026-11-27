@@ -88,36 +88,36 @@ public:
 
         async_task<int> dispatch(std::string str)          // returns int in server8.cpp
         {
-            print(PRI1, "%p. Dispatcher::dispatch(str): m_index = %d, str = %s", this, m_index, str.c_str());
+            print(PRI1, "%p: Dispatcher::dispatch: m_index = %d, str = %s", this, m_index, str.c_str());
 
             std::string header = getHeader(str);
 
             int res = -1;
             for (int i = 0; i < m_index; i++)
             {
-                print(PRI2, "%p: Dispatcher::dispatch(): m_dispatch_table[%d].str = <%s>\n",
+                print(PRI2, "%p: Dispatcher::dispatch: m_dispatch_table[%d].str = <%s>\n",
 					this, i, m_dispatch_table[i].str.c_str());
                 if (m_dispatch_table[i].str.compare(header) == 0)
                 {
-                    print(PRI1, "%p: Dispatcher::dispatch(): found match at index %d => %d\n",
+                    print(PRI1, "%p: Dispatcher::dispatch: found match at index %d => %d\n",
 						this, i, m_dispatch_table[i].op);
                     
-                    print(PRI1, "%p: Dispatcher::dispatch(): before co_await m_serverapp->callCompletionHandler(%d, %s:...)\n",
+                    print(PRI1, "%p: Dispatcher::dispatch: before co_await m_serverapp->callCompletionHandler(%d, %s:...)\n",
 						this, m_dispatch_table[i].op, header.c_str());
                     co_await m_serverapp->callCompletionHandler(m_dispatch_table[i].op, str);
-                    print(PRI1, "%p: Dispatcher::dispatch(): after co_await m_serverapp->callCompletionHandler(%d, %s:...)\n",
+                    print(PRI1, "%p: Dispatcher::dispatch: after co_await m_serverapp->callCompletionHandler(%d, %s:...)\n",
 						this, m_dispatch_table[i].op, header.c_str());
                     res = i;
                     break;
                 }
             }
-            print(PRI1, "%p: Dispatcher::dispatch(): co_return %d\n", this, res);
+            print(PRI1, "%p: Dispatcher::dispatch: co_return %d\n", this, res);
             co_return res;
         }
 
         void invokeAll(std::string str)
         {
-            print(PRI1, "%p: Dispatcher::invokeAll(str): m_index = %d, str = %s", this, m_index, str.c_str());
+            print(PRI1, "%p: Dispatcher::invokeAll: m_index = %d, str = %s", this, m_index, str.c_str());
             for (int i = 0; i < m_index; i++)
             {
                 m_serverapp->callCompletionHandler(m_dispatch_table[i].op, str);
@@ -275,11 +275,12 @@ public:
             async_operation<std::string> sr = commClient->start_reading();
             print(PRI1, "read_client_request: std::string str = co_await sr;\n");
             std::string str = co_await sr;
-            print(PRI1, "read_client_request: std::string str = %s", str.c_str());
+            print(PRI1, "read_client_request: str = %s", str.c_str());
 
-            if (str.compare("EOF") == 0)
+            if (str.compare(0, 3, "EOF") == 0)
             {
                 dispatcher.m_running = false;
+                print(PRI1, "read_client_request: exiting loop\n");
                 break;
             }
 
@@ -288,7 +289,10 @@ public:
             int res = co_await dispatcher.dispatch(str);
             print(PRI1, "read_client_request: res = %d\n", res);
             if (res == -1)
+            {
                 print(PRI1, "read_client_request: dispatch failed!!!\n");
+                break;
+            }
         }
 
         print(PRI1, "read_client_request: commClient->stop();\n");

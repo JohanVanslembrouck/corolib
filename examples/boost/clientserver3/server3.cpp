@@ -56,16 +56,23 @@ public:
             async_operation<std::string> sr = commClient->start_reading();
             print(PRI1, "read_client_request: std::string str = co_await sr;\n");
             std::string str = co_await sr;
-            
-            if (str.compare("EOF") == 0)
+            print(PRI1, "read_client_request: str = %s", str.c_str());
+
+            if (str.compare(0, 3, "EOF") == 0)
+            {
+                print(PRI1, "read_client_request: exiting loop\n");
                 break;
+            }
 
             print(PRI1, "read_client_request: dispatcher.dispatch(str);\n");
             // In reality, str will contain the identification and the marshalled arguments
             int res = dispatcher.dispatch(str);
             print(PRI1, "read_client_request: res = %d\n", res);
             if (res == -1)
+            {
                 print(PRI1, "read_client_request: dispatch failed!!!\n");
+                break;
+            }
         }
 
         print(PRI1, "read_client_request: commClient->stop();\n");

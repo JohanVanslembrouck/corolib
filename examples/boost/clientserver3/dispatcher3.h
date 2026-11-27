@@ -105,23 +105,52 @@ public:
     {
         int index = get_table_size();
 
-        print(PRI1, "Dispatcher::dispatch(str): index = %d: str = %s", index, str.c_str());
+        print(PRI1, "Dispatcher::dispatch: index = %d: str = %s", index, str.c_str());
         
         std::string header = getHeader(str);
 
         int res = -1;
+        async_task<int> t;
         for (int i = 0; i < index+1; i++)
         {
-            print(PRI2, "Dispatcher::dispatch(): m_dispatch_table[%d].str = <%s>\n", i, m_dispatch_table[i].str.c_str());
+            print(PRI2, "Dispatcher::dispatch: m_dispatch_table[%d].str = <%s>\n", i, m_dispatch_table[i].str.c_str());
             if (m_dispatch_table[i].str.compare(header) == 0)
             {
-                print(PRI1, "Dispatcher::dispatch(): found match at index %d\n", i);
-                m_dispatch_table[index].op2(str, i);
+                print(PRI1, "Dispatcher::dispatch: found match at index %d\n", i);
+                t = m_dispatch_table[index].op2(str, i);
+                // co_await t;  // Not possible, because dispatch() is a normal function, not a coroutine.
+                                // This leads to memory leaks.
                 res = i;
                 break;
             }
         }
-        print(PRI1, "Dispatcher::dispatch(): return %d\n", res);
+        print(PRI1, "Dispatcher::dispatch: return %d\n", res);
+        return res;
+    }
+
+    int dispatch(std::string str, async_task<int>& t)
+    {
+        int index = get_table_size();
+
+        print(PRI1, "Dispatcher::dispatch: index = %d: str = %s", index, str.c_str());
+
+        std::string header = getHeader(str);
+
+        int res = -1;
+        for (int i = 0; i < index + 1; i++)
+        {
+            print(PRI2, "Dispatcher::dispatch: m_dispatch_table[%d].str = <%s>\n", i, m_dispatch_table[i].str.c_str());
+            if (m_dispatch_table[i].str.compare(header) == 0)
+            {
+                print(PRI1, "Dispatcher::dispatch: found match at index %d\n", i);
+                t = m_dispatch_table[index].op2(str, i);
+                // co_await t;  // Not possible, because dispatch() is a normal function, not a coroutine
+                                // co_await t; is placed in the calling coroutine
+                res = i;
+                break;
+            }
+        }
+        print(PRI1, "Dispatcher::dispatch: return %d\n", res);
         return res;
     }
 

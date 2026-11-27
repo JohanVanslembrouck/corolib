@@ -53,7 +53,7 @@ public:
 
     void invokeAll(std::string str)
     {
-        print(PRI1, "%p: Dispatcher::invokeAll(str): str = %s", this, str.c_str());
+        print(PRI1, "%p: Dispatcher::invokeAll: str = %s", this, str.c_str());
         callCompletionHandler(str);
     }
 
@@ -203,11 +203,12 @@ public:
             async_operation<std::string> sr = commClient->start_reading();
             print(PRI1, "read_client_request: std::string str = co_await sr;\n");
             std::string str = co_await sr;
-            print(PRI1, "read_client_request: std::string str = %s", str.c_str());
+            print(PRI1, "read_client_request: str = %s", str.c_str());
 
-            if (str.compare("EOF") == 0)
+            if (str.compare(0, 3, "EOF") == 0)
             {
                 m_running = false;
+                print(PRI1, "read_client_request: exiting loop\n");
                 break;
             }
 
@@ -218,7 +219,10 @@ public:
 
             print(PRI1, "read_client_request: m_handled = %d\n", m_handled);
             if (m_handled == -1)
+            {
                 print(PRI1, "read_client_request: dispatch failed!!!\n");
+                break;
+            }
         }
 
         print(PRI1, "read_client_request: commClient->stop();\n");

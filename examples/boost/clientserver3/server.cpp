@@ -247,23 +247,23 @@ public:
      */
     int dispatch(std::string str)
     {
-        print(PRI1, "ServerApp::dispatch(str): m_index = %d, str = %s", m_index, str.c_str());
+        print(PRI1, "ServerApp::dispatch: m_index = %d, str = %s", m_index, str.c_str());
         
         std::string header = getHeader(str);
 
         int res = -1;
         for (int i = 0; i < m_index; i++)
         {
-            print(PRI2, "ServerApp::dispatch(): m_dispatch_table[%d].str = <%s>\n", i, m_dispatch_table[i].str.c_str());
+            print(PRI2, "ServerApp::dispatch: m_dispatch_table[%d].str = <%s>\n", i, m_dispatch_table[i].str.c_str());
             if (m_dispatch_table[i].str.compare(header) == 0)
             {
-                print(PRI1, "ServerApp::dispatch(): found match at index %d\n", i);
+                print(PRI1, "ServerApp::dispatch: found match at index %d\n", i);
                 (void)m_dispatch_table[i].op(str);
                 res = i;
                 break;
             }
         }
-        print(PRI1, "ServerApp::dispatch(): return %d\n", res);
+        print(PRI1, "ServerApp::dispatch: return %d\n", res);
         return res;
     }
     
@@ -288,16 +288,23 @@ public:
             async_operation<std::string> sr = commClient->start_reading();
             print(PRI1, "mainflow_one_client: std::string str = co_await sr;\n");
             std::string str = co_await sr;
-            
-            if (str.compare("EOF") == 0)
+            print(PRI1, "mainflow_one_client: str = %s", str.c_str());
+
+            if (str.compare(0, 3, "EOF") == 0)
+            {
+                print(PRI1, "read_client_request: exiting loop\n");
                 break;
+            }
 
             print(PRI1, "mainflow_one_client: dispatch(str);\n");
             // In reality, str will contain the identification and the marshalled arguments
             int res = dispatch(str);
             print(PRI1, "mainflow_one_client: res = %d\n", res);
             if (res == -1)
-                print(PRI1, "read_client_request: dispatch failed!!!\n");
+            {
+                print(PRI1, "mainflow_one_client: dispatch failed!!!\n");
+                break;
+            }
         }
         
         print(PRI1, "mainflow_one_client: commClient->stop();\n");

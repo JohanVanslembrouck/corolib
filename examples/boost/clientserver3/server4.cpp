@@ -62,16 +62,23 @@ public:
             async_operation<std::string> sr = commClient->start_reading();
             print(PRI1, "read_client_request: std::string str = co_await sr;\n");
             std::string str = co_await sr;
+            print(PRI1, "read_client_request: str = %s", str.c_str());
             
-            if (str.compare("EOF") == 0)
+            if (str.compare(0, 3, "EOF") == 0)
+            {
+                print(PRI1, "read_client_request: exiting loop\n");
                 break;
+            }
 
             print(PRI1, "read_client_request: dispatcher.dispatch(str);\n");
             // In reality, str will contain the identification and the marshalled arguments
             int res = dispatcher.dispatch(str);
             print(PRI1, "read_client_request: res = %d\n", res);
             if (res == -1)
+            {
                 print(PRI1, "read_client_request: dispatch failed!!!\n");
+                break;
+            }
         }
 
         done = true;
@@ -155,7 +162,7 @@ public:
         {
             print(PRI1, "mainflow_one_client: int i = co_await wat;\n");
             int i = co_await wat;
-            print(PRI1, "mainflow_one_client: reqs[%d].get_result().c_str().get_result() = %s", i, reqs[i].get_result().c_str());
+            print(PRI1, "mainflow_one_client: reqs[%d].get_result().c_str() = %s", i, reqs[i].get_result().c_str());
         }
 
         print(PRI1, "mainflow_one_client: int i = co_await rcr;\n");
